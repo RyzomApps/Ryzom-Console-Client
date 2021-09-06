@@ -1,0 +1,2 @@
+# RCC
+Ryzom Console Client
