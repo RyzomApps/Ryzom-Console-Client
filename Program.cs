@@ -13,8 +13,9 @@ namespace RCC
     /// </summary>
     class Program
     {
-        private static RyzomClient client;
-        public static string[] startupargs;
+        private static readonly RyzomClient Client = new RyzomClient();
+
+        public static string[] Startupargs;
 
         public static string Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
 
@@ -55,7 +56,7 @@ namespace RCC
             //Process ini configuration file
             if (args.Length >= 1 && System.IO.File.Exists(args[0]) && System.IO.Path.GetExtension(args[0]).ToLower() == ".ini")
             {
-                Settings.LoadFile(args[0]);
+                ClientCfg.LoadFile(args[0]);
 
                 //remove ini configuration file from arguments array
                 List<string> args_tmp = args.ToList<string>();
@@ -64,9 +65,9 @@ namespace RCC
             }
             else if (System.IO.File.Exists("RyzomClient.ini"))
             {
-                Settings.LoadFile("RyzomClient.ini");
+                ClientCfg.LoadFile("RyzomClient.ini");
             }
-            else Settings.WriteDefaultSettings("RyzomClient.ini");
+            else ClientCfg.WriteDefaultSettings("RyzomClient.ini");
 
             // TODO: session caching
 
@@ -74,13 +75,16 @@ namespace RCC
             ExitCleanUp.Add(delegate ()
             {
                 // Do NOT use Program.Exit() as creating new Thread cause program to freeze
-                if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
+                if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
                 //if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
-                //if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
+                //if (ClientCfg.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
             });
 
-            startupargs = args;
+            Startupargs = args;
+
             InitializeClient();
+
+            Client.Connect();
 
             Console.Read();
         }
@@ -91,9 +95,7 @@ namespace RCC
         private static void InitializeClient()
         {
             // Check Session
-
-            // Start Client
-            client = new RyzomClient();
+            Login.CheckLogin(Client, "betaem1", "mozyr", "ryzom_live", "");
         }
 
         /// <summary>

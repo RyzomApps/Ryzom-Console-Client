@@ -10,11 +10,11 @@ namespace RCC.Logger
         {
             Regex regexToUse = null;
             // Convert to bool for XOR later. Whitelist = 0, Blacklist = 1
-            bool filterMode = Settings.FilterMode == Settings.FilterModeEnum.Blacklist ? true : false;
+            bool filterMode = ClientCfg.FilterMode == ClientCfg.FilterModeEnum.Blacklist ? true : false;
             switch (channel)
             {
-                case FilterChannel.Chat: regexToUse = Settings.ChatFilter; break;
-                case FilterChannel.Debug: regexToUse = Settings.DebugFilter; break;
+                case FilterChannel.Chat: regexToUse = ClientCfg.ChatFilter; break;
+                case FilterChannel.Debug: regexToUse = ClientCfg.DebugFilter; break;
             }
             if (regexToUse != null)
             {
