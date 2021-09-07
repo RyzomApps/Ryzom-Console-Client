@@ -1,6 +1,8 @@
 ﻿using RCC.Logger;
 using System;
+using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace RCC
 {
@@ -11,7 +13,8 @@ namespace RCC
     {
         public ILogger Log;
 
-        UdpClient udpClient;
+        UdpClient udpMain;
+        UdpClient udpSessionBrowser;
 
         private int _userAddr;
         private int _userKey;
@@ -47,20 +50,28 @@ namespace RCC
 
             ConsoleIO.WriteLineFormatted($"Network initialisation with front end '{FsAddr}' and cookie {Cookie}");
 
-            //// connect the session browser to the new shard
-            //NLNET::CInetAddress sbsAddress(CSessionBrowserImpl::getInstance().getFrontEndAddress());
-            //sbsAddress.setPort(sbsAddress.port() + SBSPortOffset);
-            //CSessionBrowserImpl::getInstance().connectItf(sbsAddress);
-            //
-            //string result;
-
             ParseHostString(FsAddr, out var host, out var port);
+
+            // connect the session browser to the new shard
+            try
+            {
+                udpSessionBrowser = new UdpClient();
+                udpSessionBrowser.Connect(host, port + ClientCfg.SBSPortOffset);
+
+                udpSessionBrowser.BeginReceive(Recv, udpSessionBrowser);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"SBS refused the connection ({e.Message})");
+            }
 
             // then connect to the frontend using the udp sock
             try
             {
-                udpClient = new UdpClient();
-                udpClient.Connect(host, port);
+                udpMain = new UdpClient();
+                udpMain.Connect(host, port);
+
+                udpMain.BeginReceive(Recv, udpMain);
             }
             catch (Exception e)
             {
@@ -74,16 +85,19 @@ namespace RCC
 
             // TODO: Implementation
 
-            ////IPEndPoint object will allow us to read datagrams sent from any source.
-            //var remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            //
-            //// Blocks until a message returns on this socket from a remote host.
-            //var receiveBytes = udpClient.Receive(ref remoteIpEndPoint);
-            //var returnData = Encoding.ASCII.GetString(receiveBytes);
-            //
-            //// Uses the IPEndPoint object to determine which of these two hosts responded.
-            //Console.WriteLine($"This is the message you received {returnData}");
-            //Console.WriteLine($"This message was sent from {remoteIpEndPoint.Address} on their port number {remoteIpEndPoint.Port}");
+            // Initializing XML Database
+            // IngameDbMngr.init(CPath::lookup("database.xml"), ProgressBar);
+        }
+
+        private static void Recv(IAsyncResult ar)
+        {
+            IPEndPoint remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            var client = (UdpClient)ar.AsyncState;
+
+            if (client == null) return;
+
+            var received = client.EndReceive(ar, ref remoteIpEndPoint);
+            Console.WriteLine(Encoding.UTF8.GetString(received));
         }
 
         /// <summary>
