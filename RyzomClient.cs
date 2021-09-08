@@ -145,8 +145,31 @@ namespace RCC
             var received = client.EndReceive(ar, ref remoteIpEndPoint);
 
             // TODO: interpret result
+            // decode header
+            // msgin.serial(_CurrentReceivedNumber);
+            // msgin.serial(_SystemMode);
 
-            Console.WriteLine(Encoding.UTF8.GetString(received));
+
+            // msgin.serial(message);
+
+            // SYSTEM_SYNC_CODE=1 or others
+            // receiveSystemSync
+
+            // SYSTEM_STALLED_CODE
+            // receiveSystemStalled
+
+            // SYSTEM_PROBE_CODE
+            // _Changes.push_back(CChange(0, ProbeReceived));
+            // receiveSystemProbe
+
+            // SYSTEM_SERVER_DOWN_CODE
+
+            foreach (var b in received)
+            {
+                Console.Write(Convert.ToString(b, 2).PadLeft(8, '0') + " ");
+            }
+
+            //Console.WriteLine(Encoding.UTF8.GetString(received));
         }
 
         /// <summary>
