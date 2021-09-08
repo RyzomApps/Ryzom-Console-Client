@@ -1,5 +1,6 @@
 ﻿using RCC.Logger;
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -22,6 +23,18 @@ namespace RCC
         private int _valid;
 
         private ConnectionState _connectionState = ConnectionState.NotInitialised;
+        private int _CurrentSendNumber = 0;
+
+        const int SYSTEM_LOGIN_CODE = 0;              // From client
+        const int SYSTEM_SYNC_CODE = 1;               // From server
+        const int SYSTEM_ACK_SYNC_CODE = 2;           // From client
+        const int SYSTEM_PROBE_CODE = 3;              // From server
+        const int SYSTEM_ACK_PROBE_CODE = 4;          // From client
+        const int SYSTEM_DISCONNECTION_CODE = 5;      // From client
+        const int SYSTEM_STALLED_CODE = 6;            // From server
+        const int SYSTEM_SERVER_DOWN_CODE = 7;        // From server
+        const int SYSTEM_QUIT_CODE = 8;               // From client
+        const int SYSTEM_ACK_QUIT_CODE = 9;			  // From server
 
         public string Cookie { get; set; }
 
@@ -80,6 +93,39 @@ namespace RCC
 
             _connectionState = ConnectionState.Login;
 
+            // stateLogin();
+            // sendSystemLogin();
+
+            var message = new CBitMemStream();
+
+            message.BuildSystemHeader(ref _CurrentSendNumber);
+
+            const byte login = SYSTEM_LOGIN_CODE;
+            message.Serial(login);
+
+            //message.serial(Cookie);
+            message.Serial(_userAddr);
+            message.Serial(_userKey);
+            message.Serial(_userId);
+
+            // todo: find out why 2 xD
+            message.Serial(2);
+
+            message.Serial(ClientCfg.LanguageCode);
+
+            var length = message.Size;
+
+            Debug.WriteLine("00000000 00000000 00000000 00000000 10000000 00000010 11010111 10101110 " +
+            "01101100 10001000 11001001 10110110 01010011 00000000 00000101 10011001 " +
+            "10011111 00000000 00000000 00000000 00000001 00110010 00110010 1 < P > 0000000");
+
+            foreach (var b in message.Buffer())
+            {
+                Debug.Write(Convert.ToString(b, 2).PadLeft(8, '0') + " ");
+            }
+
+            udpMain.Send(message.Buffer(), length);
+
             ConsoleIO.WriteLineFormatted(
                 $"The next step will be triggered by the CONNECTION:USER_CHARS msg from the server");
 
@@ -91,12 +137,15 @@ namespace RCC
 
         private static void Recv(IAsyncResult ar)
         {
-            IPEndPoint remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            var remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
             var client = (UdpClient)ar.AsyncState;
 
             if (client == null) return;
 
             var received = client.EndReceive(ar, ref remoteIpEndPoint);
+
+            // TODO: interpret result
+
             Console.WriteLine(Encoding.UTF8.GetString(received));
         }
 
@@ -104,7 +153,7 @@ namespace RCC
         /// Sets the cookie
         /// </summary>
         /// <param name="str"></param>
-        void SetLoginCookieFromString(string str)
+        private void SetLoginCookieFromString(string str)
         {
             var parts = str.Split('|');
 
@@ -141,19 +190,4 @@ namespace RCC
             int.TryParse(hostParts[1], out port);
         }
     }
-
-    /// The states of the connection to the server (if you change them, change ConnectionStateCStr)
-    internal enum ConnectionState
-    {
-        NotInitialised = 0,     // nothing happened yet
-        NotConnected,           // init() called
-        Authenticate,           // connect() called, identified by the login server
-        Login,                  // connecting to the frontend, sending identification
-        Synchronize,            // connection accepted by the frontend, synchronizing
-        Connected,              // synchronized, connected, ready to work
-        Probe,                  // connection lost by frontend, probing for response
-        Stalled,                // server is stalled
-        Disconnect,             // disconnect() called, or timeout, or connection closed by frontend
-        Quit                    // quit() called
-    };
 }
