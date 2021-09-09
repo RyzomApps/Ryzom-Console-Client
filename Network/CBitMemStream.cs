@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace RCC
 {
     public class CBitMemStream
     {
         private readonly bool _inputStream;
-        private readonly bool[] _contentBits;
+        private bool[] _contentBits;
         private int _bitPos;
+
+        private bool isReading() => _inputStream;
 
         public int Pos => (int)(_bitPos / 8d);
 
         public int FreeBits => _contentBits.Length - _bitPos;
 
-        public int Size => (int)((_bitPos - 1) / 8d) + 1;
+        public int Length => (int)((_bitPos - 1) / 8d) + 1;
 
         public CBitMemStream(bool inputStream = false, int defaultcapacity = 32)
         {
@@ -21,34 +24,44 @@ namespace RCC
             _contentBits = new bool[defaultcapacity * 8];
         }
 
+        // this shouldn't be here, but it is
         public void BuildSystemHeader(ref int currentSendNumber)
         {
-            Serial(currentSendNumber);
-            Serial(true); // systemmode
+            Serial(ref currentSendNumber);
+            bool systemmode = true;
+            Serial(ref systemmode); // systemmode
             ++currentSendNumber;
         }
 
-        public void Serial(byte obj)
+        public void Serial(ref byte obj)
         {
+            // TODO use isReading
+
             byte[] bytes = { obj };
             AddToArray(bytes);
         }
 
-        public void Serial(int obj)
+        public void Serial(ref int obj)
         {
+            // TODO use isReading
+
             var bytes = BitConverter.GetBytes(obj);
             AddToArray(bytes);
         }
 
-        public void Serial(bool obj)
+        public void Serial(ref bool obj)
         {
+            // TODO use isReading
+
             // direct write
             _contentBits[_bitPos] = obj;
             _bitPos++;
         }
 
-        public void Serial(string obj)
+        public void Serial(ref string obj)
         {
+            // TODO use isReading
+
             var str8 = new byte[obj.Length];
 
             for (var index = 0; index < obj.ToCharArray().Length; index++)
@@ -59,6 +72,16 @@ namespace RCC
             }
 
             AddToArray(str8);
+        }
+
+        public void memcpy(byte[] data)
+        {
+            if (data.Length * 8 > _contentBits.Length)
+                _contentBits = new bool[data.Length * 8];
+
+            AddToArray(data);
+
+            _bitPos = 0;
         }
 
         private void AddToArray(byte[] bytes)
@@ -102,6 +125,19 @@ namespace RCC
             }
 
             return result;
+        }
+
+        public override string ToString()
+        {
+            string ret = "CBMS:";
+
+            foreach (var b in Buffer())
+            {
+                //ret += Convert.ToString(b, 2).PadLeft(8, '0') + " ";
+                ret += Convert.ToString(b, 16).PadLeft(2, '0') + "";
+            }
+
+            return ret;
         }
     }
 }

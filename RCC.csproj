@@ -8,7 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Config\" />
+    <None Remove="data\database.xml" />
+    <None Remove="data\msg.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="data\database.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\msg.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

@@ -1,9 +1,6 @@
 ﻿using RCC.Logger;
 using System;
-using System.Diagnostics;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
+using System.Threading;
 
 namespace RCC
 {
@@ -13,28 +10,6 @@ namespace RCC
     public class RyzomClient
     {
         public ILogger Log;
-
-        UdpClient udpMain;
-        UdpClient udpSessionBrowser;
-
-        private int _userAddr;
-        private int _userKey;
-        private int _userId;
-        private int _valid;
-
-        private ConnectionState _connectionState = ConnectionState.NotInitialised;
-        private int _CurrentSendNumber = 0;
-
-        const int SYSTEM_LOGIN_CODE = 0;              // From client
-        const int SYSTEM_SYNC_CODE = 1;               // From server
-        const int SYSTEM_ACK_SYNC_CODE = 2;           // From client
-        const int SYSTEM_PROBE_CODE = 3;              // From server
-        const int SYSTEM_ACK_PROBE_CODE = 4;          // From client
-        const int SYSTEM_DISCONNECTION_CODE = 5;      // From client
-        const int SYSTEM_STALLED_CODE = 6;            // From server
-        const int SYSTEM_SERVER_DOWN_CODE = 7;        // From server
-        const int SYSTEM_QUIT_CODE = 8;               // From client
-        const int SYSTEM_ACK_QUIT_CODE = 9;			  // From server
 
         public string Cookie { get; set; }
 
@@ -52,142 +27,341 @@ namespace RCC
 
         public string[] R2PatchUrLs { get; set; }
 
+        bool WaitServerAnswer;
+
+        bool game_exit = false;
+
+        bool userChar;
+        bool noUserChar;
+        bool ConnectInterf;
+        bool CreateInterf;
+        bool CharacterInterf;
+
+        bool CharNameValidArrived;
+
         /// <summary>
         /// Login to the server using the RyzomCom class.
         /// </summary>
+        /// TODO: Implementation
+        // Initializing XML Database
+        // IngameDbMngr.init(CPath::lookup("database.xml"), ProgressBar);
         public void Connect()
         {
-            SetLoginCookieFromString(Cookie);
+            /////////////////////////////////
+            // Initialize the application. //
 
-            _connectionState = ConnectionState.NotConnected;
+            // prelogInit();
 
-            ConsoleIO.WriteLineFormatted($"Network initialisation with front end '{FsAddr}' and cookie {Cookie}");
+            login();
 
-            ParseHostString(FsAddr, out var host, out var port);
+            postlogInit();
 
-            // connect the session browser to the new shard
-            try
+            //////////////////////////////////////////
+            // The real main loop
+
+            bool ok = true;
+
+            while (ok)
             {
-                udpSessionBrowser = new UdpClient();
-                udpSessionBrowser.Connect(host, port + ClientCfg.SBSPortOffset);
+                //////////////////////////////////////////
+                // Manage the connection to the server. //
 
-                udpSessionBrowser.BeginReceive(Recv, udpSessionBrowser);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException($"SBS refused the connection ({e.Message})");
-            }
+                // If the connection return false we just want to quit the game
+                if (!connection(Cookie, FsAddr))
+                {
+                    //releaseOutGame();
+                    break;
+                }
 
-            // then connect to the frontend using the udp sock
-            try
-            {
-                udpMain = new UdpClient();
-                udpMain.Connect(host, port);
+                ///////////////////////////////
+                // Initialize the main loop. //
 
-                udpMain.BeginReceive(Recv, udpMain);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException($"FS refused the connection ({e.Message})");
-            }
+                //initMainLoop();
 
-            _connectionState = ConnectionState.Login;
+                //////////////////////////////////////////////////
+                // Main loop (biggest part of the application). //
 
-            // stateLogin();
-            // sendSystemLogin();
+                ok = !mainLoop();
 
-            var message = new CBitMemStream();
-
-            message.BuildSystemHeader(ref _CurrentSendNumber);
-
-            const byte login = SYSTEM_LOGIN_CODE;
-            message.Serial(login);
-
-            //message.serial(Cookie);
-            message.Serial(_userAddr);
-            message.Serial(_userKey);
-            message.Serial(_userId);
-
-            // todo: find out why 2 xD
-            message.Serial(2);
-
-            message.Serial(ClientCfg.LanguageCode);
-
-            var length = message.Size;
-
-            Debug.WriteLine("00000000 00000000 00000000 00000000 10000000 00000010 11010111 10101110 " +
-            "01101100 10001000 11001001 10110110 01010011 00000000 00000101 10011001 " +
-            "10011111 00000000 00000000 00000000 00000001 00110010 00110010 1 < P > 0000000");
-
-            foreach (var b in message.Buffer())
-            {
-                Debug.Write(Convert.ToString(b, 2).PadLeft(8, '0') + " ");
+                /////////////////////////////
+                // Release all the memory. //
+                //if (!FarTP.isReselectingChar())
+                //{
+                //    releaseMainLoop(!ok);
+                //}
             }
 
-            udpMain.Send(message.Buffer(), length);
-
-            ConsoleIO.WriteLineFormatted(
-                $"The next step will be triggered by the CONNECTION:USER_CHARS msg from the server");
-
-            // TODO: Implementation
-
-            // Initializing XML Database
-            // IngameDbMngr.init(CPath::lookup("database.xml"), ProgressBar);
+            // Final release
+            // release();
         }
 
-        private static void Recv(IAsyncResult ar)
+        private void postlogInit()
         {
-            var remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            var client = (UdpClient)ar.AsyncState;
-
-            if (client == null) return;
-
-            var received = client.EndReceive(ar, ref remoteIpEndPoint);
-
-            // TODO: interpret result
-            // decode header
-            // msgin.serial(_CurrentReceivedNumber);
-            // msgin.serial(_SystemMode);
-
-
-            // msgin.serial(message);
-
-            // SYSTEM_SYNC_CODE=1 or others
-            // receiveSystemSync
-
-            // SYSTEM_STALLED_CODE
-            // receiveSystemStalled
-
-            // SYSTEM_PROBE_CODE
-            // _Changes.push_back(CChange(0, ProbeReceived));
-            // receiveSystemProbe
-
-            // SYSTEM_SERVER_DOWN_CODE
-
-            foreach (var b in received)
-            {
-                Console.Write(Convert.ToString(b, 2).PadLeft(8, '0') + " ");
-            }
-
-            //Console.WriteLine(Encoding.UTF8.GetString(received));
+            NetworkManager.initializeNetwork();
         }
 
         /// <summary>
-        /// Sets the cookie
+        /// New version of the menu after the server connection
+        ///
+        /// If you add something in this function, check CFarTP,
+        /// some kind of reinitialization might be useful over there.
         /// </summary>
-        /// <param name="str"></param>
-        private void SetLoginCookieFromString(string str)
+        private bool connection(string cookie, string fsaddr)
         {
-            var parts = str.Split('|');
+            game_exit = false;
 
-            _userAddr = int.Parse(parts[0], System.Globalization.NumberStyles.HexNumber);
-            _userKey = int.Parse(parts[1], System.Globalization.NumberStyles.HexNumber);
-            _userId = int.Parse(parts[2], System.Globalization.NumberStyles.HexNumber);
+            // Init global variables
+            userChar = false;
+            noUserChar = false;
+            ConnectInterf = true;
+            CreateInterf = true;
+            CharacterInterf = true;
+            WaitServerAnswer = false;
 
-            if (_userAddr == 0 && _userKey == 0 && _userId == 0)
-                _valid = 0;
-            else
-                _valid = 1;
+            //FarTP.setOutgame();
+
+            bool firstConnection = true;
+            TInterfaceState InterfaceState = TInterfaceState.AUTO_LOGIN;
+
+            while ((InterfaceState != TInterfaceState.GOGOGO_IN_THE_GAME) && (InterfaceState != TInterfaceState.QUIT_THE_GAME))
+            {
+                switch (InterfaceState)
+                {
+                    case TInterfaceState.AUTO_LOGIN:
+                        InterfaceState = autoLogin(cookie, fsaddr, firstConnection);
+                        break;
+
+                    case TInterfaceState.GLOBAL_MENU:
+
+                        //if (ClientCfg.SelectCharacter == -1)
+                        //{
+                        //    NLGUI::CDBManager::getInstance()->getDbProp("UI:CURRENT_SCREEN")->setValue32(0); // 0 == select
+                        //}
+
+                        // Interface to choose a char
+                        InterfaceState = globalMenu();
+                        break;
+
+                    case TInterfaceState.GOGOGO_IN_THE_GAME:
+                        break;
+
+                    case TInterfaceState.QUIT_THE_GAME:
+                        break;
+                }
+            }
+
+            // GOGOGO_IN_THE_GAME
+            return (InterfaceState == TInterfaceState.GOGOGO_IN_THE_GAME);
+        }
+
+        private TInterfaceState autoLogin(string cookie, string fsaddr, in bool firstConnection)
+        {
+            if (firstConnection)
+                NetworkConnection.init(cookie, fsaddr);
+
+            if (firstConnection)
+            {
+                try
+                {
+                    NetworkConnection.connect();
+                }
+                catch (Exception e)
+                {
+                    ConsoleIO.WriteLine("connection : " + e.Message + ".");
+                    return TInterfaceState.QUIT_THE_GAME;
+                }
+
+                // Ok the client is connected
+
+                // TODO callback and database set impl
+                // Set the impulse callback.
+                //NetworkConnection.setImpulseCallback(impulseCallBack);
+
+                // Set the database.
+                //NetworkConnection.setDataBase(IngameDbMngr.getNodePtr());
+
+                // init the string manager cache.
+                //STRING_MANAGER::CStringManagerClient::instance()->initCache(UsedFSAddr, ClientCfg.LanguageCode);
+            }
+
+            WaitServerAnswer = true;
+
+            return TInterfaceState.GLOBAL_MENU;
+        }
+
+        private bool mainLoop()
+        {
+            // TODO: mainLoopImp
+            ConsoleIO.WriteLine("mainLoop");
+            return true;
+        }
+
+        private bool login()
+        {
+            // run the main loop
+
+            // start the login state machine
+            // ev_init_done -> st_auto_login
+            // username and password set
+
+            // onlogin -> main menu page for r2mode -> ev_login_ok
+            // string res = checkLogin(LoginLogin, LoginPassword, ClientApp, LoginCustomParameters);
+            Login.checkLogin(this, "betaem1", "mozyr", "ryzom_live", "");
+
+            // ev_login_ok -> ... -> st_connect
+            ConnectToShard();
+
+            //st_reconnect_fs
+            //ConnectToNewShard();
+
+            // -> st_ingame
+
+            return true;
+        }
+
+        private void ConnectToShard()
+        {
+            ConsoleIO.WriteLine("ConnectToShard");
+        }
+
+        /// <summary>
+        /// Launch the interface to choose a character
+        /// </summary>
+        public TInterfaceState globalMenu()
+        {
+            int serverTick = NetworkConnection.getCurrentServerTick();
+            bool PlayerWantToGoInGame = false;
+            bool firewallTimeout = false;
+
+            while (PlayerWantToGoInGame == false)
+            {
+                try
+                {
+                    if (!firewallTimeout)
+                        NetworkManager.update();
+                }
+                catch
+                {
+                    if (NetworkConnection._ConnectionState == ConnectionState.Disconnect)
+                    {
+                        firewallTimeout = true;
+                    }
+                    else
+                    {
+                        Thread.Sleep(30);
+                    }
+                }
+
+                // IngameDbMngr.flushObserverCalls();
+                // NLGUI::CDBManager::getInstance()->flushObserverCalls();
+
+                // check if we can send another dated block
+                if (NetworkConnection.getCurrentServerTick() != serverTick)
+                {
+                    //
+                    serverTick = NetworkConnection.getCurrentServerTick();
+                    NetworkConnection.send(serverTick);
+                }
+                else
+                {
+                    // Send dummy info
+                    NetworkConnection.send();
+                }
+
+
+                // SERVER INTERACTIONS WITH INTERFACE
+                if (WaitServerAnswer)
+                {
+                    if (noUserChar || userChar)
+                    {
+                        noUserChar = userChar = false;
+
+                        // Clear sending buffer that may contain prevous QUIT_GAME when getting back to the char selection screen
+                        NetworkConnection.flushSendBuffer();
+                    }
+
+                    if (CharNameValidArrived)
+                    {
+                        CharNameValidArrived = false;
+                        WaitServerAnswer = false;
+
+                    }
+
+                    if (NetworkManager.serverReceivedReady)
+                    {
+                        //nlinfo("impulseCallBack : received serverReceivedReady");
+                        NetworkManager.serverReceivedReady = false;
+                        WaitServerAnswer = false;
+                        PlayerWantToGoInGame = true;
+                    }
+                }
+                else
+                {
+                    noUserChar = false;
+                    userChar = false;
+                    CharNameValidArrived = false;
+                    NetworkManager.serverReceivedReady = false;
+                }
+
+                if (NetworkConnection._ConnectionState == ConnectionState.Disconnect)
+                {
+                    // Display the connection failure screen
+                    // TODO Display the connection failure screen
+
+                    if (firewallTimeout)
+                    {
+                        // Display the firewall error string instead of the normal failure string
+
+                        ConsoleIO.WriteLine("uiFirewallFail");
+                    }
+                }
+
+                if (game_exit)
+                    return TInterfaceState.QUIT_THE_GAME;
+            }
+
+            //if (ClientCfg.SelectCharacter != -1)
+            //    PlayerSelectedSlot = ClientCfg.SelectCharacter;
+
+            // -> ev_global_menu_exited
+
+            //  Init the current Player Name (for interface.cfg and sentence.name save). Make a good File Name.
+
+            //	return SELECT_CHARACTER;
+            return TInterfaceState.GOGOGO_IN_THE_GAME;
+
+        }
+
+        // TODO impulseServerReady
+
+        private void ConnectToNewShard()
+        {
+            // Connect to the next FS
+            NetworkConnection.initCookie(Cookie, FsAddr);
+
+            //// connect the session browser to the new shard
+            //NLNET::CInetAddress sbsAddress(CSessionBrowserImpl::getInstance().getFrontEndAddress());
+            //sbsAddress.setPort(sbsAddress.port() + SBSPortOffset);
+            //CSessionBrowserImpl::getInstance().connectItf(sbsAddress);
+
+            try
+            {
+                NetworkConnection.connect();
+            }
+            catch
+            {
+                // TODO: Connection refused or other error - Retry?
+                //_Reason = new string(result);
+                //LoginSM.pushEvent(CLoginStateMachine::ev_conn_failed);
+            }
+
+            // Reinit the string manager cache.
+            //STRING_MANAGER::CStringManagerClient::instance()->initCache(FSAddr, ClientCfg.LanguageCode);
+
+            // reset the chat mode
+            //ChatMngr.resetChatMode();
+
+            // The next step will be triggered by the  msg from the server
         }
 
         /// <summary>
@@ -196,21 +370,6 @@ namespace RCC
         public void Disconnect()
         {
 
-        }
-
-        public static void ParseHostString(string hostString, out string hostName, out int port)
-        {
-            hostName = hostString;
-            port = -1;
-
-            if (!hostString.Contains(":")) return;
-
-            var hostParts = hostString.Split(':');
-
-            if (hostParts.Length != 2) return;
-
-            hostName = hostParts[0];
-            int.TryParse(hostParts[1], out port);
         }
     }
 }

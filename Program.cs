@@ -1,7 +1,5 @@
 ﻿using RCC.WinAPI;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -22,24 +20,27 @@ namespace RCC
 
         public static readonly string BuildInfo;
 
+        // TODO: add parameters: 
+        // login
+        // password
+        // shard_id
+        // slot
+
         /// <summary>
         /// The main entry point of Ryzom Console Client
         /// </summary>
         private static void Main(string[] args)
         {
-            //TestMethod1();
-
-            //return;
             Console.WriteLine("Console Client for Ryzom v{0} - By bierdosenhalter & Contributors", Version);
 
-            //Debug input ?
+            // Debug input ?
             if (args.Length == 1 && args[0] == "--keyboard-debug")
             {
                 ConsoleIO.WriteLine("Keyboard debug mode: Press any key to display info");
                 ConsoleIO.DebugReadInput();
             }
 
-            //Setup ConsoleIO
+            // Setup ConsoleIO
             ConsoleIO.LogPrefix = "§8[MCC] ";
             if (args.Length >= 1 && args[^1] == "BasicIO" || args.Length >= 1 && args[^1] == "BasicIO-NoColor")
             {
@@ -51,18 +52,18 @@ namespace RCC
                 args = args.Where(o => !ReferenceEquals(o, args[^1])).ToArray();
             }
 
-            //Take advantage of Windows 10 / Mac / Linux UTF-8 console
+            // Take advantage of Windows 10 / Mac / Linux UTF-8 console
             if (IsUsingMono || WindowsVersion.WinMajorVersion >= 10)
             {
                 Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
             }
 
-            //Process ini configuration file
+            // Process ini configuration file
             if (args.Length >= 1 && System.IO.File.Exists(args[0]) && System.IO.Path.GetExtension(args[0]).ToLower() == ".ini")
             {
                 ClientCfg.LoadFile(args[0]);
 
-                //remove ini configuration file from arguments array
+                // remove ini configuration file from arguments array
                 var argsTmp = args.ToList();
                 argsTmp.RemoveAt(0);
                 args = argsTmp.ToArray();
@@ -88,30 +89,21 @@ namespace RCC
 
             Startupargs = args;
 
-            try
-            {
-                InitializeClient();
-            }
-            catch (Exception e)
-            {
-                ConsoleIO.WriteLine(e.Message);
-                Console.Read();
-                return;
-            }
-
-            Client.Connect();
+            //try
+            //{
+                Client.Connect();
+            //}
+            //catch (Exception e)
+            //{
+            //    ConsoleIO.WriteLine(e.Message);
+            //    Console.Read();
+            //    return;
+            //}
 
             Console.Read();
         }
 
-        /// <summary>
-        /// Start a new Client
-        /// </summary>
-        private static void InitializeClient()
-        {
-                // Check Session
-                Login.CheckLogin(Client, "betaem1", "mozyr", "ryzom_live", "");
-        }
+
 
         /// <summary>
         /// Detect if the user is running Ryzom Console Client through Mono

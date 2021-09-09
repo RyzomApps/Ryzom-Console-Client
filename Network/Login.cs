@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -8,7 +7,7 @@ namespace RCC
 {
     public class Login
     {
-        public static string CheckLogin(RyzomClient client, string login, string password, string clientApp, string customParameters)
+        public static string checkLogin(RyzomClient client, string login, string password, string clientApp, string customParameters)
         {
             var url = "http://" + ClientCfg.StartupHost + ClientCfg.StartupPage;
 
@@ -17,7 +16,7 @@ namespace RCC
             var cryptedPassword = Crypt(password, salt);
 
             var urlLogin = $"{url}?cmd=login&login={login}&password={cryptedPassword}&clientApplication={clientApp}&cp=2&lg={ClientCfg.LanguageCode}{customParameters}";
-            
+
             var request = WebRequest.CreateHttp(urlLogin);
             request.Method = "GET";
 
