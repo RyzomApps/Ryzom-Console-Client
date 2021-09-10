@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿using System.IO;
 using System.Text.RegularExpressions;
 
 namespace RCC
@@ -22,6 +18,15 @@ namespace RCC
         public static string StartupHost = "shard.ryzom.com:40916";
         public static string StartupPage = "/login/r2_login.php";
         public static string LanguageCode = "en";
+
+        // ryzom_live -> atys
+        // ryzom_dev -> server error: You don't have sufficient privilege to connect to YUBO now, please try later (3014)
+        // ryzom_test -> server error: Your account needs a proper subscription to connect (3011)
+        public static string ApplicationServer = "ryzom_live";
+
+        public static string Username = "betaem1";
+        public static string Password = "mozyr";
+
 
         public static int SBSPortOffset = 1000;
 

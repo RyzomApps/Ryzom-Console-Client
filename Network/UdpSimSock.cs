@@ -93,7 +93,9 @@ namespace RCC
 
             try
             {
-                _ReceiveBuffer = udpMain.Receive(ref remoteIpEndPoint);
+                byte[] bytes = udpMain.Receive(ref remoteIpEndPoint);
+                Array.Reverse(bytes, 0, bytes.Length);
+                _ReceiveBuffer = bytes;
             }
             catch
             {
@@ -106,7 +108,7 @@ namespace RCC
             return true;
         }
 
-        public void disconnect()
+        public void close()
         {
             udpMain.Close();
         }

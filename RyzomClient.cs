@@ -54,6 +54,12 @@ namespace RCC
 
             login();
 
+            if (Cookie == null)
+            {
+                ConsoleIO.WriteLine("Cookie missing: Could not login!");
+                return;
+            }
+
             postlogInit();
 
             //////////////////////////////////////////
@@ -97,6 +103,10 @@ namespace RCC
 
         private void postlogInit()
         {
+            //std::string msgXMLPath = CPath::lookup("msg.xml");
+            string msgXMLPath = "./data/msg.xml";
+            GenericMsgHeaderMngr.init(msgXMLPath);
+
             NetworkManager.initializeNetwork();
         }
 
@@ -206,7 +216,7 @@ namespace RCC
 
             // onlogin -> main menu page for r2mode -> ev_login_ok
             // string res = checkLogin(LoginLogin, LoginPassword, ClientApp, LoginCustomParameters);
-            Login.checkLogin(this, "betaem1", "mozyr", "ryzom_live", "");
+            Login.checkLogin(this, ClientCfg.Username, ClientCfg.Password, ClientCfg.ApplicationServer, "");
 
             // ev_login_ok -> ... -> st_connect
             ConnectToShard();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Runtime.InteropServices.ComTypes;
 
 namespace RCC
@@ -27,38 +28,81 @@ namespace RCC
         // this shouldn't be here, but it is
         public void BuildSystemHeader(ref int currentSendNumber)
         {
-            Serial(ref currentSendNumber);
+            serial(ref currentSendNumber);
             bool systemmode = true;
-            Serial(ref systemmode); // systemmode
+            serial(ref systemmode); // systemmode
             ++currentSendNumber;
         }
 
-        public void Serial(ref byte obj)
+        public void serial(ref byte obj)
         {
-            // TODO use isReading
-
-            byte[] bytes = { obj };
-            AddToArray(bytes);
+            if (isReading())
+            {
+                obj = ReadFromArray(8)[0];
+            }
+            else
+            {
+                byte[] bytes = { obj };
+                AddToArray(bytes);
+            }
         }
 
-        public void Serial(ref int obj)
+        public void serial(ref int obj)
         {
-            // TODO use isReading
-
-            var bytes = BitConverter.GetBytes(obj);
-            AddToArray(bytes);
+            if (isReading())
+            {
+                obj = BitConverter.ToInt32(ReadFromArray(32));
+            }
+            else
+            {
+                var bytes = BitConverter.GetBytes(obj);
+                AddToArray(bytes);
+            }
         }
 
-        public void Serial(ref bool obj)
+        public void serial(ref short obj)
         {
-            // TODO use isReading
-
-            // direct write
-            _contentBits[_bitPos] = obj;
-            _bitPos++;
+            if (isReading())
+            {
+                obj = BitConverter.ToInt16(ReadFromArray(16));
+            }
+            else
+            {
+                var bytes = BitConverter.GetBytes(obj);
+                AddToArray(bytes);
+            }
         }
 
-        public void Serial(ref string obj)
+        public void serial(ref long obj)
+        {
+            if (isReading())
+            {
+                obj = BitConverter.ToInt64(ReadFromArray(64));
+            }
+            else
+            {
+                var bytes = BitConverter.GetBytes(obj);
+                AddToArray(bytes);
+            }
+        }
+
+        public void serial(ref bool obj)
+        {
+            if (isReading())
+            {
+                // direct read
+                obj = _contentBits[_bitPos];
+                _bitPos++;
+            }
+            else
+            {
+                // direct write
+                _contentBits[_bitPos] = obj;
+                _bitPos++;
+            }
+        }
+
+        public void serial(ref string obj)
         {
             // TODO use isReading
 
@@ -74,6 +118,9 @@ namespace RCC
             AddToArray(str8);
         }
 
+        /// <summary>
+        /// HELPER
+        /// </summary>
         public void memcpy(byte[] data)
         {
             if (data.Length * 8 > _contentBits.Length)
@@ -90,9 +137,29 @@ namespace RCC
 
             for (var index = 0; index < newBits.Count; index++)
             {
+                if (_bitPos >= _contentBits.Length)
+                {
+                    Array.Resize<bool>(ref _contentBits, _contentBits.Length + 8);
+                }
+
                 _contentBits[_bitPos] = newBits[newBits.Count - index - 1];
                 _bitPos++;
             }
+        }
+
+        private byte[] ReadFromArray(int length)
+        {
+            bool[] newBits = new bool[length];
+
+            for (var index = 0; index < length; index++)
+            {
+                newBits[index] = _contentBits[_bitPos];
+                _bitPos++;
+            }
+
+            //Debug.WriteLine(ToString());
+
+            return ConvertBoolArrayToByteArray(newBits);
         }
 
         public byte[] Buffer()
@@ -129,12 +196,15 @@ namespace RCC
 
         public override string ToString()
         {
-            string ret = "CBMS:";
+            string ret = "CBMemStream " + (isReading() ? "in" : "out") + "\r\n";
 
-            foreach (var b in Buffer())
+            var bs = Buffer();
+            for (var index = 0; index < bs.Length; index++)
             {
-                //ret += Convert.ToString(b, 2).PadLeft(8, '0') + " ";
-                ret += Convert.ToString(b, 16).PadLeft(2, '0') + "";
+                var b = bs[index];
+                ret += Convert.ToString(b, 2).PadLeft(8, '0') + " ";
+                //ret += Convert.ToString(b, 16).PadLeft(2, '0') + "";
+                if (index % 8 == 7) ret += "\r\n";
             }
 
             return ret;

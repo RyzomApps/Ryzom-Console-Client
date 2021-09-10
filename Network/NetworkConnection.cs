@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using RCC.Network;
 
 namespace RCC
 {
@@ -12,7 +15,7 @@ namespace RCC
         private static int _CurrentSendNumber;
         private static int _LastReceivedNumber;
         private static long _LastReceivedTime;
-        private static int _LastReceivedNormalTime;
+        private static long _LastReceivedNormalTime;
         private static int _AckBitMask;
         private static int _LastAckBit;
         private static int _Synchronize;
@@ -36,7 +39,17 @@ namespace RCC
         private static int _SSTLastLocalTime;
         private static string _FrontendAddress;
 
-        public static ConnectionState _ConnectionState = ConnectionState.NotInitialised;
+        public static ConnectionState _ConnectionState
+        {
+            get => _connectionState;
+            set
+            {
+                ConsoleIO.WriteLine("Connection state changed to " + value.ToString());
+                _connectionState = value;
+            }
+        }
+
+        private static ConnectionState _connectionState = ConnectionState.NotInitialised;
 
         private static long _LatestLoginTime;
         private static long _LatestSyncTime;
@@ -73,6 +86,13 @@ namespace RCC
 
         private static bool _SystemMode;
         private static int _CurrentReceivedNumber;
+        private static int _LastReceivedAck;
+        private static int _MsPerTick;
+        private static long _CurrentClientTime;
+
+        internal static byte[] _LongAckBitField = new byte[1024 / 8];
+
+
 
         public static void reset()
         {
@@ -96,7 +116,9 @@ namespace RCC
             _PropertyDecoder.init(256);
 
             _DummySend = 0;
-            _LongAckBitField.resize(1024);
+            //_LongAckBitField.resize(1024);
+            _LongAckBitField = new byte[1024 / 8];
+
             _LastAckInLongAck = 0;
             _LastSentCycle = 0;
 
@@ -186,7 +208,7 @@ namespace RCC
 
             SetLoginCookieFromString(cookie);
 
-            ConsoleIO.WriteLineFormatted(
+            ConsoleIO.WriteLine(
                 $"Network initialisation with front end '{_FrontendAddress}' and cookie {cookie}");
 
             _ConnectionState = ConnectionState.NotConnected;
@@ -209,12 +231,51 @@ namespace RCC
 
                 if (buildStream(msgin) && decodeHeader(msgin))
                 {
-                        if (_SystemMode)
-                        {
-                    
-                       }
+                    if (_SystemMode)
+                    {
+                        byte message = 0;
+                        msgin.serial(ref message);
 
-                    ConsoleIO.WriteLine(msgin.ToString());
+                        switch (message)
+                        {
+                            case SYSTEM_SYNC_CODE:
+                                // receive sync, decode sync
+                                _ConnectionState = ConnectionState.Synchronize;
+                                ConsoleIO.WriteLine("CNET: login->synchronize");
+                                receiveSystemSync(msgin);
+                                return true;
+
+                            case SYSTEM_STALLED_CODE:
+                                // receive stalled, decode stalled and state stalled
+                                _ConnectionState = ConnectionState.Stalled;
+                                ConsoleIO.WriteLine("CNET: login->stalled");
+                                receiveSystemStalled(msgin);
+                                return true;
+
+                            case SYSTEM_PROBE_CODE:
+                                // receive probe, decode probe and state probe
+                                _ConnectionState = ConnectionState.Probe;
+                                //_Changes.push_back(CChange(0, ProbeReceived));
+                                ConsoleIO.WriteLine("CNET: login->probe");
+                                receiveSystemProbe(msgin);
+                                return true;
+
+                            case SYSTEM_SERVER_DOWN_CODE:
+                                disconnect(); // will send disconnection message
+                                ConsoleIO.WriteLine("BACK-END DOWN");
+                                return false; // exit now from loop, don't expect a new state
+
+                            default:
+                                //msgin.displayStream("DBG:BEN:stateLogin:msgin");
+                                ConsoleIO.WriteLine("CNET: received system " + message + " in state Login");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        //msgin.displayStream("DBG:BEN:stateLogin:msgin");
+                        ConsoleIO.WriteLine("CNET: received normal in state Login");
+                    }
                 }
             }
 
@@ -228,7 +289,7 @@ namespace RCC
                 {
                     m_LoginAttempts = 0;
                     disconnect(); // will send disconnection message
-                    throw new Exception("CNET: Too many LOGIN attempts, connection problem");
+                    ConsoleIO.WriteLine("CNET: Too many LOGIN attempts, connection problem");
                     // exit now from loop, don't expect a new state
                 }
                 else
@@ -240,12 +301,200 @@ namespace RCC
             return false;
         }
 
+        private static bool stateSynchronize()
+        {
+            // if receives System PROBE
+            //    immediate state Probe
+            // else if receives Normal
+            //    immediate state Connected
+            // sends System ACK_SYNC
+
+            while (_Connection.dataAvailable()) // && _TotalMessages<5)
+
+            {
+                _DecodedHeader = false;
+                var msgin = new CBitMemStream(true);
+
+                if (buildStream(msgin) && decodeHeader(msgin))
+                {
+                    if (_SystemMode)
+                    {
+                        byte message = 0;
+                        msgin.serial(ref message);
+
+                        switch (message)
+                        {
+                            case SYSTEM_PROBE_CODE:
+                                // receive probe, decode probe and state probe
+                                _ConnectionState = ConnectionState.Probe;
+                                //nldebug("CNET[%p]: synchronize->probe", this);
+                                //_Changes.push_back(CChange(0, ProbeReceived)); TODO
+                                receiveSystemProbe(msgin);
+                                return true;
+
+                            case SYSTEM_STALLED_CODE:
+                                // receive stalled, decode stalled and state stalled
+                                _ConnectionState = ConnectionState.Stalled;
+                                //nldebug("CNET[%p]: synchronize->stalled", this);
+                                receiveSystemStalled(msgin);
+                                return true;
+
+                            case SYSTEM_SYNC_CODE:
+                                // receive sync, decode sync
+                                receiveSystemSync(msgin);
+                                break;
+
+                            case SYSTEM_SERVER_DOWN_CODE:
+                                disconnect(); // will send disconnection message
+                                ConsoleIO.WriteLine("BACK-END DOWN");
+                                return false; // exit now from loop, don't expect a new state
+
+                            default:
+                                ConsoleIO.WriteLine("CNET: received system " + message + " in state Synchronize");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        _ConnectionState = ConnectionState.Connected;
+                        //nlwarning("CNET[%p]: synchronize->connected", this);
+                        //_Changes.push_back(CChange(0, ConnectionReady)); TODO
+                        //_ImpulseDecoder.reset();
+                        receiveNormalMessage(msgin);
+                        return true;
+                    }
+                }
+            }
+
+            // send ack sync if received sync or last sync timed out
+            if (_UpdateTime - _LatestSyncTime > 300)
+                sendSystemAckSync();
+
+            return false;
+        }
+
+        private static void receiveNormalMessage(CBitMemStream msgin)
+        {
+            ConsoleIO.WriteLine("CNET: received normal message Packet=" + _LastReceivedNumber + " Ack=" + _LastReceivedAck);
+
+            var actions = new List<CAction>();
+            CImpulseDecoder.decode(msgin, _CurrentReceivedNumber, _LastReceivedAck, _CurrentSendNumber, actions);
+
+            ++_NormalPacketsReceived;
+
+            // we can now remove all old action that are acked
+            //while (!_Actions.empty() && _Actions.front().FirstPacket != 0 && _Actions.front().FirstPacket <= _LastReceivedAck)
+            //{
+            //    // warning, CActionBlock automatically remove() actions when deleted
+            //    _Actions.pop_front();
+            //}
+
+            _CurrentServerTick = _CurrentReceivedNumber * 2 + _Synchronize;
+
+            // TODO: PacketStamps stuff
+
+            // Decode the actions received in the impulsions
+            for (int i = 0; i < actions.Count; i++)
+            {
+                switch (actions[i].Code)
+                {
+                    case TActionCode.ACTION_DISCONNECTION_CODE:
+                        {
+                            // Self disconnection
+                            ConsoleIO.WriteLine("You were disconnected by the server");
+                            disconnect(); // will send disconnection message
+                            // TODO LoginSM.pushEvent(CLoginStateMachine::ev_conn_dropped);
+                        }
+                        break;
+                    case TActionCode.ACTION_GENERIC_CODE:
+                        {
+                            //genericAction((CActionGeneric*)actions[i]);
+                        }
+                        break;
+                    case TActionCode.ACTION_GENERIC_MULTI_PART_CODE:
+                        {
+                            //genericAction((CActionGenericMultiPart*)actions[i]);
+                        }
+                        break;
+                    case TActionCode.ACTION_DUMMY_CODE:
+                        {
+                            //CActionDummy* dummy = ((CActionDummy*)actions[i]);
+                            ConsoleIO.WriteLine("CNET Received Dummy" + actions[i]);
+                            // Nothing to do
+                        }
+                        break;
+                }
+
+                CActionFactory.remove(actions[i]);
+            }
+
+            // Decode the visual properties
+            // TODO decodeVisualProperties(msgin);
+
+            _LastReceivedNormalTime = _UpdateTime;
+        }
+
+        private static bool stateConnected()
+        {
+            return false;
+        }
+
+        private static bool stateProbe()
+        {
+            return false;
+        }
+
+        private static bool stateStalled()
+        {
+            return false;
+        }
+
+        private static bool stateQuit()
+        {
+            return false;
+        }
+
+        private static void receiveSystemProbe(CBitMemStream msgin)
+        {
+            // TODO receiveSystemProbe
+        }
+
+        private static void receiveSystemStalled(CBitMemStream msgin)
+        {
+            // TODO receiveSystemStalled
+        }
+
+        private static void receiveSystemSync(CBitMemStream msgin)
+        {
+            _LatestSyncTime = _UpdateTime;
+            long stime = 0;
+            msgin.serial(ref _Synchronize);
+            msgin.serial(ref stime);
+            msgin.serial(ref _LatestSync);
+
+            Debug.Print("receiveSystemSync " + msgin);
+
+            _ReceivedSync = true;
+
+            _MsPerTick = 100;           // initial values
+
+            //#pragma message ("HALF_FREQUENCY_SENDING_TO_CLIENT")
+            _CurrentServerTick = _Synchronize + _CurrentReceivedNumber * 2;
+
+            _CurrentClientTick = (int)(_CurrentServerTick - (_LCT + _MsPerTick) / _MsPerTick);
+            _CurrentClientTime = _UpdateTime - (_LCT + _MsPerTick);
+
+            //nlinfo( "CNET[%p]: received SYNC %" NL_I64 "u %" NL_I64 "u - _CurrentReceivedNumber=%d _CurrentServerTick=%d", this, (uint64)_Synchronize, (uint64)stime, _CurrentReceivedNumber, _CurrentServerTick );
+
+            sendSystemAckSync();
+        }
+
         /// <summary>
         /// Receive available data and convert it to a bitmemstream
         /// </summary>
         private static bool buildStream(CBitMemStream msgin)
         {
-            var len = 65536;
+            const int len = 65536;
 
             if (_Connection.receive(ref _ReceiveBuffer, len, false))
             {
@@ -275,16 +524,99 @@ namespace RCC
 
             _LastReceivedTime = _UpdateTime;
 
-            msgin.Serial(ref _CurrentReceivedNumber);
-            msgin.Serial(ref _SystemMode);
+            msgin.serial(ref _CurrentReceivedNumber);
+            msgin.serial(ref _SystemMode);
 
+            if (_SystemMode)
+            {
+            }
+            else
+            {
+                msgin.serial(ref _LastReceivedAck);
+            }
+
+            Debug.Print("decodeHeader " + msgin);
+
+            _LastReceivedNumber = _CurrentReceivedNumber;
+            _DecodedHeader = true;
             return true;
         }
 
 
         private static void disconnect()
         {
-            _Connection.disconnect();
+            if (_ConnectionState == ConnectionState.NotInitialised ||
+                _ConnectionState == ConnectionState.NotConnected ||
+                _ConnectionState == ConnectionState.Authenticate ||
+                _ConnectionState == ConnectionState.Disconnect)
+            {
+                // ConsoleIO.WriteLine("Unable to disconnect(): not connected yet, or already disconnected.");
+                return;
+            }
+
+            sendSystemDisconnection();
+            _Connection.close();
+            _ConnectionState = ConnectionState.Disconnect;
+        }
+
+        private static void sendSystemAckSync()
+        {
+            CBitMemStream message = new CBitMemStream();
+
+            message.BuildSystemHeader(ref _CurrentSendNumber);
+
+            byte sync = SYSTEM_ACK_SYNC_CODE;
+            message.serial(ref sync);
+            message.serial(ref _LastReceivedNumber);
+            message.serial(ref _LastAckInLongAck);
+            // message.serial(_LongAckBitField); todo
+            for (var index = 0; index < _LongAckBitField.Length; index++)
+            {
+                var b = _LongAckBitField[index];
+                message.serial(ref b);
+            }
+            message.serial(ref _LatestSync);
+
+            Debug.WriteLine("sendSystemAckSync " + message);
+
+            var length = message.Length;
+            _Connection.send(message.Buffer(), length);
+            //sendUDP (&(_Connection), message.buffer(), length);
+            //statsSend(length); todo stats
+
+            _LatestSyncTime = _UpdateTime;
+        }
+
+        private static void sendSystemDisconnection()
+        {
+            var message = new CBitMemStream();
+
+            message.BuildSystemHeader(ref _CurrentSendNumber);
+
+            byte disconnection = SYSTEM_DISCONNECTION_CODE;
+
+            message.serial(ref disconnection);
+
+            int length = message.Length;
+
+            if (_Connection.connected())
+            {
+                try
+                {
+                    Debug.WriteLine("sendSystemDisconnection " + message);
+                    _Connection.send(message.Buffer(), length);
+                }
+                catch (Exception e)
+                {
+                    ConsoleIO.WriteLine("Socket exception: " + e.Message);
+                }
+            }
+
+            //sendUDP (&(_Connection), message.buffer(), length);
+            //statsSend(length); TODO stats
+
+            //updateBufferizedPackets(); TODO updateBufferizedPackets
+            //nlinfo("CNET[%p]: sent DISCONNECTION", this);
         }
 
         /// <summary>
@@ -297,19 +629,20 @@ namespace RCC
             message.BuildSystemHeader(ref _CurrentSendNumber);
 
             byte login = SYSTEM_LOGIN_CODE;
-            message.Serial(ref login);
+            message.serial(ref login);
 
             //message.serial(Cookie);
-            message.Serial(ref _UserAddr);
-            message.Serial(ref _UserKey);
-            message.Serial(ref _UserId);
+            message.serial(ref _UserAddr);
+            message.serial(ref _UserKey);
+            message.serial(ref _UserId);
 
-            // todo: find out why 2 xD
+            // todo: find out why 2 xD - string terminator?
             int unf = 2;
-            message.Serial(ref unf);
+            message.serial(ref unf);
 
-            message.Serial(ref ClientCfg.LanguageCode);
+            message.serial(ref ClientCfg.LanguageCode);
 
+            Debug.WriteLine("sendSystemLogin " + message);
             _Connection.send(message.Buffer(), message.Length);
         }
 
@@ -438,7 +771,7 @@ namespace RCC
                                   _UpdateTime - _LastReceivedNormalTime < 2000 &&
                                   _CurrentClientTick < _CurrentServerTick);
 
-            return (_TotalMessages != 0);
+            return _TotalMessages != 0;
         }
 
         public static int getCurrentServerTick()
@@ -476,13 +809,14 @@ namespace RCC
 
             var systemMode = false;
 
-            message.Serial(ref _CurrentSendNumber);
-            message.Serial(ref systemMode);
-            message.Serial(ref _LastReceivedNumber);
-            message.Serial(ref _AckBitMask);
+            message.serial(ref _CurrentSendNumber);
+            message.serial(ref systemMode);
+            message.serial(ref _LastReceivedNumber);
+            message.serial(ref _AckBitMask);
 
             // TODO: Implementation of CActionBlock code
 
+            //Debug.Print("sendNormalMessage " + message);
             _Connection.send(message.Buffer(), message.Length);
         }
 
@@ -508,34 +842,9 @@ namespace RCC
             }
         }
 
-        private static bool stateSynchronize()
-        {
-            return false;
-        }
-
-        private static bool stateConnected()
-        {
-            return false;
-        }
-
-        private static bool stateProbe()
-        {
-            return false;
-        }
-
-        private static bool stateStalled()
-        {
-            return false;
-        }
-
-        private static bool stateQuit()
-        {
-            return false;
-        }
-
         private static void updateSmoothServerTick()
         {
-
+            // TODO updateSmoothServerTick
         }
 
         internal class _MeanLoss
@@ -546,13 +855,6 @@ namespace RCC
         internal class _MeanPackets
         {
             public static int MeanPeriod { get; set; }
-        }
-
-        internal static class _LongAckBitField
-        {
-            public static void resize(int i)
-            {
-            }
         }
 
         internal static class _PropertyDecoder
@@ -569,5 +871,22 @@ namespace RCC
         {
             //_Actions.clear();
         }
+    }
+
+    public enum TActionCode
+    {
+        ACTION_POSITION_CODE = 0,
+        ACTION_GENERIC_CODE = 1,
+        ACTION_GENERIC_MULTI_PART_CODE = 2,
+        ACTION_SINT64 = 3,
+
+        ACTION_SYNC_CODE = 10,
+        ACTION_DISCONNECTION_CODE = 11,
+        ACTION_ASSOCIATION_CODE = 12,
+        ACTION_LOGIN_CODE = 13,
+
+        ACTION_TARGET_SLOT_CODE = 40,
+
+        ACTION_DUMMY_CODE = 99,
     }
 }
