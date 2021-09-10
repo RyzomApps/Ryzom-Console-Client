@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System;
+using System.Xml;
 using RCC.Msg;
 
 namespace RCC
@@ -28,6 +29,63 @@ namespace RCC
             _Root = new CNode(file.DocumentElement, 0);
 
             ConsoleIO.WriteLine("Loaded " + _Root.Nodes.Count + " messages nodes.");
+        }
+
+        /// <summary>
+        /// set callback
+        /// </summary>
+        public static bool setCallback(string msgName, Action<CBitMemStream> callback)
+        {
+            // check root
+            if (_Root == null)
+            {
+                ConsoleIO.WriteLine("Can't set callback for message '"+ msgName + "', Root not properly initialized.");
+                return false;
+            }
+
+            // search for msg node
+            CNode node = _Root.select(msgName);
+
+            // check node
+            if (node == null)
+            {
+                ConsoleIO.WriteLine("Can't set callback for message '"+ msgName+"', message not found.");
+                return false;
+            }
+
+            // set callback
+            node.Callback = callback;
+
+            return true;
+        }
+
+        // execute
+        public static void execute(CBitMemStream strm)
+        {
+            // check root
+            if (_Root == null)
+            {
+                ConsoleIO.WriteLine("Can't execute message , Root not properly initialized.");
+                return;
+            }
+
+            CNode node = _Root.select(strm);
+
+            // check node
+            if (node == null)
+            {
+                ConsoleIO.WriteLine("Can't execute stream, no valid sequence found");
+            }
+            // check callback
+            else if (node.Callback == null)
+            {
+                ConsoleIO.WriteLine("Can't execute msg '"+ node.Name + "', no callback set");
+            }
+            // execute callback
+            else
+            {
+                node.Callback(strm);
+            }
         }
     }
 }

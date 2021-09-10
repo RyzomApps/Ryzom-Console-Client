@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Xml;
 
 namespace RCC.Msg
@@ -11,7 +12,6 @@ namespace RCC.Msg
         public List<CNode> Nodes;
         public Dictionary<string, CNode> NodesByName;
 
-
         public uint Value;
         public string Name;
         public string Description;
@@ -20,7 +20,8 @@ namespace RCC.Msg
         public uint[] UserData = new uint[4];
         public List<CMessageField> Format = new List<CMessageField>(); // TMessageFormat
         public uint NbBits;
-        public object Callback; // TMsgHeaderCallback -> Event Structure
+        //public delegate void TMsgHeaderCallback(object[] arguments); // TMsgHeaderCallback -> Event Structure
+        public Action<CBitMemStream> Callback;
 
         /// <summary>
         /// Constructor
@@ -34,6 +35,7 @@ namespace RCC.Msg
             UseCycle = false;
             NbBits = 0;
             Callback = null;
+            //Callback = delegate { };
 
             UserData[0] = 0;
             UserData[1] = 0;
@@ -199,6 +201,56 @@ namespace RCC.Msg
 
             // compute number of bits from the number of children
             NbBits = (childValue == 0) ? 0 : getPowerOf2(childValue);
+        }
+
+        /// <summary>
+        /// select node using name, no other action performed
+        /// </summary>
+        internal CNode select(string msgName)
+        {
+            CNode node = this;
+
+            string[] subSplitted = msgName.Split(":");
+
+            for (int i = 0; i < subSplitted.Length; i++)
+            {
+                string sub = subSplitted[i];
+
+                if (!node.NodesByName.ContainsKey(sub))
+                    return null;
+
+                node = node.NodesByName[sub];
+
+                if (i == subSplitted.Length - 1)
+                    return node;
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// select node using bits stream
+        /// </summary>
+        public CNode select(CBitMemStream strm)
+        {
+            CNode node = this;
+
+            while (node != null && node.NbBits != 0)
+            {
+                int index = 0;
+                //strm.serialAndLog2(index, node.NbBits);
+
+                if (index >= node.Nodes.Count)
+                {
+                    ConsoleIO.WriteLine("Couldn't select node from stream, invalid index "+ index + " in parent '"+ node.Name + "'");
+                    return null;
+                }
+
+                node = node.Nodes[index];
+            }
+
+            return node;
         }
 
         /// <summary>
