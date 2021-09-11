@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Diagnostics;
-using System.Runtime.InteropServices.ComTypes;
+using System.Linq;
 
 namespace RCC
 {
@@ -38,7 +37,8 @@ namespace RCC
         {
             if (isReading())
             {
-                obj = ReadFromArray(8)[0];
+                var newBits = ReadFromArray(8);
+                obj = ConvertBoolArrayToByteArray(newBits)[0];
             }
             else
             {
@@ -51,7 +51,9 @@ namespace RCC
         {
             if (isReading())
             {
-                obj = BitConverter.ToInt32(ReadFromArray(32));
+                var newBits = ReadFromArray(32);
+                byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                obj = BitConverter.ToInt32(reversed);
             }
             else
             {
@@ -60,11 +62,18 @@ namespace RCC
             }
         }
 
-        public void serial(ref short obj)
+        public void serial(ref short obj, int nbits = 16)
         {
             if (isReading())
             {
-                obj = BitConverter.ToInt16(ReadFromArray(16));
+                var bits = ReadFromArray(nbits);
+
+                bool[] newBits = new bool[16];
+                Array.Copy(bits, 0, newBits, 16 - bits.Length, bits.Length);
+
+                var bytes = ConvertBoolArrayToByteArray(newBits);
+                byte[] reversed = bytes.Reverse().ToArray();
+                obj = BitConverter.ToInt16(reversed);
             }
             else
             {
@@ -77,7 +86,9 @@ namespace RCC
         {
             if (isReading())
             {
-                obj = BitConverter.ToInt64(ReadFromArray(64));
+                var newBits = ReadFromArray(64);
+                byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                obj = BitConverter.ToInt64(reversed);
             }
             else
             {
@@ -119,7 +130,7 @@ namespace RCC
         }
 
         /// <summary>
-        /// HELPER
+        /// HELPER since this is not c++
         /// </summary>
         public void memcpy(byte[] data)
         {
@@ -147,7 +158,7 @@ namespace RCC
             }
         }
 
-        private byte[] ReadFromArray(int length)
+        private bool[] ReadFromArray(int length)
         {
             bool[] newBits = new bool[length];
 
@@ -157,9 +168,7 @@ namespace RCC
                 _bitPos++;
             }
 
-            //Debug.WriteLine(ToString());
-
-            return ConvertBoolArrayToByteArray(newBits);
+            return newBits;
         }
 
         public byte[] Buffer()

@@ -75,7 +75,6 @@ namespace RCC
                 if (lines.Length != 2)
                     throw new InvalidOperationException($"Invalid server return, found {lines.Length} lines, want 2");
 
-
                 var parts = lines[0].Split('#');
 
                 if (parts.Length < 5)

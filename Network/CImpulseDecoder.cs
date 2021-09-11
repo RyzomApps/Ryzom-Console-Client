@@ -52,7 +52,7 @@ namespace RCC.Network
                     if (!checkOnce)
                     {
                         checkOnce = true;
-                        keep = (receivedAck >= lAck[channel]);
+                        keep = receivedAck >= lAck[channel];
                         if (keep)
                             lAck[channel] = nextSentPacket;
                     }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using RCC.NetworkAction;
 using RCC.Network;
-using RCC.NetworkAction;
 
 namespace RCC
 {
@@ -96,6 +95,7 @@ namespace RCC
         private static Action<CBitMemStream, int, object> _ImpulseCallback;
         private static object _ImpulseArg;
         private static object _DataBase;
+        private static bool _Registered;
 
         public static void reset()
         {
@@ -186,6 +186,21 @@ namespace RCC
                 _ConnectionState != ConnectionState.Disconnect)
             {
                 throw new Exception("Unable to init(): connection not properly closed yet.");
+            }
+
+            if (!_Registered)
+            {
+                //CActionFactory.registerAction(TActionCode.ACTION_POSITION_CODE, CActionPosition);
+                //CActionFactory.registerAction(TActionCode.ACTION_SYNC_CODE, CActionSync);
+                //CActionFactory.registerAction(TActionCode.ACTION_DISCONNECTION_CODE, CActionDisconnection);
+                //CActionFactory.registerAction(TActionCode.ACTION_ASSOCIATION_CODE, CActionAssociation);
+                //CActionFactory.registerAction(TActionCode.ACTION_DUMMY_CODE, CActionDummy);
+                //CActionFactory.registerAction(TActionCode.ACTION_LOGIN_CODE, CActionLogin);
+                //CActionFactory.registerAction(TActionCode.ACTION_TARGET_SLOT_CODE, CActionTargetSlot);
+                CActionFactory.registerAction(TActionCode.ACTION_GENERIC_CODE, typeof(CActionGeneric));
+                CActionFactory.registerAction(TActionCode.ACTION_GENERIC_MULTI_PART_CODE, typeof(CActionGenericMultiPart));
+                //CActionFactory.registerAction(TActionCode.ACTION_SINT64, CActionSint64);
+                _Registered = true;
             }
 
             initCookie(cookie, addr);
@@ -897,22 +912,5 @@ namespace RCC
         {
             //_Actions.clear();
         }
-    }
-
-    public enum TActionCode
-    {
-        ACTION_POSITION_CODE = 0,
-        ACTION_GENERIC_CODE = 1,
-        ACTION_GENERIC_MULTI_PART_CODE = 2,
-        ACTION_SINT64 = 3,
-
-        ACTION_SYNC_CODE = 10,
-        ACTION_DISCONNECTION_CODE = 11,
-        ACTION_ASSOCIATION_CODE = 12,
-        ACTION_LOGIN_CODE = 13,
-
-        ACTION_TARGET_SLOT_CODE = 40,
-
-        ACTION_DUMMY_CODE = 99,
     }
 }

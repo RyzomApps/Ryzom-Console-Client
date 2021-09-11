@@ -14,10 +14,6 @@ namespace RCC
 
             udpMain = new UdpClient();
             udpMain.Connect(host, port);
-
-            //udpMain.BeginReceive(Recv, udpMain);
-
-            //udpMain.Receive();
         }
 
         public void ParseHostString(string hostString, out string hostName, out int port)
@@ -35,43 +31,6 @@ namespace RCC
             int.TryParse(hostParts[1], out port);
         }
 
-        private void Recv(IAsyncResult ar)
-        {
-            var remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            var client = (UdpClient)ar.AsyncState;
-
-            if (client == null) return;
-
-            var received = client.EndReceive(ar, ref remoteIpEndPoint);
-
-            // TODO: interpret result
-            // decode header
-            // msgin.serial(_CurrentReceivedNumber);
-            // msgin.serial(_SystemMode);
-
-
-            // msgin.serial(message);
-
-            // SYSTEM_SYNC_CODE=1 or others
-            // receiveSystemSync
-
-            // SYSTEM_STALLED_CODE
-            // receiveSystemStalled
-
-            // SYSTEM_PROBE_CODE
-            // _Changes.push_back(CChange(0, ProbeReceived));
-            // receiveSystemProbe
-
-            // SYSTEM_SERVER_DOWN_CODE
-
-            foreach (var b in received)
-            {
-                Console.Write(Convert.ToString(b, 2).PadLeft(8, '0') + " ");
-            }
-
-            //Console.WriteLine(Encoding.UTF8.GetString(received));
-        }
-
         public bool connected()
         {
             return udpMain.Client.Connected;
@@ -87,7 +46,7 @@ namespace RCC
             return udpMain.Client.Available > 0;
         }
 
-        public bool receive(ref Byte[] _ReceiveBuffer, int len, bool throw_exception)
+        public bool receive(ref byte[] _ReceiveBuffer, int len, bool throw_exception)
         {
             var remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 

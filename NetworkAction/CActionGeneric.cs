@@ -6,7 +6,8 @@ namespace RCC.NetworkAction
     {
         internal CBitMemStream get()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return null;
         }
     }
 }
