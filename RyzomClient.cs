@@ -185,10 +185,10 @@ namespace RCC
 
                 // TODO callback and database set impl
                 // Set the impulse callback.
-                //NetworkConnection.setImpulseCallback(impulseCallBack);
+                NetworkConnection.setImpulseCallback(NetworkManager.impulseCallBack);
 
                 // Set the database.
-                //NetworkConnection.setDataBase(IngameDbMngr.getNodePtr());
+                // TODO NetworkConnection.setDataBase(IngameDbMngr.getNodePtr());
 
                 // init the string manager cache.
                 //STRING_MANAGER::CStringManagerClient::instance()->initCache(UsedFSAddr, ClientCfg.LanguageCode);

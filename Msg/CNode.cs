@@ -243,7 +243,7 @@ namespace RCC.Msg
 
                 if (index >= node.Nodes.Count)
                 {
-                    ConsoleIO.WriteLine("Couldn't select node from stream, invalid index "+ index + " in parent '"+ node.Name + "'");
+                    ConsoleIO.WriteLine("Couldn't select node from stream, invalid index " + index + " in parent '" + node.Name + "'");
                     return null;
                 }
 
@@ -286,17 +286,4 @@ namespace RCC.Msg
             return ret;
         }
     }
-
-    /// A message field
-    internal class CMessageField
-    {
-        public CMessageField(TFieldType type, byte bitSize = 0)
-        {
-            Type = type;
-            BitSize = bitSize;
-        }
-
-        TFieldType Type;
-        byte BitSize;
-    };
 }

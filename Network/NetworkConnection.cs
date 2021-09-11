@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using RCC.NetworkAction;
 using RCC.Network;
+using RCC.NetworkAction;
 
 namespace RCC
 {
-    class NetworkConnection
+    partial class NetworkConnection
     {
         private static int _UserAddr;
         private static int _UserKey;
@@ -91,8 +93,9 @@ namespace RCC
         private static long _CurrentClientTime;
 
         internal static byte[] _LongAckBitField = new byte[1024 / 8];
-
-
+        private static Action<CBitMemStream, int, object> _ImpulseCallback;
+        private static object _ImpulseArg;
+        private static object _DataBase;
 
         public static void reset()
         {
@@ -212,6 +215,17 @@ namespace RCC
                 $"Network initialisation with front end '{_FrontendAddress}' and cookie {cookie}");
 
             _ConnectionState = ConnectionState.NotConnected;
+        }
+
+        public static void setImpulseCallback(Action<CBitMemStream, int, object> impulseCallBack)
+        {
+            _ImpulseCallback = impulseCallBack;
+            _ImpulseArg = null;
+        }
+
+        public static void setDataBase(object database)
+        {
+            _DataBase = database;
         }
 
         private static bool stateLogin()
@@ -408,12 +422,12 @@ namespace RCC
                         break;
                     case TActionCode.ACTION_GENERIC_CODE:
                         {
-                            //genericAction((CActionGeneric*)actions[i]);
+                            genericAction((CActionGeneric)actions[i]);
                         }
                         break;
                     case TActionCode.ACTION_GENERIC_MULTI_PART_CODE:
                         {
-                            //genericAction((CActionGenericMultiPart*)actions[i]);
+                            //genericAction((CActionGenericMultiPart)actions[i]); // TODO: why this cast?
                         }
                         break;
                     case TActionCode.ACTION_DUMMY_CODE:
@@ -432,6 +446,18 @@ namespace RCC
             // TODO decodeVisualProperties(msgin);
 
             _LastReceivedNormalTime = _UpdateTime;
+        }
+
+        static void genericAction(CActionGeneric ag)
+        {
+            // manage a generic action
+            CBitMemStream bms = ag.get();
+
+            //nldebug("CNET: Calling impulsion callback (size %u) :'%s'", this, bms.length(), toHexaString(bms.bufferAsVector()).c_str());
+            //nldebug("CNET[%p]: Calling impulsion callback (size %u)", this, bms.length());
+
+            if (_ImpulseCallback != null)
+                _ImpulseCallback.Invoke(bms, _LastReceivedNumber, _ImpulseArg);
         }
 
         private static bool stateConnected()

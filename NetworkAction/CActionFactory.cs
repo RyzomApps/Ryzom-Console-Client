@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RCC.Network
+namespace RCC.NetworkAction
 {
     public static class CActionFactory
     {

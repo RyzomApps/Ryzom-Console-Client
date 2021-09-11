@@ -8,7 +8,9 @@ namespace RCC
     {
         public static CNode _Root;
 
-        // init
+        /// <summary>
+        /// init
+        /// </summary>
         public static void init(string filename)
         {
             // open xml file
@@ -21,7 +23,7 @@ namespace RCC
             }
             catch
             {
-                ConsoleIO.WriteLine("Cannot open xml file '"+ filename + "', unable to initialize generic messages");
+                ConsoleIO.WriteLine("Cannot open xml file '" + filename + "', unable to initialize generic messages");
                 return;
             }
 
@@ -39,7 +41,7 @@ namespace RCC
             // check root
             if (_Root == null)
             {
-                ConsoleIO.WriteLine("Can't set callback for message '"+ msgName + "', Root not properly initialized.");
+                ConsoleIO.WriteLine("Can't set callback for message '" + msgName + "', Root not properly initialized.");
                 return false;
             }
 
@@ -49,7 +51,7 @@ namespace RCC
             // check node
             if (node == null)
             {
-                ConsoleIO.WriteLine("Can't set callback for message '"+ msgName+"', message not found.");
+                ConsoleIO.WriteLine("Can't set callback for message '" + msgName + "', message not found.");
                 return false;
             }
 
@@ -59,7 +61,9 @@ namespace RCC
             return true;
         }
 
-        // execute
+        /// <summary>
+        /// execute
+        /// </summary>
         public static void execute(CBitMemStream strm)
         {
             // check root
@@ -79,7 +83,7 @@ namespace RCC
             // check callback
             else if (node.Callback == null)
             {
-                ConsoleIO.WriteLine("Can't execute msg '"+ node.Name + "', no callback set");
+                ConsoleIO.WriteLine("Can't execute msg '" + node.Name + "', no callback set");
             }
             // execute callback
             else

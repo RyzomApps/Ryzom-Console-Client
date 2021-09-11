@@ -1,4 +1,4 @@
-﻿namespace RCC.Network
+﻿namespace RCC.NetworkAction
 {
     public class CAction
     {

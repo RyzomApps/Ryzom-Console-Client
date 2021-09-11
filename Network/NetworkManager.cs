@@ -63,6 +63,15 @@ namespace RCC
         }
 
         /// <summary>
+        /// impulseCallBack :
+        /// The impulse callback to receive all msg from the frontend.
+        /// </summary>
+        public static void impulseCallBack(CBitMemStream impulse, int packet, object arg)
+        {
+            GenericMsgHeaderMngr.execute(impulse);
+        }
+
+        /// <summary>
         /// initializeNetwork :
         /// </summary>
         public static void initializeNetwork()

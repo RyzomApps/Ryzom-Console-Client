@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RCC.NetworkAction;
+using System.Collections.Generic;
 using System.Text;
 
 namespace RCC.Network
