@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace RCC.NetworkAction
 {
@@ -6,6 +7,7 @@ namespace RCC.NetworkAction
     {
         internal CBitMemStream get()
         {
+            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             //throw new NotImplementedException();
             return null;
         }

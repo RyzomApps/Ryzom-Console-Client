@@ -239,7 +239,7 @@ namespace RCC.Msg
             while (node != null && node.NbBits != 0)
             {
                 int index = 0;
-                //strm.serialAndLog2(index, node.NbBits);
+                strm.serialAndLog2(ref index, node.NbBits);
 
                 if (index >= node.Nodes.Count)
                 {

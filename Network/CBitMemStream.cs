@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Linq;
 
 namespace RCC
@@ -217,6 +218,15 @@ namespace RCC
             }
 
             return ret;
+        }
+
+        internal void serialAndLog2(ref int index, uint nbBits)
+        {
+            Debug.Print("Selecting node " + index + " (" + nbBits + " bits)");
+
+            short value = -1;
+            serial(ref value, (int)nbBits);
+            index = value;
         }
     }
 }

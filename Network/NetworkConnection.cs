@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using RCC.NetworkAction;
 using RCC.Network;
+using System.Reflection;
 
 namespace RCC
 {
@@ -466,6 +467,7 @@ namespace RCC
         static void genericAction(CActionGeneric ag)
         {
             // manage a generic action
+            // TODO: get memory stream -> CImpulseDecoder.decode to action?
             CBitMemStream bms = ag.get();
 
             //nldebug("CNET: Calling impulsion callback (size %u) :'%s'", this, bms.length(), toHexaString(bms.bufferAsVector()).c_str());
@@ -477,31 +479,37 @@ namespace RCC
 
         private static bool stateConnected()
         {
+            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             return false;
         }
 
         private static bool stateProbe()
         {
+            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             return false;
         }
 
         private static bool stateStalled()
         {
+            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             return false;
         }
 
         private static bool stateQuit()
         {
+            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             return false;
         }
 
         private static void receiveSystemProbe(CBitMemStream msgin)
         {
+            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             // TODO receiveSystemProbe
         }
 
         private static void receiveSystemStalled(CBitMemStream msgin)
         {
+            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             // TODO receiveSystemStalled
         }
 
