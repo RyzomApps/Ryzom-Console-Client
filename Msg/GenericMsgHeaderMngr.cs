@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Xml;
-using RCC.Msg;
+using RCC.Helper;
+using RCC.Network;
 
-namespace RCC
+namespace RCC.Msg
 {
     internal static class GenericMsgHeaderMngr
     {

@@ -1,4 +1,4 @@
-﻿namespace RCC
+﻿namespace RCC.Network
 {
     /// The states of the connection to the server (if you change them, change ConnectionStateCStr)
     internal enum ConnectionState

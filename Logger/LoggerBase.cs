@@ -1,4 +1,6 @@
-﻿namespace RCC.Logger
+﻿using RCC.Helper;
+
+namespace RCC.Logger
 {
     /// <summary>
     /// Abstract class providing basic implementation of the ILogger interface

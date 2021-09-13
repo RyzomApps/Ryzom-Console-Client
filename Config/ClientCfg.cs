@@ -1,7 +1,8 @@
 ﻿using System.IO;
 using System.Text.RegularExpressions;
+using RCC.Helper;
 
-namespace RCC
+namespace RCC.Config
 {
     /// <summary>
     /// Contains main settings for Ryzom Console Client

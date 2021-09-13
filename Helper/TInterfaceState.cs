@@ -1,4 +1,4 @@
-﻿namespace RCC
+﻿namespace RCC.Helper
 {
     public enum TInterfaceState
     {

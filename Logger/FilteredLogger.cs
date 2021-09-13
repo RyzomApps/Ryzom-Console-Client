@@ -1,4 +1,6 @@
 ﻿using System.Text.RegularExpressions;
+using RCC.Config;
+using RCC.Helper;
 
 namespace RCC.Logger
 {

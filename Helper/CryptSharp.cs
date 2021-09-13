@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RCC
+namespace RCC.Helper
 {
     /// <summary>
     /// A performant .NET implementation of crypt(3) that leverages Span<T> type in order to hold and transform data.

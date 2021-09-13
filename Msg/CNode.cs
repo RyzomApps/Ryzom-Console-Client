@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
+using RCC.Helper;
+using RCC.Network;
 
 namespace RCC.Msg
 {

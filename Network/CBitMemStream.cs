@@ -3,7 +3,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 
-namespace RCC
+namespace RCC.Network
 {
     public class CBitMemStream
     {

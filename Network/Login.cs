@@ -2,6 +2,8 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using RCC.Config;
+using RCC.Helper;
 
 namespace RCC.Network
 {
@@ -57,59 +59,57 @@ namespace RCC.Network
                 responseString = responseString.Substring(first + 2);
             }
 
-            if (responseString[0] == 'H')
+            switch (responseString[0])
             {
-                throw new InvalidOperationException("missing response body (error code 65)");
-            }
+                case 'H':
+                    throw new InvalidOperationException("missing response body (error code 65)");
+                case '0':
+                    // server returns an error
+                    throw new InvalidOperationException($"server error: {responseString.Substring(2)}");
+                case '1':
+                {
+                    var lines = responseString.Split('\n');
 
-            if (responseString[0] == '0')
-            {
-                // server returns an error
-                throw new InvalidOperationException($"server error: {responseString.Substring(2)}");
-            }
+                    if (lines.Length != 2)
+                        throw new InvalidOperationException($"Invalid server return, found {lines.Length} lines, want 2");
 
-            if (responseString[0] == '1')
-            {
-                var lines = responseString.Split('\n');
+                    var parts = lines[0].Split('#');
 
-                if (lines.Length != 2)
-                    throw new InvalidOperationException($"Invalid server return, found {lines.Length} lines, want 2");
+                    if (parts.Length < 5)
+                        throw new InvalidOperationException("Invalid server return, missing cookie and/or Ring URLs");
 
-                var parts = lines[0].Split('#');
+                    // server returns ok, we have the cookie
 
-                if (parts.Length < 5)
-                    throw new InvalidOperationException("Invalid server return, missing cookie and/or Ring URLs");
+                    // store the cookie value and FS address for next page request
+                    var currentCookie = parts[1];
+                    var fsAddr = parts[2];
 
-                // server returns ok, we have the cookie
+                    // store the ring startup page
+                    var ringMainURL = parts[3];
+                    var farTpUrlBase = parts[4];
+                    var startStat = parts.Length >= 6 && parts[5] == "1";
 
-                // store the cookie value and FS address for next page request
-                var currentCookie = parts[1];
-                var fsAddr = parts[2];
+                    // parse the second line (contains the domain info)
+                    parts = lines[1].Split('#');
 
-                // store the ring startup page
-                var ringMainURL = parts[3];
-                var farTpUrlBase = parts[4];
-                var startStat = parts.Length >= 6 && parts[5] == "1";
+                    if (parts.Length < 3)
+                        throw new InvalidOperationException("Invalid server return, missing patch URLs");
 
-                // parse the second line (contains the domain info)
-                parts = lines[1].Split('#');
+                    var r2ServerVersion = parts[0];
+                    var r2BackupPatchURL = parts[1];
 
-                if (parts.Length < 3)
-                    throw new InvalidOperationException("Invalid server return, missing patch URLs");
+                    var r2PatchUrLs = parts[2].Split(' ');
 
-                var r2ServerVersion = parts[0];
-                var r2BackupPatchURL = parts[1];
-
-                var r2PatchUrLs = parts[2].Split(' ');
-
-                client.Cookie = currentCookie;
-                client.FsAddr = fsAddr;
-                client.RingMainURL = ringMainURL;
-                client.FarTpUrlBase = farTpUrlBase;
-                client.StartStat = startStat;
-                client.R2ServerVersion = r2ServerVersion;
-                client.R2BackupPatchURL = r2BackupPatchURL;
-                client.R2PatchUrLs = r2PatchUrLs;
+                    client.Cookie = currentCookie;
+                    client.FsAddr = fsAddr;
+                    client.RingMainURL = ringMainURL;
+                    client.FarTpUrlBase = farTpUrlBase;
+                    client.StartStat = startStat;
+                    client.R2ServerVersion = r2ServerVersion;
+                    client.R2BackupPatchURL = r2BackupPatchURL;
+                    client.R2PatchUrLs = r2PatchUrLs;
+                    break;
+                }
             }
 
             return responseString;
