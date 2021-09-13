@@ -84,7 +84,7 @@ namespace RCC.Msg
             // check callback
             else if (node.Callback == null)
             {
-                ConsoleIO.WriteLine("Can't execute msg '" + node.Name + "', no callback set");
+                ConsoleIO.WriteLineFormatted("§cCan't execute msg '" + node.Name + "', no callback set");
             }
             // execute callback
             else

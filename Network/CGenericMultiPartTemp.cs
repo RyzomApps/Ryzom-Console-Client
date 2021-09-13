@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using RCC.Helper;
 using RCC.NetworkAction;
 
@@ -39,8 +41,8 @@ namespace RCC.Network
                 }
             }
 
-            //nlassert(NbBlock == agmp.NbBlock);
-            //nlassert(NbBlock > agmp.Part);
+            Debug.Assert(NbBlock == agmp.NbBlock);
+            Debug.Assert(NbBlock > agmp.Part);
 
             // check if the block was already received
             if (BlockReceived[agmp.Part])
@@ -49,11 +51,11 @@ namespace RCC.Network
                 return;
             }
 
-            Temp[agmp.Part] = agmp.PartCont;
+            Temp[agmp.Part] = new List<byte>(agmp.PartCont);
             BlockReceived[agmp.Part] = true;
 
             NbCurrentBlock++;
-            TempSize += (int)agmp.PartCont.Count;
+            TempSize += (int)agmp.PartCont.Length;
 
             if (NbCurrentBlock == NbBlock)
             {
@@ -61,25 +63,33 @@ namespace RCC.Network
 
                 //nldebug("CLMPNET[%p]: Received a TOTAL generic action MP size: number %d nbblock %d", this,  agmp.Number, NbBlock);
 
-                var bms = new CBitMemStream(true);
+                // TODO: real size instead of 255
+                var bms = new CBitMemStream(false);
+                //bms.resetBufPos();
 
                 // TODO: build that stream from the parts
                 //byte ptr = bms.bufferToFill(TempSize);
                 //
-                //for (uint i = 0; i < Temp.size(); i++)
-                //{
-                //    memcpy(ptr, &(Temp[i][0]), Temp[i].size());
-                //    ptr += Temp[i].size();
-                //}
+                for (int i = 0; i < Temp.Count; i++)
+                {
+                    //    memcpy(ptr, &(Temp[i][0]), Temp[i].size());
+                    //    ptr += Temp[i].size();
+                    byte[] arr = Temp[i].ToArray(); // bdh: LOL
+
+                    //bms.resetBufPos();
+                    bms.serial(ref arr);
+                }
+
+                bms.invert();
 
                 NbBlock = int.MaxValue; //0xFFFFFFFF;
 
                 //nldebug("CLMPNET[%p]: Received a generic action size %d", this, bms.length());
                 // todo interface api, call a user callback
 
-                if (NetworkConnection._ImpulseCallback != null)
-                    NetworkConnection._ImpulseCallback(bms, NetworkConnection._LastReceivedNumber, NetworkConnection._ImpulseArg);
+                Debug.Print(bms.ToString());
 
+                NetworkConnection._ImpulseCallback?.Invoke(bms, NetworkConnection._LastReceivedNumber, NetworkConnection._ImpulseArg);
             }
         }
     }

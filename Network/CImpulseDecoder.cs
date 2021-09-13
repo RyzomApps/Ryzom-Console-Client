@@ -60,6 +60,11 @@ namespace RCC.Network
                     ++num;
                     var action = CActionFactory.unpack(inbox, false);
 
+                    if (action == null)
+                    {
+                        continue;
+                    }
+
                     if (keep)
                     {
                         actions.Add(action);

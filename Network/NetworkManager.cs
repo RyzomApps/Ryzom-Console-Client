@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using RCC.Helper;
 using RCC.Msg;
@@ -232,517 +234,621 @@ namespace RCC.Network
             GenericMsgHeaderMngr.setCallback("NPC_ICON:SET_TIMER", impulseSetNpcIconTimer);
         }
 
-        private static void impulseSetNpcIconTimer(CBitMemStream obj)
+        private static void impulseSetNpcIconTimer(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseServerEventForMissionAvailability(CBitMemStream obj)
+        private static void impulseServerEventForMissionAvailability(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseSetNpcIconDesc(CBitMemStream obj)
+        private static void impulseSetNpcIconDesc(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDssDown(CBitMemStream obj)
+        private static void impulseDssDown(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseSetSeason(CBitMemStream obj)
+        private static void impulseSetSeason(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseCombatFlyingText(CBitMemStream obj)
+        private static void impulseCombatFlyingText(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseCombatFlyingTextItemSpecialEffectProc(CBitMemStream obj)
+        private static void impulseCombatFlyingTextItemSpecialEffectProc(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseCombatFlyingHpDelta(CBitMemStream obj)
+        private static void impulseCombatFlyingHpDelta(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void cbImpulsionGatewayMessage(CBitMemStream obj)
+        private static void cbImpulsionGatewayMessage(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseOutpostDeclareWarAck(CBitMemStream obj)
+        private static void impulseOutpostDeclareWarAck(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseOutpostChooseSide(CBitMemStream obj)
+        private static void impulseOutpostChooseSide(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void cbImpulsionGatewayClose(CBitMemStream obj)
+        private static void cbImpulsionGatewayClose(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void cbImpulsionGatewayOpen(CBitMemStream obj)
+        private static void cbImpulsionGatewayOpen(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseCloseEnterCrZoneProposal(CBitMemStream obj)
+        private static void impulseCloseEnterCrZoneProposal(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseEnterCrZoneProposal(CBitMemStream obj)
+        private static void impulseEnterCrZoneProposal(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseUserPopup(CBitMemStream obj)
+        private static void impulseUserPopup(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseUserBars(CBitMemStream obj)
+        private static void impulseUserBars(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseEncyclopediaInit(CBitMemStream obj)
+        private static void impulseEncyclopediaInit(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseEncyclopediaUpdate(CBitMemStream obj)
+        private static void impulseEncyclopediaUpdate(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePVPFactionFactionWars(CBitMemStream obj)
+        private static void impulsePVPFactionFactionWars(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePVPFactionPopFactionWar(CBitMemStream obj)
+        private static void impulsePVPFactionPopFactionWar(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePVPFactionPushFactionWar(CBitMemStream obj)
+        private static void impulsePVPFactionPushFactionWar(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePVPChallengeCancelInvitation(CBitMemStream obj)
+        private static void impulsePVPChallengeCancelInvitation(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePVPChallengeInvitation(CBitMemStream obj)
+        private static void impulsePVPChallengeInvitation(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDuelCancelInvitation(CBitMemStream obj)
+        private static void impulseDuelCancelInvitation(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDuelInvitation(CBitMemStream obj)
+        private static void impulseDuelInvitation(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDeathRespawn(CBitMemStream obj)
+        private static void impulseDeathRespawn(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDeathRespawnPoint(CBitMemStream obj)
+        private static void impulseDeathRespawnPoint(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseItemCloseRoomInventory(CBitMemStream obj)
+        private static void impulseItemCloseRoomInventory(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseItemOpenRoomInventory(CBitMemStream obj)
+        private static void impulseItemOpenRoomInventory(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseItemInfoRefreshVersion(CBitMemStream obj)
+        private static void impulseItemInfoRefreshVersion(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePrereqInfoSet(CBitMemStream obj)
+        private static void impulsePrereqInfoSet(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseItemInfoSet(CBitMemStream obj)
+        private static void impulseItemInfoSet(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePhraseAckExecuteNext(CBitMemStream obj)
+        private static void impulsePhraseAckExecuteNext(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePhraseAckExecuteCyclic(CBitMemStream obj)
+        private static void impulsePhraseAckExecuteCyclic(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePhraseConfirmBuy(CBitMemStream obj)
+        private static void impulsePhraseConfirmBuy(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePhraseDownLoad(CBitMemStream obj)
+        private static void impulsePhraseDownLoad(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseRemoteAdmin(CBitMemStream obj)
+        private static void impulseRemoteAdmin(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseCloseTempInv(CBitMemStream obj)
+        private static void impulseCloseTempInv(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseGuildUseFemaleTitles(CBitMemStream obj)
+        private static void impulseGuildUseFemaleTitles(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseGuildUpdatePlayerTitle(CBitMemStream obj)
+        private static void impulseGuildUpdatePlayerTitle(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseGuildCloseInventory(CBitMemStream obj)
+        private static void impulseGuildCloseInventory(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseGuildOpenInventory(CBitMemStream obj)
+        private static void impulseGuildOpenInventory(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseGuildOpenGuildWindow(CBitMemStream obj)
+        private static void impulseGuildOpenGuildWindow(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseGuildAbortCreation(CBitMemStream obj)
+        private static void impulseGuildAbortCreation(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseGuildLeaveAscensor(CBitMemStream obj)
+        private static void impulseGuildLeaveAscensor(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseGuildAscensor(CBitMemStream obj)
+        private static void impulseGuildAscensor(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseGuildJoinProposal(CBitMemStream obj)
+        private static void impulseGuildJoinProposal(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseJournalRemoveCompass(CBitMemStream obj)
+        private static void impulseJournalRemoveCompass(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseJournalAddCompass(CBitMemStream obj)
+        private static void impulseJournalAddCompass(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseJournalUpdateCompletedMissions(CBitMemStream obj)
+        private static void impulseJournalUpdateCompletedMissions(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseJournalInitCompletedMissions(CBitMemStream obj)
+        private static void impulseJournalInitCompletedMissions(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseBotChatForceEnd(CBitMemStream obj)
+        private static void impulseBotChatForceEnd(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseReloadCache(CBitMemStream obj)
+        /// <summary>
+        /// reload the string cache
+        /// </summary>
+        private static void impulseReloadCache(CBitMemStream impulse)
         {
-            ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+            int timestamp = 0;
+            impulse.serial(ref timestamp);
+
+            //if (PermanentlyBanned) return; <- haha
+            //CStringManagerClient.loadCache(timestamp);
+
+            // todo: CStringManagerClient.loadCache(timestamp)
+
+            ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name + " with timestamp " + timestamp);
         }
 
-        private static void impulseStringResp(CBitMemStream obj)
+        private static void impulseStringResp(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePhraseSend(CBitMemStream obj)
+        private static void impulsePhraseSend(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseCounter(CBitMemStream obj)
+        private static void impulseCounter(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseWhere(CBitMemStream obj)
+        private static void impulseWhere(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseMountAbort(CBitMemStream obj)
+        private static void impulseMountAbort(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseExchangeCloseInvitation(CBitMemStream obj)
+        private static void impulseExchangeCloseInvitation(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseExchangeInvitation(CBitMemStream obj)
+        private static void impulseExchangeInvitation(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTeamContactRemove(CBitMemStream obj)
+        private static void impulseTeamContactRemove(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTeamContactStatus(CBitMemStream obj)
+        private static void impulseTeamContactStatus(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTeamContactCreate(CBitMemStream obj)
+        private static void impulseTeamContactCreate(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTeamContactInit(CBitMemStream obj)
+        private static void impulseTeamContactInit(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTeamShareClose(CBitMemStream obj)
+        private static void impulseTeamShareClose(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTeamShareInvalid(CBitMemStream obj)
+        private static void impulseTeamShareInvalid(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTeamShareOpen(CBitMemStream obj)
+        private static void impulseTeamShareOpen(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTeamInvitation(CBitMemStream obj)
+        private static void impulseTeamInvitation(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseBeginCast(CBitMemStream obj)
+        private static void impulseBeginCast(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDynChatClose(CBitMemStream obj)
+        private static void impulseDynChatClose(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDynChatOpen(CBitMemStream obj)
+        private static void impulseDynChatOpen(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseCombatEngageFailed(CBitMemStream obj)
+        private static void impulseCombatEngageFailed(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseCorrectPos(CBitMemStream obj)
+        private static void impulseCorrectPos(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTPWithSeason(CBitMemStream obj)
+        private static void impulseTPWithSeason(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTP(CBitMemStream obj)
+        private static void impulseTP(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTell2(CBitMemStream obj)
+        private static void impulseTell2(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void inpulseDynStringInChatGroup(CBitMemStream obj)
+        private static void inpulseDynStringInChatGroup(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDynString(CBitMemStream obj)
+        private static void impulseDynString(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseChat2(CBitMemStream obj)
+        private static void impulseChat2(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseFarTell(CBitMemStream obj)
+        private static void impulseFarTell(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseTell(CBitMemStream obj)
+        private static void impulseTell(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseChat(CBitMemStream obj)
+        private static void impulseChat(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePermanentUnban(CBitMemStream obj)
+        private static void impulsePermanentUnban(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulsePermanentBan(CBitMemStream obj)
+        private static void impulsePermanentBan(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseForumNotification(CBitMemStream obj)
+        private static void impulseForumNotification(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseMailNotification(CBitMemStream obj)
+        private static void impulseMailNotification(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseServerQuitAbort(CBitMemStream obj)
+        private static void impulseServerQuitAbort(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseServerQuitOk(CBitMemStream obj)
+        private static void impulseServerQuitOk(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseShardId(CBitMemStream obj)
+        private static void impulseShardId(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseCharNameValid(CBitMemStream obj)
+        private static void impulseCharNameValid(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseServerReady(CBitMemStream obj)
+        private static void impulseServerReady(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseFarTP(CBitMemStream obj)
+        private static void impulseFarTP(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseUserChar(CBitMemStream obj)
+        private static void impulseUserChar(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
+
+        static byte ServerPeopleActive = 255;
+        static byte ServerCareerActive = 255;
 
-        private static void impulseUserChars(CBitMemStream obj)
+        static List<CCharacterSummary> CharacterSummaries = new List<CCharacterSummary>();
+
+        private static void impulseUserChars(CBitMemStream impulse)
         {
-            ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+            // received USER_CHARS
+            ConsoleIO.WriteLine("impulseCallBack : Received CONNECTION:USER_CHARS");
+
+            impulse.serial(ref ServerPeopleActive);
+            impulse.serial(ref ServerCareerActive);
+            // read characters summary
+            CharacterSummaries.Clear();
+
+            // START WORKAROUND workaround for serialVector(T &cont) in stream.h TODO
+            int len = 0;
+            impulse.serial(ref len);
+
+            for (int i = 0; i < len; i++)
+            {
+                CCharacterSummary cs = new CCharacterSummary();
+                cs.serial(impulse);
+                ConsoleIO.WriteLineFormatted("§eFound character " + cs.Name + " in slot " + i);
+                CharacterSummaries.Add(cs);
+            }
+            // END WORKAROUND
+
+            //impulse.serialCont(CharacterSummaries);
+            //// read shard name summaries
+            //std::vector<string> shardNames;
+            //impulse.serialCont(shardNames);
+            //CShardNames::getInstance().loadShardNames(shardNames);
+            //// read privileges
+            //readPrivileges(impulse);
+            //impulse.serial(FreeTrial);
+            //FreeTrial = false;
+            //impulse.serialCont(Mainlands);
+            //userChar = true;
+
+            //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
+
+            // Create the message for the server to select the first character.
+            /*	CBitMemStream out;
+                if(GenericMsgHeaderMngr.pushNameToStream("CONNECTION:SELECT_CHAR", out))
+                {
+                    CSelectCharMsg	SelectCharMsg;
+                    SelectCharMsg.c = 0;	//TODO set here the character choosen by player
+                    out.serial( SelectCharMsg );
+                    NetMngr.push(out);
+                    NetMngr.send(NetMngr.getCurrentServerTick());
+                    // send CONNECTION:USER_CHARS
+                    nldebug("impulseCallBack : CONNECTION:SELECT_CHAR sent");
+                }
+                else
+                    nlwarning("impulseCallBack : unknown message name : 'CONNECTION:SELECT_CHAR'.");
+
+                noUserChar = true;
+                */
+
+            //if (!NewKeysCharNameValidated.empty())
+            //{
+            //    // if there's a new char for which a key set was wanted, create it now
+            //    for (uint k = 0; k < CharacterSummaries.size(); ++k)
+            //    {
+            //        if (toLower(CharacterSummaries[k].Name) == toLower(NewKeysCharNameValidated))
+            //        {
+            //            // first, stripes server name
+            //            copyKeySet(lookupSrcKeyFile(GameKeySet), "save/keys_" + buildPlayerNameForSaveFile(NewKeysCharNameValidated) + ".xml");
+            //            copyKeySet(lookupSrcKeyFile(RingEditorKeySet), "save/keys_r2ed_" + buildPlayerNameForSaveFile(NewKeysCharNameValidated) + ".xml");
+            //            break;
+            //        }
+            //    }
+            //}
+            //updatePatcherPriorityBasedOnCharacters();
         }
 
-        private static void impulseNoUserChar(CBitMemStream obj)
+        private static void impulseNoUserChar(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDatabaseResetBank(CBitMemStream obj)
+        private static void impulseDatabaseResetBank(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDatabaseInitBank(CBitMemStream obj)
+        private static void impulseDatabaseInitBank(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDatabaseUpdateBank(CBitMemStream obj)
+        private static void impulseDatabaseUpdateBank(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseInitInventory(CBitMemStream obj)
+        private static void impulseInitInventory(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseUpdateInventory(CBitMemStream obj)
+        private static void impulseUpdateInventory(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
-        private static void impulseDatabaseInitPlayer(CBitMemStream obj)
+        enum TCDBBank { CDBPlayer, CDBGuild, /* CDBContinent, */ CDBOutpost, /* CDBGlobal, */ NB_CDB_BANKS, INVALID_CDB_BANK };
+
+
+        private static void impulseDatabaseInitPlayer(CBitMemStream impulse)
         {
-            ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+            try
+            {
+                int p = impulse.Pos;
+
+                // get the egs tick of this change
+                int serverTick = 0;
+                impulse.serial(ref serverTick);
+
+                // read delta
+                // TODO: IngameDbMngr.readDelta + setInitPacketReceived
+                //IngameDbMngr.readDelta(serverTick, impulse, TCDBBank.CDBPlayer);
+                //IngameDbMngr.setInitPacketReceived();
+                ConsoleIO.WriteLine("DB_INIT:PLR done (" + (impulse.Pos - p) + " bytes)");
+            }
+            catch (Exception e)
+            {
+                //BOMB(NLMISC::toString("Problem while decoding a DB_INIT:PLR msg, skipped: %s", e.what()), return );
+                throw;
+            }
         }
 
-        private static void impulseDatabaseUpdatePlayer(CBitMemStream obj)
+        private static void impulseDatabaseUpdatePlayer(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }

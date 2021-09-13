@@ -128,7 +128,7 @@ namespace RCC.NetworkAction
                 headerBitSize = 1 + 2;
             else
             {
-                ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+                ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name + " called, but not implemented");
                 // TODO: fix that (sizeof(()action.Code) * 8) <- bdh: whats that about?
                 headerBitSize = 1 + /*(sizeof(()action.Code) * 8)*/ 8;
             }

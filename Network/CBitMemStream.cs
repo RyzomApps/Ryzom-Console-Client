@@ -63,6 +63,21 @@ namespace RCC.Network
             }
         }
 
+        public void serial(ref uint obj)
+        {
+            if (isReading())
+            {
+                var newBits = ReadFromArray(32);
+                byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                obj = BitConverter.ToUInt32(reversed);
+            }
+            else
+            {
+                var bytes = BitConverter.GetBytes(obj);
+                AddToArray(bytes);
+            }
+        }
+
         public void serial(ref short obj, int nbits = 16)
         {
             if (isReading())
@@ -98,6 +113,23 @@ namespace RCC.Network
             }
         }
 
+        public void serial(ref byte[] obj)
+        {
+            if (isReading())
+            {
+                var newBits = ReadFromArray(obj.Length * 8);
+                //obj = ConvertBoolArrayToByteArray(newBits);
+                obj = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                //obj = BitConverter.ToInt64(reversed);
+            }
+            else
+            {
+                //throw new NotImplementedException();
+                //var bytes = BitConverter.GetBytes(obj);
+                AddToArray(obj.Reverse().ToArray());
+            }
+        }
+
         public void serial(ref bool obj)
         {
             if (isReading())
@@ -116,18 +148,31 @@ namespace RCC.Network
 
         public void serial(ref string obj)
         {
-            // TODO use isReading
-
-            var str8 = new byte[obj.Length];
-
-            for (var index = 0; index < obj.ToCharArray().Length; index++)
+            if (isReading())
             {
-                var c = obj.ToCharArray()[index];
-                var bytes = BitConverter.GetBytes(c);
-                str8[index] = bytes[0];
-            }
+                int len = 0;
+                serial(ref len);
+                byte[] b = new byte[len * 2];
 
-            AddToArray(str8);
+                // Read the string.
+                for (uint i = 0; i != len * 2; ++i)
+                    serial(ref b[i]);
+
+                obj = System.Text.Encoding.UTF8.GetString(b).Replace("\0", "");
+            }
+            else
+            {
+                var str8 = new byte[obj.Length];
+
+                for (var index = 0; index < obj.ToCharArray().Length; index++)
+                {
+                    var c = obj.ToCharArray()[index];
+                    var bytes = BitConverter.GetBytes(c);
+                    str8[index] = bytes[0];
+                }
+
+                AddToArray(str8);
+            }
         }
 
         /// <summary>
@@ -286,7 +331,7 @@ namespace RCC.Network
                 // TODO: FIX THIS!!!
                 other._contentBits = (bool[])_contentBits.Clone();
                 other._bitPos = _bitPos;
-               
+
                 //other._inputStream = this._inputStream;
 
                 //other.AddToArray(tmp);
@@ -299,6 +344,53 @@ namespace RCC.Network
                     serial(ref v);
                 }
             }
+        }
+
+        public int serialVersion(uint currentVersion)
+        {
+            byte b = 0;
+            int v = 0;
+            int streamVersion;
+
+            // Open the node
+            //xmlPush("VERSION");
+
+            if (isReading())
+            {
+                serial(ref b);
+                if (b == 0xFF)
+                    serial(ref v);
+                else
+                    v = b;
+                streamVersion = v;
+
+                // Exception test.
+                //if (_ThrowOnOlder && streamVersion < currentVersion)
+                //	throw EOlderStream(*this);
+                //if (_ThrowOnNewer && streamVersion > currentVersion)
+                //	throw ENewerStream(*this);
+            }
+            else
+            {
+                throw new NotImplementedException();
+                //v = streamVersion = currentVersion;
+                //if (v >= 0xFF)
+                //{
+                //	b = 0xFF;
+                //	serial(b);
+                //	serial(v);
+                //}
+                //else
+                //{
+                //	b = (uint8)v;
+                //	serial(b);
+                //}
+            }
+
+            // Close the node
+            //xmlPop();
+
+            return streamVersion;
         }
     }
 }

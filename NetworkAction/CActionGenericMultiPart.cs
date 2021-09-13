@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using RCC.Network;
 
@@ -8,7 +9,7 @@ namespace RCC.NetworkAction
 {
     public class CActionGenericMultiPart : CActionImpulsion
     {
-        public List<byte> PartCont;
+        public byte[] PartCont;
         public byte Number;
         public short Part;
         public short NbBlock;
@@ -21,14 +22,20 @@ namespace RCC.NetworkAction
             message.serial(ref Part);
             message.serial(ref NbBlock);
 
-            var size = 0;
+            int size = 0;
             message.serial(ref size);
 
-            var part = new CBitMemStream(false);
+            PartCont = new byte[size];
 
-            part.serialBuffer(message, size);
+            message.serial(ref PartCont);
 
-            PartCont = new List<byte>(part.Buffer());
+            PartCont = PartCont.Reverse().ToArray();
+
+            //var part = new CBitMemStream(false);
+            //
+            //part.serialBuffer(message, size);
+            //
+            //PartCont = new List<byte>(part.Buffer());
         }
 
         /// <summary>
@@ -39,7 +46,7 @@ namespace RCC.NetworkAction
         public override int size()
         {
             int bytesize = 1 + 2 + 2 + 4;    // header
-            bytesize += PartCont.Count;
+            bytesize += PartCont.Length;
             return bytesize * 8;
         }   
     }

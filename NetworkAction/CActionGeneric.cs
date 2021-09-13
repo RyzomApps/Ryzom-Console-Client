@@ -1,7 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using RCC.Network;
 
 namespace RCC.NetworkAction
@@ -42,7 +40,7 @@ namespace RCC.NetworkAction
                 _Message.invert();
 
             // reset the flux to the start
-            _Message.resetBufPos();
+            //_Message.resetBufPos(); <- this would reset the stream, but we are using the stream instead of the buffer so this is not good
 
             return _Message;
         }

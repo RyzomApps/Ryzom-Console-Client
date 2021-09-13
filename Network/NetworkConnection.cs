@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Threading;
 using RCC.Config;
 using RCC.Helper;
@@ -106,6 +108,8 @@ namespace RCC.Network
 
         private static List<CGenericMultiPartTemp> _GenericMultiPartTemp = new List<CGenericMultiPartTemp>();
         private static List<CActionBlock> _Actions;
+        private static byte[] _MsgXmlMD5;
+        private static byte[] _DatabaseXmlMD5;
 
         public static void reset()
         {
@@ -242,8 +246,8 @@ namespace RCC.Network
             //_VisualPropertyTreeRoot->buildTree();
 
             // If the server run on window, those are the one to test
-            //_AltMsgXmlMD5 = NLMISC::getMD5("msg.xml");
-            //_AltDatabaseXmlMD5 = NLMISC::getMD5("database.xml");
+            _MsgXmlMD5 = Misc.getMD5("data\\msg.xml");              // Data = 0x00007ff771d43550
+            _DatabaseXmlMD5 = Misc.getMD5("data\\database.xml");    // Data = 0x00007ff771d43560
         }
 
         /// <summary>
@@ -660,7 +664,7 @@ namespace RCC.Network
                                 return false; // exit now from loop, don't expect a new state
                                 break;
                             default:
-                                ConsoleIO.WriteLine("CNET: received system "+ message+" in state Probe");
+                                ConsoleIO.WriteLine("CNET: received system " + message + " in state Probe");
                                 break;
                         }
                     }
@@ -686,13 +690,13 @@ namespace RCC.Network
 
         private static bool stateStalled()
         {
-            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+            ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             return false;
         }
 
         private static bool stateQuit()
         {
-            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+            ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             return false;
         }
 
@@ -713,6 +717,8 @@ namespace RCC.Network
             ConsoleIO.WriteLine("CNET: received STALLED");
         }
 
+        static bool alreadyWarned = false;
+
         private static void receiveSystemSync(CBitMemStream msgin)
         {
             _LatestSyncTime = _UpdateTime;
@@ -722,6 +728,24 @@ namespace RCC.Network
             msgin.serial(ref _LatestSync);
 
             Debug.Print("receiveSystemSync " + msgin);
+
+            //return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            byte[] checkMsgXml = new byte[16];
+            byte[] checkDatabaseXml = new byte[16];
+
+            msgin.serial(ref checkMsgXml);
+            msgin.serial(ref checkDatabaseXml);
+
+            var xmlInvalid = (checkMsgXml != _MsgXmlMD5 || checkDatabaseXml != _DatabaseXmlMD5);
+
+            if (xmlInvalid && !alreadyWarned)
+            {
+                alreadyWarned = true;
+                ConsoleIO.WriteLine("XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
+
+                ConsoleIO.WriteLine("msg.xml client:" + Misc.byteArrToString(_MsgXmlMD5) + " server:" + Misc.byteArrToString(checkMsgXml));
+                ConsoleIO.WriteLine("database.xml client:" + Misc.byteArrToString(_DatabaseXmlMD5) + " server:" + Misc.byteArrToString(checkDatabaseXml));
+            }
 
             _ReceivedSync = true;
 

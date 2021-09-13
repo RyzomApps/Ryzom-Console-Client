@@ -12,7 +12,7 @@ namespace RCC.NetworkAction
 
         virtual public void unpack(CBitMemStream message)
         {
-            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+            ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             //throw new System.NotImplementedException();
         }
 
@@ -20,7 +20,7 @@ namespace RCC.NetworkAction
 
         internal void reset()
         {
-            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+            ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             //throw new NotImplementedException();
         }
     }

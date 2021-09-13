@@ -33,7 +33,7 @@ namespace RCC
         /// </summary>
         private static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for Ryzom v{0} - By bierdosenhalter & Contributors", Version);
+            ConsoleIO.WriteLineFormatted($"§bConsole Client for Ryzom §av{Version}§b - By bierdosenhalter & Contributors");
 
             // Debug input ?
             if (args.Length == 1 && args[0] == "--keyboard-debug")

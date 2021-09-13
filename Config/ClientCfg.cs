@@ -25,7 +25,7 @@ namespace RCC.Config
         // ryzom_test -> server error: Your account needs a proper subscription to connect (3011)
         public static string ApplicationServer = "ryzom_live";
 
-        public static string Username = "betaem1";
+        public static string Username = "betaem2";
         public static string Password = "mozyr";
 
 
