@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using RCC.Network;
@@ -31,6 +32,7 @@ namespace RCC.NetworkAction
             message.serialBuffer(_Message, size);
 
             //message.serial (_Message);
+            Debug.WriteLine(_Message);
         }
 
         internal CBitMemStream get()

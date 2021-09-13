@@ -216,7 +216,7 @@ namespace RCC.Msg
 
             for (int i = 0; i < subSplitted.Length; i++)
             {
-                string sub = subSplitted[i];
+                var sub = subSplitted[i];
 
                 if (!node.NodesByName.ContainsKey(sub))
                     return null;

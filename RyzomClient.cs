@@ -220,7 +220,22 @@ namespace RCC
 
             // onlogin -> main menu page for r2mode -> ev_login_ok
             // string res = checkLogin(LoginLogin, LoginPassword, ClientApp, LoginCustomParameters);
-            Login.checkLogin(this, ClientCfg.Username, ClientCfg.Password, ClientCfg.ApplicationServer, "");
+            var succesful = false;
+
+            while (!succesful)
+            {
+                try
+                {
+                    Login.checkLogin(this, ClientCfg.Username, ClientCfg.Password, ClientCfg.ApplicationServer, "");
+                    succesful = true;
+                }
+                catch (Exception e)
+                {
+                    ConsoleIO.WriteLine(e.Message);
+                    ConsoleIO.WriteLine("Retrying in 5 seconds...");
+                    Thread.Sleep(5000);
+                }
+            }
 
             // ev_login_ok -> ... -> st_connect
             ConnectToShard();

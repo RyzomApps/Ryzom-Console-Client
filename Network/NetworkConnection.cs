@@ -430,7 +430,7 @@ namespace RCC.Network
 
         private static void receiveNormalMessage(CBitMemStream msgin)
         {
-            ConsoleIO.WriteLine("CNET: received normal message Packet=" + _LastReceivedNumber + " Ack=" + _LastReceivedAck);
+            //ConsoleIO.WriteLine("CNET: received normal message Packet=" + _LastReceivedNumber + " Ack=" + _LastReceivedAck);
 
             var actions = new List<CAction>();
             CImpulseDecoder.decode(msgin, _CurrentReceivedNumber, _LastReceivedAck, _CurrentSendNumber, actions);

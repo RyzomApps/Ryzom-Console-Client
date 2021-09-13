@@ -267,13 +267,29 @@ namespace RCC.Network
         {
             uint i;
             byte v = 0x00;
+
             if (isReading())
             {
-                for (i = 0; i != len; ++i)
-                {
-                    serial(ref v);
-                    other.Buffer()[i] = (byte)v;
-                }
+                //var tmp = new byte[len];
+
+                //for (i = 0; i != len; ++i)
+                //{
+                //    serial(ref v);
+                //    //other.memcpy(new byte[] {v});
+                //    //other.Buffer()[i] = (byte)v;
+                //
+                //    tmp[i] = v;
+                //}
+
+                //var reversed = tmp.Reverse().ToArray();
+
+                // TODO: FIX THIS!!!
+                other._contentBits = (bool[])_contentBits.Clone();
+                other._bitPos = _bitPos;
+               
+                //other._inputStream = this._inputStream;
+
+                //other.AddToArray(tmp);
             }
             else
             {
