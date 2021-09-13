@@ -7,11 +7,11 @@ namespace RCC
 {
     public class CBitMemStream
     {
-        private readonly bool _inputStream;
+        private bool _inputStream;
         private bool[] _contentBits;
         private int _bitPos;
 
-        private bool isReading() => _inputStream;
+        public bool isReading() => _inputStream;
 
         public int Pos => (int)(_bitPos / 8d);
 
@@ -227,6 +227,62 @@ namespace RCC
             short value = -1;
             serial(ref value, (int)nbBits);
             index = value;
+        }
+
+        /// <summary>
+        /// Transforms the message from input to output or from output to input
+        /// </summary>
+        public void invert()
+        {
+            _inputStream = !_inputStream;
+
+            if (isReading())
+            {
+                // Write->Read, the position is set at the beginning of the stream
+                _bitPos = 0;
+
+            }
+            else
+            {
+                // read->write: set the position on the last byte, not at the end as in CMemStream::invert()
+                _bitPos = _contentBits.Length - 1;
+            }
+
+            // Keep the same _FreeBits
+        }
+
+        /// <summary>
+        /// Set the position at the beginning. In output mode, the method ensures the buffer
+        /// contains at least one blank byte to write to.
+        /// 
+        /// If you are using the stream only in output mode, you can use this method as a faster version
+        /// of clear() *if you don't serialize pointers*.
+        /// </summary>
+        public void resetBufPos()
+        {
+            _bitPos = 0;
+        }
+
+        public void serialBuffer(CBitMemStream other, in int len)
+        {
+            uint i;
+            byte v = 0x00;
+            if (isReading())
+            {
+                for (i = 0; i != len; ++i)
+                {
+                    serial(ref v);
+                    other.Buffer()[i] = (byte)v;
+                }
+            }
+            else
+            {
+                for (i = 0; i != len; ++i)
+                {
+                    v = other.Buffer()[i];
+                    serial(ref v);
+                }
+            }
         }
     }
 }

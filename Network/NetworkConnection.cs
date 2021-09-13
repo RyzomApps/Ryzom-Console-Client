@@ -75,7 +75,7 @@ namespace RCC
 
         static UdpSimSock _Connection = new UdpSimSock();
 
-        private static object _UpdateTicks;
+        private static long _UpdateTicks;
         private static bool _ReceivedSync;
         private static int _NormalPacketsReceived;
         private static int _TotalMessages;
@@ -97,6 +97,8 @@ namespace RCC
         private static object _ImpulseArg;
         private static object _DataBase;
         private static bool _Registered;
+        private static long _MachineTimeAtTick;
+        private static long _MachineTicksAtTick;
 
         public static void reset()
         {
@@ -111,8 +113,8 @@ namespace RCC
             _InstantPing = 10000;
             _BestPing = 10000;
             _LCT = 100;
-            object _MachineTimeAtTick = ryzomGetLocalTime();
-            object _MachineTicksAtTick = ryzomGetPerformanceTime();
+            _MachineTimeAtTick = ryzomGetLocalTime();
+            _MachineTicksAtTick = ryzomGetPerformanceTime();
 
             _LastSentSync = 0;
             _LatestSync = 0;
@@ -479,7 +481,105 @@ namespace RCC
 
         private static bool stateConnected()
         {
-            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+            // if receives System PROBE
+            //    immediate state Probe
+            // else if receives Normal
+            //	   sends Normal data
+
+
+            // Prevent to increment the client time when the front-end does not respond
+            long previousTime = ryzomGetLocalTime();
+            long now = ryzomGetLocalTime();
+            long diff = now - previousTime;
+            previousTime = now;
+            if ((diff > 3000) && (!_Connection.dataAvailable()))
+            {
+                return false;
+            }
+
+            // update the current time;
+            while (_CurrentClientTime < (long)(_UpdateTime - _MsPerTick - _LCT) && _CurrentClientTick < _CurrentServerTick)
+            {
+                _CurrentClientTime += _MsPerTick;
+
+                _CurrentClientTick++;
+
+                _MachineTimeAtTick = _UpdateTime;
+                _MachineTicksAtTick = _UpdateTicks;
+            }
+
+            if (_CurrentClientTick >= _CurrentServerTick && !_Connection.dataAvailable())
+            {
+                return false;
+            }
+
+
+            while (_Connection.dataAvailable())// && _TotalMessages<5)
+            {
+                _DecodedHeader = false;
+                CBitMemStream msgin = new CBitMemStream(true);
+
+                if (buildStream(msgin) && decodeHeader(msgin))
+                {
+                    if (_SystemMode)
+                    {
+                        byte message = 0;
+                        msgin.serial(ref message);
+
+                        switch (message)
+                        {
+                            case SYSTEM_PROBE_CODE:
+                                // receive probe, and goto state probe
+                                _ConnectionState = ConnectionState.Probe;
+                                // reset client impulse & vars
+                                /*
+                                                    _ImpulseDecoder.reset();
+                                                    _PropertyDecoder.clear();
+                                                    _PacketStamps.clear();
+                                                    // clears sent actions
+                                                    while (!_Actions.empty())
+                                                        CActionFactory::getInstance()->remove(_Actions.front().Actions),
+                                                    _Actions.clear();
+                                                    _AckBitMask = 0;
+                                                    _LastReceivedNumber = 0xffffffff;
+                                */
+                                //nldebug("CNET[%p]: connected->probe", this);
+                                //_Changes.push_back(CChange(0, ProbeReceived)); TODO: Changes
+                                receiveSystemProbe(msgin);
+                                return true;
+
+                            case SYSTEM_SYNC_CODE:
+                                // receive stalled, decode stalled and state stalled
+                                _ConnectionState = ConnectionState.Synchronize;
+                                //nldebug("CNET[%p]: connected->synchronize", this);
+                                receiveSystemSync(msgin);
+                                return true;
+
+                            case SYSTEM_STALLED_CODE:
+                                // receive stalled, decode stalled and state stalled
+                                _ConnectionState = ConnectionState.Stalled;
+                                //nldebug("CNET[%p]: connected->stalled", this);
+                                receiveSystemStalled(msgin);
+                                return true;
+
+                            case SYSTEM_SERVER_DOWN_CODE:
+                                disconnect(); // will send disconnection message
+                                ConsoleIO.WriteLine("BACK-END DOWN");
+                                return false; // exit now from loop, don't expect a new state
+
+                            default:
+                                ConsoleIO.WriteLine("CNET: received system " + message + " in state Connected");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        receiveNormalMessage(msgin);
+                    }
+
+                }
+            }
+
             return false;
         }
 
