@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
@@ -6,24 +7,39 @@ namespace RCC.NetworkAction
 {
     public class CActionGenericMultiPart : CActionImpulsion
     {
-        byte[] PartCont;
-        byte Number;
-        int Part, NbBlock;
+        public List<byte> PartCont;
+        public byte Number;
+        public short Part;
+        public short NbBlock;
 
         public override void unpack(CBitMemStream message)
         {
+            Debug.Print(message.ToString());
+
             message.serial(ref Number);
             message.serial(ref Part);
             message.serial(ref NbBlock);
 
-            int size = 0;
+            var size = 0;
             message.serial(ref size);
 
-            CBitMemStream part = new CBitMemStream(false);
+            var part = new CBitMemStream(false);
 
-            message.serialBuffer(message, size);
+            part.serialBuffer(message, size);
 
-            PartCont = message.Buffer();
+            PartCont = new List<byte>(part.Buffer());
         }
+
+        /// <summary>
+        ///  Returns the size of this action when it will be send to the UDP connection:
+        /// the size is IN BITS, not in bytes(the actual size is this one plus the header size)
+        /// </summary>
+        /// <returns></returns>
+        public override int size()
+        {
+            int bytesize = 1 + 2 + 2 + 4;    // header
+            bytesize += PartCont.Count;
+            return bytesize * 8;
+        }   
     }
 }

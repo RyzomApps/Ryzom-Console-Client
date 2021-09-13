@@ -51,5 +51,13 @@ namespace RCC.NetworkAction
             if (!_Message.isReading())
                 _Message.invert();
         }
+
+        public override int size()
+        {
+            // If you change this size, please update IMPULSE_ACTION_HEADER_SIZE in the front-end
+
+            // in bits!!! (the message size and after the message itself)
+            return (4 + _Message.Length) * 8;
+        }
     }
 }

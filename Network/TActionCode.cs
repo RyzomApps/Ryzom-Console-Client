@@ -1,4 +1,4 @@
-﻿namespace RCC
+﻿namespace RCC.Network
 {
     public enum TActionCode
     {

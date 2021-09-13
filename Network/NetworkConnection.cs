@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using RCC.NetworkAction;
-using RCC.Network;
 using System.Reflection;
+using System.Threading;
+using RCC.NetworkAction;
 
-namespace RCC
+namespace RCC.Network
 {
-    partial class NetworkConnection
+    internal class NetworkConnection
     {
         private static int _UserAddr;
         private static int _UserKey;
@@ -15,7 +15,7 @@ namespace RCC
         private static int _Valid;
 
         private static int _CurrentSendNumber;
-        private static int _LastReceivedNumber;
+        public static int _LastReceivedNumber;
         private static long _LastReceivedTime;
         private static long _LastReceivedNormalTime;
         private static int _AckBitMask;
@@ -28,7 +28,7 @@ namespace RCC
         private static int _LatestSync;
         private static int _DummySend;
         private static int _LastAckInLongAck;
-        private static int _LastSentCycle;
+        public static int _LastSentCycle;
         private static int _TotalReceivedBytes;
         private static int _PartialReceivedBytes;
         private static int _TotalSentBytes;
@@ -93,12 +93,17 @@ namespace RCC
         private static long _CurrentClientTime;
 
         internal static byte[] _LongAckBitField = new byte[1024 / 8];
-        private static Action<CBitMemStream, int, object> _ImpulseCallback;
-        private static object _ImpulseArg;
+        public static Action<CBitMemStream, int, object> _ImpulseCallback;
+        public static object _ImpulseArg;
         private static object _DataBase;
         private static bool _Registered;
         private static long _MachineTimeAtTick;
         private static long _MachineTicksAtTick;
+        private static List<int> _LatestProbes = new List<int>();
+        private static int _LatestProbe;
+
+        private static List<CGenericMultiPartTemp> _GenericMultiPartTemp = new List<CGenericMultiPartTemp>();
+        private static List<CActionBlock> _Actions;
 
         public static void reset()
         {
@@ -141,6 +146,25 @@ namespace RCC
 
             _CurrentSmoothServerTick = 0;
             _SSTLastLocalTime = 0;
+        }
+
+        public static void reinit()
+        {
+            // TODO Reset data 
+            //_ImpulseDecoder.reset();
+            //if (_DataBase)
+            //    _DataBase->resetData(_CurrentServerTick, true);
+            _LongAckBitField = new byte[0];
+            //_PacketStamps.clear();
+            //_Actions.clear();
+            //_Changes.clear();
+            _GenericMultiPartTemp.Clear();
+            //_IdMap.clear();
+            reset();
+            //initTicks();
+
+            // Reuse the udp socket
+            _Connection = new UdpSimSock();
         }
 
         public static long ryzomGetPerformanceTime()
@@ -252,9 +276,6 @@ namespace RCC
             //    immediate state Synchronize
             // else
             //    sends System LoginCookie
-
-
-            // CASES AND GET DATA
 
             while (_Connection.dataAvailable())
             {
@@ -414,6 +435,8 @@ namespace RCC
 
             ++_NormalPacketsReceived;
 
+            // TODO: receiveNormalMessage _Actions stuff
+
             // we can now remove all old action that are acked
             //while (!_Actions.empty() && _Actions.front().FirstPacket != 0 && _Actions.front().FirstPacket <= _LastReceivedAck)
             //{
@@ -423,7 +446,7 @@ namespace RCC
 
             _CurrentServerTick = _CurrentReceivedNumber * 2 + _Synchronize;
 
-            // TODO: PacketStamps stuff
+            // TODO: receiveNormalMessage PacketStamps stuff
 
             // Decode the actions received in the impulsions
             for (int i = 0; i < actions.Count; i++)
@@ -445,7 +468,7 @@ namespace RCC
                         break;
                     case TActionCode.ACTION_GENERIC_MULTI_PART_CODE:
                         {
-                            //genericAction((CActionGenericMultiPart)actions[i]); // TODO: why this cast?
+                            genericAction((CActionGenericMultiPart)actions[i]);
                         }
                         break;
                     case TActionCode.ACTION_DUMMY_CODE:
@@ -479,6 +502,16 @@ namespace RCC
                 _ImpulseCallback.Invoke(bms, _LastReceivedNumber, _ImpulseArg);
         }
 
+        static void genericAction(CActionGenericMultiPart agmp)
+        {
+            while (_GenericMultiPartTemp.Count <= agmp.Number)
+            {
+                _GenericMultiPartTemp.Add(new CGenericMultiPartTemp());
+            }
+
+            _GenericMultiPartTemp[agmp.Number].set(agmp);
+        }
+
         private static bool stateConnected()
         {
             // if receives System PROBE
@@ -486,11 +519,10 @@ namespace RCC
             // else if receives Normal
             //	   sends Normal data
 
-
             // Prevent to increment the client time when the front-end does not respond
-            long previousTime = ryzomGetLocalTime();
-            long now = ryzomGetLocalTime();
-            long diff = now - previousTime;
+            var previousTime = ryzomGetLocalTime();
+            var now = ryzomGetLocalTime();
+            var diff = now - previousTime;
             previousTime = now;
             if ((diff > 3000) && (!_Connection.dataAvailable()))
             {
@@ -512,7 +544,6 @@ namespace RCC
             {
                 return false;
             }
-
 
             while (_Connection.dataAvailable())// && _TotalMessages<5)
             {
@@ -585,7 +616,69 @@ namespace RCC
 
         private static bool stateProbe()
         {
-            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+            // if receives System SYNC
+            //    immediate state SYNC
+            // else if receives System PROBE
+            //    decode PROBE
+            // sends System ACK_PROBE
+            while (_Connection.dataAvailable())// && _TotalMessages<5)
+            {
+                _DecodedHeader = false;
+                CBitMemStream msgin = new CBitMemStream(true);
+                if (buildStream(msgin) && decodeHeader(msgin))
+                {
+                    if (_SystemMode)
+                    {
+                        byte message = 0;
+                        msgin.serial(ref message);
+
+                        switch (message)
+                        {
+                            case SYSTEM_SYNC_CODE:
+                                // receive sync, decode sync and state synchronize
+                                _ConnectionState = ConnectionState.Synchronize;
+                                //nldebug("CNET[%p]: probe->synchronize", this);
+                                receiveSystemSync(msgin);
+                                return true;
+                                break;
+                            case SYSTEM_STALLED_CODE:
+                                // receive sync, decode sync and state synchronize
+                                _ConnectionState = ConnectionState.Stalled;
+                                //nldebug("CNET[%p]: probe->stalled", this);
+                                receiveSystemStalled(msgin);
+                                return true;
+                                break;
+                            case SYSTEM_PROBE_CODE:
+                                // receive sync, decode sync
+                                receiveSystemProbe(msgin);
+                                break;
+                            case SYSTEM_SERVER_DOWN_CODE:
+                                disconnect(); // will send disconnection message
+                                ConsoleIO.WriteLine("BACK-END DOWN");
+                                return false; // exit now from loop, don't expect a new state
+                                break;
+                            default:
+                                ConsoleIO.WriteLine("CNET: received system "+ message+" in state Probe");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        ConsoleIO.WriteLine("CNET: received normal in state Probe");
+                        _LatestProbeTime = _UpdateTime;
+                    }
+                }
+            }
+
+            // send ack sync if received sync or last sync timed out
+            if (_LatestProbes.Count != 0 || _UpdateTime - _LatestProbeTime > 300)
+            {
+                sendSystemAckProbe();
+                _LatestProbeTime = _UpdateTime;
+            }
+            else
+                Thread.Sleep(10);
+
             return false;
         }
 
@@ -601,16 +694,21 @@ namespace RCC
             return false;
         }
 
-        private static void receiveSystemProbe(CBitMemStream msgin)
+        /// <summary>
+        /// Probe state
+        /// </summary>
+        static void receiveSystemProbe(CBitMemStream msgin)
         {
-            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
-            // TODO receiveSystemProbe
+            _LatestProbeTime = _UpdateTime;
+            msgin.serial(ref _LatestProbe);
+            _LatestProbes.Add(_LatestProbe);
+
+            //nldebug("CNET[%p]: received PROBE %d", this, _LatestProbe);
         }
 
         private static void receiveSystemStalled(CBitMemStream msgin)
         {
-            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
-            // TODO receiveSystemStalled
+            ConsoleIO.WriteLine("CNET: received STALLED");
         }
 
         private static void receiveSystemSync(CBitMemStream msgin)
@@ -684,8 +782,6 @@ namespace RCC
                 msgin.serial(ref _LastReceivedAck);
             }
 
-            Debug.Print("decodeHeader " + msgin);
-
             _LastReceivedNumber = _CurrentReceivedNumber;
             _DecodedHeader = true;
             return true;
@@ -734,6 +830,36 @@ namespace RCC
             //statsSend(length); todo stats
 
             _LatestSyncTime = _UpdateTime;
+        }
+
+        // sends system sync acknowledge
+        static void sendSystemAckProbe()
+        {
+            CBitMemStream message = new CBitMemStream();
+
+            message.BuildSystemHeader(ref _CurrentSendNumber);
+
+            byte probe = SYSTEM_ACK_PROBE_CODE;
+            int numprobes = _LatestProbes.Count;
+
+            message.serial(ref probe);
+            message.serial(ref numprobes);
+
+            int i;
+            for (i = 0; i < numprobes; ++i)
+            {
+                var val = _LatestProbes[i];
+                message.serial(ref val);
+            }
+
+            _LatestProbes.Clear();
+
+            var length = message.Length;
+            _Connection.send(message.Buffer(), length);
+            //sendUDP (&(_Connection), message.buffer(), length);
+            //statsSend(length);
+
+            //nlinfo("CNET[%p]: sent ACK_PROBE (%d probes)", this, numprobes);
         }
 
         private static void sendSystemDisconnection()
@@ -934,7 +1060,58 @@ namespace RCC
             {
                 _LastSentCycle = cycle;
 
-                // TODO: Implementation of CActionBlock code
+                // if no actions were sent at this cyle, create a new block
+                //if (_Actions.empty() || _Actions.back().Cycle != 0)
+                //{
+                //    //		nlinfo("-BEEN- push back 1 [size=%d, cycle=%d]", _Actions.size(), _Actions.empty() ? 0 : _Actions.back().Cycle);
+                //    //		_Actions.push_back();
+                //}
+                //else
+                //{
+                //    CActionBlock & block = _Actions.back();
+                //    /*
+                //                CAction	*dummy = CActionFactory::getInstance()->create(INVALID_SLOT, ACTION_DUMMY_CODE);
+                //                ((CActionDummy*)dummy)->Dummy1 = _DummySend++;
+                //                push(dummy);
+                //    */
+                //
+                //    _Actions.back().Cycle = cycle;
+                //
+                //    // check last block isn't bigger than maximum allowed
+                //    uint i;
+                //    uint bitSize = 32 + 8;      // block size is 32 (cycle) + 8 (number of actions
+                //    for (i = 0; i < block.Actions.size(); ++i)
+                //    {
+                //        bitSize += CActionFactory::getInstance()->size(block.Actions[i]);
+                //        if (bitSize >= 480 * 8)
+                //            break;
+                //    }
+                //
+                //    if (i < block.Actions.size())
+                //    {
+                //        nldebug("Postponing %u actions exceeding max size in block %d (block size is %d bits long)", block.Actions.size() - i, cycle, bitSize);
+                //
+                //        // last block is bigger than allowed
+                //
+                //        // allocate a new block
+                //        _Actions.push_back(CActionBlock());
+                //        CActionBlock & newBlock = _Actions.back();
+                //
+                //        // reset block stamp
+                //        newBlock.Cycle = 0;
+                //
+                //        // copy remaining actions in new block
+                //        newBlock.Actions.insert(newBlock.Actions.begin(),
+                //            block.Actions.begin() + i,
+                //            block.Actions.end());
+                //
+                //        // remove remaining actions of block
+                //        block.Actions.erase(block.Actions.begin() + i, block.Actions.end());
+                //    }
+                //
+                //    //nlinfo("-BEEN- setcycle [size=%d, cycle=%d]", _Actions.size(), _Actions.empty() ? 0 : _Actions.back().Cycle);
+                //}
+                // TODO: ActionBlock sending in network connection send code
 
                 if (_ConnectionState == ConnectionState.Connected)
                 {
@@ -967,6 +1144,12 @@ namespace RCC
 
             //Debug.Print("sendNormalMessage " + message);
             _Connection.send(message.Buffer(), message.Length);
+
+            _LastSendTime = ryzomGetLocalTime();
+
+            //_PacketStamps.push_back(make_pair(_CurrentSendNumber, _UpdateTime));
+
+            _CurrentSendNumber++;
         }
 
         internal static void send()

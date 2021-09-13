@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using RCC.Network;
 
 namespace RCC.NetworkAction
 {
@@ -63,19 +64,24 @@ namespace RCC.NetworkAction
             else if (RegisteredAction[code].Value == null)
             {
                 // no action left in the store
-                CAction action = (CAction)Activator.CreateInstance(RegisteredAction[code].Key); // execute the factory function
-                //nlinfo( "No action in store for code %u, creating action (total %u, total for code %u)", code, getNbActionsInStore(), getNbActionsInStore(action->Code) );
+                var action = (CAction)Activator.CreateInstance(RegisteredAction[code].Key); // execute the factory function
+                                                                                            //nlinfo( "No action in store for code %u, creating action (total %u, total for code %u)", code, getNbActionsInStore(), getNbActionsInStore(action.Code) );
+
+                if (action == null) return null;
+
                 action.Code = code;
-                action.PropertyCode = code;    // default, set the property code to the action code (see create(TProperty,TPropIndex))
+                action.PropertyCode =
+                    code; // default, set the property code to the action code (see create(TProperty,TPropIndex))
                 action.Slot = slot;
                 action.reset();
                 return action;
+
             }
             else
             {
                 // pop an action off the store
-                CAction action = RegisteredAction[code].Value;
-                //nlinfo( "Found action in store for code %u (total %u, total for code %u)", code, getNbActionsInStore(), getNbActionsInStore(action->Code) );
+                var action = RegisteredAction[code].Value;
+                //nlinfo( "Found action in store for code %u (total %u, total for code %u)", code, getNbActionsInStore(), getNbActionsInStore(action.Code) );
                 //RegisteredAction[code].Value.pop_back();
                 action.reset();
                 action.Slot = slot;
@@ -86,10 +92,22 @@ namespace RCC.NetworkAction
 
         public static void remove(CAction action)
         {
-            ConsoleIO.WriteLine($"CAction remove ({action})");
-
-            //throw new NotImplementedException();
+            if (action != null)
+            {
+                RegisteredAction[action.Code] = new KeyValuePair<Type, CAction>(RegisteredAction[action.Code].Key, null);
+                //nlinfo( "Inserting action in store for code %u (total %u, total for code %u)", action.Code, getNbActionsInStore(), getNbActionsInStore(action.Code) );
+            }
         }
+
+        //public static void remove(CActionImpulsion action)
+        //{
+        //    if (action != NULL)
+        //    {
+        //        CAction* ptr = static_cast<CAction*>(action);
+        //        remove(ptr);
+        //        action = NULL;
+        //    }
+        //}
 
         /// <summary>
         /// Return the size IN BITS, not in bytes

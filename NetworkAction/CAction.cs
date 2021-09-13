@@ -1,9 +1,9 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
+using RCC.Network;
 
 namespace RCC.NetworkAction
 {
-    public class CAction
+    public abstract class CAction
     {
         public TActionCode Code { get; internal set; }
         public TActionCode PropertyCode { get; internal set; }
@@ -12,16 +12,10 @@ namespace RCC.NetworkAction
         virtual public void unpack(CBitMemStream message)
         {
             ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
-            return;
             //throw new System.NotImplementedException();
         }
 
-        public int size()
-        {
-            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
-            return 0;
-            //throw new System.NotImplementedException();
-        }
+        public abstract int size();
 
         internal void reset()
         {

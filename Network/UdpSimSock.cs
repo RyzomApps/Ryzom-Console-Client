@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace RCC
+namespace RCC.Network
 {
     class UdpSimSock
     {

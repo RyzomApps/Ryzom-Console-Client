@@ -3,7 +3,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 
-namespace RCC
+namespace RCC.Network
 {
     public class Login
     {

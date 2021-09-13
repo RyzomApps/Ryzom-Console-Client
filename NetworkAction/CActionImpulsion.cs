@@ -4,12 +4,11 @@ namespace RCC.NetworkAction
 {
     public class CActionImpulsion : CAction
     {
-        ~CActionImpulsion() { }
         public bool AllowExceedingMaxSize;
 
-        public CActionImpulsion()
+        public override int size()
         {
-            ConsoleIO.WriteLine(MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+            throw new System.NotImplementedException();
         }
     }
 }

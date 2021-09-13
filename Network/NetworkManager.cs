@@ -1,14 +1,11 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Threading;
 
-namespace RCC
+namespace RCC.Network
 {
     public static class NetworkManager
     {
         public static bool serverReceivedReady = false;
-
-        private static int _LastSentCycle;
 
         /// <summary>
         /// Send
@@ -16,10 +13,10 @@ namespace RCC
         public static void send(int gameCycle)
         {
             // wait till next server is received
-            if (_LastSentCycle >= gameCycle)
+            if (NetworkConnection._LastSentCycle >= gameCycle)
             {
                 //nlinfo ("Try to CNetManager::send(%d) _LastSentCycle=%d more than one time with the same game cycle, so we wait new game cycle to send", gameCycle, _LastSentCycle);
-                while (_LastSentCycle >= gameCycle)
+                while (NetworkConnection._LastSentCycle >= gameCycle)
                 {
                     // Update network.
                     update();
@@ -36,6 +33,17 @@ namespace RCC
 
             NetworkConnection.send(gameCycle);
         }
+
+
+        /// <summary>
+        ///  Reset data and init the socket
+        /// </summary>
+        public static void reinit()
+        {
+            //IngameDbMngr.resetInitState();
+            NetworkConnection.reinit();
+        }
+
 
         /// <summary>
         /// Updates the whole connection with the frontend.
