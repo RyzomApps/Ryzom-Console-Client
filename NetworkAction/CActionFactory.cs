@@ -136,8 +136,6 @@ namespace RCC.NetworkAction
             return headerBitSize + action.size();
         }
 
-
-
         internal static void registerAction(TActionCode code, Type creator)
         {
             if (!typeof(CAction).IsAssignableFrom(creator))
@@ -171,7 +169,7 @@ namespace RCC.NetworkAction
             //H_BEFORE(FactoryPack);
             //sint32 val = message.getPosInBit ();
 
-            //
+            // TODO: evaluate this
 
             if ((int)action.Code < 4)
             {

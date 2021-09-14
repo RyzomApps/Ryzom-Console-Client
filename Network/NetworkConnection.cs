@@ -728,7 +728,7 @@ namespace RCC.Network
             msgin.serial(ref stime);
             msgin.serial(ref _LatestSync);
 
-            Debug.Print("receiveSystemSync " + msgin);
+            //Debug.Print("receiveSystemSync " + msgin);
 
             //return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
             byte[] checkMsgXml = new byte[16];
@@ -849,7 +849,7 @@ namespace RCC.Network
             }
             message.serial(ref _LatestSync);
 
-            Debug.WriteLine("sendSystemAckSync " + message);
+            //Debug.Print("sendSystemAckSync " + message);
 
             var length = message.Length;
             _Connection.send(message.Buffer(), length);
@@ -905,7 +905,7 @@ namespace RCC.Network
             {
                 try
                 {
-                    Debug.WriteLine("sendSystemDisconnection " + message);
+                    //Debug.Print("sendSystemDisconnection " + message);
                     _Connection.send(message.Buffer(), length);
                 }
                 catch (Exception e)
@@ -944,7 +944,7 @@ namespace RCC.Network
 
             message.serial(ref ClientCfg.LanguageCode);
 
-            Debug.WriteLine("sendSystemLogin " + message);
+            //Debug.Print("sendSystemLogin " + message);
             _Connection.send(message.Buffer(), message.Length);
         }
 
@@ -1088,57 +1088,57 @@ namespace RCC.Network
                 _LastSentCycle = cycle;
 
                 // if no actions were sent at this cyle, create a new block
-                //if (_Actions.empty() || _Actions.back().Cycle != 0)
-                //{
-                //    //		nlinfo("-BEEN- push back 1 [size=%d, cycle=%d]", _Actions.size(), _Actions.empty() ? 0 : _Actions.back().Cycle);
-                //    //		_Actions.push_back();
-                //}
-                //else
-                //{
-                //    CActionBlock & block = _Actions.back();
-                //    /*
-                //                CAction	*dummy = CActionFactory::getInstance()->create(INVALID_SLOT, ACTION_DUMMY_CODE);
-                //                ((CActionDummy*)dummy)->Dummy1 = _DummySend++;
-                //                push(dummy);
-                //    */
-                //
-                //    _Actions.back().Cycle = cycle;
-                //
-                //    // check last block isn't bigger than maximum allowed
-                //    uint i;
-                //    uint bitSize = 32 + 8;      // block size is 32 (cycle) + 8 (number of actions
-                //    for (i = 0; i < block.Actions.size(); ++i)
-                //    {
-                //        bitSize += CActionFactory::getInstance()->size(block.Actions[i]);
-                //        if (bitSize >= 480 * 8)
-                //            break;
-                //    }
-                //
-                //    if (i < block.Actions.size())
-                //    {
-                //        nldebug("Postponing %u actions exceeding max size in block %d (block size is %d bits long)", block.Actions.size() - i, cycle, bitSize);
-                //
-                //        // last block is bigger than allowed
-                //
-                //        // allocate a new block
-                //        _Actions.push_back(CActionBlock());
-                //        CActionBlock & newBlock = _Actions.back();
-                //
-                //        // reset block stamp
-                //        newBlock.Cycle = 0;
-                //
-                //        // copy remaining actions in new block
-                //        newBlock.Actions.insert(newBlock.Actions.begin(),
-                //            block.Actions.begin() + i,
-                //            block.Actions.end());
-                //
-                //        // remove remaining actions of block
-                //        block.Actions.erase(block.Actions.begin() + i, block.Actions.end());
-                //    }
-                //
-                //    //nlinfo("-BEEN- setcycle [size=%d, cycle=%d]", _Actions.size(), _Actions.empty() ? 0 : _Actions.back().Cycle);
-                //}
-                // TODO: ActionBlock sending in network connection send code
+                if (_Actions.Count == 0 || _Actions[^1].Cycle != 0)
+                {
+                    //		nlinfo("-BEEN- push back 1 [size=%d, cycle=%d]", _Actions.size(), _Actions.empty() ? 0 : _Actions.back().Cycle);
+                    //		_Actions.push_back();
+                }
+                else
+                {
+                    CActionBlock block = _Actions[^1];
+                    /*
+                                CAction	*dummy = CActionFactory::getInstance()->create(INVALID_SLOT, ACTION_DUMMY_CODE);
+                                ((CActionDummy*)dummy)->Dummy1 = _DummySend++;
+                                push(dummy);
+                    */
+
+                    block.Cycle = cycle;
+
+                    // check last block isn't bigger than maximum allowed
+                    int i;
+                    int bitSize = 32 + 8;      // block size is 32 (cycle) + 8 (number of actions
+                    for (i = 0; i < block.Actions.Count; ++i)
+                    {
+                        bitSize += CActionFactory.size(block.Actions[i]);
+                        if (bitSize >= 480 * 8)
+                            break;
+                    }
+
+                    if (i < block.Actions.Count)
+                    {
+                        throw new NotImplementedException();
+                        ConsoleIO.WriteLineFormatted("§ePostponing " + (block.Actions.Count - i) + " actions exceeding max size in block " + cycle + " (block size is " + bitSize + " bits long)");
+
+                        // last block is bigger than allowed
+
+                        // allocate a new block
+                        _Actions.Add(new CActionBlock());
+                        CActionBlock newBlock = _Actions[^1];
+
+                        // reset block stamp
+                        newBlock.Cycle = 0;
+
+                        //// copy remaining actions in new block
+                        //newBlock.Actions.insert(newBlock.Actions.begin(),
+                        //    block.Actions.begin() + i,
+                        //    block.Actions.end());
+                        //
+                        //// remove remaining actions of block
+                        //block.Actions.erase(block.Actions.begin() + i, block.Actions.end());
+                    }
+
+                    //nlinfo("-BEEN- setcycle [size=%d, cycle=%d]", _Actions.size(), _Actions.empty() ? 0 : _Actions.back().Cycle);
+                }
 
                 if (_ConnectionState == ConnectionState.Connected)
                 {
@@ -1171,9 +1171,9 @@ namespace RCC.Network
 
             foreach (var block in _Actions)
             {
-            //for (var itblock = _Actions.Begin(); itblock != _Actions.end(); ++itblock)
-            //{
-            //    CActionBlock & block = *itblock;
+                //for (var itblock = _Actions.Begin(); itblock != _Actions.end(); ++itblock)
+                //{
+                //    CActionBlock & block = *itblock;
 
                 // if block contains action that are not already stamped, don't send it now
                 if (block.Cycle == 0)

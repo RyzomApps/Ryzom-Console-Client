@@ -15,7 +15,7 @@ namespace RCC.Network
 
         public int Pos => (int)(_bitPos / 8d);
 
-        public int FreeBits => _contentBits.Length - _bitPos;
+        public int FreeBits => /*(_contentBits.Length -)*/ 8 - (_bitPos % 8);
 
         public int Length => (int)((_bitPos - 1) / 8d) + 1;
 

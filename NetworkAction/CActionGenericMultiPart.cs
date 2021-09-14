@@ -18,7 +18,7 @@ namespace RCC.NetworkAction
 
         public override void unpack(CBitMemStream message)
         {
-            Debug.Print(message.ToString());
+            //Debug.Print(message.ToString());
 
             message.serial(ref Number);
             message.serial(ref Part);

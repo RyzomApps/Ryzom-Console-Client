@@ -30,7 +30,7 @@ namespace RCC.NetworkAction
             message.serialBuffer(_Message, size);
 
             //message.serial (_Message);
-            Debug.WriteLine(_Message);
+            //Debug.Print(_Message.ToString());
         }
 
         internal CBitMemStream get()
@@ -63,8 +63,10 @@ namespace RCC.NetworkAction
 
         public override void pack(CBitMemStream message)
         {
+            byte[] obj = _Message.Buffer();
+            message.serial(ref obj);
             //message.serialBufferWithSize((uint8*)_Message.buffer(), _Message.length());
-            throw new System.NotImplementedException();
+            //throw new System.NotImplementedException();
         }
     }
 }

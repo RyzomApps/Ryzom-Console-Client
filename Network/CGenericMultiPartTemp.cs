@@ -87,7 +87,7 @@ namespace RCC.Network
                 //nldebug("CLMPNET[%p]: Received a generic action size %d", this, bms.length());
                 // todo interface api, call a user callback
 
-                Debug.Print(bms.ToString());
+                //Debug.Print(bms.ToString());
 
                 NetworkConnection._ImpulseCallback?.Invoke(bms, NetworkConnection._LastReceivedNumber, NetworkConnection._ImpulseArg);
             }
