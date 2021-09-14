@@ -394,7 +394,7 @@ namespace RCC
         }
 
         /// <summary>
-        /// Disconnect the client from the server (initiated from MCC)
+        /// Disconnect the client from the server (initiated from RCC)
         /// </summary>
         public void Disconnect()
         {

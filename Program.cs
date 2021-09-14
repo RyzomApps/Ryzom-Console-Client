@@ -1,5 +1,6 @@
 ﻿using RCC.WinAPI;
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -12,7 +13,7 @@ namespace RCC
     /// Ryzom Console Client by bierdosenhalter and Contributors (c) 2021.
     /// Allows to connect to the Ryzom server, send and receive text, automated scripts.
     /// </summary>
-    class Program
+    internal class Program
     {
         private static readonly RyzomClient Client = new RyzomClient();
 
@@ -43,7 +44,7 @@ namespace RCC
             }
 
             // Setup ConsoleIO
-            ConsoleIO.LogPrefix = "§8[MCC] ";
+            ConsoleIO.LogPrefix = "§8[RCC] ";
             if (args.Length >= 1 && args[^1] == "BasicIO" || args.Length >= 1 && args[^1] == "BasicIO-NoColor")
             {
                 if (args.Length >= 1 && args[^1] == "BasicIO-NoColor")
@@ -61,7 +62,7 @@ namespace RCC
             }
 
             // Process ini configuration file
-            if (args.Length >= 1 && System.IO.File.Exists(args[0]) && System.IO.Path.GetExtension(args[0]).ToLower() == ".ini")
+            if (args.Length >= 1 && File.Exists(args[0]) && Path.GetExtension(args[0]).ToLower() == ".cfg")
             {
                 ClientCfg.LoadFile(args[0]);
 
@@ -70,13 +71,24 @@ namespace RCC
                 argsTmp.RemoveAt(0);
                 args = argsTmp.ToArray();
             }
-            else if (System.IO.File.Exists("RyzomClient.ini"))
+            else if (File.Exists("client.cfg"))
             {
-                ClientCfg.LoadFile("RyzomClient.ini");
+                ClientCfg.LoadFile("client.cfg");
             }
-            else ClientCfg.WriteDefaultSettings("RyzomClient.ini");
+            else ClientCfg.WriteDefaultSettings("client.cfg");
 
             // TODO: session caching
+
+            //Asking the user to type in missing data such as Username and Password
+            if (ClientCfg.Username == "")
+            {
+                ConsoleIO.WriteLineFormatted("§dPlease enter your username:");
+                ClientCfg.Username = Console.ReadLine();
+            }
+            if (ClientCfg.Password == "")
+            {
+                RequestPassword();
+            }
 
             // Setup exit cleaning code
             ExitCleanUp.Add(delegate
@@ -86,7 +98,7 @@ namespace RCC
 
                 Client.Disconnect(); ConsoleIO.Reset();
                 //if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
-                //if (ClientCfg.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
+                //if (ClientCfg.playerHeadAsIcon) { ConsoleIcon.revertToRCCIcon(); }
             });
 
             Startupargs = args;
@@ -105,7 +117,22 @@ namespace RCC
             Console.Read();
         }
 
+        /// <summary>
+        /// Reduest user to submit password.
+        /// </summary>
+        private static void RequestPassword()
+        {
+            ConsoleIO.WriteLineFormatted($"§dPlease type the password for {ClientCfg.Username}:");
+            ClientCfg.Password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+            if (ClientCfg.Password == "") { ClientCfg.Password = "-"; }
 
+            if (ConsoleIO.BasicIO) return;
+
+            //Hide password length
+            Console.CursorTop--; Console.Write("********");
+            for (var i = 9; i < Console.BufferWidth; i++) { Console.Write(' '); }
+            Console.WriteLine();
+        }
 
         /// <summary>
         /// Detect if the user is running Ryzom Console Client through Mono
