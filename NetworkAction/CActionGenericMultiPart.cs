@@ -31,7 +31,7 @@ namespace RCC.NetworkAction
 
             message.serial(ref PartCont);
 
-            PartCont = PartCont.Reverse().ToArray();
+            //PartCont = PartCont.Reverse().ToArray();
 
             //var part = new CBitMemStream(false);
             //

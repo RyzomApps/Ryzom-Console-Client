@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Threading;
-using RCC.Config;
+﻿using RCC.Config;
 using RCC.Helper;
 using RCC.NetworkAction;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 
 namespace RCC.Network
 {
@@ -246,8 +245,8 @@ namespace RCC.Network
             //_VisualPropertyTreeRoot->buildTree();
 
             // If the server run on window, those are the one to test
-            _MsgXmlMD5 = Misc.getMD5("data\\msg.xml");              // Data = 0x00007ff771d43550
-            _DatabaseXmlMD5 = Misc.getMD5("data\\database.xml");    // Data = 0x00007ff771d43560
+            _MsgXmlMD5 = Misc.getMD5("data\\msg.xml");
+            _DatabaseXmlMD5 = Misc.getMD5("data\\database.xml");
         }
 
         /// <summary>
@@ -737,15 +736,16 @@ namespace RCC.Network
             msgin.serial(ref checkMsgXml);
             msgin.serial(ref checkDatabaseXml);
 
-            var xmlInvalid = (checkMsgXml != _MsgXmlMD5 || checkDatabaseXml != _DatabaseXmlMD5);
+            var xmlInvalid = (!checkMsgXml.SequenceEqual(_MsgXmlMD5) ||
+                              !checkDatabaseXml.SequenceEqual(_DatabaseXmlMD5));
 
             if (xmlInvalid && !alreadyWarned)
             {
                 alreadyWarned = true;
-                ConsoleIO.WriteLine("XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
+                ConsoleIO.WriteLineFormatted("§eXML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
 
-                ConsoleIO.WriteLine("msg.xml client:" + Misc.byteArrToString(_MsgXmlMD5) + " server:" + Misc.byteArrToString(checkMsgXml));
-                ConsoleIO.WriteLine("database.xml client:" + Misc.byteArrToString(_DatabaseXmlMD5) + " server:" + Misc.byteArrToString(checkDatabaseXml));
+                ConsoleIO.WriteLineFormatted("§emsg.xml client:" + Misc.byteArrToString(_MsgXmlMD5) + " server:" + Misc.byteArrToString(checkMsgXml));
+                ConsoleIO.WriteLineFormatted("§edatabase.xml client:" + Misc.byteArrToString(_DatabaseXmlMD5) + " server:" + Misc.byteArrToString(checkDatabaseXml));
             }
 
             _ReceivedSync = true;

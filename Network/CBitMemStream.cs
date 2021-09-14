@@ -128,7 +128,7 @@ namespace RCC.Network
             {
                 var newBits = ReadFromArray(obj.Length * 8);
                 //obj = ConvertBoolArrayToByteArray(newBits);
-                obj = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                obj = ConvertBoolArrayToByteArray(newBits); //.Reverse().ToArray();
                 //obj = BitConverter.ToInt64(reversed);
             }
             else
