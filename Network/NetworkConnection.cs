@@ -107,7 +107,7 @@ namespace RCC.Network
         private static int _LatestProbe;
 
         private static List<CGenericMultiPartTemp> _GenericMultiPartTemp = new List<CGenericMultiPartTemp>();
-        private static List<CActionBlock> _Actions;
+        private static List<CActionBlock> _Actions = new List<CActionBlock>();
         private static byte[] _MsgXmlMD5;
         private static byte[] _DatabaseXmlMD5;
 
@@ -444,11 +444,11 @@ namespace RCC.Network
             // TODO: receiveNormalMessage _Actions stuff
 
             // we can now remove all old action that are acked
-            //while (!_Actions.empty() && _Actions.front().FirstPacket != 0 && _Actions.front().FirstPacket <= _LastReceivedAck)
-            //{
-            //    // warning, CActionBlock automatically remove() actions when deleted
-            //    _Actions.pop_front();
-            //}
+            while (_Actions.Count != 0 && _Actions[0].FirstPacket != 0 && _Actions[0].FirstPacket <= _LastReceivedAck)
+            {
+                // warning, CActionBlock automatically remove() actions when deleted
+                _Actions.RemoveAt(0);
+            }
 
             _CurrentServerTick = _CurrentReceivedNumber * 2 + _Synchronize;
 
@@ -718,6 +718,7 @@ namespace RCC.Network
         }
 
         static bool alreadyWarned = false;
+        private static byte _ImpulseMultiPartNumber = 0;
 
         private static void receiveSystemSync(CBitMemStream msgin)
         {
@@ -1166,9 +1167,41 @@ namespace RCC.Network
             message.serial(ref _LastReceivedNumber);
             message.serial(ref _AckBitMask);
 
-            // TODO: Implementation of CActionBlock code
+            uint numPacked = 0;
 
-            //Debug.Print("sendNormalMessage " + message);
+            foreach (var block in _Actions)
+            {
+            //for (var itblock = _Actions.Begin(); itblock != _Actions.end(); ++itblock)
+            //{
+            //    CActionBlock & block = *itblock;
+
+                // if block contains action that are not already stamped, don't send it now
+                if (block.Cycle == 0)
+                    break;
+
+                // Prevent to send a message too big
+                //if (message.getPosInBit() + (*itblock).bitSize() > FrontEndInputBufferSize) // hard version
+                //	break;
+
+                if (block.FirstPacket == 0)
+                    block.FirstPacket = _CurrentSendNumber;
+
+                //nlassertex((*itblock).Cycle > lastPackedCycle, ("(*itblock).Cycle=%d lastPackedCycle=%d", (*itblock).Cycle, lastPackedCycle));
+
+                //		lastPackedCycle = block.Cycle;
+
+                block.serial(message);
+                ++numPacked;
+
+                //nldebug("CNET[%p]: packed block %d, message is currently %d bits long", this, block.Cycle, message.getPosInBit());
+
+                // Prevent to send a message too big
+                //if (message.getPosInBit() + (*itblock).bitSize() > FrontEndInputBufferSize) // hard version
+                if (message.getPosInBit() > 480 * 8) // easy version
+                    break;
+            }
+
+            Debug.Print("sendNormalMessage " + message);
             _Connection.send(message.Buffer(), message.Length);
 
             _LastSendTime = ryzomGetLocalTime();
@@ -1228,6 +1261,68 @@ namespace RCC.Network
         public static void flushSendBuffer()
         {
             //_Actions.clear();
+        }
+
+        const byte INVALID_SLOT = 0xFF;
+
+
+        static void push(CAction action)
+        {
+            if (_Actions.Count == 0 || _Actions[^1].Cycle != 0)
+            {
+                //nlinfo("-BEEN- push back 2 [size=%d, cycle=%d]", _Actions.size(), _Actions.empty() ? 0 : _Actions.back().Cycle);
+                _Actions.Add(new CActionBlock());
+            }
+
+            _Actions[^1].Actions.Add(action);
+        }
+
+        public static void push(CBitMemStream msg)
+        {
+            int maxImpulseBitSize = 230 * 8;
+
+            CActionGeneric ag = (CActionGeneric)CActionFactory.create(INVALID_SLOT, TActionCode.ACTION_GENERIC_CODE);
+            if (ag == null) //TODO: see that with oliver...
+                return;
+
+            int bytelen = msg.Length;
+            int impulseMinBitSize = (int)CActionFactory.size(ag);
+            int impulseBitSize = impulseMinBitSize + (4 + bytelen) * 8;
+
+            if (impulseBitSize < maxImpulseBitSize)
+            {
+                ag.set(msg);
+                push(ag);
+            }
+            else
+            {
+                CAction casted = ag;
+                CActionFactory.remove(casted);
+                ag = null;
+
+                // MultiPart impulsion
+                CActionGenericMultiPart agmp = (CActionGenericMultiPart)CActionFactory.create(INVALID_SLOT, TActionCode.ACTION_GENERIC_MULTI_PART_CODE);
+                int minimumBitSizeForMP = CActionFactory.size((CAction)agmp);
+
+                int availableSize = (maxImpulseBitSize - minimumBitSizeForMP) / 8; // (in bytes)
+
+                Debug.Assert(availableSize > 0); // the available size must be larger than the 'empty' size
+
+                int nbBlock = (bytelen + availableSize - 1) / availableSize;
+
+                byte num = _ImpulseMultiPartNumber++;
+
+                throw new NotImplementedException();
+
+                //for (int i = 0; i < nbBlock; i++)
+                //{
+                //    if (i != 0)
+                //        agmp = (CActionGenericMultiPart*)CActionFactory::getInstance()->create(INVALID_SLOT, ACTION_GENERIC_MULTI_PART_CODE);
+                //
+                //    agmp.set(num, (short)i, msg.Buffer(), bytelen, availableSize, (short)nbBlock);
+                //    push(agmp);
+                //}
+            }
         }
     }
 }

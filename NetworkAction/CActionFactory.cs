@@ -55,7 +55,7 @@ namespace RCC.NetworkAction
             return action;
         }
 
-        private static CAction create(byte slot, TActionCode code)
+        internal static CAction create(byte slot, TActionCode code)
         {
             if (!RegisteredAction.ContainsKey(code))
             {
@@ -113,7 +113,7 @@ namespace RCC.NetworkAction
         /// <summary>
         /// Return the size IN BITS, not in bytes
         /// </summary>
-        public static object size(CAction action)
+        public static int size(CAction action)
         {
             // If you change this size, please update IMPULSE_ACTION_HEADER_SIZE in the front-end
 
@@ -160,6 +160,41 @@ namespace RCC.NetworkAction
             {
                 RegisteredAction.Add(code, new KeyValuePair<Type, CAction>(creator, null));
             }
+        }
+
+        /// <summary>
+        /// Pack an action to a bit stream. Set transmitTimestamp=true for server-->client,
+        /// false for client-->server. If true, set the current gamecycle.
+        /// </summary>
+        public static void pack(CAction action, CBitMemStream message)
+        {
+            //H_BEFORE(FactoryPack);
+            //sint32 val = message.getPosInBit ();
+
+            //
+
+            if ((int)action.Code < 4)
+            {
+                // short code (0 1 2 3)
+                bool shortcode = true;
+                short code = (short)action.Code;
+                message.serial(ref shortcode);
+                message.serialAndLog2(ref code, 2);
+            }
+            else
+            {
+                bool shortcode = false;
+                short code = (short)action.Code;
+                message.serial(ref shortcode);
+                message.serial(ref code);
+            }
+
+            action.pack(message);
+            //H_AFTER(FactoryPack);
+
+            //OLIV: nlassertex (message.getPosInBit () - val == (sint32)CActionFactory::getInstance()->size (action), ("CActionFactory::pack () : action %d packed %u bits, should be %u, size() is wrong", action->Code, message.getPosInBit () - val, CActionFactory::getInstance()->size (action)));
+
+            //	nlinfo ("ac:%p pack one action in message %d %hu %u %d", action, action->Code, (uint16)(action->CLEntityId), val, message.getPosInBit()-val);
         }
     }
 }

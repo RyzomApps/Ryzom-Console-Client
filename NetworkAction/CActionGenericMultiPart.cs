@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -48,6 +50,16 @@ namespace RCC.NetworkAction
             int bytesize = 1 + 2 + 2 + 4;    // header
             bytesize += PartCont.Length;
             return bytesize * 8;
-        }   
+        }
+
+        public override void pack(CBitMemStream message)
+        {
+            throw new NotImplementedException();
+
+            //message.serial(ref Number);
+            //message.serial(ref Part);
+            //message.serial(ref NbBlock);
+            //message.serialCont(PartCont);
+        }
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using RCC.Client;
+using RCC.Config;
 using RCC.Helper;
 using RCC.Msg;
 
@@ -36,6 +38,16 @@ namespace RCC.Network
             }
 
             NetworkConnection.send(gameCycle);
+        }
+
+        /// <summary>
+        /// Buffers a bitmemstream, that will be converted into a generic action, to be sent later to the server (at next update).
+        /// </summary>
+        static void push(CBitMemStream msg)
+        {
+            //if (PermanentlyBanned) return; LOL
+
+            NetworkConnection.push(msg);
         }
 
 
@@ -520,9 +532,12 @@ namespace RCC.Network
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
+        /// <summary>
+        /// A dyn string (or phrase) is send (so, we receive it)
+        /// </summary>
         private static void impulsePhraseSend(CBitMemStream impulse)
         {
-            ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+            CStringManagerClient.receiveDynString(impulse);
         }
 
         private static void impulseCounter(CBitMemStream impulse)
@@ -734,46 +749,38 @@ namespace RCC.Network
             int len = 0;
             impulse.serial(ref len);
 
-            for (int i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
-                CCharacterSummary cs = new CCharacterSummary();
+                var cs = new CCharacterSummary();
                 cs.serial(impulse);
-                ConsoleIO.WriteLineFormatted("§eFound character " + cs.Name + " in slot " + i);
+                ConsoleIO.WriteLineFormatted("§eFound character " + cs.Name + " from shard " + cs.Mainland +
+                                             " in slot " + i);
                 CharacterSummaries.Add(cs);
             }
             // END WORKAROUND
 
-            //impulse.serialCont(CharacterSummaries);
-            //// read shard name summaries
-            //std::vector<string> shardNames;
-            //impulse.serialCont(shardNames);
-            //CShardNames::getInstance().loadShardNames(shardNames);
-            //// read privileges
-            //readPrivileges(impulse);
-            //impulse.serial(FreeTrial);
-            //FreeTrial = false;
-            //impulse.serialCont(Mainlands);
-            //userChar = true;
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
 
             // Create the message for the server to select the first character.
-            /*	CBitMemStream out;
-                if(GenericMsgHeaderMngr.pushNameToStream("CONNECTION:SELECT_CHAR", out))
-                {
-                    CSelectCharMsg	SelectCharMsg;
-                    SelectCharMsg.c = 0;	//TODO set here the character choosen by player
-                    out.serial( SelectCharMsg );
-                    NetMngr.push(out);
-                    NetMngr.send(NetMngr.getCurrentServerTick());
-                    // send CONNECTION:USER_CHARS
-                    nldebug("impulseCallBack : CONNECTION:SELECT_CHAR sent");
-                }
-                else
-                    nlwarning("impulseCallBack : unknown message name : 'CONNECTION:SELECT_CHAR'.");
+            var outP = new CBitMemStream(false);
 
-                noUserChar = true;
-                */
+            if (GenericMsgHeaderMngr.pushNameToStream("CONNECTION:SELECT_CHAR", outP))
+            {
+                byte c = 0;
+                outP.serial(ref c);
+
+                push(outP);
+                send(NetworkConnection.getCurrentServerTick());
+                // send CONNECTION:USER_CHARS
+                ConsoleIO.WriteLineFormatted("impulseCallBack : CONNECTION:SELECT_CHAR sent");
+            }
+            else
+            {
+                ConsoleIO.WriteLineFormatted("§cimpulseCallBack : unknown message name : 'CONNECTION:SELECT_CHAR'.");
+            }
+
+            // (FarTP) noUserChar = true; TODO ???
 
             //if (!NewKeysCharNameValidated.empty())
             //{

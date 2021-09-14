@@ -92,5 +92,17 @@ namespace RCC.Msg
                 node.Callback(strm);
             }
         }
+
+        public static bool pushNameToStream(string msgName, CBitMemStream strm)
+        {
+            var res = (_Root.select(msgName, strm) != null);
+
+            if (!res)
+            {
+                ConsoleIO.WriteLineFormatted("§epushNameToStream failed: Unknown message name '" + msgName + "'");
+            }
+
+            return res;
+        }
     }
 }

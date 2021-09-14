@@ -10,7 +10,7 @@ namespace RCC.NetworkAction
         public TActionCode PropertyCode { get; internal set; }
         public byte Slot { get; internal set; }
 
-        virtual public void unpack(CBitMemStream message)
+        public virtual void unpack(CBitMemStream message)
         {
             ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name + " called, but not implemented");
             //throw new System.NotImplementedException();
@@ -18,10 +18,8 @@ namespace RCC.NetworkAction
 
         public abstract int size();
 
-        internal void reset()
-        {
-            ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name + " called, but not implemented");
-            //throw new NotImplementedException();
-        }
+        public abstract void reset();
+
+        public abstract void pack(CBitMemStream message);
     }
 }

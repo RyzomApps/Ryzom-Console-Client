@@ -45,7 +45,7 @@ namespace RCC.NetworkAction
             return _Message;
         }
 
-        void set(CBitMemStream message)
+        internal void set(CBitMemStream message)
         {
             _Message = message;
 
@@ -58,7 +58,13 @@ namespace RCC.NetworkAction
             // If you change this size, please update IMPULSE_ACTION_HEADER_SIZE in the front-end
 
             // in bits!!! (the message size and after the message itself)
-            return (4 + _Message.Length) * 8;
+            return (4 + (_Message?.Length ?? 0)) * 8;
+        }
+
+        public override void pack(CBitMemStream message)
+        {
+            //message.serialBufferWithSize((uint8*)_Message.buffer(), _Message.length());
+            throw new System.NotImplementedException();
         }
     }
 }

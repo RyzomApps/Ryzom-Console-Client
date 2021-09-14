@@ -210,7 +210,7 @@ namespace RCC.Msg
         /// </summary>
         internal CNode select(string msgName)
         {
-            CNode node = this;
+            var node = this;
 
             string[] subSplitted = msgName.Split(":");
 
@@ -219,9 +219,50 @@ namespace RCC.Msg
                 var sub = subSplitted[i];
 
                 if (!node.NodesByName.ContainsKey(sub))
+                {
+                    ConsoleIO.WriteLineFormatted($"§eCouldn't select node '{sub}', not found in parent '{node.Name}'");
                     return null;
+                }
 
                 node = node.NodesByName[sub];
+
+                if (i == subSplitted.Length - 1)
+                    return node;
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// select node using name, and write bits in stream
+        /// </summary>
+        internal CNode select(string name, CBitMemStream strm)
+        {
+            var node = this;
+
+            var subSplitted = name.Split(":");
+
+            for (var i = 0; i < subSplitted.Length; i++)
+            {
+                var sub = subSplitted[i];
+
+                if (node.NbBits == 0)
+                {
+                    ConsoleIO.WriteLineFormatted($"§eCouldn't select node '{sub}', parent '{node.Name}' has no bit per child");
+                    return null;
+                }
+
+                if (!node.NodesByName.ContainsKey(sub))
+                {
+                    ConsoleIO.WriteLineFormatted($"§eCouldn't select node '{sub}', not found in parent '{node.Name}'");
+                    return null;
+                }
+
+                node = node.NodesByName[sub];
+
+                var index = (short)node.Value;
+                strm.serialAndLog2(ref index, node.NbBits);
 
                 if (i == subSplitted.Length - 1)
                     return node;
@@ -240,7 +281,7 @@ namespace RCC.Msg
 
             while (node != null && node.NbBits != 0)
             {
-                int index = 0;
+                short index = 0;
                 strm.serialAndLog2(ref index, node.NbBits);
 
                 if (index >= node.Nodes.Count)

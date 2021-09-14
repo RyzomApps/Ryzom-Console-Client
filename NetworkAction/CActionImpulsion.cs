@@ -1,14 +1,15 @@
 ﻿using System.Reflection;
+using RCC.Network;
 
 namespace RCC.NetworkAction
 {
-    public class CActionImpulsion : CAction
+    public abstract class CActionImpulsion : CAction
     {
         public bool AllowExceedingMaxSize;
 
-        public override int size()
+        public override void reset()
         {
-            throw new System.NotImplementedException();
+            AllowExceedingMaxSize = false;
         }
     }
 }

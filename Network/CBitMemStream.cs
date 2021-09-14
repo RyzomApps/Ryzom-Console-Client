@@ -25,6 +25,15 @@ namespace RCC.Network
             _contentBits = new bool[defaultcapacity * 8];
         }
 
+        /// <summary>
+        /// Returns the number of bit from the beginning of the buffer (in bit)
+        /// </summary>
+        public int getPosInBit()
+        {
+            // return (_BufPos - _Buffer.getPtr() + 1)*8 - _FreeBits;
+            return (Pos + 1) * 8 - FreeBits;
+        }
+
         // this shouldn't be here, but it is
         public void BuildSystemHeader(ref int currentSendNumber)
         {
@@ -265,13 +274,11 @@ namespace RCC.Network
             return ret;
         }
 
-        internal void serialAndLog2(ref int index, uint nbBits)
+        internal void serialAndLog2(ref short index, uint nbBits)
         {
-            Debug.Print("Selecting node " + index + " (" + nbBits + " bits)");
-
-            short value = -1;
-            serial(ref value, (int)nbBits);
-            index = value;
+            //short value = -1;
+            serial(ref index, (int)nbBits);
+            //index = value;
         }
 
         /// <summary>

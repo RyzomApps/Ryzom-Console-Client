@@ -19,7 +19,7 @@
 		}
 
 		/// mainland
-		uint Mainland;
+        public uint Mainland;
 
 		/// name
 		public string Name;
