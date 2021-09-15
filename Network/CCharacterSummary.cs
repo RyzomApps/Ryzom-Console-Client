@@ -34,7 +34,7 @@
 
 		int People;
 
-		int SheetId;
+        public int SheetId;
 
 		int Title;
 

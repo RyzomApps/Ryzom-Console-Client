@@ -68,7 +68,7 @@ namespace RCC.Network
                     if (keep)
                     {
                         actions.Add(action);
-                        ConsoleIO.WriteLine($"CLIMPD: received new impulsion {action.Code} (len={CActionFactory.size(action)}) at level {level} (channel {channel})");
+                        //ConsoleIO.WriteLine($"CLIMPD: received new impulsion {action.Code} (len={CActionFactory.size(action)}) at level {level} (channel {channel})");
                     }
                     else
                     {
@@ -79,7 +79,7 @@ namespace RCC.Network
 
                 if (checkOnce)
                 {
-                    ConsoleIO.WriteLine($"CLIMPD: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
+                    //ConsoleIO.WriteLine($"CLIMPD: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
                 }
             }
         }

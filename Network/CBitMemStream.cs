@@ -17,7 +17,16 @@ namespace RCC.Network
 
         public int FreeBits => /*(_contentBits.Length -)*/ 8 - (_bitPos % 8);
 
-        public int Length => (int)((_bitPos - 1) / 8d) + 1;
+        public int Length
+        {
+            get
+            {
+                if (isReading())
+                    return (int)(_contentBits.Length / 8d);
+
+                return (int)((_bitPos - 1) / 8d) + 1;
+            }
+        }
 
         public CBitMemStream(bool inputStream = false, int defaultcapacity = 32)
         {
@@ -93,7 +102,7 @@ namespace RCC.Network
             {
                 var bits = ReadFromArray(nbits);
 
-                bool[] newBits = new bool[16];
+                var newBits = new bool[16];
                 Array.Copy(bits, 0, newBits, 16 - bits.Length, bits.Length);
 
                 var bytes = ConvertBoolArrayToByteArray(newBits);
@@ -102,8 +111,9 @@ namespace RCC.Network
             }
             else
             {
-                var bytes = BitConverter.GetBytes(obj);
-                AddToArray(bytes);
+                throw new NotImplementedException();
+                //var bytes = BitConverter.GetBytes(obj);
+                //AddToArray(bytes);
             }
         }
 
@@ -184,6 +194,53 @@ namespace RCC.Network
             }
         }
 
+        internal void serialAndLog2(ref int obj, uint nbBits)
+        {
+            if (isReading())
+            {
+                short value = -1;
+                serial(ref value, (int)nbBits);
+                obj = value;
+                return;
+            }
+
+            var bytes = BitConverter.GetBytes(obj);
+            var bitArr = new bool[nbBits];
+            var bitArrayIndex = 0;
+
+            foreach (var t in bytes)
+            {
+                for (var bitIndex = 0; bitIndex < 8; bitIndex++)
+                {
+                    bitArr[bitArrayIndex] = GetBit(t, bitIndex);
+                    bitArrayIndex++;
+
+                    if (bitArrayIndex >= nbBits) break;
+                }
+
+                if (bitArrayIndex >= nbBits) break;
+            }
+
+            bitArr = bitArr.Reverse().ToArray();
+
+            foreach (var bit in bitArr)
+            {
+                if (_bitPos >= _contentBits.Length)
+                {
+                    Array.Resize<bool>(ref _contentBits, _contentBits.Length + 8);
+                }
+
+                _contentBits[_bitPos] = bit;
+                _bitPos++;
+            }
+
+        }
+
+        public static bool GetBit(byte b, int bitNumber)
+        {
+            return (b & (1 << bitNumber)) != 0;
+        }
+
         /// <summary>
         /// HELPER since this is not c++
         /// </summary>
@@ -244,14 +301,14 @@ namespace RCC.Network
             return byteArr;
         }
 
-        private static byte ReadByte(bool[] boolArr, int index)
+        private static byte ReadByte(bool[] boolArr, int offset)
         {
             byte result = 0;
 
             for (var i = 0; i < 8; i++)
             {
                 // if the element is 'true' set the bit at that position
-                if (boolArr[index + i])
+                if (boolArr[offset + i])
                     result |= (byte)(1 << 7 - i);
             }
 
@@ -274,12 +331,6 @@ namespace RCC.Network
             return ret;
         }
 
-        internal void serialAndLog2(ref short index, uint nbBits)
-        {
-            //short value = -1;
-            serial(ref index, (int)nbBits);
-            //index = value;
-        }
 
         /// <summary>
         /// Transforms the message from input to output or from output to input
@@ -398,6 +449,13 @@ namespace RCC.Network
             //xmlPop();
 
             return streamVersion;
+        }
+
+
+        public void serialBufferWithSize(byte[] buf, int len)
+        {
+            serial(ref len);
+            serial(ref buf);
         }
     }
 }

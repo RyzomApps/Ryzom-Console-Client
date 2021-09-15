@@ -175,7 +175,7 @@ namespace RCC.NetworkAction
             {
                 // short code (0 1 2 3)
                 bool shortcode = true;
-                short code = (short)action.Code;
+                int code = (short)action.Code;
                 message.serial(ref shortcode);
                 message.serialAndLog2(ref code, 2);
             }

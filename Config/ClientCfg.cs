@@ -30,6 +30,8 @@ namespace RCC.Config
 
         public static string Username = "";
         public static string Password = "";
+        public static string SelectedSlot { get; set; }
+        public static string UserSheet { get; internal set; }
 
         //public static int SBSPortOffset = 1000;
 

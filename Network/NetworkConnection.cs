@@ -991,8 +991,8 @@ namespace RCC.Network
                 return false;
             }
 
-            try
-            {
+            //try
+            //{
                 // State automaton
                 bool stateBroke = false;
                 do
@@ -1059,11 +1059,11 @@ namespace RCC.Network
                             break;
                     }
                 } while (stateBroke); // && _TotalMessages<5);
-            }
-            catch (Exception)
-            {
-                _ConnectionState = ConnectionState.Disconnect;
-            }
+            //}
+            //catch (Exception)
+            //{
+            //    _ConnectionState = ConnectionState.Disconnect;
+            //}
 
             //updateBufferizedPackets (); - unused in Ryzom code
 

@@ -1,6 +1,7 @@
 ﻿using RCC.Logger;
 using System;
 using System.Threading;
+using RCC.Client;
 using RCC.Config;
 using RCC.Helper;
 using RCC.Msg;
@@ -31,17 +32,8 @@ namespace RCC
 
         public string[] R2PatchUrLs { get; set; }
 
-        bool WaitServerAnswer;
-
-        bool game_exit = false;
-
-        bool userChar;
-        bool noUserChar;
-        bool ConnectInterf;
-        bool CreateInterf;
-        bool CharacterInterf;
-
-        bool CharNameValidArrived;
+        public static bool UserCharPosReceived = false;
+        private bool ConnectionReadySent = false;
 
         /// <summary>
         /// Login to the server using the RyzomCom class.
@@ -122,15 +114,15 @@ namespace RCC
         /// </summary>
         private bool connection(string cookie, string fsaddr)
         {
-            game_exit = false;
+            Connection.game_exit = false;
 
             // Init global variables
-            userChar = false;
-            noUserChar = false;
-            ConnectInterf = true;
-            CreateInterf = true;
-            CharacterInterf = true;
-            WaitServerAnswer = false;
+            Connection.userChar = false;
+            Connection.noUserChar = false;
+            Connection.ConnectInterf = true;
+            Connection.CreateInterf = true;
+            Connection.CharacterInterf = true;
+            Connection.WaitServerAnswer = false;
 
             //FarTP.setOutgame();
 
@@ -157,6 +149,7 @@ namespace RCC
                         break;
 
                     case TInterfaceState.GOGOGO_IN_THE_GAME:
+
                         break;
 
                     case TInterfaceState.QUIT_THE_GAME:
@@ -198,7 +191,7 @@ namespace RCC
                 //STRING_MANAGER::CStringManagerClient::instance()->initCache(UsedFSAddr, ClientCfg.LanguageCode);
             }
 
-            WaitServerAnswer = true;
+            Connection.WaitServerAnswer = true;
 
             return TInterfaceState.GLOBAL_MENU;
         }
@@ -297,22 +290,42 @@ namespace RCC
                     NetworkConnection.send();
                 }
 
+                // TODO: Send ActionHandler for Char Selection here instead of in the impulse callback
+                if (Connection.SendCharSelection)
+                {
+                    Connection.SendCharSelection = false;
+                    CAHLaunchGame.execute("0");
+                }
+
+                if (UserCharPosReceived && !ConnectionReadySent)
+                {
+                    // Create the message for the server to create the character.
+                    CBitMemStream out2 = new CBitMemStream();
+                    if (GenericMsgHeaderMngr.pushNameToStream("CONNECTION:READY", out2))
+                    {
+                        out2.serial(ref ClientCfg.LanguageCode);
+                        NetworkManager.push(out2);
+                        NetworkManager.send(NetworkConnection.getCurrentServerTick());
+
+                        ConnectionReadySent = true;
+                    }
+                }
 
                 // SERVER INTERACTIONS WITH INTERFACE
-                if (WaitServerAnswer)
+                if (Connection.WaitServerAnswer)
                 {
-                    if (noUserChar || userChar)
+                    if (Connection.noUserChar || Connection.userChar)
                     {
-                        noUserChar = userChar = false;
+                        Connection.noUserChar = Connection.userChar = false;
 
                         // Clear sending buffer that may contain prevous QUIT_GAME when getting back to the char selection screen
                         NetworkConnection.flushSendBuffer();
                     }
 
-                    if (CharNameValidArrived)
+                    if (Connection.CharNameValidArrived)
                     {
-                        CharNameValidArrived = false;
-                        WaitServerAnswer = false;
+                        Connection.CharNameValidArrived = false;
+                        Connection.WaitServerAnswer = false;
 
                     }
 
@@ -320,15 +333,15 @@ namespace RCC
                     {
                         //nlinfo("impulseCallBack : received serverReceivedReady");
                         NetworkManager.serverReceivedReady = false;
-                        WaitServerAnswer = false;
+                        Connection.WaitServerAnswer = false;
                         PlayerWantToGoInGame = true;
                     }
                 }
                 else
                 {
-                    noUserChar = false;
-                    userChar = false;
-                    CharNameValidArrived = false;
+                    Connection.noUserChar = false;
+                    Connection.userChar = false;
+                    Connection.CharNameValidArrived = false;
                     NetworkManager.serverReceivedReady = false;
                 }
 
@@ -345,7 +358,7 @@ namespace RCC
                     }
                 }
 
-                if (game_exit)
+                if (Connection.game_exit)
                     return TInterfaceState.QUIT_THE_GAME;
             }
 
@@ -360,8 +373,6 @@ namespace RCC
             return TInterfaceState.GOGOGO_IN_THE_GAME;
 
         }
-
-        // TODO impulseServerReady
 
         private void ConnectToNewShard()
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RCC.Helper;
 using RCC.NetworkAction;
 
@@ -41,7 +42,18 @@ namespace RCC.Network
                 //sprintf(buff, "Unpack[%d]:", Cycle);
                 for (i = 0; i < num; ++i)
                 {
-                    CAction action = CActionFactory.unpack(msg, false);
+                    CAction action;
+
+                    try
+                    {
+                        action = CActionFactory.unpack(msg, false);
+                    }
+                    catch (Exception e)
+                    {
+                        ConsoleIO.WriteLineFormatted("§9" + e.Message);
+                        action = null;
+                    }
+
                     if (action == null)
                     {
                         Success = false; // reject an incorrect block

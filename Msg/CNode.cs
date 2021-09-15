@@ -259,10 +259,11 @@ namespace RCC.Msg
                     return null;
                 }
 
+                var nodeOld = node;
                 node = node.NodesByName[sub];
 
-                var index = (short)node.Value;
-                strm.serialAndLog2(ref index, node.NbBits);
+                var index = (int)node.Value;
+                strm.serialAndLog2(ref index, nodeOld.NbBits);
 
                 if (i == subSplitted.Length - 1)
                     return node;
@@ -281,7 +282,7 @@ namespace RCC.Msg
 
             while (node != null && node.NbBits != 0)
             {
-                short index = 0;
+                int index = 0;
                 strm.serialAndLog2(ref index, node.NbBits);
 
                 if (index >= node.Nodes.Count)

@@ -21,5 +21,10 @@ namespace RCC.Helper
                 }
             }
         }
+
+        public static unsafe float Int32BitsToSingle(int value)
+        {
+            return *(float*)(&value);
+        }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Reflection;
+using System.Runtime.Intrinsics;
 using System.Threading;
 using RCC.Client;
 using RCC.Config;
@@ -43,7 +45,7 @@ namespace RCC.Network
         /// <summary>
         /// Buffers a bitmemstream, that will be converted into a generic action, to be sent later to the server (at next update).
         /// </summary>
-        static void push(CBitMemStream msg)
+        public static void push(CBitMemStream msg)
         {
             //if (PermanentlyBanned) return; LOL
 
@@ -71,8 +73,12 @@ namespace RCC.Network
             // Update the base class.
             bool result = NetworkConnection.update();
 
-            // Get changes with the update.
+
+            // TODO:  Get changes with the update.
             // 	const vector<CChange> &changes = NetMngr.getChanges();
+
+            // TODO:  Manage changes
+
             // TODO: update everyting
 
             return true;
@@ -667,12 +673,12 @@ namespace RCC.Network
 
         private static void impulseTell(CBitMemStream impulse)
         {
-            ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+            ChatMngr.processTellString(impulse, null);
         }
 
         private static void impulseChat(CBitMemStream impulse)
         {
-            ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+            ChatMngr.processChatString(impulse, null);
         }
 
         private static void impulsePermanentUnban(CBitMemStream impulse)
@@ -725,25 +731,101 @@ namespace RCC.Network
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
         }
 
+
+
         private static void impulseUserChar(CBitMemStream impulse)
         {
-            ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+            //// received USER_CHAR
+            ////nlinfo("impulseCallBack : Received CONNECTION:USER_CHAR");
+            //
+            //// Serialize the message
+            //COfflineEntityState posState;
+            //extern uint8 ServerSeasonValue;
+            //extern bool ServerSeasonReceived;
+            //uint32 userRole;
+
+            int X = 0;
+            int Y = 0;
+            int Z = 0;
+
+            int HeadingI = 0;
+
+            var s = impulse;
+            var f = s;
+
+            f.serial(ref X);
+            f.serial(ref Y);
+            f.serial(ref Z);
+            f.serial(ref HeadingI);
+
+            float Heading = Misc.Int32BitsToSingle(HeadingI);
+
+            short v = 0;
+            s.serial(ref v, 3);
+            var season = v;
+            v = 0;
+            s.serial(ref v, 3);
+            var userRole = (v & 0x3); // bits 0-1
+            var isInRingSession = ((v & 0x4) != 0); // bit 2
+
+            int highestMainlandSessionId = 0;
+            int firstConnectedTime = 0;
+            int playedTime = 0;
+
+            s.serial(ref highestMainlandSessionId);
+            s.serial(ref firstConnectedTime);
+            s.serial(ref playedTime);
+
+            //ServerSeasonReceived = true; // set the season that will be used when selecting the continent from the position
+            //
+            //if (UserEntity)
+            //{
+            //    UserEntity->pos(CVectorD((float)posState.X / 1000.0f, (float)posState.Y / 1000.0f, (float)posState.Z / 1000.0f));
+            //    UserEntity->front(CVector((float)cos(posState.Heading), (float)sin(posState.Heading), 0.f));
+            //    UserEntity->dir(UserEntity->front());
+            //    UserEntity->setHeadPitch(0);
+            //    UserControls.resetCameraDeltaYaw();
+            //    //nldebug("<impulseUserChar> pos : %f %f %f  heading : %f",UserEntity->pos().x,UserEntity->pos().y,UserEntity->pos().z,posState.Heading);
+            //
+            //    // Update the position for the vision.
+            //    NetMngr.setReferencePosition(UserEntity->pos());
+            //}
+            //else
+            //{
+            var UserEntityInitPos = new Vector3((float)X / 1000.0f, (float)Y / 1000.0f, (float)Z / 1000.0f);
+            var UserEntityInitFront = new Vector3((float)Math.Cos(Heading), (float)Math.Sin(Heading), 0f);
+
+            ConsoleIO.WriteLineFormatted($"§d<impulseUserChar> pos : {UserEntityInitPos}  heading : {Heading}");
+
+            // Update the position for the vision.
+            //NetworkManager.setReferencePosition(UserEntityInitPos);
+            //}
+
+            RyzomClient.UserCharPosReceived = true;
+
+            //// Configure the ring editor
+            //extern R2::TUserRole UserRoleInSession;
+            //UserRoleInSession = R2::TUserRole::TValues(userRole);
+            //ClientCfg.R2EDEnabled = IsInRingSession /*&& (UserRoleInSession.getValue() != R2::TUserRole::ur_player)*/;
+            //// !!!Do NOT uncomment the following line  do the  ClientCfg.R2EDEnabled = IsInRingSession && (UserRoleInSession != R2::TUserRole::ur_player);
+            //// even with UserRoleInSession R2::TUserRole::ur_player the ring features must be activated
+            //// because if the ring is not activated the dss do not know the existence of the player
+            //// So we can not kick him, tp to him, tp in to next act ....
+            //nldebug("EnableR2Ed = %u, IsInRingSession = %u, UserRoleInSession = %u", (uint)ClientCfg.R2EDEnabled, (uint)IsInRingSession, userRole);
+
+            // updatePatcherPriorityBasedOnCharacters();
+
         }
-
-        static byte ServerPeopleActive = 255;
-        static byte ServerCareerActive = 255;
-
-        static List<CCharacterSummary> CharacterSummaries = new List<CCharacterSummary>();
 
         private static void impulseUserChars(CBitMemStream impulse)
         {
             // received USER_CHARS
             ConsoleIO.WriteLine("impulseCallBack : Received CONNECTION:USER_CHARS");
 
-            impulse.serial(ref ServerPeopleActive);
-            impulse.serial(ref ServerCareerActive);
+            impulse.serial(ref Connection.ServerPeopleActive);
+            impulse.serial(ref Connection.ServerCareerActive);
             // read characters summary
-            CharacterSummaries.Clear();
+            Connection.CharacterSummaries.Clear();
 
             // START WORKAROUND workaround for serialVector(T &cont) in stream.h TODO
             int len = 0;
@@ -753,32 +835,33 @@ namespace RCC.Network
             {
                 var cs = new CCharacterSummary();
                 cs.serial(impulse);
-                ConsoleIO.WriteLineFormatted("§eFound character " + cs.Name + " from shard " + cs.Mainland +
-                                             " in slot " + i);
-                CharacterSummaries.Add(cs);
+                ConsoleIO.WriteLineFormatted("§eFound character " + cs.Name + " from shard " + cs.Mainland + " in slot " + i);
+                Connection.CharacterSummaries.Add(cs);
             }
             // END WORKAROUND
 
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
+            ConsoleIO.WriteLineFormatted("st_ingame->st_reconnect_select_char");
+            Connection.SendCharSelection = true;
 
-            // Create the message for the server to select the first character.
-            var outP = new CBitMemStream(false);
-
-            if (GenericMsgHeaderMngr.pushNameToStream("CONNECTION:SELECT_CHAR", outP))
-            {
-                byte c = 0;
-                outP.serial(ref c);
-
-                push(outP);
-                send(NetworkConnection.getCurrentServerTick());
-                // send CONNECTION:USER_CHARS
-                ConsoleIO.WriteLineFormatted("impulseCallBack : CONNECTION:SELECT_CHAR sent");
-            }
-            else
-            {
-                ConsoleIO.WriteLineFormatted("§cimpulseCallBack : unknown message name : 'CONNECTION:SELECT_CHAR'.");
-            }
+            //// Create the message for the server to select the first character.
+            //var outP = new CBitMemStream(false);
+            //
+            //if (GenericMsgHeaderMngr.pushNameToStream("CONNECTION:SELECT_CHAR", outP))
+            //{
+            //    byte c = 0;
+            //    outP.serial(ref c);
+            //
+            //    push(outP);
+            //    send(NetworkConnection.getCurrentServerTick());
+            //    // send CONNECTION:USER_CHARS
+            //    ConsoleIO.WriteLineFormatted("impulseCallBack : CONNECTION:SELECT_CHAR sent");
+            //}
+            //else
+            //{
+            //    ConsoleIO.WriteLineFormatted("§cimpulseCallBack : unknown message name : 'CONNECTION:SELECT_CHAR'.");
+            //}
 
             // (FarTP) noUserChar = true; TODO ???
 
@@ -858,6 +941,29 @@ namespace RCC.Network
         private static void impulseDatabaseUpdatePlayer(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+        }
+    }
+
+    internal static class ChatMngr
+    {
+        public static void processTellString(CBitMemStream bms, object o)
+        {
+            uint CompressedIndex = 0;
+            uint SenderNameId = 0;
+            string Content = "";
+
+            // Serial. For tell message, there is no chat mode, coz we know we are in tell mode !
+            bms.serial(ref CompressedIndex);
+            bms.serial(ref SenderNameId);
+            bms.serial(ref Content);
+
+            ConsoleIO.WriteLineFormatted($"§f[{CompressedIndex}]{SenderNameId}§r tells you: §f{Content}");
+        }
+
+        public static void processChatString(CBitMemStream impulse, object o)
+        {
+            //throw new NotImplementedException();
+            ConsoleIO.WriteLineFormatted("§fChat message incoming, but I just don't know what to do now (yet)!");
         }
     }
 }

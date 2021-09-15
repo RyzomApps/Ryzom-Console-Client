@@ -63,9 +63,9 @@ namespace RCC.NetworkAction
 
         public override void pack(CBitMemStream message)
         {
-            byte[] obj = _Message.Buffer();
-            message.serial(ref obj);
-            //message.serialBufferWithSize((uint8*)_Message.buffer(), _Message.length());
+            //byte[] obj = _Message.Buffer();
+            //message.serial(ref obj);
+            message.serialBufferWithSize(_Message.Buffer(), _Message.Buffer().Length);
             //throw new System.NotImplementedException();
         }
     }
