@@ -1201,7 +1201,7 @@ namespace RCC.Network
                     break;
             }
 
-            Debug.Print("sendNormalMessage " + message);
+            //Debug.Print("sendNormalMessage " + message);
             _Connection.send(message.Buffer(), message.Length);
 
             _LastSendTime = ryzomGetLocalTime();
