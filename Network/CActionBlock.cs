@@ -7,7 +7,7 @@ namespace RCC.Network
 {
     internal class CActionBlock
     {
-        public int Cycle;
+        public uint Cycle;
         public int FirstPacket;
         public List<CAction> Actions = new List<CAction>();
         bool Success;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using RCC.Helper;
 using RCC.NetworkAction;
 
@@ -72,7 +73,7 @@ namespace RCC.Network
                     }
                     else
                     {
-                        ConsoleIO.WriteLine($"CLIMPD: discarded action {action.Code} (len={CActionFactory.size(action)}) at level {level} (channel {channel})");
+                        ConsoleIO.WriteLine($"§cCLIMPD: discarded action {action.Code} (len={CActionFactory.size(action)}) at level {level} (channel {channel})");
                         CActionFactory.remove(action);
                     }
                 }
@@ -81,6 +82,11 @@ namespace RCC.Network
                 {
                     //ConsoleIO.WriteLine($"CLIMPD: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
                 }
+            }
+
+            if (actions.Count > 0)
+            {
+                Debug.WriteLine(inbox);
             }
         }
 

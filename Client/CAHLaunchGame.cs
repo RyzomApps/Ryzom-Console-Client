@@ -1,4 +1,6 @@
-﻿using RCC.Config;
+﻿using System.Diagnostics;
+using RCC.Config;
+using RCC.Helper;
 using RCC.Msg;
 using RCC.Network;
 
@@ -55,7 +57,7 @@ namespace RCC.Client
                 //ClientCfg.writeInt("SelectedSlot", PlayerSelectedSlot);
                 //if (ClientCfg.SaveConfig)
                 //    ClientCfg.ConfigFile.save();
-                ClientCfg.SelectedSlot = Connection.PlayerSelectedSlot.ToString();
+                ClientCfg.SelectCharacter = Connection.PlayerSelectedSlot;
             }
 
 
@@ -102,7 +104,6 @@ namespace RCC.Client
             // Send CONNECTION:SELECT_CHAR
             var out2 = new CBitMemStream(false, 2);
             GenericMsgHeaderMngr.pushNameToStream("CONNECTION:SELECT_CHAR", out2);
-            //nlinfo("impulseCallBack : CONNECTION:SELECT_CHAR '%d' sent.", PlayerSelectedSlot);
 
 
             //CSelectCharMsg SelectCharMsg;
@@ -110,11 +111,17 @@ namespace RCC.Client
             out2.serial(ref c);
             //if (!ClientCfg.Local/*ace!ClientCfg.Light*/)
             //{
+
+            Debug.WriteLine(out2);
+
             NetworkManager.push(out2);
-            NetworkManager.send(NetworkConnection.getCurrentServerTick());
+
+            ConsoleIO.WriteLineFormatted("§aimpulseCallBack : CONNECTION:SELECT_CHAR '" + Connection.PlayerSelectedSlot + "' sent.");
+
+            //NetworkManager.send(NetworkConnection.getCurrentServerTick());
             //}
 
-            //PlayerWantToGoInGame = true;
+            // PlayerWantToGoInGame = true;
 
             //		CBitMemStream out2;
             //		if(GenericMsgHeaderMngr.pushNameToStream("CONNECTION:ENTER", out2))
@@ -128,6 +135,8 @@ namespace RCC.Client
             Connection.WaitServerAnswer = true;
             //if (ClientCfg.Local)
             //    serverReceivedReady = true;
+
+            //NetworkManager.serverReceivedReady = true;
         }
     };
 }

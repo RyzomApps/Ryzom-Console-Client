@@ -12,14 +12,15 @@ namespace RCC.NetworkAction
         public override void unpack(CBitMemStream message)
         {
             // Prepare _Message for output
-            _Message = new CBitMemStream(false);
+            _Message = new CBitMemStream(false, 0);
 
-            if (!_Message.isReading())
-                _Message.invert();
+            //if (!_Message.isReading())
+            //    _Message.invert();
 
             // Read size from message, and check to	avoid hacking!
             var size = 0;
             message.serial(ref size);
+
             if (size > 512 && ServerSide)
             {
                 throw new InvalidDataException();

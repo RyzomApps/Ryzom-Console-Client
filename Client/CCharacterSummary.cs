@@ -1,6 +1,6 @@
 ﻿namespace RCC.Network
 {
-	public class CCharacterSummary
+    public class CCharacterSummary
     {
 		public CCharacterSummary()
 		{
@@ -10,7 +10,7 @@
 			VisualPropA = 0;
 			VisualPropB = 0;
 			VisualPropC = 0;
-			People = 142;
+            People = (int)TPeople.Unknown; // 142;
 			Title = 238;
 			CharacterSlot = 255;
 			InRingSession = false;
@@ -32,7 +32,7 @@
 		long VisualPropB;
 		long VisualPropC;
 
-		int People;
+        public int People;
 
         public int SheetId;
 

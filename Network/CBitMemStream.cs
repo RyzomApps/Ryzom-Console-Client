@@ -106,8 +106,29 @@ namespace RCC.Network
                 Array.Copy(bits, 0, newBits, 16 - bits.Length, bits.Length);
 
                 var bytes = ConvertBoolArrayToByteArray(newBits);
-                byte[] reversed = bytes.Reverse().ToArray();
+                var reversed = bytes.Reverse().ToArray();
                 obj = BitConverter.ToInt16(reversed);
+            }
+            else
+            {
+                throw new NotImplementedException();
+                //var bytes = BitConverter.GetBytes(obj);
+                //AddToArray(bytes);
+            }
+        }
+
+        public void serial(ref uint obj, int nbits = 32)
+        {
+            if (isReading())
+            {
+                var bits = ReadFromArray(nbits);
+
+                var newBits = new bool[32];
+                Array.Copy(bits, 0, newBits, 32 - bits.Length, bits.Length);
+
+                var bytes = ConvertBoolArrayToByteArray(newBits);
+                var reversed = bytes.Reverse().ToArray();
+                obj = BitConverter.ToUInt32(reversed);
             }
             else
             {
@@ -194,13 +215,13 @@ namespace RCC.Network
             }
         }
 
-        internal void serialAndLog2(ref int obj, uint nbBits)
+        internal void serialAndLog2(ref uint obj, uint nbBits)
         {
             if (isReading())
             {
-                short value = -1;
-                serial(ref value, (int)nbBits);
-                obj = value;
+                //short value = -1;
+                serial(ref obj, (int)nbBits);
+                //obj = value;
                 return;
             }
 
@@ -315,22 +336,6 @@ namespace RCC.Network
             return result;
         }
 
-        public override string ToString()
-        {
-            string ret = "CBMemStream " + (isReading() ? "in" : "out") + "\r\n";
-
-            var bs = Buffer();
-            for (var index = 0; index < bs.Length; index++)
-            {
-                var b = bs[index];
-                ret += Convert.ToString(b, 2).PadLeft(8, '0') + " ";
-                //ret += Convert.ToString(b, 16).PadLeft(2, '0') + "";
-                if (index % 8 == 7) ret += "\r\n";
-            }
-
-            return ret;
-        }
-
 
         /// <summary>
         /// Transforms the message from input to output or from output to input
@@ -366,39 +371,24 @@ namespace RCC.Network
             _bitPos = 0;
         }
 
-        public void serialBuffer(CBitMemStream other, in int len)
+        public void serialBuffer(CBitMemStream buf, in int len)
         {
             uint i;
             byte v = 0x00;
 
             if (isReading())
             {
-                //var tmp = new byte[len];
-
-                //for (i = 0; i != len; ++i)
-                //{
-                //    serial(ref v);
-                //    //other.memcpy(new byte[] {v});
-                //    //other.Buffer()[i] = (byte)v;
-                //
-                //    tmp[i] = v;
-                //}
-
-                //var reversed = tmp.Reverse().ToArray();
-
-                // TODO: FIX THIS!!!
-                other._contentBits = (bool[])_contentBits.Clone();
-                other._bitPos = _bitPos;
-
-                //other._inputStream = this._inputStream;
-
-                //other.AddToArray(tmp);
+                for (i = 0; i != len; ++i)
+                {
+                    serial(ref v);
+                    buf.AddToArray(new[] { v });
+                }
             }
             else
             {
                 for (i = 0; i != len; ++i)
                 {
-                    v = other.Buffer()[i];
+                    v = buf.Buffer()[i];
                     serial(ref v);
                 }
             }
@@ -451,11 +441,42 @@ namespace RCC.Network
             return streamVersion;
         }
 
-
         public void serialBufferWithSize(byte[] buf, int len)
         {
             serial(ref len);
             serial(ref buf);
+        }
+
+        public override string ToString()
+        {
+            string ret = "CBMemStream " + (isReading() ? "in" : "out") + "\r\n";
+
+            if (false)
+            {
+                var bs = Buffer();
+                for (var index = 0; index < bs.Length; index++)
+                {
+                    var b = bs[index];
+                    ret += Convert.ToString(b, 2).PadLeft(8, '0') + " ";
+                    //ret += Convert.ToString(b, 16).PadLeft(2, '0') + "";
+                    if (index % 8 == 7) ret += "\r\n";
+                }
+            }
+            else
+            {
+                for (var index = 0; index < _contentBits.Length; index++)
+                {
+                    ret += _contentBits[index] ? "1" : "0";
+
+                    if (index % (8 * 8) == (8 * 8) - 1) ret += "\r\n";
+                    else if (index % 8 == 8 - 1) ret += " ";
+
+                    if (_bitPos == index) ret += "<B>";
+                }
+
+            }
+
+            return ret;
         }
     }
 }

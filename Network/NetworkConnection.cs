@@ -23,7 +23,7 @@ namespace RCC.Network
         private static long _LastReceivedNormalTime;
         private static int _AckBitMask;
         private static int _LastAckBit;
-        private static int _Synchronize;
+        private static uint _Synchronize;
         private static int _InstantPing;
         private static int _BestPing;
         private static int _LCT;
@@ -31,7 +31,7 @@ namespace RCC.Network
         private static int _LatestSync;
         private static int _DummySend;
         private static int _LastAckInLongAck;
-        public static int _LastSentCycle;
+        public static uint _LastSentCycle;
         private static int _TotalReceivedBytes;
         private static int _PartialReceivedBytes;
         private static int _TotalSentBytes;
@@ -83,8 +83,8 @@ namespace RCC.Network
         private static int _NormalPacketsReceived;
         private static int _TotalMessages;
 
-        private static int _CurrentClientTick;
-        private static int _CurrentServerTick;
+        private static uint _CurrentClientTick;
+        private static uint _CurrentServerTick;
 
         private static byte[] _ReceiveBuffer;
         private static bool _DecodedHeader;
@@ -153,20 +153,29 @@ namespace RCC.Network
             _SSTLastLocalTime = 0;
         }
 
+        static void initTicks()
+        {
+            _CurrentClientTick = 0;
+            _CurrentServerTick = 0;
+            _MsPerTick = 100;
+            //_LCT = LCT;
+        }
+
+
         public static void reinit()
         {
             // TODO Reset data 
-            //_ImpulseDecoder.reset();
+            CImpulseDecoder.reset();
             //if (_DataBase)
             //    _DataBase->resetData(_CurrentServerTick, true);
             _LongAckBitField = new byte[0];
             //_PacketStamps.clear();
-            //_Actions.clear();
+            _Actions.Clear();
             //_Changes.clear();
             _GenericMultiPartTemp.Clear();
             //_IdMap.clear();
             reset();
-            //initTicks();
+            initTicks();
 
             // Reuse the udp socket
             _Connection = new UdpSimSock();
@@ -417,7 +426,7 @@ namespace RCC.Network
                         _ConnectionState = ConnectionState.Connected;
                         //nlwarning("CNET[%p]: synchronize->connected", this);
                         //_Changes.push_back(CChange(0, ConnectionReady)); TODO
-                        //_ImpulseDecoder.reset();
+                        CImpulseDecoder.reset();
                         receiveNormalMessage(msgin);
                         return true;
                     }
@@ -435,26 +444,35 @@ namespace RCC.Network
         {
             //ConsoleIO.WriteLine("CNET: received normal message Packet=" + _LastReceivedNumber + " Ack=" + _LastReceivedAck);
 
+            if (msgin.Length == 61)
+            {
+                Debug.Print("");
+            }
+
             var actions = new List<CAction>();
             CImpulseDecoder.decode(msgin, _CurrentReceivedNumber, _LastReceivedAck, _CurrentSendNumber, actions);
 
             ++_NormalPacketsReceived;
 
-            // TODO: receiveNormalMessage _Actions stuff
-
             // we can now remove all old action that are acked
             while (_Actions.Count != 0 && _Actions[0].FirstPacket != 0 && _Actions[0].FirstPacket <= _LastReceivedAck)
             {
                 // warning, CActionBlock automatically remove() actions when deleted
+                //foreach (var action in _Actions[0].Actions)
+                //{
+                    ConsoleIO.WriteLine("removed action " + _Actions[0]);
+                //}
+            
                 _Actions.RemoveAt(0);
             }
 
-            _CurrentServerTick = _CurrentReceivedNumber * 2 + _Synchronize;
+            Debug.Assert(_CurrentReceivedNumber * 2 + _Synchronize > _CurrentServerTick);
+            _CurrentServerTick = (uint)(_CurrentReceivedNumber * 2 + _Synchronize);
 
             // TODO: receiveNormalMessage PacketStamps stuff
 
             // Decode the actions received in the impulsions
-            for (int i = 0; i < actions.Count; i++)
+            for (var i = 0; i < actions.Count; i++)
             {
                 switch (actions[i].Code)
                 {
@@ -489,9 +507,224 @@ namespace RCC.Network
             }
 
             // Decode the visual properties
-            // TODO decodeVisualProperties(msgin);
+            decodeVisualProperties(msgin);
 
             _LastReceivedNormalTime = _UpdateTime;
+        }
+
+        static void decodeVisualProperties(CBitMemStream msgin)
+        {
+            // todo decodeVisualProperties -> adding _Changes
+            try
+            {
+                //nldebug( "pos: %d  len: %u", msgin.getPos(), msgin.length() );
+                while (false)
+                {
+                    ////nlinfo( "Reading pass %u, BEFORE HEADER: pos: %d  len: %u", ++i, msgin.getPosInBit(), msgin.length() * 8 );
+                    //
+                    //// Check if there is a new block to read
+                    if (msgin.getPosInBit() + (sizeof(byte) * 8) > msgin.Length * 8)
+                        return;
+                    //
+                    //
+                    //
+                    //// Header
+                    //TCLEntityId slot;
+                    //msgin.serialAndLog1(slot);
+                    //
+                    //uint associationBits;
+                    //msgin.serialAndLog2(associationBits, 2);
+                    ////nlinfo( "slot %hu AB: %u", (uint16)slot, associationBits );
+                    //if (associationBitsHaveChanged(slot, associationBits) && (!IgnoreEntityDbUpdates || slot == 0))
+                    //{
+                    //    //displayBitStream( msgin, beginbitpos, msgin.getPosInBit() );
+                    //    //			   nlinfo ("Disassociating S%hu (AB %u)", (uint16)slot, associationBits );
+                    //    if (_PropertyDecoder.isUsed(slot))
+                    //    {
+                    //        TSheetId sheet = _PropertyDecoder.sheet(slot);
+                    //        TIdMap::iterator it = _IdMap.find(sheet);
+                    //        if (it != _IdMap.end())
+                    //            _IdMap.erase(it);
+                    //        _PropertyDecoder.removeEntity(slot);
+                    //
+                    //        CChange theChange(slot, RemoveOldEntity );
+                    //        _Changes.push_back(theChange);
+                    //    }
+                    //    else
+                    //    {
+                    //        //					nlinfo( "Cannot disassociate slot %hu: sheet not received yet", (uint16)slot );
+                    //    }
+                    //}
+                    //
+                    //// Read the timestamp delta if there's one (otherwise take _CurrentServerTick)
+                    //TGameCycle timestamp;
+                    //bool timestampIsThere;
+                    //msgin.serialBitAndLog(timestampIsThere);
+                    //if (timestampIsThere)
+                    //{
+                    //    uint timestampDelta;
+                    //    msgin.serialAndLog2(timestampDelta, 4);
+                    //    timestamp = _CurrentServerTick - timestampDelta;
+                    //    //nldebug( "TD: %u (S%hu)", timestampDelta, (uint16)slot );
+                    //}
+                    //else
+                    //{
+                    //    timestamp = _CurrentServerTick;
+                    //}
+                    //
+                    //// Tree
+                    ////nlinfo( "AFTER HEADER: posBit: %d pos: %d  len: %u", msgin.getPosInBit(), msgin.getPos(), msgin.length() );
+                    //
+                    //TVPNodeClient* currentNode = _VisualPropertyTreeRoot;
+                    //msgin.serialBitAndLog(currentNode->a()->BranchHasPayload);
+                    //if (currentNode->a()->BranchHasPayload)
+                    //{
+                    //    CActionPosition* ap = (CActionPosition*)CActionFactory::getInstance()->create(slot, ACTION_POSITION_CODE);
+                    //    ap->unpack(msgin);
+                    //    _PropertyDecoder.receive(_CurrentReceivedNumber, ap);
+                    //
+                    //    /*
+                    //     * Set into property database
+                    //     */
+                    //
+                    //    // TEMP
+                    //    if (ap->Position[0] == 0 || ap->Position[1] == 0)
+                    //        nlwarning("S%hu: Receiving an invalid position", (uint16)slot);
+                    //
+                    //    if (_DataBase != NULL && (!IgnoreEntityDbUpdates || slot == 0))
+                    //    {
+                    //        CCDBNodeBranch* nodeRoot;
+                    //        nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->getNode((uint16)0));
+                    //        if (nodeRoot)
+                    //        {
+                    //            CCDBNodeLeaf* node;
+                    //            node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(0));
+                    //            nlassert(node != NULL);
+                    //            node->setValue64(ap->Position[0]);
+                    //            node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(1));
+                    //            nlassert(node != NULL);
+                    //            node->setValue64(ap->Position[1]);
+                    //            node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(2));
+                    //            nlassert(node != NULL);
+                    //            node->setValue64(ap->Position[2]);
+                    //
+                    //            if (LoggingMode)
+                    //            {
+                    //                nlinfo("recvd position (%d,%d) for slot %hu, date %u", (sint32)(ap->Position[0]), (sint32)(ap->Position[1]), (uint16)slot, timestamp);
+                    //            }
+                    //        }
+                    //    }
+                    //
+                    //    bool interior = ap->Interior;
+                    //
+                    //    CActionFactory::getInstance()->remove((CAction * &)ap);
+                    //
+                    //
+                    //    /*
+                    //     * Statistical prediction of time before next position update: set PredictedInterval
+                    //     */
+                    //
+                    //    //nlassert( MAX_POSUPDATETICKQUEUE_SIZE > 1 );
+                    //    deque<TGameCycle> & puTicks = _PosUpdateTicks[slot];
+                    //    multiset<TGameCycle> & puIntervals = _PosUpdateIntervals[slot];
+                    //
+                    //    // Flush the old element of tick queue and of the interval sorted set
+                    //    if (puTicks.size() == MAX_POSUPDATETICKQUEUE_SIZE)
+                    //    {
+                    //        puIntervals.erase(puIntervals.find(puTicks[1] - puTicks[0])); // erase only one element, not all corresponding to the value
+                    //        puTicks.pop_front();
+                    //    }
+                    //
+                    //    // Add a new element to the tick queue and possibly to the interval sorted set
+                    //    // Still to choose: _CurrentServerTick or timestamp ?
+                    //    TGameCycle latestInterval = 0;
+                    //    if (!puTicks.empty())
+                    //    {
+                    //        latestInterval = timestamp - puTicks.back();
+                    //        puIntervals.insert(latestInterval);
+                    //
+                    //        if (PosUpdateIntervalGraph)
+                    //            PosUpdateIntervalGraph->addOneValue(slot, (float)latestInterval);
+                    //    }
+                    //    puTicks.push_back(timestamp);
+                    //
+                    //    nlassert(puTicks.size() == puIntervals.size() + 1);
+                    //
+                    //    // Prediction function : Percentile(25 last, 0.8) + 1
+                    //    TGameCycle predictedInterval;
+                    //    if (puIntervals.empty())
+                    //    {
+                    //        predictedInterval = 0;
+                    //    }
+                    //    else
+                    //    {
+                    //        predictedInterval = (TGameCycle)(percentileRev(puIntervals, PREDICTION_REV_PERCENTILE) + 1);
+                    //
+                    //        //if ( predictedInterval > 100 )
+                    //        //	nlwarning( "Slot %hu: Predicted interval %u exceeds 100 ticks", (uint16)slot, predictedInterval );
+                    //
+                    //        if (PosUpdatePredictionGraph)
+                    //            PosUpdatePredictionGraph->addOneValue(slot, (float)predictedInterval);
+                    //    }
+                    //
+                    //    //nlinfo( "Slot %hu: Interval=%u Predicted=%u", (uint16)slot, latestInterval, predictedInterval );
+                    //
+                    //    /*
+                    //     * Add into the changes vector
+                    //     */
+                    //    CChange thechange(slot, PROPERTY_POSITION, timestamp );
+                    //    thechange.PositionInfo.PredictedInterval = predictedInterval;
+                    //    thechange.PositionInfo.IsInterior = interior;
+                    //    _Changes.push_back(thechange);
+                    //}
+                    //
+                    //currentNode = currentNode->b();
+                    //msgin.serialBitAndLog(currentNode->BranchHasPayload);
+                    //if (currentNode->BranchHasPayload)
+                    //{
+                    //    msgin.serialBitAndLog(currentNode->a()->BranchHasPayload);
+                    //    if (currentNode->a()->BranchHasPayload)
+                    //    {
+                    //        CActionSint64* ac = (CActionSint64*)CActionFactory::getInstance()->createByPropIndex(slot, PROPERTY_ORIENTATION);
+                    //        ac->unpack(msgin);
+                    //
+                    //        // Process orientation
+                    //        CChange thechange(slot, PROPERTY_ORIENTATION, timestamp);
+                    //        _Changes.push_back(thechange);
+                    //
+                    //        if (_DataBase != NULL && (!IgnoreEntityDbUpdates || slot == 0))
+                    //        {
+                    //            CCDBNodeBranch* nodeRoot;
+                    //            nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->getNode(0));
+                    //            if (nodeRoot)
+                    //            {
+                    //                CCDBNodeLeaf* node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(PROPERTY_ORIENTATION));
+                    //                nlassert(node != NULL);
+                    //                node->setValue64(ac->getValue());
+                    //                if (LoggingMode)
+                    //                {
+                    //                    nlinfo("CLIENT: recvd property %hu (%s) for slot %hu, date %u", (uint16)PROPERTY_ORIENTATION, getPropText(PROPERTY_ORIENTATION), (uint16)slot, timestamp);
+                    //                }
+                    //                //nldebug("CLPROPNET[%p]: received property %d for entity %d: %" NL_I64 "u", this, action->PropIndex, action->CLEntityId, action->getValue());
+                    //            }
+                    //        }
+                    //
+                    //        CActionFactory::getInstance()->remove((CAction * &)ac);
+                    //    }
+                    //
+                    //    TVPNodeClient::SlotContext.NetworkConnection = this;
+                    //    TVPNodeClient::SlotContext.Slot = slot;
+                    //    TVPNodeClient::SlotContext.Timestamp = timestamp;
+                    //
+                    //    // Discreet properties
+                    //    currentNode->b()->decodeDiscreetProperties(msgin);
+                    //}
+                }
+            }
+            catch (Exception e)
+            {
+                // End of stream (saves useless bits)
+            }
         }
 
         static void genericAction(CActionGeneric ag)
@@ -753,9 +986,9 @@ namespace RCC.Network
             _MsPerTick = 100;           // initial values
 
             //#pragma message ("HALF_FREQUENCY_SENDING_TO_CLIENT")
-            _CurrentServerTick = _Synchronize + _CurrentReceivedNumber * 2;
+            _CurrentServerTick = (uint)(_Synchronize + _CurrentReceivedNumber * 2);
 
-            _CurrentClientTick = (int)(_CurrentServerTick - (_LCT + _MsPerTick) / _MsPerTick);
+            _CurrentClientTick = (uint)(_CurrentServerTick - (_LCT + _MsPerTick) / _MsPerTick);
             _CurrentClientTime = _UpdateTime - (_LCT + _MsPerTick);
 
             //nlinfo( "CNET[%p]: received SYNC %" NL_I64 "u %" NL_I64 "u - _CurrentReceivedNumber=%d _CurrentServerTick=%d", this, (uint64)_Synchronize, (uint64)stime, _CurrentReceivedNumber, _CurrentServerTick );
@@ -939,7 +1172,7 @@ namespace RCC.Network
             message.serial(ref _UserId);
 
             // todo: find out why 2 xD - string terminator?
-            int unf = 2;
+            var unf = 2;
             message.serial(ref unf);
 
             message.serial(ref ClientCfg.LanguageCode);
@@ -993,72 +1226,72 @@ namespace RCC.Network
 
             //try
             //{
-                // State automaton
-                bool stateBroke = false;
-                do
+            // State automaton
+            bool stateBroke = false;
+            do
+            {
+                switch (_ConnectionState)
                 {
-                    switch (_ConnectionState)
-                    {
-                        case ConnectionState.Login:
-                            // if receives System SYNC
-                            //    immediate state Synchronize
-                            // else
-                            //    sends System LoginCookie
-                            stateBroke = stateLogin();
-                            break;
+                    case ConnectionState.Login:
+                        // if receives System SYNC
+                        //    immediate state Synchronize
+                        // else
+                        //    sends System LoginCookie
+                        stateBroke = stateLogin();
+                        break;
 
-                        case ConnectionState.Synchronize:
-                            // if receives System PROBE
-                            //    immediate state Probe
-                            // else if receives Normal
-                            //    immediate state Connected
-                            // else
-                            //    sends System ACK_SYNC
-                            stateBroke = stateSynchronize();
-                            break;
+                    case ConnectionState.Synchronize:
+                        // if receives System PROBE
+                        //    immediate state Probe
+                        // else if receives Normal
+                        //    immediate state Connected
+                        // else
+                        //    sends System ACK_SYNC
+                        stateBroke = stateSynchronize();
+                        break;
 
-                        case ConnectionState.Connected:
-                            // if receives System PROBE
-                            //    immediate state Probe
-                            // else if receives Normal
-                            //	   sends Normal data
-                            stateBroke = stateConnected();
-                            break;
+                    case ConnectionState.Connected:
+                        // if receives System PROBE
+                        //    immediate state Probe
+                        // else if receives Normal
+                        //	   sends Normal data
+                        stateBroke = stateConnected();
+                        break;
 
-                        case ConnectionState.Probe:
-                            // if receives System SYNC
-                            //    immediate state SYNC
-                            // else if receives System PROBE
-                            //    decode PROBE
-                            // sends System ACK_PROBE
-                            stateBroke = stateProbe();
-                            break;
+                    case ConnectionState.Probe:
+                        // if receives System SYNC
+                        //    immediate state SYNC
+                        // else if receives System PROBE
+                        //    decode PROBE
+                        // sends System ACK_PROBE
+                        stateBroke = stateProbe();
+                        break;
 
-                        case ConnectionState.Stalled:
-                            // if receives System SYNC
-                            //    immediate state SYNC
-                            // else if receives System STALLED
-                            //    decode STALLED (nothing to do)
-                            // else if receives System PROBE
-                            //    immediate state PROBE
-                            stateBroke = stateStalled();
-                            break;
+                    case ConnectionState.Stalled:
+                        // if receives System SYNC
+                        //    immediate state SYNC
+                        // else if receives System STALLED
+                        //    decode STALLED (nothing to do)
+                        // else if receives System PROBE
+                        //    immediate state PROBE
+                        stateBroke = stateStalled();
+                        break;
 
-                        case ConnectionState.Quit:
-                            // if receives System SYNC
-                            //    immediate state Synchronize
-                            // else
-                            //    sends System LoginCookie
-                            stateBroke = stateQuit();
-                            break;
+                    case ConnectionState.Quit:
+                        // if receives System SYNC
+                        //    immediate state Synchronize
+                        // else
+                        //    sends System LoginCookie
+                        stateBroke = stateQuit();
+                        break;
 
-                        default:
-                            // Nothing here !
-                            stateBroke =
-                                false; // will come here if a disconnection action is received inside a method that returns true
-                            break;
-                    }
-                } while (stateBroke); // && _TotalMessages<5);
+                    default:
+                        // Nothing here !
+                        stateBroke =
+                            false; // will come here if a disconnection action is received inside a method that returns true
+                        break;
+                }
+            } while (stateBroke); // && _TotalMessages<5);
             //}
             //catch (Exception)
             //{
@@ -1076,12 +1309,12 @@ namespace RCC.Network
             return _TotalMessages != 0;
         }
 
-        public static int getCurrentServerTick()
+        public static uint getCurrentServerTick()
         {
             return _CurrentServerTick;
         }
 
-        public static void send(in int cycle)
+        public static void send(in uint cycle)
         {
             try
             {
@@ -1193,6 +1426,8 @@ namespace RCC.Network
                 block.serial(message);
                 ++numPacked;
 
+                break; // TODO remove that - only for testing
+
                 //nldebug("CNET[%p]: packed block %d, message is currently %d bits long", this, block.Cycle, message.getPosInBit());
 
                 // Prevent to send a message too big
@@ -1296,6 +1531,8 @@ namespace RCC.Network
             }
             else
             {
+                throw new NotImplementedException();
+
                 CAction casted = ag;
                 CActionFactory.remove(casted);
                 ag = null;
@@ -1311,8 +1548,6 @@ namespace RCC.Network
                 int nbBlock = (bytelen + availableSize - 1) / availableSize;
 
                 byte num = _ImpulseMultiPartNumber++;
-
-                throw new NotImplementedException();
 
                 //for (int i = 0; i < nbBlock; i++)
                 //{

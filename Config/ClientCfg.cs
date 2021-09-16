@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
@@ -13,11 +14,7 @@ namespace RCC.Config
 
     public static class ClientCfg
     {
-        // Logging
-        public enum FilterModeEnum { Blacklist, Whitelist }
-        public static Regex ChatFilter = null;
-        public static Regex DebugFilter = null;
-        public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
+        // === RYZOM STUFF
 
         public static string StartupHost = "shard.ryzom.com:40916";
         public static string StartupPage = "/login/r2_login.php";
@@ -30,10 +27,28 @@ namespace RCC.Config
 
         public static string Username = "";
         public static string Password = "";
-        public static string SelectedSlot { get; set; }
-        public static string UserSheet { get; internal set; }
+        public static int SelectCharacter = 0;
+
+        public static string UserSheet;
 
         //public static int SBSPortOffset = 1000;
+
+        // === NON RYZOM STUFF
+
+        // Custom app variables 
+        private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
+
+        // Logging
+        public enum FilterModeEnum { Blacklist, Whitelist }
+        public static Regex ChatFilter = null;
+        public static Regex DebugFilter = null;
+        public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
+        public static bool LogToFile = false;
+        public static string LogFile = "console-log.txt";
+        public static bool PrependTimestamp = false;
+
+        //Other Settings
+        public static char internalCmdChar = '/';
 
         /// <summary>
         /// Load settings from the given INI file
@@ -129,6 +144,10 @@ namespace RCC.Config
 
                 case "password":
                     Password = argValue;
+                    return true;
+
+                case "selectcharacter":
+                    SelectCharacter = int.Parse(argValue);
                     return true;
 
                 default:

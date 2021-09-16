@@ -15,7 +15,7 @@ namespace RCC.Msg
         public static void init(string filename)
         {
             // open xml file
-            XmlDocument file = new XmlDocument();
+            var file = new XmlDocument();
 
             try
             {
@@ -24,7 +24,7 @@ namespace RCC.Msg
             }
             catch
             {
-                ConsoleIO.WriteLine("Cannot open xml file '" + filename + "', unable to initialize generic messages");
+                ConsoleIO.WriteLine($"§cCannot open xml file '{filename}', unable to initialize generic messages");
                 return;
             }
 
@@ -42,7 +42,7 @@ namespace RCC.Msg
             // check root
             if (_Root == null)
             {
-                ConsoleIO.WriteLine("Can't set callback for message '" + msgName + "', Root not properly initialized.");
+                ConsoleIO.WriteLine($"Can't set callback for message '{msgName}', Root not properly initialized.");
                 return false;
             }
 
@@ -52,7 +52,7 @@ namespace RCC.Msg
             // check node
             if (node == null)
             {
-                ConsoleIO.WriteLine("Can't set callback for message '" + msgName + "', message not found.");
+                ConsoleIO.WriteLine($"§cCan't set callback for message '{msgName}', message not found.");
                 return false;
             }
 
@@ -70,21 +70,21 @@ namespace RCC.Msg
             // check root
             if (_Root == null)
             {
-                ConsoleIO.WriteLine("Can't execute message , Root not properly initialized.");
+                ConsoleIO.WriteLine("§cCan't execute message , Root not properly initialized.");
                 return;
             }
 
-            CNode node = _Root.select(strm);
+            var node = _Root.select(strm);
 
             // check node
             if (node == null)
             {
-                ConsoleIO.WriteLine("Can't execute stream, no valid sequence found");
+                ConsoleIO.WriteLine("§cCan't execute stream, no valid sequence found");
             }
             // check callback
             else if (node.Callback == null)
             {
-                ConsoleIO.WriteLineFormatted("§cCan't execute msg '" + node.Name + "', no callback set");
+                ConsoleIO.WriteLineFormatted($"§cCan't execute msg '{node.Name}', no callback set");
             }
             // execute callback
             else
@@ -99,7 +99,7 @@ namespace RCC.Msg
 
             if (!res)
             {
-                ConsoleIO.WriteLineFormatted("§epushNameToStream failed: Unknown message name '" + msgName + "'");
+                ConsoleIO.WriteLineFormatted($"§epushNameToStream failed: Unknown message name '{msgName}'");
             }
 
             return res;

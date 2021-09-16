@@ -18,7 +18,7 @@ namespace RCC.NetworkAction
 
             // 32 1 32 1 1 1 2
 
-            if (message.Length * 8 - message.Pos >= 8)
+            if (message.Length * 8 - message.getPosInBit() >= 8)
             {
                 TActionCode code;
 
@@ -27,24 +27,22 @@ namespace RCC.NetworkAction
 
                 if (shortcode)
                 {
-                    //code = 0;
-                    short val = 0;
+                    uint val = 0;
                     message.serial(ref val, 2);
                     code = (TActionCode)val;
                 }
                 else
                 {
-                    byte codeB = 0;
-                    message.serial(ref codeB);
-                    code = (TActionCode)codeB;
+                    byte val = 0;
+                    message.serial(ref val);
+                    code = (TActionCode)val;
                 }
 
-                // todo: need the right action here i think ;)
                 action = create(INVALID_SLOT, code);
 
                 if (action == null)
                 {
-                    ConsoleIO.WriteLine($"Unpacking an action with unknown code, skip it ({code})");
+                    ConsoleIO.WriteLineFormatted($"§cUnpacking an action with unknown code, skip it ({code})");
                 }
                 else
                 {
@@ -175,7 +173,7 @@ namespace RCC.NetworkAction
             {
                 // short code (0 1 2 3)
                 bool shortcode = true;
-                int code = (short)action.Code;
+                uint code = (uint)action.Code;
                 message.serial(ref shortcode);
                 message.serialAndLog2(ref code, 2);
             }

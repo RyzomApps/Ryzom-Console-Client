@@ -1,6 +1,6 @@
 ﻿namespace RCC.Network
 {
-    public enum TActionCode
+    public enum TActionCode : byte
     {
         ACTION_POSITION_CODE = 0,
         ACTION_GENERIC_CODE = 1,

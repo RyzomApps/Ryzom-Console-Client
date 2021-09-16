@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using RCC.Config;
 using RCC.Helper;
 
@@ -15,7 +16,7 @@ namespace RCC
     /// </summary>
     internal class Program
     {
-        private static readonly RyzomClient Client = new RyzomClient();
+        private static RyzomClient _client;
 
         public static string[] Startupargs;
 
@@ -77,9 +78,7 @@ namespace RCC
             }
             else ClientCfg.WriteDefaultSettings("client.cfg");
 
-            // TODO: session caching
-
-            //Asking the user to type in missing data such as Username and Password
+            // Asking the user to type in missing data such as Username and Password
             if (ClientCfg.Username == "")
             {
                 ConsoleIO.WriteLineFormatted("§dPlease enter your username:");
@@ -94,27 +93,15 @@ namespace RCC
             ExitCleanUp.Add(delegate
             {
                 // Do NOT use Program.Exit() as creating new Thread cause program to freeze
-                if (Client == null) return;
+                if (_client == null) return;
 
-                Client.Disconnect(); ConsoleIO.Reset();
+                _client.Disconnect(); ConsoleIO.Reset();
                 //if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
                 //if (ClientCfg.playerHeadAsIcon) { ConsoleIcon.revertToRCCIcon(); }
             });
 
             Startupargs = args;
-
-            //try
-            //{
-                Client.Connect();
-            //}
-            //catch (Exception e)
-            //{
-            //    ConsoleIO.WriteLine(e.Message);
-            //    Console.Read();
-            //    return;
-            //}
-
-            Console.Read();
+            InitializeClient();
         }
 
         /// <summary>
@@ -129,10 +116,19 @@ namespace RCC
             if (ConsoleIO.BasicIO) return;
 
             //Hide password length
-            Console.CursorTop--; Console.Write("********");
+            Console.CursorTop--; Console.Write(@"********");
             for (var i = 9; i < Console.BufferWidth; i++) { Console.Write(' '); }
             Console.WriteLine();
         }
+
+        /// <summary>
+        /// Start a new Client
+        /// </summary>
+        private static void InitializeClient()
+        {
+            _client = new RyzomClient();
+        }
+
 
         /// <summary>
         /// Detect if the user is running Ryzom Console Client through Mono
@@ -161,6 +157,20 @@ namespace RCC
                 .GetCustomAttributes(typeof(AssemblyConfigurationAttribute), false)
                 .FirstOrDefault() is AssemblyConfigurationAttribute attribute)
                 BuildInfo = attribute.Configuration;
+        }
+
+        /// <summary>
+        /// Disconnect the current client from the server and exit the app
+        /// </summary>
+        public static void Exit(int exitcode = 0)
+        {
+            new Thread(new ThreadStart(delegate
+            {
+                if (_client != null) { _client.Disconnect(); ConsoleIO.Reset(); }
+                //if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                //if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToRCCIcon(); }
+                Environment.Exit(exitcode);
+            })).Start();
         }
     }
 }

@@ -9,7 +9,10 @@ namespace RCC.Network
 {
     public class Login
     {
-        public static string checkLogin(RyzomClient client, string login, string password, string clientApp, string customParameters)
+        /// <summary>
+        /// NETWORK CONNECTION
+        /// </summary>
+        public static void checkLogin(RyzomClient client, string login, string password, string clientApp, string customParameters)
         {
             var url = "http://" + ClientCfg.StartupHost + ClientCfg.StartupPage;
 
@@ -112,9 +115,12 @@ namespace RCC.Network
                 }
             }
 
-            return responseString;
+            return;
         }
 
+        /// <summary>
+        /// ask server for salt
+        /// </summary>
         private static string GetServerSalt(string login, string url)
         {
             var urlSalt = $"{url}?cmd=ask&cp=2&login={login}&lg={ClientCfg.LanguageCode}";
