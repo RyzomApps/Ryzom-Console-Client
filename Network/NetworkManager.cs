@@ -863,7 +863,7 @@ namespace RCC.Network
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
             ConsoleIO.WriteLineFormatted("st_ingame->st_select_char");
-            Connection.SendCharSelection = true;
+            Connection.AutoSendCharSelection = true;
 
             //// Create the message for the server to select the first character.
             //var outP = new CBitMemStream(false);

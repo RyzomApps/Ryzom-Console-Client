@@ -23,6 +23,6 @@ namespace RCC.Client
         public static bool CharNameValidArrived;
 
         // non ryzom variables (for workarounds)
-        public static bool SendCharSelection = false;
+        public static bool AutoSendCharSelection = false;
     }
 }

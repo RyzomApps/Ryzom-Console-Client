@@ -716,27 +716,28 @@ namespace RCC
                 // SERVER INTERACTIONS WITH INTERFACE
                 if (Connection.WaitServerAnswer)
                 {
-                    //if (Connection.SendCharSelection)
-                    //{
-                    //    var charSelect = -1;
-                    //
-                    //    if (ClientCfg.SelectCharacter != -1)
-                    //        charSelect = ClientCfg.SelectCharacter;
-                    //
-                    //    Connection.WaitServerAnswer = false;
-                    //
-                    //    // check that the pre selected character is available
-                    //    if (Connection.CharacterSummaries[charSelect].People == (int)TPeople.Unknown || charSelect > 4)
-                    //    {
-                    //        // BAD ! preselected char does not exist
-                    //        throw new InvalidOperationException("preselected char does not exist");
-                    //    }
-                    //
-                    //    // Auto-selection for fast launching (dev only)
-                    //    //CAHManager::getInstance()->runActionHandler("launch_game", NULL, toString("slot=%d|edit_mode=0", charSelect));
-                    //    Connection.SendCharSelection = false;
-                    //    CAHLaunchGame.execute("0");
-                    //}
+                    // Should we send the char selection without any user interaction?
+                    if (Connection.AutoSendCharSelection)
+                    {
+                        var charSelect = -1;
+                    
+                        if (ClientCfg.SelectCharacter != -1)
+                            charSelect = ClientCfg.SelectCharacter;
+                    
+                        Connection.WaitServerAnswer = false;
+                    
+                        // check that the pre selected character is available
+                        if (Connection.CharacterSummaries[charSelect].People == (int)TPeople.Unknown || charSelect > 4)
+                        {
+                            // BAD ! preselected char does not exist
+                            throw new InvalidOperationException("preselected char does not exist");
+                        }
+                    
+                        // Auto-selection for fast launching (dev only)
+                        //CAHManager::getInstance()->runActionHandler("launch_game", NULL, toString("slot=%d|edit_mode=0", charSelect));
+                        Connection.AutoSendCharSelection = false;
+                        CAHLaunchGame.execute(charSelect.ToString());
+                    }
 
                     // Clear sending buffer that may contain prevous QUIT_GAME when getting back to the char selection screen
                     NetworkConnection.flushSendBuffer();

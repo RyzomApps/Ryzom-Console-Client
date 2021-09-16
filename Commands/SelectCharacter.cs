@@ -15,7 +15,7 @@ namespace RCC.Commands
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
-            if (Connection.SendCharSelection)
+            if (Connection.AutoSendCharSelection)
             {
                 var charSelect = -1;
             
@@ -33,7 +33,7 @@ namespace RCC.Commands
             
                 // Auto-selection for fast launching (dev only)
                 //CAHManager::getInstance()->runActionHandler("launch_game", NULL, toString("slot=%d|edit_mode=0", charSelect));
-                Connection.SendCharSelection = false;
+                Connection.AutoSendCharSelection = false;
                 CAHLaunchGame.execute("0");
             }
             else
