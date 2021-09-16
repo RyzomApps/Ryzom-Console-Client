@@ -285,7 +285,7 @@ namespace RCC
         /// <param name="text">Text to send to the server</param>
         public void SendText(string text)
         {
-            const int maxLength = 128;
+            const int maxLength = 255;
 
             lock (chatQueue)
             {

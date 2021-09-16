@@ -9,6 +9,10 @@ namespace RCC.Client
 {
     internal static class CStringManagerClient
     {
+        static Dictionary<string, string> _DynStrings = new Dictionary<string, string>();
+        static Dictionary<uint, TDynStringInfo> _ReceivedDynStrings = new Dictionary<uint, TDynStringInfo>();
+        static Dictionary<uint, TDynStringInfo> _WaitingDynStrings = new Dictionary<uint, TDynStringInfo>();
+
         public static void receiveDynString(CBitMemStream bms)
         {
             //H_AUTO(CStringManagerClient_receiveDynString)
@@ -23,55 +27,55 @@ namespace RCC.Client
             uint stringId = 0;
             bms.serial(/*dynInfo.*/ref stringId);
 
-            ConsoleIO.WriteLine($"Received DynString with dynID {dynId} and StringID {stringId}. This is not implemented yet!");
-
             //// try to build the string
             dynInfo.Message = bms;
             buildDynString(dynInfo);
 
-            //if (dynInfo.Status == TDynStringInfo.complete)
-            //{
-            //    if (!ClientCfg.Light)
-            //    {
-            //        //nlinfo("DynString %u available : [%s]", dynId, dynInfo.String.toString().c_str());
-            //    }
-            //
-            //    _ReceivedDynStrings.insert(std.make_pair(dynId, dynInfo));
-            //    // security, if dynstring Message received twice, it is possible that the dynstring is still in waiting list
-            //    _WaitingDynStrings.erase(dynId);
-            //
-            //    // update the waiting dyn strings
-            //    {
-            //        std.pair<TStringWaitersContainer.iterator, TStringWaitersContainer.iterator> range =
-            //            _DynStringsWaiters.equal_range(dynId);
-            //
-            //        if (range.first != range.second)
-            //        {
-            //            for (; range.first != range.second; ++range.first)
-            //            {
-            //                TStringWaiter & sw = range.first->second;
-            //                *(sw.Result) = dynInfo.String;
-            //            }
-            //            _DynStringsWaiters.erase(dynId);
-            //        }
-            //    }
-            //    // callback the waiting dyn strings
-            //    {
-            //        std.pair<TStringCallbacksContainer.iterator, TStringCallbacksContainer.iterator> range =
-            //            _DynStringsCallbacks.equal_range(dynId);
-            //
-            //        if (range.first != range.second)
-            //        {
-            //            for (; range.first != range.second; ++range.first)
-            //            {
-            //                range.first->second->onDynStringAvailable(dynId, dynInfo.String);
-            //            }
-            //            _DynStringsCallbacks.erase(dynId);
-            //        }
-            //    }
-            //}
-            //else
-            //    _WaitingDynStrings.insert(std.make_pair(dynId, dynInfo));
+            ConsoleIO.WriteLine($"Received DynString with dynID {dynId} and StringID {stringId}: " + dynInfo.String);
+
+            if (dynInfo.Status == TDynStringInfo.TStatus.complete)
+            {
+                //    if (!ClientCfg.Light)
+                //    {
+                //        //nlinfo("DynString %u available : [%s]", dynId, dynInfo.String.toString().c_str());
+                //    }
+                //
+                _ReceivedDynStrings.Add(dynId, dynInfo);
+                //    // security, if dynstring Message received twice, it is possible that the dynstring is still in waiting list
+                _WaitingDynStrings.Remove(dynId);
+                //
+                //    // update the waiting dyn strings
+                //    {
+                //        std.pair<TStringWaitersContainer.iterator, TStringWaitersContainer.iterator> range =
+                //            _DynStringsWaiters.equal_range(dynId);
+                //
+                //        if (range.first != range.second)
+                //        {
+                //            for (; range.first != range.second; ++range.first)
+                //            {
+                //                TStringWaiter & sw = range.first->second;
+                //                *(sw.Result) = dynInfo.String;
+                //            }
+                //            _DynStringsWaiters.erase(dynId);
+                //        }
+                //    }
+                //    // callback the waiting dyn strings
+                //    {
+                //        std.pair<TStringCallbacksContainer.iterator, TStringCallbacksContainer.iterator> range =
+                //            _DynStringsCallbacks.equal_range(dynId);
+                //
+                //        if (range.first != range.second)
+                //        {
+                //            for (; range.first != range.second; ++range.first)
+                //            {
+                //                range.first->second->onDynStringAvailable(dynId, dynInfo.String);
+                //            }
+                //            _DynStringsCallbacks.erase(dynId);
+                //        }
+                //    }
+            }
+            else
+                _WaitingDynStrings.Add(dynId, dynInfo);
         }
 
         private static bool buildDynString(TDynStringInfo dynInfo)
@@ -167,7 +171,7 @@ namespace RCC.Client
             if (dynInfo.Status == TDynStringInfo.TStatus.serialized)
             {
                 //// try to retreive all string parameter to build the string.
-                //string temp;
+                string temp = "";
                 //temp.reserve(dynInfo.String.size() * 2);
                 //string.iterator src(dynInfo.String.begin());
                 //string.iterator move = src;
@@ -315,10 +319,11 @@ namespace RCC.Client
                 //}
 
                 dynInfo.Status = TDynStringInfo.TStatus.complete;
-                //dynInfo.Message.clear();
+                dynInfo.Message = null;
                 //dynInfo.String = temp;
                 return true;
             }
+
             if (dynInfo.Status == TDynStringInfo.TStatus.complete)
                 return true;
 
@@ -354,7 +359,7 @@ namespace RCC.Client
                 }
 
                 // result.erase(); // = _WaitString;
-                result = String.Empty;
+                result = string.Empty;
 
                 return false;
             }
@@ -363,9 +368,10 @@ namespace RCC.Client
 
             if (result.Length > 9 && result.Substring(0, 9) == "<missing:")
             {
-                //map<ucstring, ucstring>::iterator itds = _DynStrings.find(result.substr(9, result.size() - 10));
-                //if (itds != _DynStrings.end())
-                //    result = itds->second;
+                if (_DynStrings.ContainsKey(result.Substring(9, result.Length - 10)))
+                {
+                    result = _DynStrings[result.Substring(9, result.Length - 10)];
+                }
             }
 
             return true;

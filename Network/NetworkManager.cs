@@ -609,6 +609,8 @@ namespace RCC.Network
         private static void impulseTeamInvitation(CBitMemStream impulse)
         {
             ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+
+            sendMsgToServer("TEAM:JOIN");
         }
 
         private static void impulseBeginCast(CBitMemStream impulse)
@@ -727,13 +729,13 @@ namespace RCC.Network
             uint handshakeVersion = 0;
             uint itemSlotVersion = 0;
             impulse.serial(ref handshakeVersion, 2);
-            //if (handshakeVersion > 0)
-            //    nlerror("Server handshake version is more recent than client one");
+            if (handshakeVersion > 0)
+                ConsoleIO.WriteLineFormatted("§cServer handshake version is more recent than client one");
             impulse.serial(ref itemSlotVersion, 2);
+            ConsoleIO.WriteLineFormatted("§eItem slot version: " + itemSlotVersion);
             //if (itemSlotVersion != INVENTORIES::CItemSlot::getVersion())
             //    nlerror("Handshake: itemSlotVersion mismatch (S:%hu C:%hu)", itemSlotVersion, INVENTORIES::CItemSlot::getVersion());
         }
-
 
         private static void impulseServerReady(CBitMemStream impulse)
         {
@@ -934,7 +936,6 @@ namespace RCC.Network
 
         enum TCDBBank { CDBPlayer, CDBGuild, /* CDBContinent, */ CDBOutpost, /* CDBGlobal, */ NB_CDB_BANKS, INVALID_CDB_BANK };
 
-
         private static void impulseDatabaseInitPlayer(CBitMemStream impulse)
         {
             try
@@ -960,7 +961,23 @@ namespace RCC.Network
 
         private static void impulseDatabaseUpdatePlayer(CBitMemStream impulse)
         {
-            ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+            //ConsoleIO.WriteLine("impulse on " + MethodBase.GetCurrentMethod().Name);
+        }
+
+        // ***************************************************************************
+        // sendMsgToServer Helper
+        static void sendMsgToServer(string sMsg)
+        {
+            CBitMemStream out2 = new CBitMemStream();
+            if (GenericMsgHeaderMngr.pushNameToStream(sMsg, out2))
+            {
+                //nlinfo("impulseCallBack : %s sent", sMsg.c_str());
+                push(out2);
+            }
+            else
+            {
+                ConsoleIO.WriteLineFormatted($"§cUnknown message named '{sMsg}'.");
+            }
         }
     }
 }
