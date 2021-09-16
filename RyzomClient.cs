@@ -431,12 +431,14 @@ namespace RCC
 
                 //if (!FarTP.isReselectingChar())
                 //{
-                //    releaseMainLoop(!ok);
+                //releaseMainLoop(!ok);
                 //}
             }
 
             // Final release
             // release();
+
+            ConsoleIO.WriteLineFormatted("EXIT of the Application.");
         }
 
         static uint LastGameCycle = 0;
@@ -784,10 +786,93 @@ namespace RCC
 
         }
 
+        bool game_exit = false;
+
         private bool mainLoop()
         {
             // TODO: mainLoopImp
             ConsoleIO.WriteLine("mainLoop");
+
+            // Main loop. If the window is no more Active -> Exit.
+            while (/*!UserEntity->permanentDeath() &&*/ !game_exit)
+            {
+
+                // If an action handler execute. NB: MUST BE DONE BEFORE ANY THING ELSE PROFILE CRASH!!!!!!!!!!!!!!!!!
+
+                // Test and may run a VBLock profile (only once)
+
+                // Fast mode.
+
+
+
+                //////////////////////////
+                // INITIALIZE THE FRAME //
+                //////////////////////////
+
+                // ...
+
+                ///////////////////////
+                // PROCESS THE FRAME //
+                ///////////////////////
+                // NetWork Update.
+
+                // NetWork Update.
+                NetworkManager.update();
+                //IngameDbMngr.flushObserverCalls();
+                //NLGUI::CDBManager::getInstance()->flushObserverCalls();
+                //bool prevDatabaseInitStatus = IngameDbMngr.initInProgress();
+                //IngameDbMngr.setChangesProcessed();
+                //bool newDatabaseInitStatus = IngameDbMngr.initInProgress();
+                //if ((!newDatabaseInitStatus) && prevDatabaseInitStatus)
+                //{
+                //    // When database received, activate allegiance buttons (for neutral state) in fame window
+                //    CInterfaceManager* pIM = CInterfaceManager::getInstance();
+                //    CInterfaceGroup* group = dynamic_cast<CInterfaceGroup*>(CWidgetManager::getInstance()->getElementFromId("ui:interface:fame:content:you"));
+                //    if (group)
+                //        group->updateAllLinks();
+                //    // send a msg to lua for specific ui update
+                //    CLuaManager::getInstance().executeLuaScript("game:onInGameDbInitialized()");
+                //}
+
+                // Send new data Only when server tick changed.
+                if (NetworkConnection.getCurrentServerTick() > LastGameCycle)
+                {
+                    // Put here things you have to send to the server only once per tick like user position.
+                    // UPDATE COMPASS
+
+                    // Update the server with our position and orientation.
+
+                    // Give information to the server about the combat position (ability to strike).
+
+                    // Create the message for the server to move the user (except in combat mode).
+
+                    // Send the Packet.
+                    NetworkManager.send(NetworkConnection.getCurrentServerTick());
+                    // Update the Last tick received from the server.
+                    LastGameCycle = NetworkConnection.getCurrentServerTick();
+                }
+
+                // Get the Connection State.
+                //lastConnectionState = connectionState;
+                var connectionState = NetworkConnection._ConnectionState;
+
+                ///////////////
+                // FAR_TP -> //
+                ///////////////
+                // Enter a network loop during the FarTP process, without doing the whole real main loop.
+                // This code must remain at the very end of the main loop.
+                ///////////////
+                // <- FAR_TP //
+                ///////////////
+
+            } // end of main loop
+
+            // FAR TP STUFF HERE
+
+            // IngameDbMngr.resetInitState();
+
+            //ryzom_exit = true;
+
             return true;
         }
 

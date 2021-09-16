@@ -83,11 +83,6 @@ namespace RCC.Network
                     //ConsoleIO.WriteLine($"CLIMPD: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
                 }
             }
-
-            if (actions.Count > 0)
-            {
-                Debug.WriteLine(inbox);
-            }
         }
 
         public static void reset()

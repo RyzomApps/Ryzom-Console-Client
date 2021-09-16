@@ -444,11 +444,6 @@ namespace RCC.Network
         {
             //ConsoleIO.WriteLine("CNET: received normal message Packet=" + _LastReceivedNumber + " Ack=" + _LastReceivedAck);
 
-            if (msgin.Length == 61)
-            {
-                Debug.Print("");
-            }
-
             var actions = new List<CAction>();
             CImpulseDecoder.decode(msgin, _CurrentReceivedNumber, _LastReceivedAck, _CurrentSendNumber, actions);
 

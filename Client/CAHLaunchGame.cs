@@ -112,7 +112,7 @@ namespace RCC.Client
             //if (!ClientCfg.Local/*ace!ClientCfg.Light*/)
             //{
 
-            Debug.WriteLine(out2);
+            //Debug.WriteLine(out2);
 
             NetworkManager.push(out2);
 
