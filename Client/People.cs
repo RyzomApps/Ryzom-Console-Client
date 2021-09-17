@@ -6,6 +6,9 @@
 
 namespace RCC.Client
 {
+    /// <summary>
+    /// Entity type specification
+    /// </summary>
     public enum People
     {
         Undefined = -1,

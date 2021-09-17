@@ -18,14 +18,16 @@ namespace RCC.Config
     /// </summary>
     public static class ClientConfig
     {
-        // Logging
+        /// <summary>
+        /// Logging
+        /// </summary>
         public enum FilterModeEnum
         {
             Blacklist,
             Whitelist
         }
-        // === RYZOM STUFF
 
+        // === RYZOM STUFF
         public static string StartupHost = "shard.ryzom.com:40916";
         public static string StartupPage = "/login/r2_login.php";
         public static string LanguageCode = "en";

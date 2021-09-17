@@ -9,6 +9,9 @@ using RCC.Network;
 
 namespace RCC.Client
 {
+    /// <summary>
+    /// Info about a dynamically generated string from the server
+    /// </summary>
     internal class DynamicStringInfo
     {
         public BitMemoryStream Message;

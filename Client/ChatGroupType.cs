@@ -6,6 +6,9 @@
 
 namespace RCC.Client
 {
+    /// <summary>
+    /// Type of the chat channel (e.g. around, region, dynamic).
+    /// </summary>
     public enum ChatGroupType : byte
     {
         Say = 0,

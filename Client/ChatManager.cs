@@ -9,6 +9,9 @@ using RCC.Network;
 
 namespace RCC.Client
 {
+    /// <summary>
+    /// Class for management of incoming and outgoing chat messages
+    /// </summary>
     internal static class ChatManager
     {
         /// <summary>

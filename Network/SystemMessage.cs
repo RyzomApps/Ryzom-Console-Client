@@ -6,6 +6,9 @@
 
 namespace RCC.Network
 {
+    /// <summary>
+    /// system messages used in the connection state machine
+    /// </summary>
     internal enum SystemMessage : byte
     {
         /// <summary>

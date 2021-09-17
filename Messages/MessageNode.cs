@@ -13,9 +13,10 @@ using RCC.Network;
 namespace RCC.Messages
 {
     /// <summary>
-    ///     CGenericXmlMsgHeaderManager::CNode
+    /// Node Leafs in a tree storing server message information (callbacks, bit sizes, names, ...)
+    /// from CGenericXmlMsgHeaderManager::CNode
     /// </summary>
-    internal class Node
+    internal class MessageNode
     {
         //public delegate void TMsgHeaderCallback(object[] arguments); // TMsgHeaderCallback -> Event Structure
         public Action<BitMemoryStream> Callback;
@@ -23,8 +24,8 @@ namespace RCC.Messages
         public List<MessageField> Format = new List<MessageField>(); // TMessageFormat
         public string Name;
         public uint NbBits;
-        public List<Node> Nodes;
-        public Dictionary<string, Node> NodesByName;
+        public List<MessageNode> Nodes;
+        public Dictionary<string, MessageNode> NodesByName;
         public string SendTo;
         public bool UseCycle;
         public uint[] UserData = new uint[4];
@@ -32,12 +33,12 @@ namespace RCC.Messages
         public uint Value;
 
         /// <summary>
-        ///     Constructor
+        ///     Constructor that copies its settings from a xml Node
         /// </summary>
-        public Node(XmlElement xmlNode, uint value)
+        public MessageNode(XmlElement xmlNode, uint value)
         {
-            Nodes = new List<Node>();
-            NodesByName = new Dictionary<string, Node>();
+            Nodes = new List<MessageNode>();
+            NodesByName = new Dictionary<string, MessageNode>();
 
             Value = value;
             UseCycle = false;
@@ -189,7 +190,7 @@ namespace RCC.Messages
                     if (xmlChild.NodeType != XmlNodeType.Element) break;
 
                     // create a node from the child xml node
-                    var child = new Node((XmlElement) xmlChild, childValue);
+                    var child = new MessageNode((XmlElement) xmlChild, childValue);
 
                     // check node doesn't exist yet in parent
                     if (!NodesByName.ContainsKey(child.Name))
@@ -215,7 +216,7 @@ namespace RCC.Messages
         /// <summary>
         ///     select node using name, no other action performed
         /// </summary>
-        internal Node Select(string msgName)
+        internal MessageNode Select(string msgName)
         {
             var node = this;
 
@@ -244,7 +245,7 @@ namespace RCC.Messages
         /// <summary>
         ///     select node using name, and write bits in stream
         /// </summary>
-        internal Node Select(string name, BitMemoryStream strm)
+        internal MessageNode Select(string name, BitMemoryStream strm)
         {
             var node = this;
 
@@ -284,7 +285,7 @@ namespace RCC.Messages
         /// <summary>
         ///     select node using bits stream
         /// </summary>
-        public Node Select(BitMemoryStream strm)
+        public MessageNode Select(BitMemoryStream strm)
         {
             var node = this;
 
@@ -309,7 +310,7 @@ namespace RCC.Messages
         /// <summary>
         ///     Destructor
         /// </summary>
-        ~Node()
+        ~MessageNode()
         {
             uint i;
             for (i = 0; i < Nodes.Count; ++i)

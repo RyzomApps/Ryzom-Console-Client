@@ -13,10 +13,13 @@ using RCC.Helper;
 
 namespace RCC.Network
 {
+    /// <summary>
+    /// http login process prior to the udp connection to the ryzom server
+    /// </summary>
     public class Login
     {
         /// <summary>
-        ///     NETWORK CONNECTION
+        /// getting server information and try to login the client with the given credentials
         /// </summary>
         public static void CheckLogin(RyzomClient client, string login, string password, string clientApp, string customParameters)
         {
@@ -123,7 +126,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     ask server for salt
+        /// ask ryzom login server for password salt
         /// </summary>
         private static string GetServerSalt(string login, string url)
         {

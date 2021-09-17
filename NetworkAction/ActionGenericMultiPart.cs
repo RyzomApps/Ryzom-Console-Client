@@ -9,6 +9,9 @@ using RCC.Network;
 
 namespace RCC.NetworkAction
 {
+    /// <summary>
+    /// represents an action that is splitted into serveral parts for transport
+    /// </summary>
     public class ActionGenericMultiPart : ActionImpulsion
     {
         public short NbBlock;
@@ -16,10 +19,12 @@ namespace RCC.NetworkAction
         public short Part;
         public byte[] PartCont;
 
-        public override void unpack(BitMemoryStream message)
+        /// <summary>
+        /// unpack the action from the stream
+        /// </summary>
+        /// <param name="message"></param>
+        public override void Unpack(BitMemoryStream message)
         {
-            //Debug.Print(message.ToString());
-
             message.Serial(ref Number);
             message.Serial(ref Part);
             message.Serial(ref NbBlock);
@@ -30,29 +35,23 @@ namespace RCC.NetworkAction
             PartCont = new byte[size];
 
             message.Serial(ref PartCont);
-
-            //PartCont = PartCont.Reverse().ToArray();
-
-            //var part = new CBitMemStream(false);
-            //
-            //part.serialBuffer(message, size);
-            //
-            //PartCont = new List<byte>(part.Buffer());
         }
 
         /// <summary>
         ///     Returns the size of this action when it will be send to the UDP connection:
         ///     the size is IN BITS, not in bytes(the actual size is this one plus the header size)
         /// </summary>
-        /// <returns></returns>
-        public override int size()
+        public override int Size()
         {
-            int bytesize = 1 + 2 + 2 + 4; // header
+            var bytesize = 1 + 2 + 2 + 4; // header
             bytesize += PartCont.Length;
             return bytesize * 8;
         }
 
-        public override void pack(BitMemoryStream message)
+        /// <summary>
+        /// pack a message for the stream
+        /// </summary>
+        public override void Pack(BitMemoryStream message)
         {
             throw new NotImplementedException();
 

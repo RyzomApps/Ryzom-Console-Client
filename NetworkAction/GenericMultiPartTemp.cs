@@ -11,19 +11,27 @@ using RCC.Network;
 
 namespace RCC.NetworkAction
 {
+    /// <summary>
+    /// temporary multipart holder until the generic action is complete
+    /// </summary>
     internal class GenericMultiPartTemp
     {
-        readonly List<bool> _blockReceived = new List<bool>();
-        int _nbBlock;
-        int _nbCurrentBlock;
-        readonly List<List<byte>> _temp = new List<List<byte>>();
-        int _tempSize;
+        private readonly List<bool> _blockReceived = new List<bool>();
+        private int _nbBlock;
+        private int _nbCurrentBlock;
+        private readonly List<List<byte>> _temp = new List<List<byte>>();
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public GenericMultiPartTemp()
         {
             _nbBlock = int.MaxValue;
         }
 
+        /// <summary>
+        /// add a part to the temp action - and call an action if message is complete
+        /// </summary>
         public void Set(ActionGenericMultiPart agmp)
         {
             if (_nbBlock == int.MaxValue)
@@ -31,14 +39,10 @@ namespace RCC.NetworkAction
                 // new GenericMultiPart
                 _nbBlock = (int) agmp.NbBlock;
                 _nbCurrentBlock = 0;
-                _tempSize = 0;
                 _temp.Clear();
                 _blockReceived.Clear();
 
-                //Temp.resize(NbBlock);
-                //BlockReceived.resize(NbBlock);
-
-                for (int i = 0; i < _nbBlock; i++)
+                for (var i = 0; i < _nbBlock; i++)
                 {
                     _blockReceived.Add(false);
                     _temp.Add(new List<byte>());
@@ -59,28 +63,17 @@ namespace RCC.NetworkAction
             _blockReceived[agmp.Part] = true;
 
             _nbCurrentBlock++;
-            _tempSize += (int) agmp.PartCont.Length;
 
             if (_nbCurrentBlock != _nbBlock) return;
 
             // reform the total action
-
             //nldebug("CLMPNET[%p]: Received a TOTAL generic action MP size: number %d nbblock %d", this,  agmp.Number, NbBlock);
 
-            // TODO: real size instead of 255
             var bms = new BitMemoryStream(false);
-            //bms.resetBufPos();
 
-            // TODO: build that stream from the parts
-            //byte ptr = bms.bufferToFill(TempSize);
-            //
             foreach (var t in _temp)
             {
-                //    memcpy(ptr, &(Temp[i][0]), Temp[i].size());
-                //    ptr += Temp[i].size();
-                byte[] arr = t.ToArray(); // bdh: LOL
-
-                //bms.resetBufPos();
+                var arr = t.ToArray();
                 bms.Serial(ref arr);
             }
 
@@ -89,9 +82,6 @@ namespace RCC.NetworkAction
             _nbBlock = int.MaxValue; //0xFFFFFFFF;
 
             //nldebug("CLMPNET[%p]: Received a generic action size %d", this, bms.length());
-            // todo interface api, call a user callback
-
-            //Debug.Print(bms.ToString());
 
             NetworkConnection._ImpulseCallback?.Invoke(bms);
         }

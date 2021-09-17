@@ -8,18 +8,36 @@ using RCC.Network;
 
 namespace RCC.NetworkAction
 {
+    /// <summary>
+    /// Abstract base for other actions
+    /// </summary>
     public abstract class Action
     {
+        /// <summary>
+        /// code that specifies the type of the action
+        /// </summary>
         public ActionCode Code { get; internal set; }
+
         public ActionCode PropertyCode { get; internal set; }
+
         public byte Slot { get; internal set; }
 
-        public abstract void unpack(BitMemoryStream message);
+        /// <summary>
+        /// unpack a message from stream
+        /// </summary>
+        public abstract void Unpack(BitMemoryStream message);
 
-        public abstract int size();
+        /// <summary>
+        ///     Returns the size of this action when it will be send to the UDP connection:
+        ///     the size is IN BITS, not in bytes(the actual size is this one plus the header size)
+        /// </summary>
+        public abstract int Size();
 
-        public abstract void reset();
+        public abstract void Reset();
 
-        public abstract void pack(BitMemoryStream message);
+        /// <summary>
+        /// pack a message for the stream
+        /// </summary>
+        public abstract void Pack(BitMemoryStream message);
     }
 }

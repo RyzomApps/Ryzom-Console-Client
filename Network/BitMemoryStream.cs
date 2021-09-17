@@ -11,22 +11,37 @@ using System.Text;
 
 namespace RCC.Network
 {
+    /// <summary>
+    /// (de)serializes data for server communication
+    /// </summary>
     public class BitMemoryStream
     {
         private int _bitPos;
         private bool[] _contentBits;
         private bool _inputStream;
 
+        /// <summary>
+        /// constructor differentiating between input and output stream and specifying the size of the stream
+        /// </summary>
         public BitMemoryStream(bool inputStream = false, int defaultcapacity = 32)
         {
             _inputStream = inputStream;
             _contentBits = new bool[defaultcapacity * 8];
         }
 
+        /// <summary>
+        /// Byte Position of the reader/writer in the Stream
+        /// </summary>
         public int Pos => (int) (_bitPos / 8d);
 
+        /// <summary>
+        /// Free bits in the current byte of the reader/writer
+        /// </summary>
         public int FreeBits => 8 - _bitPos % 8;
 
+        /// <summary>
+        /// Length in bytes of the overall stream (reader) or length of the written bytes (writer)
+        /// </summary>
         public int Length
         {
             get
@@ -38,6 +53,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// input or output
+        /// </summary>
         public bool IsReading() => _inputStream;
 
         /// <summary>
@@ -49,7 +67,10 @@ namespace RCC.Network
             return (Pos + 1) * 8 - FreeBits;
         }
 
-        // this shouldn't be here, but it is
+        /// <summary>
+        /// Builds the header that is needed for the communication with the ryzom server
+        /// TODO: this shouldn't be here, but it is - move to a better position
+        /// </summary>
         public void BuildSystemHeader(ref int currentSendNumber)
         {
             Serial(ref currentSendNumber);
@@ -58,6 +79,9 @@ namespace RCC.Network
             ++currentSendNumber;
         }
 
+        /// <summary>
+        /// serializes type byte
+        /// </summary>
         public void Serial(ref byte obj)
         {
             if (IsReading())
@@ -72,6 +96,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// serializes type sint32
+        /// </summary>
         public void Serial(ref int obj)
         {
             if (IsReading())
@@ -87,6 +114,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// serializes type uint32
+        /// </summary>
         public void Serial(ref uint obj)
         {
             if (IsReading())
@@ -102,6 +132,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// serializes type sint16 with a given bit length
+        /// </summary>
         public void Serial(ref short obj, int nbits = 16)
         {
             if (IsReading())
@@ -123,6 +156,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// serializes type uint32 with a given bit length
+        /// </summary>
         public void Serial(ref uint obj, int nbits = 32)
         {
             if (IsReading())
@@ -144,6 +180,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// serializes type sint64
+        /// </summary>
         public void Serial(ref long obj)
         {
             if (IsReading())
@@ -159,6 +198,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// serializes type byte[]
+        /// </summary>
         public void Serial(ref byte[] obj)
         {
             if (IsReading())
@@ -176,6 +218,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// serializes type bit
+        /// </summary>
         public void Serial(ref bool obj)
         {
             if (IsReading())
@@ -192,6 +237,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// serializes type string (see ucstring)
+        /// </summary>
         public void Serial(ref string obj)
         {
             if (IsReading())
@@ -221,6 +269,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// serializes type uint32 with a given bit length (+debug)
+        /// </summary>
         internal void SerialAndLog2(ref uint obj, uint nbBits)
         {
             if (IsReading())
@@ -262,13 +313,16 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// reads a single bit at a given position from a byte
+        /// </summary>
         public static bool GetBit(byte b, int bitNumber)
         {
             return (b & (1 << bitNumber)) != 0;
         }
 
         /// <summary>
-        ///     HELPER since this is not c++
+        ///     HELPER since this is not c++, memcopy (overwrite) byte[] data to the bit[] array of the stream
         /// </summary>
         public void MemCpy(byte[] data)
         {
@@ -280,6 +334,9 @@ namespace RCC.Network
             _bitPos = 0;
         }
 
+        /// <summary>
+        /// add the bytes to the end of the stream
+        /// </summary>
         private void AddToArray(byte[] bytes)
         {
             var newBits = new BitArray(bytes);
@@ -296,6 +353,11 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// reads (length) bit from the stream incrementing the reader pos
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
         private bool[] ReadFromArray(int length)
         {
             bool[] newBits = new bool[length];
@@ -309,6 +371,10 @@ namespace RCC.Network
             return newBits;
         }
 
+        /// <summary>
+        /// Returns the complete stream as a byte array
+        /// </summary>
+        /// <returns></returns>
         public byte[] Buffer()
         {
             return ConvertBoolArrayToByteArray(_contentBits);
@@ -329,6 +395,9 @@ namespace RCC.Network
             return byteArr;
         }
 
+        /// <summary>
+        /// read a byte at a given offset from the bit (8x) array
+        /// </summary>
         private static byte ReadByte(bool[] boolArr, int offset)
         {
             byte result = 0;
@@ -376,6 +445,9 @@ namespace RCC.Network
             _bitPos = 0;
         }
 
+        /// <summary>
+        /// serializes another stream with a given length
+        /// </summary>
         public void SerialBuffer(BitMemoryStream buf, in int len)
         {
             uint i;
@@ -399,6 +471,9 @@ namespace RCC.Network
             }
         }
 
+        /// <summary>
+        /// serializes the current steam version info (which seems to be always 0)
+        /// </summary>
         public int SerialVersion(uint currentVersion)
         {
             byte b = 0;
@@ -446,17 +521,26 @@ namespace RCC.Network
             return streamVersion;
         }
 
+        /// <summary>
+        /// double serialisation: serializes type byte[] and serializes length parameter
+        /// </summary>
         public void SerialBufferWithSize(byte[] buf, int len)
         {
             Serial(ref len);
             Serial(ref buf);
         }
 
+        /// <summary>
+        /// ToString override for bitwise output
+        /// </summary>
         public override string ToString()
         {
             return ToString(false);
         }
 
+        /// <summary>
+        /// byte or bitwise output of the stream
+        /// </summary>
         public string ToString(bool displayBytes)
         {
             var ret = "CBMemStream " + (IsReading() ? "in" : "out") + "\r\n";

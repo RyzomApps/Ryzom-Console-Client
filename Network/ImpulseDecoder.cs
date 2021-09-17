@@ -10,6 +10,9 @@ using RCC.NetworkAction;
 
 namespace RCC.Network
 {
+    /// <summary>
+    /// Interpretation of actions deserialized from a stream
+    /// </summary>
     internal static class ImpulseDecoder
     {
         private static readonly int[] LastAck0 = new int[1];
@@ -24,6 +27,9 @@ namespace RCC.Network
             Reset();
         }
 
+        /// <summary>
+        /// clear the decoder for a new incoming packet
+        /// </summary>
         public static void Reset()
         {
             uint i;
@@ -32,6 +38,9 @@ namespace RCC.Network
             for (i = 0; i < 4; ++i) LastAck2[i] = -1;
         }
 
+        /// <summary>
+        /// unpacking actions from a stream and calling the corresponding impusions
+        /// </summary>
         public static void Decode(BitMemoryStream inbox, int receivedPacket, int receivedAck, int nextSentPacket, List<Action> actions)
         {
             uint level;
@@ -80,7 +89,7 @@ namespace RCC.Network
                     }
 
                     ++num;
-                    var action = ActionFactory.unpack(inbox, false);
+                    var action = ActionFactory.Unpack(inbox, false);
 
                     if (action == null)
                     {
@@ -94,8 +103,8 @@ namespace RCC.Network
                     }
                     else
                     {
-                        ConsoleIO.WriteLine($"§cCLIMPD: discarded action {action.Code} (len={ActionFactory.size(action)}) at level {level} (channel {channel})");
-                        ActionFactory.remove(action);
+                        ConsoleIO.WriteLine($"§cCLIMPD: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
+                        ActionFactory.Remove(action);
                     }
                 }
 

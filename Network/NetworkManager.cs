@@ -14,12 +14,15 @@ using RCC.Messages;
 
 namespace RCC.Network
 {
+    /// <summary>
+    /// used to control the connection and implements the impulse callbacks from the connection
+    /// </summary>
     public static class NetworkManager
     {
         public static bool ServerReceivedReady;
 
         /// <summary>
-        ///     Send
+        ///     Send - updates when packets were received
         /// </summary>
         public static void Send(uint gameCycle)
         {
@@ -88,7 +91,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Send
+        ///     Send updates
         /// </summary>
         public static void Send()
         {
@@ -618,7 +621,7 @@ namespace RCC.Network
         {
             ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
 
-            SendMsgToServer("TEAM:JOIN");
+            GenericMessageHeaderManager.SendMsgToServer("TEAM:JOIN");
         }
 
         private static void ImpulseBeginCast(BitMemoryStream impulse)
@@ -945,23 +948,6 @@ namespace RCC.Network
         private static void ImpulseDatabaseUpdatePlayer(BitMemoryStream impulse)
         {
             //ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
-        }
-
-        // ***************************************************************************
-        // sendMsgToServer Helper
-        static void SendMsgToServer(string sMsg)
-        {
-            var out2 = new BitMemoryStream();
-
-            if (GenericMessageHeaderManager.PushNameToStream(sMsg, out2))
-            {
-                //nlinfo("ImpulseCallBack : %s sent", sMsg.c_str());
-                Push(out2);
-            }
-            else
-            {
-                ConsoleIO.WriteLineFormatted($"§cUnknown message named '{sMsg}'.");
-            }
         }
 
         static void CheckHandshake(BitMemoryStream impulse)

@@ -8,6 +8,9 @@ using System.Collections.Generic;
 
 namespace RCC.Client
 {
+    /// <summary>
+    /// Stores information about the connection to the ryzom server.
+    /// </summary>
     public static class Connection
     {
         public static byte PlayerSelectedSlot = 0;

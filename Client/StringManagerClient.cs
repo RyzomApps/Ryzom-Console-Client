@@ -11,6 +11,9 @@ using RCC.Network;
 
 namespace RCC.Client
 {
+    /// <summary>
+    /// Management for dynamically generated text from servers
+    /// </summary>
     internal static class StringManagerClient
     {
         static readonly Dictionary<string, string> DynStrings = new Dictionary<string, string>();
@@ -24,6 +27,9 @@ namespace RCC.Client
         static readonly Dictionary<uint, string> ReceivedStrings = new Dictionary<uint, string>();
         private static readonly HashSet<uint> WaitingStrings = new HashSet<uint>();
 
+        /// <summary>
+        /// extract the dynamic string from the stream and check if it is complete
+        /// </summary>
         public static void ReceiveDynString(BitMemoryStream bms)
         {
             //H_AUTO(CStringManagerClient_receiveDynString)
@@ -89,6 +95,9 @@ namespace RCC.Client
                 WaitingDynStrings.Add(dynId, dynInfo);
         }
 
+        /// <summary>
+        /// assemble the dynamic string from DynamicStringInfo
+        /// </summary>
         private static bool BuildDynString(DynamicStringInfo dynInfo)
         {
             if (dynInfo.Status == DynamicStringInfo.TStatus.Received)

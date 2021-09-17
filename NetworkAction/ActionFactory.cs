@@ -12,14 +12,20 @@ using RCC.Network;
 
 namespace RCC.NetworkAction
 {
+    /// <summary>
+    /// Factory for actions - unpacking actions from streams and registering them
+    /// </summary>
     public static class ActionFactory
     {
-        const byte INVALID_SLOT = 0xFF;
+        const byte InvalidSlot = 0xFF;
 
         public static Dictionary<ActionCode, KeyValuePair<Type, Action>> RegisteredAction =
             new Dictionary<ActionCode, KeyValuePair<Type, Action>>();
 
-        public static Action unpack(BitMemoryStream message, bool b)
+        /// <summary>
+        /// upacks an action from a stream - using the right action type
+        /// </summary>
+        public static Action Unpack(BitMemoryStream message, bool b)
         {
             Action action = null;
 
@@ -45,7 +51,7 @@ namespace RCC.NetworkAction
                     code = (ActionCode) val;
                 }
 
-                action = create(INVALID_SLOT, code);
+                action = Create(InvalidSlot, code);
 
                 if (action == null)
                 {
@@ -53,21 +59,25 @@ namespace RCC.NetworkAction
                 }
                 else
                 {
-                    action.unpack(message);
+                    action.Unpack(message);
                 }
             }
 
             return action;
         }
 
-        internal static Action create(byte slot, ActionCode code)
+        /// <summary>
+        /// creates instances of an action based on the given action code
+        /// </summary>
+        internal static Action Create(byte slot, ActionCode code)
         {
             if (!RegisteredAction.ContainsKey(code))
             {
                 ConsoleIO.WriteLine("CActionFactory::create() try to create an unknown action (" + code + ")");
                 return null;
             }
-            else if (RegisteredAction[code].Value == null)
+
+            if (RegisteredAction[code].Value == null)
             {
                 // no action left in the store
                 var action =
@@ -80,7 +90,7 @@ namespace RCC.NetworkAction
                 action.PropertyCode =
                     code; // default, set the property code to the action code (see create(TProperty,TPropIndex))
                 action.Slot = slot;
-                action.reset();
+                action.Reset();
                 return action;
             }
             else
@@ -89,14 +99,17 @@ namespace RCC.NetworkAction
                 var action = RegisteredAction[code].Value;
                 //nlinfo( "Found action in store for code %u (total %u, total for code %u)", code, getNbActionsInStore(), getNbActionsInStore(action.Code) );
                 //RegisteredAction[code].Value.pop_back();
-                action.reset();
+                action.Reset();
                 action.Slot = slot;
                 action.PropertyCode = code;
                 return action;
             }
         }
 
-        public static void remove(Action action)
+        /// <summary>
+        /// removes an action from the registered actions
+        /// </summary>
+        public static void Remove(Action action)
         {
             if (action != null)
             {
@@ -105,20 +118,10 @@ namespace RCC.NetworkAction
             }
         }
 
-        //public static void remove(ActionImpulsion action)
-        //{
-        //    if (action != NULL)
-        //    {
-        //        Action* ptr = static_cast<Action*>(action);
-        //        remove(ptr);
-        //        action = NULL;
-        //    }
-        //}
-
         /// <summary>
         ///     Return the size IN BITS, not in bytes
         /// </summary>
-        public static int size(Action action)
+        public static int Size(Action action)
         {
             // If you change this size, please update IMPULSE_ACTION_HEADER_SIZE in the front-end
 
@@ -139,10 +142,13 @@ namespace RCC.NetworkAction
                 headerBitSize = 1 + /*(sizeof(()action.Code) * 8)*/ 8;
             }
 
-            return headerBitSize + action.size();
+            return headerBitSize + action.Size();
         }
 
-        internal static void registerAction(ActionCode code, Type creator)
+        /// <summary>
+        /// adds an action to the registered actions
+        /// </summary>
+        internal static void RegisterAction(ActionCode code, Type creator)
         {
             if (!typeof(Action).IsAssignableFrom(creator))
             {
@@ -170,7 +176,7 @@ namespace RCC.NetworkAction
         ///     Pack an action to a bit stream. Set transmitTimestamp=true for server-->client,
         ///     false for client-->server. If true, set the current gamecycle.
         /// </summary>
-        public static void pack(Action action, BitMemoryStream message)
+        public static void Pack(Action action, BitMemoryStream message)
         {
             //H_BEFORE(FactoryPack);
             //sint32 val = message.getPosInBit ();
@@ -193,7 +199,7 @@ namespace RCC.NetworkAction
                 message.Serial(ref code);
             }
 
-            action.pack(message);
+            action.Pack(message);
             //H_AFTER(FactoryPack);
 
             //OLIV: nlassertex (message.getPosInBit () - val == (sint32)CActionFactory::getInstance()->size (action), ("CActionFactory::pack () : action %d packed %u bits, should be %u, size() is wrong", action->Code, message.getPosInBit () - val, CActionFactory::getInstance()->size (action)));

@@ -486,8 +486,8 @@ namespace RCC
                     }
                     else
                     {
-                        ConsoleIO.WriteLine("Retrying in 29 seconds...");
-                        Thread.Sleep(29000);
+                        ConsoleIO.WriteLine("Retrying in 30 seconds...");
+                        Thread.Sleep(30000);
                     }
                 }
             }

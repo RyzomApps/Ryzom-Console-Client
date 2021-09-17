@@ -6,6 +6,9 @@
 
 namespace RCC.Messages
 {
+    /// <summary>
+    /// type of the variable used in MessageField of the MessageNode
+    /// </summary>
     internal enum FieldType
     {
         Bool,

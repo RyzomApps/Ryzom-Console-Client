@@ -1,27 +1,30 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 
 namespace RCC.Network
 {
-    class UdpSocket
+    /// <summary>
+    /// wrapper for the udpclient class to have a synch connection the the server
+    /// </summary>
+    internal class UdpSocket
     {
-        private UdpClient udpMain;
+        private UdpClient _udpMain;
 
-        public void connect(string frontendAddress)
+        /// <summary>
+        /// connect to a given frontend address containing a host and a port in the string
+        /// </summary>
+        public void Connect(string frontendAddress)
         {
             ParseHostString(frontendAddress, out var host, out var port);
 
-            udpMain = new UdpClient();
-            udpMain.Connect(host, port);
+            _udpMain = new UdpClient();
+            _udpMain.Connect(host, port);
         }
 
+        /// <summary>
+        /// get host and port from a address string
+        /// </summary>
         public void ParseHostString(string hostString, out string hostName, out int port)
         {
             hostName = hostString;
@@ -37,28 +40,40 @@ namespace RCC.Network
             int.TryParse(hostParts[1], out port);
         }
 
-        public bool connected()
+        /// <summary>
+        /// checks if the udp client is connected
+        /// </summary>
+        public bool Connected()
         {
-            return udpMain.Client.Connected;
+            return _udpMain.Client.Connected;
         }
 
-        public void send(byte[] buffer, in int length)
+        /// <summary>
+        /// send buffer data to the server
+        /// </summary>
+        public void Send(byte[] buffer, in int length)
         {
-            udpMain.Send(buffer, length);
+            _udpMain.Send(buffer, length);
         }
 
-        public bool dataAvailable()
+        /// <summary>
+        /// checks if data is available at the client
+        /// </summary>
+        public bool IsDataAvailable()
         {
-            return udpMain.Client.Available > 0;
+            return _udpMain.Client.Available > 0;
         }
 
-        public bool receive(ref byte[] _ReceiveBuffer, int len, bool throw_exception)
+        /// <summary>
+        /// receives available data
+        /// </summary>
+        public bool Receive(ref byte[] _ReceiveBuffer, int len, bool throw_exception)
         {
             var remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
             try
             {
-                byte[] bytes = udpMain.Receive(ref remoteIpEndPoint);
+                byte[] bytes = _udpMain.Receive(ref remoteIpEndPoint);
                 Array.Reverse(bytes, 0, bytes.Length);
                 _ReceiveBuffer = bytes;
             }
@@ -73,9 +88,9 @@ namespace RCC.Network
             return true;
         }
 
-        public void close()
+        public void Close()
         {
-            udpMain.Close();
+            _udpMain.Close();
         }
     }
 }

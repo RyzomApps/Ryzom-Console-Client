@@ -8,6 +8,9 @@ using RCC.Network;
 
 namespace RCC.Client
 {
+    /// <summary>
+    /// Holds information about the character such as name, sheetid and title.
+    /// </summary>
     public class CharacterSummary
     {
         byte _characterSlot;
@@ -31,12 +34,24 @@ namespace RCC.Client
 
         int _title;
 
-        /// visual property for appearance
+        /// <summary>
+        /// visual property for appearance A
+        /// </summary>
         long _visualPropA;
 
+        /// <summary>
+        /// visual property for appearance B
+        /// </summary>
         long _visualPropB;
+
+        /// <summary>
+        /// visual property for appearance C
+        /// </summary>
         long _visualPropC;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public CharacterSummary()
         {
             Mainland = 0;
@@ -53,7 +68,9 @@ namespace RCC.Client
             _inNewbieland = false;
         }
 
+        /// <summary>
         /// serialisation coming from a stream (net message)
+        /// </summary>
         public void Serial(BitMemoryStream f)
         {
             f.SerialVersion(0);

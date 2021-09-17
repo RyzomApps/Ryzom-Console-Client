@@ -13,10 +13,10 @@ namespace RCC.Messages
 {
     internal static class GenericMessageHeaderManager
     {
-        public static Node Root;
+        public static MessageNode Root;
 
         /// <summary>
-        ///     init
+        ///     init the massages from a xml file
         /// </summary>
         public static void Init(string filename)
         {
@@ -35,13 +35,13 @@ namespace RCC.Messages
             }
 
             // create root node from root xml node
-            Root = new Node(file.DocumentElement, 0);
+            Root = new MessageNode(file.DocumentElement, 0);
 
             ConsoleIO.WriteLine("Loaded " + Root.Nodes.Count + " messages nodes.");
         }
 
         /// <summary>
-        ///     set callback
+        ///     set callback that is executed when a specific message arrived
         /// </summary>
         public static bool SetCallback(string msgName, Action<BitMemoryStream> callback)
         {
@@ -69,7 +69,7 @@ namespace RCC.Messages
         }
 
         /// <summary>
-        ///     execute
+        ///     execute a message based on the interpretation of the stream
         /// </summary>
         public static void Execute(BitMemoryStream strm)
         {
@@ -99,6 +99,9 @@ namespace RCC.Messages
             }
         }
 
+        /// <summary>
+        /// selects the message by its name and writes it to the stream
+        /// </summary>
         public static bool PushNameToStream(string msgName, BitMemoryStream strm)
         {
             var res = Root.Select(msgName, strm) != null;
@@ -109,6 +112,25 @@ namespace RCC.Messages
             }
 
             return res;
+        }
+
+        /// <summary>
+        /// sendMsgToServer Helper
+        /// selects the message by its name and pushes it to the connection
+        /// </summary>
+        public static void SendMsgToServer(string sMsg)
+        {
+            var out2 = new BitMemoryStream();
+
+            if (PushNameToStream(sMsg, out2))
+            {
+                //nlinfo("ImpulseCallBack : %s sent", sMsg.c_str());
+                NetworkManager.Push(out2);
+            }
+            else
+            {
+                ConsoleIO.WriteLineFormatted($"§cUnknown message named '{sMsg}'.");
+            }
         }
     }
 }
