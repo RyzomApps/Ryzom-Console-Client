@@ -51,7 +51,7 @@ namespace RCC.Commands
             // send str to IOS
             msgType = "STRING:CHAT";
 
-            BitMemoryStream out2 = new BitMemoryStream();
+            var out2 = new BitMemoryStream();
             if (GenericMessageHeaderManager.PushNameToStream(msgType, out2))
             {
                 out2.Serial(ref text);
