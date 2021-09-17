@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using RCC.Client;
-using RCC.Helper;
 using RCC.Messages;
 using RCC.Network;
 

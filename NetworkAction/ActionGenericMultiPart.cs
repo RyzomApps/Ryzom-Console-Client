@@ -1,16 +1,10 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System;
+﻿using System;
 using RCC.Network;
 
 namespace RCC.NetworkAction
 {
     /// <summary>
-    /// represents an action that is splitted into serveral parts for transport
+    ///     represents an action that is splitted into serveral parts for transport
     /// </summary>
     public class ActionGenericMultiPart : ActionImpulsion
     {
@@ -20,7 +14,7 @@ namespace RCC.NetworkAction
         public byte[] PartCont;
 
         /// <summary>
-        /// unpack the action from the stream
+        ///     unpack the action from the stream
         /// </summary>
         /// <param name="message"></param>
         public override void Unpack(BitMemoryStream message)
@@ -49,7 +43,7 @@ namespace RCC.NetworkAction
         }
 
         /// <summary>
-        /// pack a message for the stream
+        ///     pack a message for the stream
         /// </summary>
         public override void Pack(BitMemoryStream message)
         {

@@ -1,10 +1,4 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System;
+﻿using System;
 using System.Numerics;
 using System.Reflection;
 using System.Threading;
@@ -15,7 +9,7 @@ using RCC.Messages;
 namespace RCC.Network
 {
     /// <summary>
-    /// used to control the connection and implements the impulse callbacks from the connection
+    ///     used to control the connection and implements the impulse callbacks from the connection
     /// </summary>
     public static class NetworkManager
     {
@@ -810,8 +804,8 @@ namespace RCC.Network
             //}
             //else
             //{
-            var userEntityInitPos = new Vector3((float)x / 1000.0f, (float)y / 1000.0f, (float)z / 1000.0f);
-            var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
+            var userEntityInitPos = new Vector3((float) x / 1000.0f, (float) y / 1000.0f, (float) z / 1000.0f);
+            var userEntityInitFront = new Vector3((float) Math.Cos(heading), (float) Math.Sin(heading), 0f);
 
             RyzomClient.Log?.Info($"<ImpulseUserChar> pos : {userEntityInitPos}  heading : {heading}");
 

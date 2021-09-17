@@ -1,12 +1,5 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System;
+﻿using System;
 using System.Xml;
-using RCC.Helper;
 using RCC.Network;
 
 namespace RCC.Messages
@@ -100,7 +93,7 @@ namespace RCC.Messages
         }
 
         /// <summary>
-        /// selects the message by its name and writes it to the stream
+        ///     selects the message by its name and writes it to the stream
         /// </summary>
         public static bool PushNameToStream(string msgName, BitMemoryStream strm)
         {
@@ -115,8 +108,8 @@ namespace RCC.Messages
         }
 
         /// <summary>
-        /// sendMsgToServer Helper
-        /// selects the message by its name and pushes it to the connection
+        ///     sendMsgToServer Helper
+        ///     selects the message by its name and pushes it to the connection
         /// </summary>
         public static void SendMsgToServer(string sMsg)
         {

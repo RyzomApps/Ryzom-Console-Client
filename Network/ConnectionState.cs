@@ -1,54 +1,57 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-namespace RCC.Network
+﻿namespace RCC.Network
 {
     /// <summary>
-    /// The states of the connection to the server (if you change them, change ConnectionStateCStr)
+    ///     The states of the connection to the server (if you change them, change ConnectionStateCStr)
     /// </summary>
     internal enum ConnectionState
     {
         /// <summary>
-        /// nothing happened yet
+        ///     nothing happened yet
         /// </summary>
         NotInitialised = 0,
+
         /// <summary>
-        /// init() called
+        ///     init() called
         /// </summary>
         NotConnected,
+
         /// <summary>
-        /// connect() called, identified by the login server
+        ///     connect() called, identified by the login server
         /// </summary>
         Authenticate,
+
         /// <summary>
-        /// connecting to the frontend, sending identification
+        ///     connecting to the frontend, sending identification
         /// </summary>
         Login,
+
         /// <summary>
-        /// connection accepted by the frontend, synchronizing
+        ///     connection accepted by the frontend, synchronizing
         /// </summary>
         Synchronize,
+
         /// <summary>
-        /// synchronized, connected, ready to work
+        ///     synchronized, connected, ready to work
         /// </summary>
         Connected,
+
         /// <summary>
-        /// connection lost by frontend, probing for response
+        ///     connection lost by frontend, probing for response
         /// </summary>
         Probe,
+
         /// <summary>
-        /// server is stalled
+        ///     server is stalled
         /// </summary>
         Stalled,
+
         /// <summary>
-        /// disconnect() called, or timeout, or connection closed by frontend
+        ///     disconnect() called, or timeout, or connection closed by frontend
         /// </summary>
         Disconnect,
+
         /// <summary>
-        /// quit() called
+        ///     quit() called
         /// </summary>
         Quit
     };

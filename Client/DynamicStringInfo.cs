@@ -1,16 +1,10 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using RCC.Network;
 
 namespace RCC.Client
 {
     /// <summary>
-    /// Info about a dynamically generated string from the server
+    ///     Info about a dynamically generated string from the server
     /// </summary>
     internal class DynamicStringInfo
     {

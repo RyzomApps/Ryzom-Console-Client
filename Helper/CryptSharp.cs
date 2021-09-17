@@ -1,8 +1,4 @@
-﻿// This code is a modified version of a file from 'CryptSharp'
-// <https://gist.github.com/aannenko/d47c90b0f92177286bb9814850888920>,
-// Original Copyright 2019 by aannenko
-
-using System;
+﻿using System;
 
 namespace RCC.Helper
 {

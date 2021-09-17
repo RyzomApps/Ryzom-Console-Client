@@ -1,17 +1,10 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System.Collections.Generic;
-using RCC.Helper;
+﻿using System.Collections.Generic;
 using RCC.NetworkAction;
 
 namespace RCC.Network
 {
     /// <summary>
-    /// Interpretation of actions deserialized from a stream
+    ///     Interpretation of actions deserialized from a stream
     /// </summary>
     internal static class ImpulseDecoder
     {
@@ -28,7 +21,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// clear the decoder for a new incoming packet
+        ///     clear the decoder for a new incoming packet
         /// </summary>
         public static void Reset()
         {
@@ -39,9 +32,10 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// unpacking actions from a stream and calling the corresponding impusions
+        ///     unpacking actions from a stream and calling the corresponding impusions
         /// </summary>
-        public static void Decode(BitMemoryStream inbox, int receivedPacket, int receivedAck, int nextSentPacket, List<Action> actions)
+        public static void Decode(BitMemoryStream inbox, int receivedPacket, int receivedAck, int nextSentPacket,
+            List<Action> actions)
         {
             uint level;
 
@@ -99,18 +93,21 @@ namespace RCC.Network
                     if (keep)
                     {
                         actions.Add(action);
-                        RyzomClient.Log?.Debug($"CLIMPD: received new impulsion {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
+                        RyzomClient.Log?.Debug(
+                            $"CLIMPD: received new impulsion {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                     }
                     else
                     {
-                        RyzomClient.Log?.Warn($"CLIMPD: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
+                        RyzomClient.Log?.Warn(
+                            $"CLIMPD: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                         ActionFactory.Remove(action);
                     }
                 }
 
                 if (checkOnce)
                 {
-                    RyzomClient.Log?.Debug($"CLIMPD: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
+                    RyzomClient.Log?.Debug(
+                        $"CLIMPD: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
                 }
             }
         }

@@ -1,25 +1,18 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System.IO;
+﻿using System.IO;
 using RCC.Network;
 
 namespace RCC.NetworkAction
 {
     /// <summary>
-    /// generic action that was sent over the network connection
+    ///     generic action that was sent over the network connection
     /// </summary>
     public class ActionGeneric : ActionImpulsion
     {
+        private const bool ServerSide = false;
         private BitMemoryStream _message;
 
-        private const bool ServerSide = false;
-
         /// <summary>
-        /// unpack the message from the stream 
+        ///     unpack the message from the stream
         /// </summary>
         public override void Unpack(BitMemoryStream message)
         {
@@ -40,7 +33,7 @@ namespace RCC.NetworkAction
         }
 
         /// <summary>
-        /// returns the corresponding stream
+        ///     returns the corresponding stream
         /// </summary>
         internal BitMemoryStream Get()
         {
@@ -55,7 +48,7 @@ namespace RCC.NetworkAction
         }
 
         /// <summary>
-        /// sets the corresponding stream
+        ///     sets the corresponding stream
         /// </summary>
         internal void Set(BitMemoryStream message)
         {
@@ -79,7 +72,7 @@ namespace RCC.NetworkAction
         }
 
         /// <summary>
-        /// pack a message for the stream
+        ///     pack a message for the stream
         /// </summary>
         public override void Pack(BitMemoryStream message)
         {

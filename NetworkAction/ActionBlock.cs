@@ -1,18 +1,11 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using RCC.Helper;
 using RCC.Network;
 
 namespace RCC.NetworkAction
 {
     /// <summary>
-    /// a block of actions for sending and receiving
+    ///     a block of actions for sending and receiving
     /// </summary>
     internal class ActionBlock
     {
@@ -22,7 +15,7 @@ namespace RCC.NetworkAction
         public bool Success;
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         public ActionBlock()
         {
@@ -32,7 +25,7 @@ namespace RCC.NetworkAction
         }
 
         /// <summary>
-        /// serialisation method to the stream for the whole block
+        ///     serialisation method to the stream for the whole block
         /// </summary>
         public void Serial(BitMemoryStream msg)
         {
@@ -88,7 +81,8 @@ namespace RCC.NetworkAction
                     int actionSize = ActionFactory.Size(Actions[i]);
 
                     if (actionSize < msgPosAfter - msgPosBefore)
-                        RyzomClient.Log?.Warn($"Action {Actions[i].Code} declares a lower size ({actionSize} bits) from what it actually serialises ({(msgPosAfter - msgPosBefore)} bits)");
+                        RyzomClient.Log?.Warn(
+                            $"Action {Actions[i].Code} declares a lower size ({actionSize} bits) from what it actually serialises ({msgPosAfter - msgPosBefore} bits)");
                     //sprintf(cat, " %d(%d bits)", Actions[i]->Code, Actions[i]->size());
                     //strcat(buff, cat);
                 }
@@ -98,7 +92,7 @@ namespace RCC.NetworkAction
         }
 
         /// <summary>
-        /// calculate the size of the message header in bits
+        ///     calculate the size of the message header in bits
         /// </summary>
         /// <returns></returns>
         private static uint GetHeaderSizeInBits()

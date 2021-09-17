@@ -1,13 +1,7 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-namespace RCC.Messages
+﻿namespace RCC.Messages
 {
     /// <summary>
-    /// type of the variable used in MessageField of the MessageNode
+    ///     type of the variable used in MessageField of the MessageNode
     /// </summary>
     internal enum FieldType
     {

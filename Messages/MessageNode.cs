@@ -1,10 +1,4 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Xml;
 using RCC.Helper;
@@ -13,8 +7,8 @@ using RCC.Network;
 namespace RCC.Messages
 {
     /// <summary>
-    /// Node Leafs in a tree storing server message information (callbacks, bit sizes, names, ...)
-    /// from CGenericXmlMsgHeaderManager::CNode
+    ///     Node Leafs in a tree storing server message information (callbacks, bit sizes, names, ...)
+    ///     from CGenericXmlMsgHeaderManager::CNode
     /// </summary>
     internal class MessageNode
     {
@@ -127,7 +121,8 @@ namespace RCC.Messages
                                     else if (numBits == 64)
                                         Format.Add(new MessageField(FieldType.Sint64, numBits));
                                     else
-                                        RyzomClient.Log?.Warn("Can't use sint in format with other size than 8, 16, 32 or 64");
+                                        RyzomClient.Log?.Warn(
+                                            "Can't use sint in format with other size than 8, 16, 32 or 64");
                                 }
 
                                 break;
@@ -201,7 +196,8 @@ namespace RCC.Messages
                     }
                     else
                     {
-                        RyzomClient.Log?.Debug($"Child '{child.Name}' in node '{Name}' already exists, unable to add it");
+                        RyzomClient.Log?.Debug(
+                            $"Child '{child.Name}' in node '{Name}' already exists, unable to add it");
                         // delete child;
                     }
                 }
@@ -293,7 +289,8 @@ namespace RCC.Messages
 
                 if (index >= node.Nodes.Count)
                 {
-                    RyzomClient.Log?.Debug($"Couldn't select node from stream, invalid index {index} in parent '{node.Name}'");
+                    RyzomClient.Log?.Debug(
+                        $"Couldn't select node from stream, invalid index {index} in parent '{node.Name}'");
                     return null;
                 }
 

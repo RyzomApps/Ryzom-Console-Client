@@ -1,28 +1,21 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using RCC.Helper;
 using RCC.Network;
 
 namespace RCC.NetworkAction
 {
     /// <summary>
-    /// temporary multipart holder until the generic action is complete
+    ///     temporary multipart holder until the generic action is complete
     /// </summary>
     internal class GenericMultiPartTemp
     {
         private readonly List<bool> _blockReceived = new List<bool>();
+        private readonly List<List<byte>> _temp = new List<List<byte>>();
         private int _nbBlock;
         private int _nbCurrentBlock;
-        private readonly List<List<byte>> _temp = new List<List<byte>>();
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         public GenericMultiPartTemp()
         {
@@ -30,7 +23,7 @@ namespace RCC.NetworkAction
         }
 
         /// <summary>
-        /// add a part to the temp action - and call an action if message is complete
+        ///     add a part to the temp action - and call an action if message is complete
         /// </summary>
         public void Set(ActionGenericMultiPart agmp)
         {

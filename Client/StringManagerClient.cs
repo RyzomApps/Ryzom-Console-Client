@@ -1,18 +1,11 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System.Collections.Generic;
-using RCC.Helper;
+﻿using System.Collections.Generic;
 using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Client
 {
     /// <summary>
-    /// Management for dynamically generated text from servers
+    ///     Management for dynamically generated text from servers
     /// </summary>
     internal static class StringManagerClient
     {
@@ -28,7 +21,7 @@ namespace RCC.Client
         private static readonly HashSet<uint> WaitingStrings = new HashSet<uint>();
 
         /// <summary>
-        /// extract the dynamic string from the stream and check if it is complete
+        ///     extract the dynamic string from the stream and check if it is complete
         /// </summary>
         public static void ReceiveDynString(BitMemoryStream bms)
         {
@@ -96,7 +89,7 @@ namespace RCC.Client
         }
 
         /// <summary>
-        /// assemble the dynamic string from DynamicStringInfo
+        ///     assemble the dynamic string from DynamicStringInfo
         /// </summary>
         private static bool BuildDynString(DynamicStringInfo dynInfo)
         {
@@ -368,11 +361,13 @@ namespace RCC.Client
                     {
                         bms.Serial(ref stringId);
                         NetworkManager.Push(bms);
-                        RyzomClient.Log?.Debug($"<CStringManagerClient::getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
+                        RyzomClient.Log?.Debug(
+                            $"<CStringManagerClient::getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
                     }
                     else
                     {
-                        RyzomClient.Log?.Warn($"<CStringManagerClient::getString> unknown message name 'STRING_MANAGER:STRING_RQ'");
+                        RyzomClient.Log?.Warn(
+                            $"<CStringManagerClient::getString> unknown message name 'STRING_MANAGER:STRING_RQ'");
                     }
                 }
 

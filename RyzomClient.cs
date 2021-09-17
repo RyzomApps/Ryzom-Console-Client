@@ -1,10 +1,4 @@
-﻿// This code is a modified version of a file from the 'Minecraft Console Client'
-// <https://github.com/ORelio/Minecraft-Console-Client>,
-// which is released under CDDL-1.0 License.
-// <http://opensource.org/licenses/CDDL-1.0>
-// Original Copyright 2021 by ORelio and Contributers
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -35,14 +29,14 @@ namespace RCC
 
         static uint _lastGameCycle;
 
-        private readonly Queue<string> _chatQueue = new Queue<string>();
-
-        Thread _cmdprompt;
-
         public static ILogger Log;
+
+        private readonly Queue<string> _chatQueue = new Queue<string>();
 
         private readonly Queue<Action> _threadTasks = new Queue<Action>();
         private readonly object _threadTasksLock = new object();
+
+        Thread _cmdprompt;
         Thread _timeoutdetector;
 
         /// <summary>
@@ -67,7 +61,9 @@ namespace RCC
         /// </summary>
         private void StartClient()
         {
-            Log = ClientConfig.LogToFile ? new FileLogLogger(ClientConfig.LogFile, ClientConfig.PrependTimestamp) : new FilteredLogger();
+            Log = ClientConfig.LogToFile
+                ? new FileLogLogger(ClientConfig.LogFile, ClientConfig.PrependTimestamp)
+                : new FilteredLogger();
 
             /* Load commands from Commands namespace */
             LoadCommands();
@@ -99,7 +95,7 @@ namespace RCC
             //    BotLoad(bot, false);
             //botsOnHold.Clear();
 
-            _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
+            _timeoutdetector = new Thread(TimeoutDetector) {Name = "RCC Connection timeout detector"};
             _timeoutdetector.Start();
 
             _cmdprompt = new Thread(new ThreadStart(CommandPrompt));
@@ -123,7 +119,7 @@ namespace RCC
 
                     try
                     {
-                        Command cmd = (Command)Activator.CreateInstance(type);
+                        Command cmd = (Command) Activator.CreateInstance(type);
                         Cmds[cmd.CmdName.ToLower()] = cmd;
                         CmdNames.Add(cmd.CmdName.ToLower());
                         foreach (string alias in cmd.getCMDAliases())
@@ -337,7 +333,7 @@ namespace RCC
             // Login State Machine
             if (!Login())
             {
-                RyzomClient.Log?.Error("Could not login!");
+                Log?.Error("Could not login!");
                 return;
             }
 
@@ -447,8 +443,8 @@ namespace RCC
         }
 
         /// <summary>
-        /// Called from client.cpp
-        /// start the login state machine
+        ///     Called from client.cpp
+        ///     start the login state machine
         /// </summary>
         private bool Login()
         {
@@ -464,7 +460,8 @@ namespace RCC
                 try
                 {
                     // string res = checkLogin(LoginLogin, LoginPassword, ClientApp, LoginCustomParameters);
-                    Network.Login.CheckLogin(this, ClientConfig.Username, ClientConfig.Password, ClientConfig.ApplicationServer,
+                    Network.Login.CheckLogin(this, ClientConfig.Username, ClientConfig.Password,
+                        ClientConfig.ApplicationServer,
                         "");
                     loggedIn = true;
                 }
@@ -668,7 +665,8 @@ namespace RCC
                         Client.Connection.WaitServerAnswer = false;
 
                         // check that the pre selected character is available
-                        if (Client.Connection.CharacterSummaries[charSelect].People == (int)People.Unknown || charSelect > 4)
+                        if (Client.Connection.CharacterSummaries[charSelect].People == (int) People.Unknown ||
+                            charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
                             throw new InvalidOperationException("preselected char does not exist");

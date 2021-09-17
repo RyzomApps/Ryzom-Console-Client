@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RCC.Client;
 
 namespace RCC.Commands
 {
@@ -10,14 +11,14 @@ namespace RCC.Commands
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
-            Client.Connection.GameExit = true;
+            Connection.GameExit = true;
             //Program.Exit();
             return "";
         }
 
         public override IEnumerable<string> getCMDAliases()
         {
-            return new[] { "quit", "disconnect" };
+            return new[] {"quit", "disconnect"};
         }
     }
 }

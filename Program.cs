@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using RCC.Config;
 using RCC.Helper;
-using RCC.Logger;
 using RCC.WinAPI;
 
 namespace RCC

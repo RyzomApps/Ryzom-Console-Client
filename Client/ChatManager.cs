@@ -1,21 +1,14 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using RCC.Helper;
-using RCC.Network;
+﻿using RCC.Network;
 
 namespace RCC.Client
 {
     /// <summary>
-    /// Class for management of incoming and outgoing chat messages
+    ///     Class for management of incoming and outgoing chat messages
     /// </summary>
     internal static class ChatManager
     {
         /// <summary>
-        /// interprets the incoming tell string
+        ///     interprets the incoming tell string
         /// </summary>
         public static void ProcessTellString(BitMemoryStream bms, object o)
         {
@@ -32,7 +25,7 @@ namespace RCC.Client
         }
 
         /// <summary>
-        /// interprets the incoming say string
+        ///     interprets the incoming say string
         /// </summary>
         public static void ProcessChatString(BitMemoryStream bms, object o)
         {
@@ -56,7 +49,7 @@ namespace RCC.Client
             f.Serial(ref compressedIndex);
             f.Serial(ref senderNameId);
             f.Serial(ref chatMode);
-            if (chatMode == (byte)ChatGroupType.DynChat)
+            if (chatMode == (byte) ChatGroupType.DynChat)
                 f.Serial(ref dynChatChanID);
             f.Serial(ref content);
 
@@ -91,7 +84,7 @@ namespace RCC.Client
 
             var color = "§f";
 
-            switch ((ChatGroupType)chatMode)
+            switch ((ChatGroupType) chatMode)
             {
                 case ChatGroupType.DynChat:
                     color = "§b";
@@ -123,7 +116,7 @@ namespace RCC.Client
                 default: /*nlwarning("unknown group type"); return;*/ break;
             }
 
-            switch ((ChatGroupType)chatMode)
+            switch ((ChatGroupType) chatMode)
             {
                 case ChatGroupType.Shout:
                     RyzomClient.Log?.Chat($"[{chatMode}][{compressedIndex}]{senderNameId}§r shouts: {color}{content}");

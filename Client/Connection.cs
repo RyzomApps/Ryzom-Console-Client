@@ -1,15 +1,9 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace RCC.Client
 {
     /// <summary>
-    /// Stores information about the connection to the ryzom server.
+    ///     Stores information about the connection to the ryzom server.
     /// </summary>
     public static class Connection
     {

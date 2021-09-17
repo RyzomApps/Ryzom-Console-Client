@@ -1,19 +1,12 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using RCC.Helper;
 using RCC.Network;
 
 namespace RCC.NetworkAction
 {
     /// <summary>
-    /// Factory for actions - unpacking actions from streams and registering them
+    ///     Factory for actions - unpacking actions from streams and registering them
     /// </summary>
     public static class ActionFactory
     {
@@ -23,7 +16,7 @@ namespace RCC.NetworkAction
             new Dictionary<ActionCode, KeyValuePair<Type, Action>>();
 
         /// <summary>
-        /// upacks an action from a stream - using the right action type
+        ///     upacks an action from a stream - using the right action type
         /// </summary>
         public static Action Unpack(BitMemoryStream message, bool b)
         {
@@ -67,7 +60,7 @@ namespace RCC.NetworkAction
         }
 
         /// <summary>
-        /// creates instances of an action based on the given action code
+        ///     creates instances of an action based on the given action code
         /// </summary>
         internal static Action Create(byte slot, ActionCode code)
         {
@@ -107,7 +100,7 @@ namespace RCC.NetworkAction
         }
 
         /// <summary>
-        /// removes an action from the registered actions
+        ///     removes an action from the registered actions
         /// </summary>
         public static void Remove(Action action)
         {
@@ -145,7 +138,7 @@ namespace RCC.NetworkAction
         }
 
         /// <summary>
-        /// adds an action to the registered actions
+        ///     adds an action to the registered actions
         /// </summary>
         internal static void RegisterAction(ActionCode code, Type creator)
         {

@@ -1,20 +1,14 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using RCC.Network;
+﻿using RCC.Network;
 
 namespace RCC.NetworkAction
 {
     /// <summary>
-    /// Abstract base for other actions
+    ///     Abstract base for other actions
     /// </summary>
     public abstract class Action
     {
         /// <summary>
-        /// code that specifies the type of the action
+        ///     code that specifies the type of the action
         /// </summary>
         public ActionCode Code { get; internal set; }
 
@@ -23,7 +17,7 @@ namespace RCC.NetworkAction
         public byte Slot { get; internal set; }
 
         /// <summary>
-        /// unpack a message from stream
+        ///     unpack a message from stream
         /// </summary>
         public abstract void Unpack(BitMemoryStream message);
 
@@ -36,7 +30,7 @@ namespace RCC.NetworkAction
         public abstract void Reset();
 
         /// <summary>
-        /// pack a message for the stream
+        ///     pack a message for the stream
         /// </summary>
         public abstract void Pack(BitMemoryStream message);
     }

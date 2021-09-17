@@ -1,15 +1,9 @@
-﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
-// <http://dev.ryzom.com/projects/ryzom/>,
-// which is released under GNU Affero General Public License.
-// <http://www.gnu.org/licenses/>
-// Original Copyright 2010 by Winch Gate Property Limited
-
-using RCC.Network;
+﻿using RCC.Network;
 
 namespace RCC.Client
 {
     /// <summary>
-    /// Holds information about the character such as name, sheetid and title.
+    ///     Holds information about the character such as name, sheetid and title.
     /// </summary>
     public class CharacterSummary
     {
@@ -22,6 +16,23 @@ namespace RCC.Client
         /// Localisation
         uint _location;
 
+        int _title;
+
+        /// <summary>
+        ///     visual property for appearance A
+        /// </summary>
+        long _visualPropA;
+
+        /// <summary>
+        ///     visual property for appearance B
+        /// </summary>
+        long _visualPropB;
+
+        /// <summary>
+        ///     visual property for appearance C
+        /// </summary>
+        long _visualPropC;
+
         /// mainland
         public uint Mainland;
 
@@ -32,25 +43,8 @@ namespace RCC.Client
 
         public int SheetId;
 
-        int _title;
-
         /// <summary>
-        /// visual property for appearance A
-        /// </summary>
-        long _visualPropA;
-
-        /// <summary>
-        /// visual property for appearance B
-        /// </summary>
-        long _visualPropB;
-
-        /// <summary>
-        /// visual property for appearance C
-        /// </summary>
-        long _visualPropC;
-
-        /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         public CharacterSummary()
         {
@@ -69,7 +63,7 @@ namespace RCC.Client
         }
 
         /// <summary>
-        /// serialisation coming from a stream (net message)
+        ///     serialisation coming from a stream (net message)
         /// </summary>
         public void Serial(BitMemoryStream f)
         {
