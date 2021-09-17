@@ -1,9 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using RCC.Messages;
 using RCC.Network;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
+using RCC.Helper;
 
 namespace RCC.Client
 {
+    struct StringWaiter
+    {
+        /// Pointer to the ucstring to fill
+        string Result;
+        /// Pointer to the remover that contains this string reference
+        object Remover;
+    };
+
     /// <summary>
     ///     Management for dynamically generated text from servers
     /// </summary>
@@ -21,13 +35,30 @@ namespace RCC.Client
         private static readonly HashSet<uint> WaitingStrings = new HashSet<uint>();
 
         /// <summary>
+        ///  String waiting the dyn string value from the server.
+        /// </summary>
+        static readonly Dictionary<uint, StringWaiter> _DynStringsWaiters;
+
+        /// <summary>
+        /// Callback for dyn string value from the server
+        /// </summary>
+        static readonly Dictionary<uint, object> _DynStringsCallbacks;
+
+        private static string _ShardId;
+        private static string _LanguageCode;
+        private static bool _CacheInited;
+        private static string _CacheFilename;
+        private static uint _Timestamp;
+        private static bool _CacheLoaded;
+
+        /// <summary>
         ///     extract the dynamic string from the stream and check if it is complete
         /// </summary>
         public static void ReceiveDynString(BitMemoryStream bms)
         {
             //H_AUTO(CStringManagerClient_receiveDynString)
 
-            var dynInfo = new DynamicStringInfo {Status = DynamicStringInfo.TStatus.Received};
+            var dynInfo = new DynamicStringInfo { Status = DynamicStringInfo.TStatus.Received };
 
             // read the dynamic string Id
             uint dynId = 0;
@@ -36,39 +67,35 @@ namespace RCC.Client
             // read the base string Id
             uint stringId = 0;
             bms.Serial( /*dynInfo.*/ref stringId);
+            dynInfo.StringId = stringId;
 
             // try to build the string
             dynInfo.Message = bms;
-            BuildDynString(dynInfo);
-
-            RyzomClient.Log?.Debug($"Received DynString with dynID {dynId} and StringID {stringId}: " + dynInfo.String);
+            BuildDynString(ref dynInfo);
 
             if (dynInfo.Status == DynamicStringInfo.TStatus.Complete)
             {
-                //    if (!ClientConfig.Light)
-                //    {
-                //        //nlinfo("DynString %u available : [%s]", dynId, dynInfo.String.toString().c_str());
-                //    }
-                //
+                RyzomClient.Log?.Info($"DynString {dynId} available : [{dynInfo.String}]");
+
                 ReceivedDynStrings.Add(dynId, dynInfo);
-                //    // security, if dynstring Message received twice, it is possible that the dynstring is still in waiting list
+                // security, if dynstring Message received twice, it is possible that the dynstring is still in waiting list
                 WaitingDynStrings.Remove(dynId);
+
+                // update the waiting dyn strings
+
+                //KeyValuePair<TStringWaitersContainer.iterator, TStringWaitersContainer.iterator> range =
+                //    _DynStringsWaiters.equal_range(dynId);
                 //
-                //    // update the waiting dyn strings
+                //if (range.first != range.second)
+                //{
+                //    for (; range.first != range.second; ++range.first)
                 //    {
-                //        std.pair<TStringWaitersContainer.iterator, TStringWaitersContainer.iterator> range =
-                //            _DynStringsWaiters.equal_range(dynId);
-                //
-                //        if (range.first != range.second)
-                //        {
-                //            for (; range.first != range.second; ++range.first)
-                //            {
-                //                TStringWaiter & sw = range.first->second;
-                //                *(sw.Result) = dynInfo.String;
-                //            }
-                //            _DynStringsWaiters.erase(dynId);
-                //        }
+                //        TStringWaiter & sw = range.first->second;
+                //        *(sw.Result) = dynInfo.String;
                 //    }
+                //    _DynStringsWaiters.erase(dynId);
+                //}
+
                 //    // callback the waiting dyn strings
                 //    {
                 //        std.pair<TStringCallbacksContainer.iterator, TStringCallbacksContainer.iterator> range =
@@ -91,7 +118,7 @@ namespace RCC.Client
         /// <summary>
         ///     assemble the dynamic string from DynamicStringInfo
         /// </summary>
-        private static bool BuildDynString(DynamicStringInfo dynInfo)
+        private static bool BuildDynString(ref DynamicStringInfo dynInfo)
         {
             if (dynInfo.Status == DynamicStringInfo.TStatus.Received)
             {
@@ -345,29 +372,34 @@ namespace RCC.Client
             return false;
         }
 
-        static bool GetString(uint stringId, out string result)
+        /// <summary>
+        /// request the stringId from the local cache or if missing ask the server
+        /// </summary>
+        private static bool GetString(uint stringId, out string result)
         {
-            //TStringsContainer::iterator it(_ReceivedStrings.find(stringId));
+            //TStringsContainer.iterator it(_ReceivedStrings.find(stringId));
             if (!ReceivedStrings.ContainsKey(stringId))
             {
-                //CHashSet<uint>::iterator it(_WaitingStrings.find(stringId));
+                //CHashSet<uint>.iterator it(_WaitingStrings.find(stringId));
                 if (!WaitingStrings.Contains(stringId))
                 {
                     WaitingStrings.Add(stringId);
                     // need to ask for this string.
-                    BitMemoryStream bms = new BitMemoryStream();
+
+                    var bms = new BitMemoryStream();
                     const string msgType = "STRING_MANAGER:STRING_RQ";
+
                     if (GenericMessageHeaderManager.PushNameToStream(msgType, bms))
                     {
                         bms.Serial(ref stringId);
-                        NetworkManager.Push(bms);
-                        RyzomClient.Log?.Debug(
-                            $"<CStringManagerClient::getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
+                        //NetworkManager.Push(bms);
+                        RyzomClient.Log?.Info(
+                            "<CStringManagerClient.getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
                     }
                     else
                     {
                         RyzomClient.Log?.Warn(
-                            $"<CStringManagerClient::getString> unknown message name 'STRING_MANAGER:STRING_RQ'");
+                            "<CStringManagerClient.getString> unknown message name 'STRING_MANAGER:STRING_RQ'");
                     }
                 }
 
@@ -379,15 +411,251 @@ namespace RCC.Client
 
             result = ReceivedStrings[stringId];
 
-            if (result.Length > 9 && result.Substring(0, 9) == "<missing:")
+            if (result.Length <= 9 || result.Substring(0, 9) != "<missing:") return true;
+
+            if (DynStrings.ContainsKey(result.Substring(9, result.Length - 10)))
             {
-                if (DynStrings.ContainsKey(result.Substring(9, result.Length - 10)))
-                {
-                    result = DynStrings[result.Substring(9, result.Length - 10)];
-                }
+                result = DynStrings[result.Substring(9, result.Length - 10)];
             }
 
             return true;
+        }
+
+        internal static void ReceiveString(uint stringId, string str)
+        {
+            //H_AUTO(CStringManagerClient_receiveString)
+
+            RyzomClient.Log.Info($"String {stringId} available : [{str}]");
+
+            if (WaitingStrings.Contains(stringId))
+            {
+                WaitingStrings.Remove(stringId);
+            }
+
+            var updateCache = true;
+
+            if (ReceivedStrings.ContainsKey(stringId))
+            {
+                RyzomClient.Log.Warn($"Receiving stringID {stringId} ({str}), already in received string ({ReceivedStrings[stringId]}), replacing with new value.");
+
+                if (ReceivedStrings[stringId] != str)
+                    ReceivedStrings[stringId] = str;
+                else
+                    updateCache = false;
+            }
+            else
+            {
+                ReceivedStrings.Add(stringId, str);
+            }
+
+            if (updateCache)
+            {
+                // update the string cache. DON'T SAVE now cause
+                //if (_CacheInited && !_CacheFilename.empty())
+                //{
+                //    CCacheString cs;
+                //    cs.StringId = stringId;
+                //    cs.String = str;
+                //    _CacheStringToSave.push_back(cs);
+                //}
+            }
+
+            // update the waiting strings
+            {
+                //std.pair<TStringWaitersContainer.iterator, TStringWaitersContainer.iterator> range = _StringsWaiters.equal_range(stringId);
+                //
+                //if (range.first != range.second)
+                //{
+                //    for (; range.first != range.second; ++range.first)
+                //    {
+                //        TStringWaiter & sw = range.first->second;
+                //        *(sw.Result) = str;
+                //    }
+                //    _StringsWaiters.erase(stringId);
+                //}
+            }
+
+            // callback the waiter
+            {
+                //std.pair<TStringCallbacksContainer.iterator, TStringCallbacksContainer.iterator> range =
+                //    _StringsCallbacks.equal_range(stringId);
+                //
+                //if (range.first != range.second)
+                //{
+                //    for (; range.first != range.second; ++range.first)
+                //    {
+                //        range.first->second->onStringAvailable(stringId, str);
+                //    }
+                //    _StringsCallbacks.erase(stringId);
+                //}
+            }
+
+
+            // try to complete any pending dyn string
+            {
+                //TDynStringsContainer.iterator first, last;
+                //restartLoop:
+                //first = _WaitingDynStrings.begin();
+                //last = _WaitingDynStrings.end();
+                //for (; first != last; ++first)
+                //{
+                //    ucstring value;
+                //    uint number = first->first;
+                //    /// Warning: if getDynString() return true, 'first' is erased => don't use it after in this loop
+                //    if (getDynString(number, value))
+                //    {
+                //        //nlinfo("DynString %u available : [%s]", number, value.toString().c_str());
+                //        // this dyn string is now complete !
+                //        // update the waiting dyn strings
+                //        {
+                //            std.pair<TStringWaitersContainer.iterator, TStringWaitersContainer.iterator> range =
+                //                _DynStringsWaiters.equal_range(number);
+                //
+                //            if (range.first != range.second)
+                //            {
+                //                for (; range.first != range.second; ++range.first)
+                //                {
+                //                    TStringWaiter & sw = range.first->second;
+                //                    *(sw.Result) = str;
+                //                }
+                //                _DynStringsWaiters.erase(number);
+                //            }
+                //        }
+                //        // callback the waiting dyn strings
+                //        {
+                //            std.pair<TStringCallbacksContainer.iterator, TStringCallbacksContainer.iterator> range =
+                //                _DynStringsCallbacks.equal_range(number);
+                //
+                //            if (range.first != range.second)
+                //            {
+                //                for (; range.first != range.second; ++range.first)
+                //                {
+                //                    range.first->second->onDynStringAvailable(number, value);
+                //                }
+                //                _DynStringsCallbacks.erase(number);
+                //            }
+                //        }
+                //        goto restartLoop;
+                //    }
+                //}
+            }
+        }
+
+        public static void InitCache(string shardId, string languageCode)
+        {
+            _ShardId = shardId;
+            _LanguageCode = languageCode;
+
+            // to be inited, shard id and language code must be filled
+            if (_ShardId != string.Empty && _LanguageCode != string.Empty)
+                _CacheInited = true;
+            else
+                _CacheInited = false;
+        }
+
+        public static void LoadCache(in int timestamp)
+        {
+            if (!_CacheInited) return;
+
+            try
+            {
+                _CacheFilename = "save/" + _ShardId.Split(":")[0] + ".string_cache";
+
+                RyzomClient.Log.Info($"SM : Try to open the string cache : {_CacheFilename}");
+
+                if (System.IO.File.Exists(_CacheFilename))
+                {
+                    // there is a cache file, check date reset it if needed
+                    {
+                        using var fileStream = new FileStream(_CacheFilename, FileMode.Open);
+                        //file.serial(_Timestamp);
+
+                        var timeBytes = new byte[4];
+
+                        fileStream.Read(timeBytes, 0, 4);
+
+                        _Timestamp = BitConverter.ToUInt32(timeBytes);
+                    }
+
+                    if (_Timestamp != timestamp)
+                    {
+                        RyzomClient.Log.Info("SM: Clearing string cache : outofdate");
+                        // the cache is not sync, reset it
+                        //NLMISC.COFile file(_CacheFilename);
+                        //file.serial(timestamp);
+
+                        using var fileStream = new FileStream(_CacheFilename, FileMode.Open);
+
+                        var timeBytes = BitConverter.GetBytes(_Timestamp);
+
+                        fileStream.Write(timeBytes, 0, 4);
+                    }
+                    else
+                    {
+                        RyzomClient.Log.Info("SM : string cache in sync. cool");
+                    }
+                }
+                else
+                {
+                    //throw new NotImplementedException();
+                    RyzomClient.Log.Info("SM: Creating string cache");
+                    //// cache file don't exist, create it with the timestamp
+                    //NLMISC.COFile file(_CacheFilename);
+                    //file.serial(timestamp);
+                    RyzomClient.Log.Warn("SM : NotImplemented");
+                }
+
+                // clear all current data.
+                ReceivedStrings.Clear();
+                ReceivedDynStrings.Clear();
+                // NB : we keep the waiting strings and dyn strings
+
+                // insert the empty string.
+                ReceivedStrings.Add(0, "");
+
+                // load the cache file
+                using var fileStream2 = new FileStream(_CacheFilename, FileMode.Open);
+
+                var timeBytes2 = new byte[4];
+
+                fileStream2.Read(timeBytes2, 0, 4);
+
+                _Timestamp = BitConverter.ToUInt32(timeBytes2);
+                Debug.Assert(_Timestamp == timestamp);
+
+                while (fileStream2.Position < fileStream2.Length)
+                {
+                    var idBytes = new byte[4];
+
+                    fileStream2.Read(idBytes);
+
+                    var lenBytes = new byte[4];
+
+                    fileStream2.Read(lenBytes);
+
+                    var len = BitConverter.ToUInt32(lenBytes);
+
+                    var strBytes = new byte[len * 2];
+
+                    fileStream2.Read(strBytes);
+
+                    var id = BitConverter.ToUInt32(idBytes);
+                    var str = Encoding.UTF8.GetString(strBytes).Replace("\0", "");
+
+                    //RyzomClient.Log.Info($"SM : loading string [{id}] as [{str}] in cache");
+
+                    ReceivedStrings.Add(id, str);
+                }
+
+                _CacheLoaded = true;
+            }
+            catch (Exception e)
+            {
+                RyzomClient.Log.Warn($"SM : loadCache failed, exception : {e.GetType().Name} {e.Message}");
+                RyzomClient.Log.Warn("SM : cache deactivated");
+                // unactivated cache.
+                _CacheFilename = "";
+            }
         }
     }
 }

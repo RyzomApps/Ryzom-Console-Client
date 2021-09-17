@@ -530,17 +530,24 @@ namespace RCC.Network
             var timestamp = 0;
             impulse.Serial(ref timestamp);
 
-            //if (PermanentlyBanned) return; <- haha
-            //CStringManagerClient.loadCache(timestamp);
-
-            // todo: CStringManagerClient.loadCache(timestamp)
+            StringManagerClient.LoadCache(timestamp);
 
             RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
         }
 
+        /// <summary>
+        /// Update the local string set
+        /// </summary>
         private static void ImpulseStringResp(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            uint stringId = 0;
+            string strUtf8 = "";
+            impulse.Serial(ref stringId);
+            impulse.Serial(ref strUtf8);
+            //string str;
+            //str.fromUtf8(strUtf8);
+
+            StringManagerClient.ReceiveString(stringId, strUtf8);
         }
 
         /// <summary>
@@ -716,6 +723,7 @@ namespace RCC.Network
         private static void ImpulseServerQuitOk(BitMemoryStream impulse)
         {
             RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            Connection.GameExit = true;
         }
 
         private static void ImpulseShardId(BitMemoryStream impulse)
@@ -804,8 +812,8 @@ namespace RCC.Network
             //}
             //else
             //{
-            var userEntityInitPos = new Vector3((float) x / 1000.0f, (float) y / 1000.0f, (float) z / 1000.0f);
-            var userEntityInitFront = new Vector3((float) Math.Cos(heading), (float) Math.Sin(heading), 0f);
+            var userEntityInitPos = new Vector3((float)x / 1000.0f, (float)y / 1000.0f, (float)z / 1000.0f);
+            var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
 
             RyzomClient.Log?.Info($"<ImpulseUserChar> pos : {userEntityInitPos}  heading : {heading}");
 
@@ -846,14 +854,15 @@ namespace RCC.Network
             {
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
-                RyzomClient.Log?.Info($"Found character {cs.Name} from shard {cs.Mainland} in slot {i}");
+                if ((People)cs.People != People.Unknown)
+                    RyzomClient.Log?.Info($"Found character {cs.Name} from shard {cs.Mainland} in slot {i}");
                 Connection.CharacterSummaries.Add(cs);
             }
             // END WORKAROUND
 
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
-            RyzomClient.Log?.Info("st_ingame->st_select_char");
+            RyzomClient.Log?.Debug("st_ingame->st_select_char");
             Connection.AutoSendCharSelection = true;
 
             //// Create the message for the server to select the first character.
@@ -925,7 +934,7 @@ namespace RCC.Network
 
         private static void ImpulseDatabaseInitPlayer(BitMemoryStream impulse)
         {
-            int p = impulse.Pos;
+            var p = impulse.Pos;
 
             // get the egs tick of this change
             int serverTick = 0;
@@ -943,27 +952,22 @@ namespace RCC.Network
             //ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
         }
 
-        static void CheckHandshake(BitMemoryStream impulse)
+        /// <summary>
+        /// Decode handshake to check versions
+        /// </summary>
+        /// <param name="impulse"></param>
+        private static void CheckHandshake(BitMemoryStream impulse)
         {
-            // Decode handshake to check versions
             uint handshakeVersion = 0;
-            uint itemSlotVersion = 0;
             impulse.Serial(ref handshakeVersion, 2);
             if (handshakeVersion > 0)
                 RyzomClient.Log?.Warn("Server handshake version is more recent than client one");
+
+            uint itemSlotVersion = 0;
             impulse.Serial(ref itemSlotVersion, 2);
             RyzomClient.Log?.Info($"Item slot version: {itemSlotVersion}");
             //if (itemSlotVersion != INVENTORIES::CItemSlot::getVersion())
             //    nlerror("Handshake: itemSlotVersion mismatch (S:%hu C:%hu)", itemSlotVersion, INVENTORIES::CItemSlot::getVersion());
         }
-
-        enum TCDBBank
-        {
-            CDBPlayer,
-            CDBGuild, /* CDBContinent, */
-            CDBOutpost, /* CDBGlobal, */
-            NB_CDB_BANKS,
-            INVALID_CDB_BANK
-        };
     }
 }

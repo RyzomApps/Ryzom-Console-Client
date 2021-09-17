@@ -597,7 +597,7 @@ namespace RCC
                 //TODO NetworkConnection.setDataBase(IngameDbMngr.getNodePtr());
 
                 // init the string manager cache.
-                //STRING_MANAGER::CStringManagerClient::instance()->initCache(UsedFSAddr, ClientConfig.LanguageCode);
+                StringManagerClient.InitCache(fsaddr, ClientConfig.LanguageCode);
             }
 
             Client.Connection.WaitServerAnswer = true;
