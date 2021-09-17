@@ -48,7 +48,7 @@ namespace RCC.Client
             dynInfo.Message = bms;
             BuildDynString(dynInfo);
 
-            ConsoleIO.WriteLine($"Received DynString with dynID {dynId} and StringID {stringId}: " + dynInfo.String);
+            RyzomClient.Log?.Debug($"Received DynString with dynID {dynId} and StringID {stringId}: " + dynInfo.String);
 
             if (dynInfo.Status == DynamicStringInfo.TStatus.Complete)
             {
@@ -348,7 +348,7 @@ namespace RCC.Client
             if (dynInfo.Status == DynamicStringInfo.TStatus.Complete)
                 return true;
 
-            ConsoleIO.WriteLineFormatted("§eInconsistent dyn string status : " + dynInfo.Status);
+            RyzomClient.Log?.Warn($"Inconsistent dyn string status : {dynInfo.Status}");
             return false;
         }
 
@@ -368,13 +368,11 @@ namespace RCC.Client
                     {
                         bms.Serial(ref stringId);
                         NetworkManager.Push(bms);
-                        ConsoleIO.WriteLineFormatted(
-                            "§e<CStringManagerClient::getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
+                        RyzomClient.Log?.Debug($"<CStringManagerClient::getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
                     }
                     else
                     {
-                        ConsoleIO.WriteLineFormatted(
-                            "§e<CStringManagerClient::getString> unknown message name 'STRING_MANAGER:STRING_RQ'");
+                        RyzomClient.Log?.Warn($"<CStringManagerClient::getString> unknown message name 'STRING_MANAGER:STRING_RQ'");
                     }
                 }
 

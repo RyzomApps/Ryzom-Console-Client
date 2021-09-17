@@ -370,8 +370,7 @@ namespace RCC.Helper
                 if (displayTimestamp.Value)
                 {
                     int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
-                    ConsoleIO.Write(Format("{0}:{1}:{2} ", hour.ToString("00"), minute.ToString("00"),
-                        second.ToString("00")));
+                    Write($"{hour:00}:{minute:00}:{second:00} ");
                 }
 
                 if (BasicIo)

@@ -65,7 +65,7 @@ namespace RCC.Config
         /// <param name="file">File to load</param>
         public static void LoadFile(string file)
         {
-            ConsoleIO.WriteLogLine("[Settings] Loading Settings from " + Path.GetFullPath(file));
+            ConsoleIO.WriteLogLine($"[Settings] Loading Settings from {Path.GetFullPath(file)}");
             if (!File.Exists(file)) return;
 
             try
@@ -162,8 +162,7 @@ namespace RCC.Config
                     return true;
 
                 default:
-                    ConsoleIO.WriteLineFormatted("§cCould not parse setting " + argName + " with value '" + argValue +
-                                                 "'.");
+                    RyzomClient.Log?.Warn($"Could not parse setting {argName} with value '{argValue}'.");
                     return false;
             }
         }

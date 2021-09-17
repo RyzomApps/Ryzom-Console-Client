@@ -31,7 +31,7 @@ namespace RCC.Commands
                 NetworkManager.Push(out2);
             }
             else
-                ConsoleIO.WriteLineFormatted($"§cUnknown message named '{msgName}'.");
+                RyzomClient.Log?.Warn($"Unknown message named '{msgName}'.");
 
             // custom afk txt
             BitMemoryStream outTxt = new BitMemoryStream();
@@ -43,7 +43,7 @@ namespace RCC.Commands
             }
             else
             {
-                ConsoleIO.WriteLineFormatted($"§cUnknown message named '{msgName}'.");
+                RyzomClient.Log?.Warn($"Unknown message named '{msgName}'.");
             }
 
             return "";

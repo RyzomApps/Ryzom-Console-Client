@@ -42,7 +42,7 @@ namespace RCC.Client
             out2.Serial(ref c);
             NetworkManager.Push(out2);
 
-            ConsoleIO.WriteLineFormatted("§aimpulseCallBack : CONNECTION:SELECT_CHAR '" + Connection.PlayerSelectedSlot + "' sent.");
+            RyzomClient.Log?.Info("impulseCallBack : CONNECTION:SELECT_CHAR '" + Connection.PlayerSelectedSlot + "' sent.");
 
             Connection.WaitServerAnswer = true;
         }

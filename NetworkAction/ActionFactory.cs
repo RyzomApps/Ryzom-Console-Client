@@ -55,7 +55,7 @@ namespace RCC.NetworkAction
 
                 if (action == null)
                 {
-                    ConsoleIO.WriteLineFormatted($"§cUnpacking an action with unknown code, skip it ({code})");
+                    RyzomClient.Log?.Warn($"Unpacking an action with unknown code, skip it ({code})");
                 }
                 else
                 {
@@ -73,7 +73,7 @@ namespace RCC.NetworkAction
         {
             if (!RegisteredAction.ContainsKey(code))
             {
-                ConsoleIO.WriteLine("CActionFactory::create() try to create an unknown action (" + code + ")");
+                RyzomClient.Log?.Warn($"CActionFactory::create() try to create an unknown action ({code})");
                 return null;
             }
 
@@ -136,8 +136,7 @@ namespace RCC.NetworkAction
                 headerBitSize = 1 + 2;
             else
             {
-                ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name +
-                                             " called, but not implemented");
+                RyzomClient.Log?.Warn($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
                 // TODO: fix that (sizeof(()action.Code) * 8) <- bdh: whats that about?
                 headerBitSize = 1 + /*(sizeof(()action.Code) * 8)*/ 8;
             }
@@ -152,19 +151,19 @@ namespace RCC.NetworkAction
         {
             if (!typeof(Action).IsAssignableFrom(creator))
             {
-                ConsoleIO.WriteLine("Action is not assignable from creator " + creator);
+                RyzomClient.Log?.Warn($"Action is not assignable from creator {creator}");
                 return;
             }
 
             if ((int) code >= 256)
             {
-                ConsoleIO.WriteLine("Cannot register action code " + code + " because it exceeds 255");
+                RyzomClient.Log?.Warn($"Cannot register action code {code} because it exceeds 255");
                 return;
             }
 
             if (RegisteredAction.ContainsKey(code))
             {
-                ConsoleIO.WriteLine("The code " + code + " already registered in the CActionFactory");
+                RyzomClient.Log?.Warn($"The code {code} already registered in the CActionFactory");
             }
             else
             {

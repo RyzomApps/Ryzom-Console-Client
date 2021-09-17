@@ -24,7 +24,7 @@ namespace RCC.Commands
 
             if (args.Length == 0)
             {
-                ConsoleIO.WriteLineFormatted("§cPlease enter a text.");
+                RyzomClient.Log?.Warn("Please enter a text.");
                 return "";
             }
 
@@ -46,7 +46,7 @@ namespace RCC.Commands
             }
             else
             {
-                ConsoleIO.WriteLineFormatted($"§cUnknown message named '{msgType}'.");
+                RyzomClient.Log?.Warn($"Unknown message named '{msgType}'.");
             }
 
             // send str to IOS
@@ -59,7 +59,7 @@ namespace RCC.Commands
                 NetworkManager.Push(out2);
             }
             else
-                ConsoleIO.WriteLineFormatted($"§cUnknown message named '{msgType}'.");
+                RyzomClient.Log?.Warn($"Unknown message named '{msgType}'.");
 
             return "";
         }

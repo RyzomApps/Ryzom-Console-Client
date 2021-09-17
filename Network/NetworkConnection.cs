@@ -115,7 +115,7 @@ namespace RCC.Network
             get => _connectionState;
             set
             {
-                ConsoleIO.WriteLine("Connection state changed to " + value);
+                RyzomClient.Log?.Info($"Connection state changed to {value}");
                 _connectionState = value;
             }
         }
@@ -312,8 +312,7 @@ namespace RCC.Network
 
             SetLoginCookieFromString(cookie);
 
-            ConsoleIO.WriteLine(
-                $"Network initialisation with front end '{_frontendAddress}' and cookie {cookie}");
+            RyzomClient.Log?.Info($"Network initialisation with front end '{_frontendAddress}' and cookie {cookie}");
 
             ConnectionState = ConnectionState.NotConnected;
         }
@@ -361,14 +360,14 @@ namespace RCC.Network
                         case SystemMessage.SystemSyncCode:
                             // receive sync, decode sync
                             ConnectionState = ConnectionState.Synchronize;
-                            ConsoleIO.WriteLine("CNET: login->synchronize");
+                            RyzomClient.Log?.Debug("CNET: login->synchronize");
                             ReceiveSystemSync(msgin);
                             return true;
 
                         case SystemMessage.SystemStalledCode:
                             // receive stalled, decode stalled and state stalled
                             ConnectionState = ConnectionState.Stalled;
-                            ConsoleIO.WriteLine("CNET: login->stalled");
+                            RyzomClient.Log?.Debug("CNET: login->stalled");
                             ReceiveSystemStalled(msgin);
                             return true;
 
@@ -376,25 +375,25 @@ namespace RCC.Network
                             // receive probe, decode probe and state probe
                             ConnectionState = ConnectionState.Probe;
                             //_Changes.push_back(CChange(0, ProbeReceived));
-                            ConsoleIO.WriteLine("CNET: login->probe");
+                            RyzomClient.Log?.Debug("CNET: login->probe");
                             ReceiveSystemProbe(msgin);
                             return true;
 
                         case SystemMessage.SystemServerDownCode:
                             Disconnect(); // will send disconnection message
-                            ConsoleIO.WriteLine("BACK-END DOWN");
+                            RyzomClient.Log?.Error("BACK-END DOWN");
                             return false; // exit now from loop, don't expect a new state
 
                         default:
                             //msgin.displayStream("DBG:BEN:stateLogin:msgin");
-                            ConsoleIO.WriteLine("CNET: received system " + message + " in state Login");
+                            RyzomClient.Log?.Warn($"CNET: received system {message} in state Login");
                             break;
                     }
                 }
                 else
                 {
                     //msgin.displayStream("DBG:BEN:stateLogin:msgin");
-                    ConsoleIO.WriteLine("CNET: received normal in state Login");
+                    RyzomClient.Log?.Warn($"CNET: received normal in state Login");
                 }
             }
 
@@ -408,7 +407,7 @@ namespace RCC.Network
                 {
                     _mLoginAttempts = 0;
                     Disconnect(); // will send disconnection message
-                    ConsoleIO.WriteLine("CNET: Too many LOGIN attempts, connection problem");
+                    RyzomClient.Log?.Warn("CNET: Too many LOGIN attempts, connection problem");
                     // exit now from loop, don't expect a new state
                 }
                 else
@@ -467,11 +466,11 @@ namespace RCC.Network
 
                         case SystemMessage.SystemServerDownCode:
                             Disconnect(); // will send disconnection message
-                            ConsoleIO.WriteLine("BACK-END DOWN");
+                            RyzomClient.Log?.Error("BACK-END DOWN");
                             return false; // exit now from loop, don't expect a new state
 
                         default:
-                            ConsoleIO.WriteLine("CNET: received system " + message + " in state Synchronize");
+                            RyzomClient.Log?.Warn($"CNET: received system {message} in state Synchronize");
                             break;
                     }
                 }
@@ -579,11 +578,11 @@ namespace RCC.Network
 
                         case SystemMessage.SystemServerDownCode:
                             Disconnect(); // will send disconnection message
-                            ConsoleIO.WriteLine("BACK-END DOWN");
+                            RyzomClient.Log?.Error("BACK-END DOWN");
                             return false; // exit now from loop, don't expect a new state
 
                         default:
-                            ConsoleIO.WriteLine("CNET: received system " + message + " in state Connected");
+                            RyzomClient.Log?.Warn($"CNET: received system {message} in state Connected");
                             break;
                     }
                 }
@@ -640,17 +639,17 @@ namespace RCC.Network
 
                         case SystemMessage.SystemServerDownCode:
                             Disconnect(); // will send disconnection message
-                            ConsoleIO.WriteLine("BACK-END DOWN");
+                            RyzomClient.Log?.Error("BACK-END DOWN");
                             return false; // exit now from loop, don't expect a new state
 
                         default:
-                            ConsoleIO.WriteLine("CNET: received system " + message + " in state Probe");
+                            RyzomClient.Log?.Warn($"CNET: received system {message} in state Probe");
                             break;
                     }
                 }
                 else
                 {
-                    ConsoleIO.WriteLine("CNET: received normal in state Probe");
+                    RyzomClient.Log?.Warn($"CNET: received normal in state Probe");
                     _latestProbeTime = _updateTime;
                 }
             }
@@ -674,7 +673,7 @@ namespace RCC.Network
         private static bool StateStalled()
         {
             // TODO StateStalled()
-            ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+            RyzomClient.Log?.Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
             return false;
         }
 
@@ -685,7 +684,7 @@ namespace RCC.Network
         private static bool StateQuit()
         {
             // TODO StateQuit()
-            ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+            RyzomClient.Log?.Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
             return false;
         }
 
@@ -694,7 +693,7 @@ namespace RCC.Network
         /// </summary>
         private static void ReceiveNormalMessage(BitMemoryStream msgin)
         {
-            //ConsoleIO.WriteLine("CNET: received normal message Packet=" + _LastReceivedNumber + " Ack=" + _LastReceivedAck);
+            RyzomClient.Log?.Debug($"CNET: received normal message Packet={LastReceivedNumber} Ack={_lastReceivedAck}");
 
             var actions = new List<Action>();
             ImpulseDecoder.Decode(msgin, _currentReceivedNumber, _lastReceivedAck, _currentSendNumber, actions);
@@ -704,12 +703,9 @@ namespace RCC.Network
             // we can now remove all old action that are acked
             while (Actions.Count != 0 && Actions[0].FirstPacket != 0 && Actions[0].FirstPacket <= _lastReceivedAck)
             {
-                // warning, CActionBlock automatically remove() actions when deleted
-                //foreach (var action in _Actions[0].Actions)
-                //{
-                ConsoleIO.WriteLine("removed action " + Actions[0]);
-                //}
+                // CActionBlock automatically remove() actions when deleted
 
+                RyzomClient.Log?.Debug($"removed action {Actions[0]}");
                 Actions.RemoveAt(0);
             }
 
@@ -725,7 +721,7 @@ namespace RCC.Network
                 {
                     case ActionCode.ActionDisconnectionCode:
                         // Self disconnection
-                        ConsoleIO.WriteLine("You were disconnected by the server");
+                        RyzomClient.Log?.Info("You were disconnected by the server");
                         Disconnect(); // will send disconnection message
                                       // TODO LoginSM.pushEvent(CLoginStateMachine::ev_conn_dropped);
 
@@ -740,7 +736,7 @@ namespace RCC.Network
 
                     case ActionCode.ActionDummyCode:
                         //CActionDummy* dummy = ((CActionDummy*)actions[i]);
-                        ConsoleIO.WriteLine("CNET Received Dummy" + action);
+                        RyzomClient.Log?.Debug($"CNET Received Dummy{action}");
                         // Nothing to do
                         break;
                 }
@@ -1014,10 +1010,11 @@ namespace RCC.Network
 
         /// <summary>
         /// Stalled state - deserialise info from stream
+        /// TODO
         /// </summary>
         private static void ReceiveSystemStalled(BitMemoryStream msgin)
         {
-            ConsoleIO.WriteLine("CNET: received STALLED");
+            RyzomClient.Log?.Debug($"CNET: received STALLED");
         }
 
         /// <summary>
@@ -1031,7 +1028,7 @@ namespace RCC.Network
             msgin.Serial(ref stime);
             msgin.Serial(ref _latestSync);
 
-            //Debug.Print("receiveSystemSync " + msgin);
+            RyzomClient.Log?.Debug($"receiveSystemSync {msgin}");
 
             //return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
             byte[] checkMsgXml = new byte[16];
@@ -1046,13 +1043,12 @@ namespace RCC.Network
             if (xmlInvalid && !_alreadyWarned)
             {
                 _alreadyWarned = true;
-                ConsoleIO.WriteLineFormatted(
-                    "§eXML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
+                RyzomClient.Log?.Warn($"XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
 
-                ConsoleIO.WriteLineFormatted("§emsg.xml client:" + Misc.ByteArrToString(_msgXmlMD5) + " server:" +
-                                             Misc.ByteArrToString(checkMsgXml));
-                ConsoleIO.WriteLineFormatted("§edatabase.xml client:" + Misc.ByteArrToString(_databaseXmlMD5) +
-                                             " server:" + Misc.ByteArrToString(checkDatabaseXml));
+                RyzomClient.Log?.Warn(
+                    $"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
+                RyzomClient.Log?.Warn(
+                    $"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
             }
 
             _receivedSync = true;
@@ -1090,7 +1086,7 @@ namespace RCC.Network
                 // A receiving error means the front-end is down
                 ConnectionState = ConnectionState.Disconnect;
                 Disconnect(); // won't send a disconnection msg because state is already Disconnect
-                ConsoleIO.WriteLine("DISCONNECTION");
+                RyzomClient.Log?.Warn($"DISCONNECTION");
                 return false;
             }
         }
@@ -1133,7 +1129,7 @@ namespace RCC.Network
                 ConnectionState == ConnectionState.Authenticate ||
                 ConnectionState == ConnectionState.Disconnect)
             {
-                // ConsoleIO.WriteLine("Unable to disconnect(): not connected yet, or already disconnected.");
+                RyzomClient.Log?.Warn("Unable to disconnect(): not connected yet, or already disconnected.");
                 return;
             }
 
@@ -1165,7 +1161,7 @@ namespace RCC.Network
 
             message.Serial(ref _latestSync);
 
-            //Debug.Print("sendSystemAckSync " + message);
+            RyzomClient.Log?.Debug($"sendSystemAckSync {message}");
 
             var length = message.Length;
             _connection.Send(message.Buffer(), length);
@@ -1226,12 +1222,12 @@ namespace RCC.Network
             {
                 try
                 {
-                    //Debug.Print("sendSystemDisconnection " + message);
+                    RyzomClient.Log?.Debug($"sendSystemDisconnection {message}");
                     _connection.Send(message.Buffer(), length);
                 }
                 catch (Exception e)
                 {
-                    ConsoleIO.WriteLine("Socket exception: " + e.Message);
+                    RyzomClient.Log?.Error($"Socket exception: " + e.Message);
                 }
             }
 
@@ -1265,7 +1261,7 @@ namespace RCC.Network
 
             message.Serial(ref ClientConfig.LanguageCode);
 
-            //Debug.Print("sendSystemLogin " + message);
+            RyzomClient.Log?.Debug($"sendSystemLogin {message}");
             _connection.Send(message.Buffer(), message.Length);
         }
 
@@ -1495,7 +1491,7 @@ namespace RCC.Network
                     break;
             }
 
-            //Debug.Print("sendNormalMessage " + message);
+            RyzomClient.Log?.Debug($"sendNormalMessage {message}");
             _connection.Send(message.Buffer(), message.Length);
 
             _lastSendTime = RyzomGetLocalTime();

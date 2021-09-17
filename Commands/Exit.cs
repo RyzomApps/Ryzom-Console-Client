@@ -10,13 +10,14 @@ namespace RCC.Commands
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
-            Program.Exit();
+            Client.Connection.GameExit = true;
+            //Program.Exit();
             return "";
         }
 
         public override IEnumerable<string> getCMDAliases()
         {
-            return new[] {"quit"};
+            return new[] { "quit", "disconnect" };
         }
     }
 }

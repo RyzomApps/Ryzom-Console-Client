@@ -99,18 +99,18 @@ namespace RCC.Network
                     if (keep)
                     {
                         actions.Add(action);
-                        //ConsoleIO.WriteLine($"CLIMPD: received new impulsion {action.Code} (len={CActionFactory.size(action)}) at level {level} (channel {channel})");
+                        RyzomClient.Log?.Debug($"CLIMPD: received new impulsion {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                     }
                     else
                     {
-                        ConsoleIO.WriteLine($"§cCLIMPD: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
+                        RyzomClient.Log?.Warn($"CLIMPD: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                         ActionFactory.Remove(action);
                     }
                 }
 
                 if (checkOnce)
                 {
-                    //ConsoleIO.WriteLine($"CLIMPD: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
+                    RyzomClient.Log?.Debug($"CLIMPD: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
                 }
             }
         }

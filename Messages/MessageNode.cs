@@ -127,8 +127,7 @@ namespace RCC.Messages
                                     else if (numBits == 64)
                                         Format.Add(new MessageField(FieldType.Sint64, numBits));
                                     else
-                                        ConsoleIO.WriteLine(
-                                            "Can't use sint in format with other size than 8, 16, 32 or 64");
+                                        RyzomClient.Log?.Warn("Can't use sint in format with other size than 8, 16, 32 or 64");
                                 }
 
                                 break;
@@ -202,8 +201,7 @@ namespace RCC.Messages
                     }
                     else
                     {
-                        ConsoleIO.WriteLine("Child '" + child.Name + "' in node '" + Name +
-                                            "' already exists, unable to add it");
+                        RyzomClient.Log?.Debug($"Child '{child.Name}' in node '{Name}' already exists, unable to add it");
                         // delete child;
                     }
                 }
@@ -228,7 +226,7 @@ namespace RCC.Messages
 
                 if (!node.NodesByName.ContainsKey(sub))
                 {
-                    ConsoleIO.WriteLineFormatted($"§eCouldn't select node '{sub}', not found in parent '{node.Name}'");
+                    RyzomClient.Log?.Warn($"Couldn't select node '{sub}', not found in parent '{node.Name}'");
                     return null;
                 }
 
@@ -257,14 +255,13 @@ namespace RCC.Messages
 
                 if (node.NbBits == 0)
                 {
-                    ConsoleIO.WriteLineFormatted(
-                        $"§eCouldn't select node '{sub}', parent '{node.Name}' has no bit per child");
+                    RyzomClient.Log?.Warn($"Couldn't select node '{sub}', parent '{node.Name}' has no bit per child");
                     return null;
                 }
 
                 if (!node.NodesByName.ContainsKey(sub))
                 {
-                    ConsoleIO.WriteLineFormatted($"§eCouldn't select node '{sub}', not found in parent '{node.Name}'");
+                    RyzomClient.Log?.Warn($"Couldn't select node '{sub}', not found in parent '{node.Name}'");
                     return null;
                 }
 
@@ -296,8 +293,7 @@ namespace RCC.Messages
 
                 if (index >= node.Nodes.Count)
                 {
-                    ConsoleIO.WriteLine("Couldn't select node from stream, invalid index " + index + " in parent '" +
-                                        node.Name + "'");
+                    RyzomClient.Log?.Debug($"Couldn't select node from stream, invalid index {index} in parent '{node.Name}'");
                     return null;
                 }
 

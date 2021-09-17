@@ -37,7 +37,7 @@ namespace RCC.NetworkAction
         public void Serial(BitMemoryStream msg)
         {
             if (!msg.IsReading() && Cycle == 0)
-                ConsoleIO.WriteLineFormatted("§ePacking action block (" + Actions.Count + " actions) with unset date");
+                RyzomClient.Log?.Warn($"Packing action block ({Actions.Count} actions) with unset date");
 
             msg.Serial(ref Cycle);
 
@@ -60,7 +60,7 @@ namespace RCC.NetworkAction
                     }
                     catch (Exception e)
                     {
-                        ConsoleIO.WriteLineFormatted("§9" + e.Message);
+                        RyzomClient.Log?.Warn($"Action block upacking failed: {e.Message}");
                         action = null;
                     }
 
@@ -88,9 +88,7 @@ namespace RCC.NetworkAction
                     int actionSize = ActionFactory.Size(Actions[i]);
 
                     if (actionSize < msgPosAfter - msgPosBefore)
-                        ConsoleIO.WriteLineFormatted("§eAction " + Actions[i].Code + " declares a lower size (" +
-                                                     actionSize + " bits) from what it actually serialises (" +
-                                                     (msgPosAfter - msgPosBefore) + " bits)");
+                        RyzomClient.Log?.Warn($"Action {Actions[i].Code} declares a lower size ({actionSize} bits) from what it actually serialises ({(msgPosAfter - msgPosBefore)} bits)");
                     //sprintf(cat, " %d(%d bits)", Actions[i]->Code, Actions[i]->size());
                     //strcat(buff, cat);
                 }

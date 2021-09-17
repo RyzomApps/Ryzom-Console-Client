@@ -55,7 +55,7 @@ namespace RCC.NetworkAction
             // check if the block was already received
             if (_blockReceived[agmp.Part])
             {
-                ConsoleIO.WriteLine("CLMPNET: This part is already received, discard it");
+                RyzomClient.Log?.Debug("CLMPNET: This part is already received, discard it");
                 return;
             }
 

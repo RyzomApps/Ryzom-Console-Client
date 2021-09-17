@@ -265,267 +265,267 @@ namespace RCC.Network
 
         private static void ImpulseSetNpcIconTimer(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseServerEventForMissionAvailability(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseSetNpcIconDesc(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDssDown(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseSetSeason(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseCombatFlyingText(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseCombatFlyingTextItemSpecialEffectProc(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseCombatFlyingHpDelta(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void CbImpulsionGatewayMessage(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseOutpostDeclareWarAck(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseOutpostChooseSide(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void CbImpulsionGatewayClose(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void CbImpulsionGatewayOpen(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseCloseEnterCrZoneProposal(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseEnterCrZoneProposal(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseUserPopup(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseUserBars(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseEncyclopediaInit(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseEncyclopediaUpdate(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePvpFactionFactionWars(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePvpFactionPopFactionWar(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePvpFactionPushFactionWar(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePvpChallengeCancelInvitation(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePvpChallengeInvitation(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDuelCancelInvitation(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDuelInvitation(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDeathRespawn(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDeathRespawnPoint(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseItemCloseRoomInventory(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseItemOpenRoomInventory(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseItemInfoRefreshVersion(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePrereqInfoSet(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseItemInfoSet(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePhraseAckExecuteNext(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePhraseAckExecuteCyclic(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePhraseConfirmBuy(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePhraseDownLoad(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseRemoteAdmin(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseCloseTempInv(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseGuildUseFemaleTitles(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseGuildUpdatePlayerTitle(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseGuildCloseInventory(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseGuildOpenInventory(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseGuildOpenGuildWindow(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseGuildAbortCreation(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseGuildLeaveAscensor(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseGuildAscensor(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseGuildJoinProposal(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseJournalRemoveCompass(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseJournalAddCompass(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseJournalUpdateCompletedMissions(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseJournalInitCompletedMissions(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseBotChatForceEnd(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         /// <summary>
@@ -541,12 +541,12 @@ namespace RCC.Network
 
             // todo: CStringManagerClient.loadCache(timestamp)
 
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name + " with timestamp " + timestamp);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
         }
 
         private static void ImpulseStringResp(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         /// <summary>
@@ -559,129 +559,129 @@ namespace RCC.Network
 
         private static void ImpulseCounter(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseWhere(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseMountAbort(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseExchangeCloseInvitation(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseExchangeInvitation(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTeamContactRemove(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTeamContactStatus(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTeamContactCreate(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTeamContactInit(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTeamShareClose(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTeamShareInvalid(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTeamShareOpen(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTeamInvitation(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             GenericMessageHeaderManager.SendMsgToServer("TEAM:JOIN");
         }
 
         private static void ImpulseBeginCast(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDynChatClose(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDynChatOpen(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseCombatEngageFailed(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseCorrectPos(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTpWithSeason(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTp(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTell2(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDynStringInChatGroup(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDynString(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseChat2(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseFarTell(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseTell(BitMemoryStream impulse)
@@ -696,47 +696,47 @@ namespace RCC.Network
 
         private static void ImpulsePermanentUnban(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulsePermanentBan(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseForumNotification(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseMailNotification(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseServerQuitAbort(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseServerQuitOk(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseShardId(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseCharNameValid(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseServerReady(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLineFormatted("§eImpulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             ServerReceivedReady = true;
 
@@ -747,14 +747,14 @@ namespace RCC.Network
 
         private static void ImpulseFarTp(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
 
         private static void ImpulseUserChar(BitMemoryStream impulse)
         {
             //// received USER_CHAR
-            ConsoleIO.WriteLineFormatted("ImpulseCallBack : Received CONNECTION:USER_CHAR");
+            RyzomClient.Log?.Info("ImpulseCallBack : Received CONNECTION:USER_CHAR");
             //
             //// Serialize the message
             //COfflineEntityState posState;
@@ -813,7 +813,7 @@ namespace RCC.Network
             var userEntityInitPos = new Vector3((float)x / 1000.0f, (float)y / 1000.0f, (float)z / 1000.0f);
             var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
 
-            ConsoleIO.WriteLineFormatted($"§d<ImpulseUserChar> pos : {userEntityInitPos}  heading : {heading}");
+            RyzomClient.Log?.Info($"<ImpulseUserChar> pos : {userEntityInitPos}  heading : {heading}");
 
             // Update the position for the vision.
             //NetworkManager.setReferencePosition(UserEntityInitPos);
@@ -837,7 +837,7 @@ namespace RCC.Network
         private static void ImpulseUserChars(BitMemoryStream impulse)
         {
             // received USER_CHARS
-            ConsoleIO.WriteLine("ImpulseCallBack : Received CONNECTION:USER_CHARS");
+            RyzomClient.Log?.Info("Received user characters");
 
             impulse.Serial(ref Connection.ServerPeopleActive);
             impulse.Serial(ref Connection.ServerCareerActive);
@@ -852,15 +852,14 @@ namespace RCC.Network
             {
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
-                ConsoleIO.WriteLineFormatted("§eFound character " + cs.Name + " from shard " + cs.Mainland +
-                                             " in slot " + i);
+                RyzomClient.Log?.Info($"Found character {cs.Name} from shard {cs.Mainland} in slot {i}");
                 Connection.CharacterSummaries.Add(cs);
             }
             // END WORKAROUND
 
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
-            ConsoleIO.WriteLineFormatted("st_ingame->st_select_char");
+            RyzomClient.Log?.Info("st_ingame->st_select_char");
             Connection.AutoSendCharSelection = true;
 
             //// Create the message for the server to select the first character.
@@ -902,32 +901,32 @@ namespace RCC.Network
 
         private static void ImpulseNoUserChar(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDatabaseResetBank(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDatabaseInitBank(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDatabaseUpdateBank(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseInitInventory(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseUpdateInventory(BitMemoryStream impulse)
         {
-            ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private static void ImpulseDatabaseInitPlayer(BitMemoryStream impulse)
@@ -942,7 +941,7 @@ namespace RCC.Network
             // TODO: IngameDbMngr.readDelta + setInitPacketReceived
             //IngameDbMngr.readDelta(serverTick, Impulse, TCDBBank.CDBPlayer);
             //IngameDbMngr.setInitPacketReceived();
-            ConsoleIO.WriteLine("DB_INIT:PLR done (" + (impulse.Pos - p) + " bytes)");
+            RyzomClient.Log?.Info($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
         }
 
         private static void ImpulseDatabaseUpdatePlayer(BitMemoryStream impulse)
@@ -957,9 +956,9 @@ namespace RCC.Network
             uint itemSlotVersion = 0;
             impulse.Serial(ref handshakeVersion, 2);
             if (handshakeVersion > 0)
-                ConsoleIO.WriteLineFormatted("§cServer handshake version is more recent than client one");
+                RyzomClient.Log?.Warn("Server handshake version is more recent than client one");
             impulse.Serial(ref itemSlotVersion, 2);
-            ConsoleIO.WriteLineFormatted("§eItem slot version: " + itemSlotVersion);
+            RyzomClient.Log?.Info($"Item slot version: {itemSlotVersion}");
             //if (itemSlotVersion != INVENTORIES::CItemSlot::getVersion())
             //    nlerror("Handshake: itemSlotVersion mismatch (S:%hu C:%hu)", itemSlotVersion, INVENTORIES::CItemSlot::getVersion());
         }

@@ -39,7 +39,7 @@ namespace RCC
 
         Thread _cmdprompt;
 
-        public ILogger Log;
+        public static ILogger Log;
 
         private readonly Queue<Action> _threadTasks = new Queue<Action>();
         private readonly object _threadTasksLock = new object();
@@ -67,10 +67,7 @@ namespace RCC
         /// </summary>
         private void StartClient()
         {
-            this.Log = ClientConfig.LogToFile
-                ? new FileLogLogger( /*ClientConfig.ExpandVars(*/ClientConfig.LogFile /*)*/,
-                    ClientConfig.PrependTimestamp)
-                : new FilteredLogger();
+            Log = ClientConfig.LogToFile ? new FileLogLogger(ClientConfig.LogFile, ClientConfig.PrependTimestamp) : new FilteredLogger();
 
             /* Load commands from Commands namespace */
             LoadCommands();
@@ -102,7 +99,7 @@ namespace RCC
             //    BotLoad(bot, false);
             //botsOnHold.Clear();
 
-            _timeoutdetector = new Thread(TimeoutDetector) {Name = "RCC Connection timeout detector"};
+            _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
             _timeoutdetector.Start();
 
             _cmdprompt = new Thread(new ThreadStart(CommandPrompt));
@@ -126,7 +123,7 @@ namespace RCC
 
                     try
                     {
-                        Command cmd = (Command) Activator.CreateInstance(type);
+                        Command cmd = (Command)Activator.CreateInstance(type);
                         Cmds[cmd.CmdName.ToLower()] = cmd;
                         CmdNames.Add(cmd.CmdName.ToLower());
                         foreach (string alias in cmd.getCMDAliases())
@@ -340,7 +337,7 @@ namespace RCC
             // Login State Machine
             if (!Login())
             {
-                ConsoleIO.WriteLine("Could not login!");
+                RyzomClient.Log?.Error("Could not login!");
                 return;
             }
 
@@ -390,7 +387,7 @@ namespace RCC
             // Final release
             // release();
 
-            ConsoleIO.WriteLineFormatted("EXIT of the Application.");
+            Log?.Info("EXIT of the Application.");
         }
 
         /// <summary>
@@ -445,7 +442,7 @@ namespace RCC
             }
             else
             {
-                ConsoleIO.WriteLineFormatted("initMainLoop : unknown message name : 'CONNECTION:READY'.");
+                Log?.Info("initMainLoop : unknown message name : 'CONNECTION:READY'.");
             }
         }
 
@@ -473,20 +470,20 @@ namespace RCC
                 }
                 catch (Exception e)
                 {
-                    ConsoleIO.WriteLine(e.Message);
+                    Log?.Warn(e.Message);
 
                     if (!e.Message.Contains("already online"))
                         return false;
 
                     if (firstRetry)
                     {
-                        ConsoleIO.WriteLine("Retrying in 1 second...");
+                        Log?.Info("Retrying in 1 second...");
                         Thread.Sleep(1000);
                         firstRetry = false;
                     }
                     else
                     {
-                        ConsoleIO.WriteLine("Retrying in 30 seconds...");
+                        Log?.Info("Retrying in 30 seconds...");
                         Thread.Sleep(30000);
                     }
                 }
@@ -590,7 +587,7 @@ namespace RCC
                 }
                 catch (Exception e)
                 {
-                    ConsoleIO.WriteLine("connection : " + e.Message + ".");
+                    Log?.Error($"Auto Login error: {e.Message}.");
                     return InterfaceState.QuitTheGame;
                 }
 
@@ -671,7 +668,7 @@ namespace RCC
                         Client.Connection.WaitServerAnswer = false;
 
                         // check that the pre selected character is available
-                        if (Client.Connection.CharacterSummaries[charSelect].People == (int) People.Unknown || charSelect > 4)
+                        if (Client.Connection.CharacterSummaries[charSelect].People == (int)People.Unknown || charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
                             throw new InvalidOperationException("preselected char does not exist");
@@ -711,7 +708,7 @@ namespace RCC
                     if (firewallTimeout)
                     {
                         // Display the firewall error string instead of the normal failure string
-                        ConsoleIO.WriteLine("uiFirewallFail");
+                        Log?.Warn("Firewall Fail (Timeout)");
                     }
                 }
 
@@ -733,7 +730,7 @@ namespace RCC
         private bool MainLoop()
         {
             // TODO: mainLoopImp
-            ConsoleIO.WriteLine("mainLoop");
+            Log?.Debug("mainLoop");
 
             // Main loop. If the window is no more Active -> Exit.
             while ( /*!UserEntity->permanentDeath() &&*/ !Client.Connection.GameExit)

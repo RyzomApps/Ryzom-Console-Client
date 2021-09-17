@@ -28,7 +28,7 @@ namespace RCC.Client
             bms.Serial(ref senderNameId);
             bms.Serial(ref content);
 
-            ConsoleIO.WriteLineFormatted($"§f[{compressedIndex}]{senderNameId}§r tells you: §f{content}");
+            RyzomClient.Log?.Chat($"[{compressedIndex}]{senderNameId}§r tells you: §f{content}");
         }
 
         /// <summary>
@@ -126,13 +126,11 @@ namespace RCC.Client
             switch ((ChatGroupType)chatMode)
             {
                 case ChatGroupType.Shout:
-                    ConsoleIO.WriteLineFormatted(
-                        $"§f[{chatMode}][{compressedIndex}]{senderNameId}§r shouts: {color}{content}");
+                    RyzomClient.Log?.Chat($"[{chatMode}][{compressedIndex}]{senderNameId}§r shouts: {color}{content}");
                     break;
 
                 default:
-                    ConsoleIO.WriteLineFormatted(
-                        $"§f[{chatMode}][{compressedIndex}]{senderNameId}§r says: {color}{content}");
+                    RyzomClient.Log?.Chat($"[{chatMode}][{compressedIndex}]{senderNameId}§r says: {color}{content}");
                     break;
             }
         }

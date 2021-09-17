@@ -20,7 +20,7 @@ namespace RCC.Commands
             BitMemoryStream out2 = new BitMemoryStream();
             if (!GenericMessageHeaderManager.PushNameToStream("DEBUG:WHO", out2))
             {
-                ConsoleIO.WriteLineFormatted("§Unknown message name DEBUG:WHO");
+                RyzomClient.Log?.Warn("Unknown message name DEBUG:WHO");
                 return "";
             }
 

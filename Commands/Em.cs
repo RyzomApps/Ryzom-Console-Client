@@ -39,7 +39,7 @@ namespace RCC.Commands
                 NetworkManager.Push(out2);
             }
             else
-                ConsoleIO.WriteLineFormatted($"§cUnknown message named '{msgName}'.");
+                RyzomClient.Log?.Warn($"Unknown message named '{msgName}'.");
 
             return "";
         }
