@@ -1,48 +1,59 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
+// <http://dev.ryzom.com/projects/ryzom/>,
+// which is released under GNU Affero General Public License.
+// <http://www.gnu.org/licenses/>
+// Original Copyright 2010 by Winch Gate Property Limited
+
 using System.Collections.Generic;
-using RCC.Config;
 using RCC.Helper;
-using RCC.Msg;
+using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Client
 {
-    internal static class CStringManagerClient
+    internal static class StringManagerClient
     {
-        static Dictionary<string, string> _DynStrings = new Dictionary<string, string>();
-        static Dictionary<uint, TDynStringInfo> _ReceivedDynStrings = new Dictionary<uint, TDynStringInfo>();
-        static Dictionary<uint, TDynStringInfo> _WaitingDynStrings = new Dictionary<uint, TDynStringInfo>();
+        static readonly Dictionary<string, string> DynStrings = new Dictionary<string, string>();
 
-        public static void receiveDynString(CBitMemStream bms)
+        static readonly Dictionary<uint, DynamicStringInfo> ReceivedDynStrings =
+            new Dictionary<uint, DynamicStringInfo>();
+
+        static readonly Dictionary<uint, DynamicStringInfo> WaitingDynStrings =
+            new Dictionary<uint, DynamicStringInfo>();
+
+        static readonly Dictionary<uint, string> ReceivedStrings = new Dictionary<uint, string>();
+        private static readonly HashSet<uint> WaitingStrings = new HashSet<uint>();
+
+        public static void ReceiveDynString(BitMemoryStream bms)
         {
             //H_AUTO(CStringManagerClient_receiveDynString)
-            //
-            TDynStringInfo dynInfo = new TDynStringInfo();
-            dynInfo.Status = TDynStringInfo.TStatus.received;
-            //// read the dynamic string Id
-            uint dynId = 0;
-            bms.serial(ref dynId);
-            //
-            ///// read the base string Id
-            uint stringId = 0;
-            bms.serial(/*dynInfo.*/ref stringId);
 
-            //// try to build the string
+            var dynInfo = new DynamicStringInfo {Status = DynamicStringInfo.TStatus.Received};
+
+            // read the dynamic string Id
+            uint dynId = 0;
+            bms.Serial(ref dynId);
+
+            // read the base string Id
+            uint stringId = 0;
+            bms.Serial( /*dynInfo.*/ref stringId);
+
+            // try to build the string
             dynInfo.Message = bms;
-            buildDynString(dynInfo);
+            BuildDynString(dynInfo);
 
             ConsoleIO.WriteLine($"Received DynString with dynID {dynId} and StringID {stringId}: " + dynInfo.String);
 
-            if (dynInfo.Status == TDynStringInfo.TStatus.complete)
+            if (dynInfo.Status == DynamicStringInfo.TStatus.Complete)
             {
-                //    if (!ClientCfg.Light)
+                //    if (!ClientConfig.Light)
                 //    {
                 //        //nlinfo("DynString %u available : [%s]", dynId, dynInfo.String.toString().c_str());
                 //    }
                 //
-                _ReceivedDynStrings.Add(dynId, dynInfo);
+                ReceivedDynStrings.Add(dynId, dynInfo);
                 //    // security, if dynstring Message received twice, it is possible that the dynstring is still in waiting list
-                _WaitingDynStrings.Remove(dynId);
+                WaitingDynStrings.Remove(dynId);
                 //
                 //    // update the waiting dyn strings
                 //    {
@@ -75,18 +86,19 @@ namespace RCC.Client
                 //    }
             }
             else
-                _WaitingDynStrings.Add(dynId, dynInfo);
+                WaitingDynStrings.Add(dynId, dynInfo);
         }
 
-        private static bool buildDynString(TDynStringInfo dynInfo)
+        private static bool BuildDynString(DynamicStringInfo dynInfo)
         {
-            if (dynInfo.Status == TDynStringInfo.TStatus.received)
+            if (dynInfo.Status == DynamicStringInfo.TStatus.Received)
             {
-                if (!getString(dynInfo.StringId, out dynInfo.String))
+                if (!GetString(dynInfo.StringId, out dynInfo.String))
                 {
                     // can't continue now, need the base string.
                     return false;
                 }
+
                 //// ok, we have the base string, we can serial the parameters
                 //string.iterator first(dynInfo.String.begin()), last(dynInfo.String.end());
                 //for (; first != last; ++first)
@@ -165,13 +177,13 @@ namespace RCC.Client
                 //}
                 //}
                 //}
-                dynInfo.Status = TDynStringInfo.TStatus.serialized;
+                dynInfo.Status = DynamicStringInfo.TStatus.Serialized;
             }
 
-            if (dynInfo.Status == TDynStringInfo.TStatus.serialized)
+            if (dynInfo.Status == DynamicStringInfo.TStatus.Serialized)
             {
                 //// try to retreive all string parameter to build the string.
-                string temp = "";
+                //string temp = "";
                 //temp.reserve(dynInfo.String.size() * 2);
                 //string.iterator src(dynInfo.String.begin());
                 //string.iterator move = src;
@@ -318,43 +330,42 @@ namespace RCC.Client
                 //	}
                 //}
 
-                dynInfo.Status = TDynStringInfo.TStatus.complete;
+                dynInfo.Status = DynamicStringInfo.TStatus.Complete;
                 dynInfo.Message = null;
                 //dynInfo.String = temp;
                 return true;
             }
 
-            if (dynInfo.Status == TDynStringInfo.TStatus.complete)
+            if (dynInfo.Status == DynamicStringInfo.TStatus.Complete)
                 return true;
 
             ConsoleIO.WriteLineFormatted("§eInconsistent dyn string status : " + dynInfo.Status);
             return false;
         }
 
-        static Dictionary<uint, string> _ReceivedStrings = new Dictionary<uint, string>();
-        static HashSet<uint> _WaitingStrings = new HashSet<uint>();
-
-        static bool getString(uint stringId, out string result)
+        static bool GetString(uint stringId, out string result)
         {
             //TStringsContainer::iterator it(_ReceivedStrings.find(stringId));
-            if (!_ReceivedStrings.ContainsKey(stringId))
+            if (!ReceivedStrings.ContainsKey(stringId))
             {
                 //CHashSet<uint>::iterator it(_WaitingStrings.find(stringId));
-                if (!_WaitingStrings.Contains(stringId))
+                if (!WaitingStrings.Contains(stringId))
                 {
-                    _WaitingStrings.Add(stringId);
+                    WaitingStrings.Add(stringId);
                     // need to ask for this string.
-                    CBitMemStream bms = new CBitMemStream();
+                    BitMemoryStream bms = new BitMemoryStream();
                     const string msgType = "STRING_MANAGER:STRING_RQ";
-                    if (GenericMsgHeaderMngr.pushNameToStream(msgType, bms))
+                    if (GenericMessageHeaderManager.PushNameToStream(msgType, bms))
                     {
-                        bms.serial(ref stringId);
-                        NetworkManager.push(bms);
-                        ConsoleIO.WriteLineFormatted("§e<CStringManagerClient::getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
+                        bms.Serial(ref stringId);
+                        NetworkManager.Push(bms);
+                        ConsoleIO.WriteLineFormatted(
+                            "§e<CStringManagerClient::getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
                     }
                     else
                     {
-                        ConsoleIO.WriteLineFormatted("§e<CStringManagerClient::getString> unknown message name 'STRING_MANAGER:STRING_RQ'");
+                        ConsoleIO.WriteLineFormatted(
+                            "§e<CStringManagerClient::getString> unknown message name 'STRING_MANAGER:STRING_RQ'");
                     }
                 }
 
@@ -364,13 +375,13 @@ namespace RCC.Client
                 return false;
             }
 
-            result = _ReceivedStrings[stringId];
+            result = ReceivedStrings[stringId];
 
             if (result.Length > 9 && result.Substring(0, 9) == "<missing:")
             {
-                if (_DynStrings.ContainsKey(result.Substring(9, result.Length - 10)))
+                if (DynStrings.ContainsKey(result.Substring(9, result.Length - 10)))
                 {
-                    result = _DynStrings[result.Substring(9, result.Length - 10)];
+                    result = DynStrings[result.Substring(9, result.Length - 10)];
                 }
             }
 

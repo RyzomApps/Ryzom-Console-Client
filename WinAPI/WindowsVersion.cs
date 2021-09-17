@@ -1,21 +1,27 @@
-﻿using Microsoft.Win32;
+﻿// This code is a modified version of a file from the 'Minecraft Console Client'
+// <https://github.com/ORelio/Minecraft-Console-Client>,
+// which is released under CDDL-1.0 License.
+// <http://opensource.org/licenses/CDDL-1.0>
+// Original Copyright 2021 by ORelio and Contributers
+
+using Microsoft.Win32;
 
 namespace RCC.WinAPI
 {
     /// <summary>
-    /// Retrieve information about the current Windows version
+    ///     Retrieve information about the current Windows version
     /// </summary>
     /// <remarks>
-    /// Environment.OSVersion does not work with Windows 10.
-    /// It returns 6.2 which is Windows 8
+    ///     Environment.OSVersion does not work with Windows 10.
+    ///     It returns 6.2 which is Windows 8
     /// </remarks>
     /// <seealso>
-    /// https://stackoverflow.com/a/37755503
+    ///     https://stackoverflow.com/a/37755503
     /// </seealso>
     class WindowsVersion
     {
         /// <summary>
-        /// Returns the Windows major version number for this computer.
+        ///     Returns the Windows major version number for this computer.
         /// </summary>
         public static uint WinMajorVersion
         {
@@ -24,7 +30,8 @@ namespace RCC.WinAPI
                 dynamic major;
                 // The 'CurrentMajorVersionNumber' string value in the CurrentVersion key is new for Windows 10, 
                 // and will most likely (hopefully) be there for some time before MS decides to change this - again...
-                if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMajorVersionNumber", out major))
+                if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMajorVersionNumber",
+                    out major))
                 {
                     return (uint) major;
                 }
@@ -42,7 +49,7 @@ namespace RCC.WinAPI
         }
 
         /// <summary>
-        /// Returns the Windows minor version number for this computer.
+        ///     Returns the Windows minor version number for this computer.
         /// </summary>
         public static uint WinMinorVersion
         {
@@ -70,7 +77,7 @@ namespace RCC.WinAPI
         }
 
         /// <summary>
-        /// Try retrieving a registry key
+        ///     Try retrieving a registry key
         /// </summary>
         /// <param name="path">key path</param>
         /// <param name="key">Key</param>

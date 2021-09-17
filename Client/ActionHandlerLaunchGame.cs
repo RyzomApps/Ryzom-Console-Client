@@ -1,17 +1,22 @@
-﻿using System.Diagnostics;
+﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
+// <http://dev.ryzom.com/projects/ryzom/>,
+// which is released under GNU Affero General Public License.
+// <http://www.gnu.org/licenses/>
+// Original Copyright 2010 by Winch Gate Property Limited
+
 using RCC.Config;
 using RCC.Helper;
-using RCC.Msg;
+using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Client
 {
     /// <summary>
-    /// Launch the game given a slot (slot is reference to the character summaries
+    ///     Launch the game given a slot (slot is reference to the character summaries
     /// </summary>
-    public static class CAHLaunchGame //: IActionHandler
+    public static class ActionHandlerLaunchGame //: IActionHandler
     {
-        public static void execute(string sSlot)
+        public static void Execute(string sSlot)
         {
             //// Get the edit/play mode
             //string sEditMode = getParam(Params, "edit_mode");
@@ -54,10 +59,10 @@ namespace RCC.Client
                 if (Connection.PlayerSelectedSlot >= Connection.CharacterSummaries.Count)
                     return;
 
-                //ClientCfg.writeInt("SelectedSlot", PlayerSelectedSlot);
-                //if (ClientCfg.SaveConfig)
-                //    ClientCfg.ConfigFile.save();
-                ClientCfg.SelectCharacter = Connection.PlayerSelectedSlot;
+                //ClientConfig.writeInt("SelectedSlot", PlayerSelectedSlot);
+                //if (ClientConfig.SaveConfig)
+                //    ClientConfig.ConfigFile.save();
+                ClientConfig.SelectCharacter = Connection.PlayerSelectedSlot;
             }
 
 
@@ -76,7 +81,7 @@ namespace RCC.Client
 
 
             // Select the right sheet to create the user character.
-            ClientCfg.UserSheet = Connection.CharacterSummaries[Connection.PlayerSelectedSlot].SheetId.ToString();
+            ClientConfig.UserSheet = Connection.CharacterSummaries[Connection.PlayerSelectedSlot].SheetId.ToString();
 
             // If the user wants to enter its editing session, get the ring server to Far TP to.
             //if (wantsEditMode)
@@ -102,21 +107,22 @@ namespace RCC.Client
             //}
 
             // Send CONNECTION:SELECT_CHAR
-            var out2 = new CBitMemStream(false, 2);
-            GenericMsgHeaderMngr.pushNameToStream("CONNECTION:SELECT_CHAR", out2);
+            var out2 = new BitMemoryStream(false, 2);
+            GenericMessageHeaderManager.PushNameToStream("CONNECTION:SELECT_CHAR", out2);
 
 
             //CSelectCharMsg SelectCharMsg;
             var c = Connection.PlayerSelectedSlot;
-            out2.serial(ref c);
-            //if (!ClientCfg.Local/*ace!ClientCfg.Light*/)
+            out2.Serial(ref c);
+            //if (!ClientConfig.Local/*ace!ClientConfig.Light*/)
             //{
 
             //Debug.WriteLine(out2);
 
-            NetworkManager.push(out2);
+            NetworkManager.Push(out2);
 
-            ConsoleIO.WriteLineFormatted("§aimpulseCallBack : CONNECTION:SELECT_CHAR '" + Connection.PlayerSelectedSlot + "' sent.");
+            ConsoleIO.WriteLineFormatted("§aimpulseCallBack : CONNECTION:SELECT_CHAR '" +
+                                         Connection.PlayerSelectedSlot + "' sent.");
 
             //NetworkManager.send(NetworkConnection.getCurrentServerTick());
             //}
@@ -133,7 +139,7 @@ namespace RCC.Client
             //			nlwarning("unknown message name : 'CONNECTION:ENTER'.");
 
             Connection.WaitServerAnswer = true;
-            //if (ClientCfg.Local)
+            //if (ClientConfig.Local)
             //    serverReceivedReady = true;
 
             //NetworkManager.serverReceivedReady = true;

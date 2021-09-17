@@ -16,7 +16,7 @@ namespace RCC.Commands
 
         public override IEnumerable<string> getCMDAliases()
         {
-            return new[] { "quit" };
+            return new[] {"quit"};
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using RCC.Helper;
-using RCC.Msg;
+using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
@@ -17,8 +17,8 @@ namespace RCC.Commands
             if (getArgs(command).Length > 1)
                 return "";
 
-            CBitMemStream out2 = new CBitMemStream();
-            if (!GenericMsgHeaderMngr.pushNameToStream("DEBUG:WHO", out2))
+            BitMemoryStream out2 = new BitMemoryStream();
+            if (!GenericMessageHeaderManager.PushNameToStream("DEBUG:WHO", out2))
             {
                 ConsoleIO.WriteLineFormatted("§Unknown message name DEBUG:WHO");
                 return "";
@@ -30,14 +30,14 @@ namespace RCC.Commands
                 opt = getArgs(command)[0];
             }
 
-            out2.serial(ref opt);
-            NetworkManager.push(out2);
+            out2.Serial(ref opt);
+            NetworkManager.Push(out2);
             return "";
         }
 
         public override IEnumerable<string> getCMDAliases()
         {
-            return new[] { "" };
+            return new[] {""};
         }
     }
 }

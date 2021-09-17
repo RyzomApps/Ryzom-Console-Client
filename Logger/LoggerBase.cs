@@ -1,22 +1,23 @@
-﻿using RCC.Helper;
+﻿// This code is a modified version of a file from the 'Minecraft Console Client'
+// <https://github.com/ORelio/Minecraft-Console-Client>,
+// which is released under CDDL-1.0 License.
+// <http://opensource.org/licenses/CDDL-1.0>
+// Original Copyright 2021 by ORelio and Contributers
+
+using RCC.Helper;
 
 namespace RCC.Logger
 {
     /// <summary>
-    /// Abstract class providing basic implementation of the ILogger interface
+    ///     Abstract class providing basic implementation of the ILogger interface
     /// </summary>
     public abstract class LoggerBase : ILogger
     {
-        private bool debugEnabled = false;
-        private bool warnEnabled = true;
-        private bool infoEnabled = true;
-        private bool errorEnabled = true;
-        private bool chatEnabled = true;
-        public bool DebugEnabled { get { return debugEnabled; } set { debugEnabled = value; } }
-        public bool WarnEnabled { get { return warnEnabled; } set { warnEnabled = value; } }
-        public bool InfoEnabled { get { return infoEnabled; } set { infoEnabled = value; } }
-        public bool ErrorEnabled { get { return errorEnabled; } set { errorEnabled = value; } }
-        public bool ChatEnabled { get { return chatEnabled; } set { chatEnabled = value; } }
+        public bool DebugEnabled { get; set; } = false;
+        public bool WarnEnabled { get; set; } = true;
+        public bool InfoEnabled { get; set; } = true;
+        public bool ErrorEnabled { get; set; } = true;
+        public bool ChatEnabled { get; set; } = true;
 
         public abstract void Chat(string msg);
 

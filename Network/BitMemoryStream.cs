@@ -1,43 +1,49 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
+// <http://dev.ryzom.com/projects/ryzom/>,
+// which is released under GNU Affero General Public License.
+// <http://www.gnu.org/licenses/>
+// Original Copyright 2010 by Winch Gate Property Limited
+
+using System;
 using System.Collections;
-using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace RCC.Network
 {
-    public class CBitMemStream
+    public class BitMemoryStream
     {
-        private bool _inputStream;
-        private bool[] _contentBits;
         private int _bitPos;
+        private bool[] _contentBits;
+        private bool _inputStream;
 
-        public bool isReading() => _inputStream;
-
-        public int Pos => (int)(_bitPos / 8d);
-
-        public int FreeBits => /*(_contentBits.Length -)*/ 8 - (_bitPos % 8);
-
-        public int Length
-        {
-            get
-            {
-                if (isReading())
-                    return (int)(_contentBits.Length / 8d);
-
-                return (int)((_bitPos - 1) / 8d) + 1;
-            }
-        }
-
-        public CBitMemStream(bool inputStream = false, int defaultcapacity = 32)
+        public BitMemoryStream(bool inputStream = false, int defaultcapacity = 32)
         {
             _inputStream = inputStream;
             _contentBits = new bool[defaultcapacity * 8];
         }
 
+        public int Pos => (int) (_bitPos / 8d);
+
+        public int FreeBits => 8 - _bitPos % 8;
+
+        public int Length
+        {
+            get
+            {
+                if (IsReading())
+                    return (int) (_contentBits.Length / 8d);
+
+                return (int) ((_bitPos - 1) / 8d) + 1;
+            }
+        }
+
+        public bool IsReading() => _inputStream;
+
         /// <summary>
-        /// Returns the number of bit from the beginning of the buffer (in bit)
+        ///     Returns the number of bit from the beginning of the buffer (in bit)
         /// </summary>
-        public int getPosInBit()
+        public int GetPosInBit()
         {
             // return (_BufPos - _Buffer.getPtr() + 1)*8 - _FreeBits;
             return (Pos + 1) * 8 - FreeBits;
@@ -46,29 +52,29 @@ namespace RCC.Network
         // this shouldn't be here, but it is
         public void BuildSystemHeader(ref int currentSendNumber)
         {
-            serial(ref currentSendNumber);
+            Serial(ref currentSendNumber);
             bool systemmode = true;
-            serial(ref systemmode); // systemmode
+            Serial(ref systemmode); // systemmode
             ++currentSendNumber;
         }
 
-        public void serial(ref byte obj)
+        public void Serial(ref byte obj)
         {
-            if (isReading())
+            if (IsReading())
             {
                 var newBits = ReadFromArray(8);
                 obj = ConvertBoolArrayToByteArray(newBits)[0];
             }
             else
             {
-                byte[] bytes = { obj };
+                byte[] bytes = {obj};
                 AddToArray(bytes);
             }
         }
 
-        public void serial(ref int obj)
+        public void Serial(ref int obj)
         {
-            if (isReading())
+            if (IsReading())
             {
                 var newBits = ReadFromArray(32);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
@@ -81,9 +87,9 @@ namespace RCC.Network
             }
         }
 
-        public void serial(ref uint obj)
+        public void Serial(ref uint obj)
         {
-            if (isReading())
+            if (IsReading())
             {
                 var newBits = ReadFromArray(32);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
@@ -96,9 +102,9 @@ namespace RCC.Network
             }
         }
 
-        public void serial(ref short obj, int nbits = 16)
+        public void Serial(ref short obj, int nbits = 16)
         {
-            if (isReading())
+            if (IsReading())
             {
                 var bits = ReadFromArray(nbits);
 
@@ -117,9 +123,9 @@ namespace RCC.Network
             }
         }
 
-        public void serial(ref uint obj, int nbits = 32)
+        public void Serial(ref uint obj, int nbits = 32)
         {
-            if (isReading())
+            if (IsReading())
             {
                 var bits = ReadFromArray(nbits);
 
@@ -138,9 +144,9 @@ namespace RCC.Network
             }
         }
 
-        public void serial(ref long obj)
+        public void Serial(ref long obj)
         {
-            if (isReading())
+            if (IsReading())
             {
                 var newBits = ReadFromArray(64);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
@@ -153,9 +159,9 @@ namespace RCC.Network
             }
         }
 
-        public void serial(ref byte[] obj)
+        public void Serial(ref byte[] obj)
         {
-            if (isReading())
+            if (IsReading())
             {
                 var newBits = ReadFromArray(obj.Length * 8);
                 //obj = ConvertBoolArrayToByteArray(newBits);
@@ -170,9 +176,9 @@ namespace RCC.Network
             }
         }
 
-        public void serial(ref bool obj)
+        public void Serial(ref bool obj)
         {
-            if (isReading())
+            if (IsReading())
             {
                 // direct read
                 obj = _contentBits[_bitPos];
@@ -186,19 +192,19 @@ namespace RCC.Network
             }
         }
 
-        public void serial(ref string obj)
+        public void Serial(ref string obj)
         {
-            if (isReading())
+            if (IsReading())
             {
                 int len = 0;
-                serial(ref len);
+                Serial(ref len);
                 byte[] b = new byte[len * 2];
 
                 // Read the string.
                 for (uint i = 0; i != len * 2; ++i)
-                    serial(ref b[i]);
+                    Serial(ref b[i]);
 
-                obj = System.Text.Encoding.UTF8.GetString(b).Replace("\0", "");
+                obj = Encoding.UTF8.GetString(b).Replace("\0", "");
             }
             else
             {
@@ -215,12 +221,12 @@ namespace RCC.Network
             }
         }
 
-        internal void serialAndLog2(ref uint obj, uint nbBits)
+        internal void SerialAndLog2(ref uint obj, uint nbBits)
         {
-            if (isReading())
+            if (IsReading())
             {
                 //short value = -1;
-                serial(ref obj, (int)nbBits);
+                Serial(ref obj, (int) nbBits);
                 //obj = value;
                 return;
             }
@@ -254,7 +260,6 @@ namespace RCC.Network
                 _contentBits[_bitPos] = bit;
                 _bitPos++;
             }
-
         }
 
         public static bool GetBit(byte b, int bitNumber)
@@ -263,9 +268,9 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// HELPER since this is not c++
+        ///     HELPER since this is not c++
         /// </summary>
-        public void memcpy(byte[] data)
+        public void MemCpy(byte[] data)
         {
             if (data.Length * 8 > _contentBits.Length)
                 _contentBits = new bool[data.Length * 8];
@@ -309,7 +314,9 @@ namespace RCC.Network
             return ConvertBoolArrayToByteArray(_contentBits);
         }
 
+        /// <summary>
         /// Packs a bit array into bytes
+        /// </summary>
         public static byte[] ConvertBoolArrayToByteArray(bool[] boolArr)
         {
             var byteArr = new byte[(boolArr.Length - 1) / 8 + 1];
@@ -330,7 +337,7 @@ namespace RCC.Network
             {
                 // if the element is 'true' set the bit at that position
                 if (boolArr[offset + i])
-                    result |= (byte)(1 << 7 - i);
+                    result |= (byte) (1 << (7 - i));
             }
 
             return result;
@@ -338,17 +345,16 @@ namespace RCC.Network
 
 
         /// <summary>
-        /// Transforms the message from input to output or from output to input
+        ///     Transforms the message from input to output or from output to input
         /// </summary>
-        public void invert()
+        public void Invert()
         {
             _inputStream = !_inputStream;
 
-            if (isReading())
+            if (IsReading())
             {
                 // Write->Read, the position is set at the beginning of the stream
                 _bitPos = 0;
-
             }
             else
             {
@@ -360,28 +366,27 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// Set the position at the beginning. In output mode, the method ensures the buffer
-        /// contains at least one blank byte to write to.
-        /// 
-        /// If you are using the stream only in output mode, you can use this method as a faster version
-        /// of clear() *if you don't serialize pointers*.
+        ///     Set the position at the beginning. In output mode, the method ensures the buffer
+        ///     contains at least one blank byte to write to.
+        ///     If you are using the stream only in output mode, you can use this method as a faster version
+        ///     of clear() *if you don't serialize pointers*.
         /// </summary>
-        public void resetBufPos()
+        public void ResetBufPos()
         {
             _bitPos = 0;
         }
 
-        public void serialBuffer(CBitMemStream buf, in int len)
+        public void SerialBuffer(BitMemoryStream buf, in int len)
         {
             uint i;
             byte v = 0x00;
 
-            if (isReading())
+            if (IsReading())
             {
                 for (i = 0; i != len; ++i)
                 {
-                    serial(ref v);
-                    buf.AddToArray(new[] { v });
+                    Serial(ref v);
+                    buf.AddToArray(new[] {v});
                 }
             }
             else
@@ -389,12 +394,12 @@ namespace RCC.Network
                 for (i = 0; i != len; ++i)
                 {
                     v = buf.Buffer()[i];
-                    serial(ref v);
+                    Serial(ref v);
                 }
             }
         }
 
-        public int serialVersion(uint currentVersion)
+        public int SerialVersion(uint currentVersion)
         {
             byte b = 0;
             int v = 0;
@@ -403,11 +408,11 @@ namespace RCC.Network
             // Open the node
             //xmlPush("VERSION");
 
-            if (isReading())
+            if (IsReading())
             {
-                serial(ref b);
+                Serial(ref b);
                 if (b == 0xFF)
-                    serial(ref v);
+                    Serial(ref v);
                 else
                     v = b;
                 streamVersion = v;
@@ -441,24 +446,28 @@ namespace RCC.Network
             return streamVersion;
         }
 
-        public void serialBufferWithSize(byte[] buf, int len)
+        public void SerialBufferWithSize(byte[] buf, int len)
         {
-            serial(ref len);
-            serial(ref buf);
+            Serial(ref len);
+            Serial(ref buf);
         }
 
         public override string ToString()
         {
-            string ret = "CBMemStream " + (isReading() ? "in" : "out") + "\r\n";
+            return ToString(false);
+        }
 
-            if (false)
+        public string ToString(bool displayBytes)
+        {
+            var ret = "CBMemStream " + (IsReading() ? "in" : "out") + "\r\n";
+
+            if (displayBytes)
             {
                 var bs = Buffer();
                 for (var index = 0; index < bs.Length; index++)
                 {
                     var b = bs[index];
                     ret += Convert.ToString(b, 2).PadLeft(8, '0') + " ";
-                    //ret += Convert.ToString(b, 16).PadLeft(2, '0') + "";
                     if (index % 8 == 7) ret += "\r\n";
                 }
             }
@@ -468,12 +477,11 @@ namespace RCC.Network
                 {
                     ret += _contentBits[index] ? "1" : "0";
 
-                    if (index % (8 * 8) == (8 * 8) - 1) ret += "\r\n";
+                    if (index % (8 * 8) == 8 * 8 - 1) ret += "\r\n";
                     else if (index % 8 == 8 - 1) ret += " ";
 
                     if (_bitPos == index) ret += "<B>";
                 }
-
             }
 
             return ret;

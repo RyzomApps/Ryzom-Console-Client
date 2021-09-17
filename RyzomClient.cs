@@ -1,4 +1,9 @@
-﻿using RCC.Logger;
+﻿// This code is a modified version of a file from the 'Minecraft Console Client'
+// <https://github.com/ORelio/Minecraft-Console-Client>,
+// which is released under CDDL-1.0 License.
+// <http://opensource.org/licenses/CDDL-1.0>
+// Original Copyright 2021 by ORelio and Contributers
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,17 +11,47 @@ using System.Threading;
 using RCC.Client;
 using RCC.Config;
 using RCC.Helper;
-using RCC.Msg;
+using RCC.Logger;
+using RCC.Messages;
 using RCC.Network;
 
 namespace RCC
 {
     /// <summary>
-    /// The main client class, used to connect to a Ryzom server.
+    ///     The main client class, used to connect to a Ryzom server.
     /// </summary>
     public class RyzomClient
     {
+        public static bool UserCharPosReceived = false;
+
+        static bool _firstConnection = true;
+
+        // Control stuff
+        private static readonly List<string> CmdNames = new List<string>();
+        private static readonly Dictionary<string, Command> Cmds = new Dictionary<string, Command>();
+
+        private static bool _commandsLoaded = false;
+        private static readonly List<ChatBot> BotsOnHold = new List<ChatBot>();
+
+        static uint _lastGameCycle;
+
+        private readonly Queue<string> _chatQueue = new Queue<string>();
+
+        Thread _cmdprompt;
+
         public ILogger Log;
+
+        private readonly Queue<Action> _threadTasks = new Queue<Action>();
+        private readonly object _threadTasksLock = new object();
+        Thread _timeoutdetector;
+
+        /// <summary>
+        ///     Starts the main chat client
+        /// </summary>
+        public RyzomClient()
+        {
+            StartClient();
+        }
 
         public string Cookie { get; set; }
         public string FsAddr { get; set; }
@@ -27,47 +62,20 @@ namespace RCC
         public string R2BackupPatchURL { get; set; }
         public string[] R2PatchUrLs { get; set; }
 
-        public static bool UserCharPosReceived = false;
-        private bool ConnectionReadySent = false;
-
-        static bool firstConnection = true;
-
-        // Control stuff
-        private static readonly List<string> cmd_names = new List<string>();
-        private static readonly Dictionary<string, Command> cmds = new Dictionary<string, Command>();
-
-        private static bool commandsLoaded = false;
-        private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
-
-        private Queue<string> chatQueue = new Queue<string>();
-
-        Thread cmdprompt;
-        Thread timeoutdetector;
-
-        private Queue<Action> threadTasks = new Queue<Action>();
-        private object threadTasksLock = new object();
-
         /// <summary>
-        /// Starts the main chat client
-        /// </summary>
-        public RyzomClient()
-        {
-            StartClient();
-        }
-
-        /// <summary>
-        /// Starts the main chat client, wich will login to the server.
+        ///     Starts the main chat client, wich will login to the server.
         /// </summary>
         private void StartClient()
         {
-            this.Log = ClientCfg.LogToFile
-                ? new FileLogLogger(/*ClientCfg.ExpandVars(*/ClientCfg.LogFile/*)*/, ClientCfg.PrependTimestamp)
+            this.Log = ClientConfig.LogToFile
+                ? new FileLogLogger( /*ClientConfig.ExpandVars(*/ClientConfig.LogFile /*)*/,
+                    ClientConfig.PrependTimestamp)
                 : new FilteredLogger();
 
             /* Load commands from Commands namespace */
             LoadCommands();
 
-            if (botsOnHold.Count == 0)
+            if (BotsOnHold.Count == 0)
             {
                 //if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
                 //if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
@@ -94,48 +102,49 @@ namespace RCC
             //    BotLoad(bot, false);
             //botsOnHold.Clear();
 
-            timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
-            timeoutdetector.Start();
+            _timeoutdetector = new Thread(TimeoutDetector) {Name = "RCC Connection timeout detector"};
+            _timeoutdetector.Start();
 
-            cmdprompt = new Thread(new ThreadStart(CommandPrompt));
-            cmdprompt.Name = "RCC Command prompt";
-            cmdprompt.Start();
+            _cmdprompt = new Thread(new ThreadStart(CommandPrompt));
+            _cmdprompt.Name = "RCC Command prompt";
+            _cmdprompt.Start();
 
             Main();
         }
 
         /// <summary>
-        /// Load commands from the 'Commands' namespace
+        ///     Load commands from the 'Commands' namespace
         /// </summary>
         public void LoadCommands()
         {
-            if (!commandsLoaded)
+            if (!_commandsLoaded)
             {
-                Type[] cmds_classes = Program.GetTypesInNamespace("RCC.Commands");
-                foreach (Type type in cmds_classes)
+                Type[] cmdsClasses = Program.GetTypesInNamespace("RCC.Commands");
+                foreach (Type type in cmdsClasses)
                 {
-                    if (type.IsSubclassOf(typeof(Command)))
+                    if (!type.IsSubclassOf(typeof(Command))) continue;
+
+                    try
                     {
-                        try
-                        {
-                            Command cmd = (Command)Activator.CreateInstance(type);
-                            cmds[cmd.CmdName.ToLower()] = cmd;
-                            cmd_names.Add(cmd.CmdName.ToLower());
-                            foreach (string alias in cmd.getCMDAliases())
-                                cmds[alias.ToLower()] = cmd;
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Warn(e.Message);
-                        }
+                        Command cmd = (Command) Activator.CreateInstance(type);
+                        Cmds[cmd.CmdName.ToLower()] = cmd;
+                        CmdNames.Add(cmd.CmdName.ToLower());
+                        foreach (string alias in cmd.getCMDAliases())
+                            Cmds[alias.ToLower()] = cmd;
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Warn(e.Message);
                     }
                 }
-                commandsLoaded = true;
+
+                _commandsLoaded = true;
             }
         }
 
         /// <summary>
-        /// Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive is too old.
+        ///     Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive
+        ///     is too old.
         /// </summary>
         private void TimeoutDetector()
         {
@@ -156,7 +165,7 @@ namespace RCC
         }
 
         /// <summary>
-        /// Allows the user to send chat messages, commands, and leave the server.
+        ///     Allows the user to send chat messages, commands, and leave the server.
         /// </summary>
         private void CommandPrompt()
         {
@@ -169,79 +178,17 @@ namespace RCC
                     InvokeOnMainThread(() => HandleCommandPromptText(text));
                 }
             }
-            catch (IOException) { }
-            catch (NullReferenceException) { }
-        }
-
-        #region Thread-Invoke: Cross-thread method calls
-
-        /// <summary>
-        /// Invoke a task on the main thread, wait for completion and retrieve return value.
-        /// </summary>
-        /// <param name="task">Task to run with any type or return value</param>
-        /// <returns>Any result returned from task, result type is inferred from the task</returns>
-        /// <example>bool result = InvokeOnMainThread(methodThatReturnsAbool);</example>
-        /// <example>bool result = InvokeOnMainThread(() => methodThatReturnsAbool(argument));</example>
-        /// <example>int result = InvokeOnMainThread(() => { yourCode(); return 42; });</example>
-        /// <typeparam name="T">Type of the return value</typeparam>
-        public T InvokeOnMainThread<T>(Func<T> task)
-        {
-            if (!InvokeRequired)
+            catch (IOException)
             {
-                return task();
             }
-            else
+            catch (NullReferenceException)
             {
-                TaskWithResult<T> taskWithResult = new TaskWithResult<T>(task);
-                lock (threadTasksLock)
-                {
-                    threadTasks.Enqueue(taskWithResult.ExecuteSynchronously);
-                }
-                return taskWithResult.WaitGetResult();
             }
         }
 
         /// <summary>
-        /// Invoke a task on the main thread and wait for completion
-        /// </summary>
-        /// <param name="task">Task to run without return value</param>
-        /// <example>InvokeOnMainThread(methodThatReturnsNothing);</example>
-        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument));</example>
-        /// <example>InvokeOnMainThread(() => { yourCode(); });</example>
-        public void InvokeOnMainThread(Action task)
-        {
-            InvokeOnMainThread(() => { task(); return true; });
-        }
-
-        /// <summary>
-        /// Check if running on a different thread and InvokeOnMainThread is required
-        /// </summary>
-        /// <returns>True if calling thread is not the main thread</returns>
-        public bool InvokeRequired
-        {
-            get
-            {
-                int callingThreadId = Thread.CurrentThread.ManagedThreadId;
-
-                //if (this != null)
-                //{
-                //    return this.GetNetReadThreadId() != callingThreadId;
-                //}
-                //else
-                //{
-                //    // net read thread (main thread) not yet ready
-                //    return false;
-                //}
-
-                return false;
-            }
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Allows the user to send chat messages, commands, and leave the server.
-        /// Process text from the RCC command prompt on the main thread.
+        ///     Allows the user to send chat messages, commands, and leave the server.
+        ///     Process text from the RCC command prompt on the main thread.
         /// </summary>
         private void HandleCommandPromptText(string text)
         {
@@ -262,32 +209,34 @@ namespace RCC
             text = text.Trim();
             if (text.Length <= 0) return;
 
-            if (ClientCfg.internalCmdChar == ' ' || text[0] == ClientCfg.internalCmdChar)
+            if (ClientConfig.InternalCmdChar == ' ' || text[0] == ClientConfig.InternalCmdChar)
             {
-                string response_msg = "";
-                string command = ClientCfg.internalCmdChar == ' ' ? text : text.Substring(1);
-                if (!PerformInternalCommand(/*ClientCfg.ExpandVars(*/command/*)*/, ref response_msg) && ClientCfg.internalCmdChar == '/')
+                string responseMsg = "";
+                string command = ClientConfig.InternalCmdChar == ' ' ? text : text.Substring(1);
+                if (!PerformInternalCommand( /*ClientConfig.ExpandVars(*/command /*)*/, ref responseMsg) &&
+                    ClientConfig.InternalCmdChar == '/')
                 {
                     SendText(text);
                 }
-                else if (response_msg.Length > 0)
+                else if (responseMsg.Length > 0)
                 {
-                    Log.Info(response_msg);
+                    Log.Info(responseMsg);
                 }
             }
             else SendText(text);
+
             //}
         }
 
         /// <summary>
-        /// Send a chat message or command to the server
+        ///     Send a chat message or command to the server
         /// </summary>
         /// <param name="text">Text to send to the server</param>
         public void SendText(string text)
         {
             const int maxLength = 255;
 
-            lock (chatQueue)
+            lock (_chatQueue)
             {
                 if (string.IsNullOrEmpty(text))
                     return;
@@ -297,31 +246,33 @@ namespace RCC
                     {
                         //Send the first 100/256 chars of the command
                         text = text.Substring(0, maxLength);
-                        chatQueue.Enqueue(text);
+                        _chatQueue.Enqueue(text);
                     }
                     else
                     {
                         //Split the message into several messages
                         while (text.Length > maxLength)
                         {
-                            chatQueue.Enqueue(text.Substring(0, maxLength));
+                            _chatQueue.Enqueue(text.Substring(0, maxLength));
                             text = text.Substring(maxLength, text.Length - maxLength);
                         }
-                        chatQueue.Enqueue(text);
+
+                        _chatQueue.Enqueue(text);
                     }
                 }
-                else chatQueue.Enqueue(text);
+                else _chatQueue.Enqueue(text);
             }
         }
 
         /// <summary>
-        /// Perform an internal RCC command (not a server command, use SendText() instead for that!)
+        ///     Perform an internal RCC command (not a server command, use SendText() instead for that!)
         /// </summary>
         /// <param name="command">The command</param>
         /// <param name="responseMsg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal RCC command</returns>
-        public bool PerformInternalCommand(string command, ref string responseMsg, Dictionary<string, object> localVars = null)
+        public bool PerformInternalCommand(string command, ref string responseMsg,
+            Dictionary<string, object> localVars = null)
         {
             /* Process the provided command */
 
@@ -331,24 +282,25 @@ namespace RCC
             {
                 if (Command.hasArg(command))
                 {
-                    string helpCmdname = Command.getArgs(command)[0].ToLower();
+                    var helpCmdname = Command.getArgs(command)[0].ToLower();
 
                     if (helpCmdname == "help")
                     {
                         responseMsg = "help <cmdname>: show brief help about a command.";
                     }
-                    else if (cmds.ContainsKey(helpCmdname))
+                    else if (Cmds.ContainsKey(helpCmdname))
                     {
-                        responseMsg = cmds[helpCmdname].GetCmdDescTranslated();
+                        responseMsg = Cmds[helpCmdname].GetCmdDescTranslated();
                     }
                     else responseMsg = $"Unknown command '{commandName}'. Use 'help' for command list.";
                 }
                 else
-                    responseMsg = $"help <cmdname>. Available commands: {string.Join(", ", cmd_names.ToArray())}. For server help, use '{ClientCfg.internalCmdChar}send /help' instead.";
+                    responseMsg =
+                        $"help <cmdname>. Available commands: {string.Join(", ", CmdNames.ToArray())}. For server help, use '{ClientConfig.InternalCmdChar}send /help' instead.";
             }
-            else if (cmds.ContainsKey(commandName))
+            else if (Cmds.ContainsKey(commandName))
             {
-                responseMsg = cmds[commandName].Run(this, command, localVars);
+                responseMsg = Cmds[commandName].Run(this, command, localVars);
                 //foreach (ChatBot bot in bots.ToArray())
                 //{
                 //    try
@@ -375,7 +327,7 @@ namespace RCC
         }
 
         /// <summary>
-        /// Login to the server.
+        ///     Login to the server.
         /// </summary>
         private void Main()
         {
@@ -386,13 +338,13 @@ namespace RCC
             // prelogInit(); <- init config file, 3d driver, display
 
             // Login State Machine
-            if (!login())
+            if (!Login())
             {
                 ConsoleIO.WriteLine("Could not login!");
                 return;
             }
 
-            postlogInit(); // <- message database
+            PostlogInit(); // <- message database
 
             ////////////////////////
             // The real main loop //
@@ -407,7 +359,7 @@ namespace RCC
                 //////////////////////////////////////////
 
                 // If the connection return false we just want to quit the game
-                if (!connection(Cookie, FsAddr))
+                if (!Connection(Cookie, FsAddr))
                 {
                     //releaseOutGame();
                     break;
@@ -417,13 +369,13 @@ namespace RCC
                 // Initialize the main loop. //
                 ///////////////////////////////
 
-                initMainLoop();
+                InitMainLoop();
 
                 //////////////////////////////////////////////////
                 // Main loop (biggest part of the application). //
                 //////////////////////////////////////////////////
 
-                ok = !mainLoop();
+                ok = !MainLoop();
 
                 /////////////////////////////
                 // Release all the memory. //
@@ -441,14 +393,12 @@ namespace RCC
             ConsoleIO.WriteLineFormatted("EXIT of the Application.");
         }
 
-        static uint LastGameCycle = 0;
-
         /// <summary>
-        /// Initialize the main loop.
-        /// If you add something in this function, check CFarTP,
-        /// some kind of reinitialization might be useful over there.
+        ///     Initialize the main loop.
+        ///     If you add something in this function, check CFarTP,
+        ///     some kind of reinitialization might be useful over there.
         /// </summary>
-        private void initMainLoop()
+        private void InitMainLoop()
         {
             // Create the game interface database
 
@@ -474,41 +424,37 @@ namespace RCC
             //if (UserCharPosReceived && !ConnectionReadySent)?
 
             // Update Network till current tick increase.
-            LastGameCycle = NetworkConnection.getCurrentServerTick();
-            while (LastGameCycle == NetworkConnection.getCurrentServerTick())
+            _lastGameCycle = NetworkConnection.GetCurrentServerTick();
+            while (_lastGameCycle == NetworkConnection.GetCurrentServerTick())
             {
                 // Event server get events
                 //CInputHandlerManager::getInstance()->pumpEventsNoIM();
                 // Update Network.
-                NetworkManager.update();
+                NetworkManager.Update();
                 //IngameDbMngr.flushObserverCalls();
                 //NLGUI::CDBManager::getInstance()->flushObserverCalls();
             }
 
             // Create the message for the server to create the character.
-            var out2 = new CBitMemStream();
-            if (GenericMsgHeaderMngr.pushNameToStream("CONNECTION:READY", out2))
+            var out2 = new BitMemoryStream();
+            if (GenericMessageHeaderManager.PushNameToStream("CONNECTION:READY", out2))
             {
-                out2.serial(ref ClientCfg.LanguageCode);
-                NetworkManager.push(out2);
-                NetworkManager.send(NetworkConnection.getCurrentServerTick());
-
-                ConnectionReadySent = true;
+                out2.Serial(ref ClientConfig.LanguageCode);
+                NetworkManager.Push(out2);
+                NetworkManager.Send(NetworkConnection.GetCurrentServerTick());
             }
             else
             {
                 ConsoleIO.WriteLineFormatted("initMainLoop : unknown message name : 'CONNECTION:READY'.");
             }
-
-            ConnectionReadySent = true;
         }
 
         /// <summary>
         /// Called from client.cpp
+        /// start the login state machine
         /// </summary>
-        private bool login()
+        private bool Login()
         {
-            // start the login state machine
             // ev_init_done -> st_auto_login
             // username and password set
             // onlogin -> main menu page for r2mode -> ev_login_ok
@@ -521,7 +467,8 @@ namespace RCC
                 try
                 {
                     // string res = checkLogin(LoginLogin, LoginPassword, ClientApp, LoginCustomParameters);
-                    Login.checkLogin(this, ClientCfg.Username, ClientCfg.Password, ClientCfg.ApplicationServer, "");
+                    Network.Login.CheckLogin(this, ClientConfig.Username, ClientConfig.Password, ClientConfig.ApplicationServer,
+                        "");
                     loggedIn = true;
                 }
                 catch (Exception e)
@@ -546,29 +493,26 @@ namespace RCC
             }
 
             // ev_login_ok -> ... -> st_connect
-            // ConnectToShard();
-            //st_reconnect_fs
-            //ConnectToNewShard();
             // -> st_ingame
 
             return Cookie != null;
         }
 
         /// <summary>
-        /// Initialize the application after login
-        /// if the init fails, call nlerror
+        ///     Initialize the application after login
+        ///     if the init fails, call nlerror
         /// </summary>
-        private void postlogInit()
+        private static void PostlogInit()
         {
             //std::string msgXMLPath = CPath::lookup("msg.xml");
             const string msgXmlPath = "./data/msg.xml";
-            GenericMsgHeaderMngr.init(msgXmlPath);
+            GenericMessageHeaderManager.Init(msgXmlPath);
 
             // Initialize the Generic Message Header Manager.
-            NetworkManager.initializeNetwork();
+            NetworkManager.InitializeNetwork();
 
             // init the chat manager
-            // TODO: ChatMngr.init(CPath::lookup("chat_static.cdb"));
+            // TODO: ChatManager.init(CPath::lookup("chat_static.cdb"));
 
             // Read the ligo primitive class file
 
@@ -584,14 +528,13 @@ namespace RCC
         }
 
         /// <summary>
-        /// New version of the menu after the server connection
-        ///
-        /// If you add something in this function, check CFarTP,
-        /// some kind of reinitialization might be useful over there.
+        ///     New version of the menu after the server connection
+        ///     If you add something in this function, check CFarTP,
+        ///     some kind of reinitialization might be useful over there.
         /// </summary>
-        private bool connection(string cookie, string fsaddr)
+        private bool Connection(string cookie, string fsaddr)
         {
-            Connection.game_exit = false;
+            Client.Connection.GameExit = false;
 
             // Preload continents
 
@@ -600,79 +543,80 @@ namespace RCC
             // Init user interface
 
             // Init global variables
-            Connection.userChar = false;
-            Connection.noUserChar = false;
-            Connection.ConnectInterf = true;
-            Connection.CreateInterf = true;
-            Connection.CharacterInterf = true;
-            Connection.WaitServerAnswer = false;
+            Client.Connection.UserChar = false;
+            Client.Connection.NoUserChar = false;
+            Client.Connection.ConnectInterf = true;
+            Client.Connection.CreateInterf = true;
+            Client.Connection.CharacterInterf = true;
+            Client.Connection.WaitServerAnswer = false;
 
             //FarTP.setOutgame();
 
             // Start the finite state machine
-            var InterfaceState = TInterfaceState.AUTO_LOGIN;
+            var interfaceState = InterfaceState.AutoLogin;
 
-            while (InterfaceState != TInterfaceState.GOGOGO_IN_THE_GAME && InterfaceState != TInterfaceState.QUIT_THE_GAME)
+            while (interfaceState != InterfaceState.GoInTheGame &&
+                   interfaceState != InterfaceState.QuitTheGame)
             {
-                switch (InterfaceState)
+                switch (interfaceState)
                 {
-                    case TInterfaceState.AUTO_LOGIN:
-                        InterfaceState = autoLogin(cookie, fsaddr, firstConnection);
+                    case InterfaceState.AutoLogin:
+                        interfaceState = AutoLogin(cookie, fsaddr, _firstConnection);
                         break;
 
-                    case TInterfaceState.GLOBAL_MENU:
+                    case InterfaceState.GlobalMenu:
                         // Interface to choose a char
-                        InterfaceState = globalMenu();
+                        interfaceState = GlobalMenu();
                         break;
                 }
             }
 
-            firstConnection = false;
+            _firstConnection = false;
 
             // GOGOGO_IN_THE_GAME
-            return (InterfaceState == TInterfaceState.GOGOGO_IN_THE_GAME);
+            return interfaceState == InterfaceState.GoInTheGame;
         }
 
-        private TInterfaceState autoLogin(string cookie, string fsaddr, in bool firstConnection)
+        private static InterfaceState AutoLogin(string cookie, string fsaddr, in bool firstConnection)
         {
             if (firstConnection)
-                NetworkConnection.init(cookie, fsaddr);
+                NetworkConnection.Init(cookie, fsaddr);
 
             if (firstConnection)
             {
                 try
                 {
-                    NetworkConnection.connect();
+                    NetworkConnection.Connect();
                 }
                 catch (Exception e)
                 {
                     ConsoleIO.WriteLine("connection : " + e.Message + ".");
-                    return TInterfaceState.QUIT_THE_GAME;
+                    return InterfaceState.QuitTheGame;
                 }
 
                 // Ok the client is connected
 
                 // Set the impulse callback.
-                NetworkConnection.setImpulseCallback(NetworkManager.impulseCallBack);
+                NetworkConnection.SetImpulseCallback(NetworkManager.ImpulseCallBack);
 
                 // Set the database.
                 //TODO NetworkConnection.setDataBase(IngameDbMngr.getNodePtr());
 
                 // init the string manager cache.
-                //STRING_MANAGER::CStringManagerClient::instance()->initCache(UsedFSAddr, ClientCfg.LanguageCode);
+                //STRING_MANAGER::CStringManagerClient::instance()->initCache(UsedFSAddr, ClientConfig.LanguageCode);
             }
 
-            Connection.WaitServerAnswer = true;
+            Client.Connection.WaitServerAnswer = true;
 
-            return TInterfaceState.GLOBAL_MENU;
+            return InterfaceState.GlobalMenu;
         }
 
         /// <summary>
-        /// Launch the interface to choose a character
+        ///     Launch the interface to choose a character
         /// </summary>
-        public TInterfaceState globalMenu()
+        public InterfaceState GlobalMenu()
         {
-            uint serverTick = NetworkConnection.getCurrentServerTick();
+            uint serverTick = NetworkConnection.GetCurrentServerTick();
             var playerWantToGoInGame = false;
             var firewallTimeout = false;
 
@@ -682,11 +626,11 @@ namespace RCC
                 try
                 {
                     if (!firewallTimeout)
-                        NetworkManager.update();
+                        NetworkManager.Update();
                 }
                 catch
                 {
-                    if (NetworkConnection._ConnectionState == ConnectionState.Disconnect)
+                    if (NetworkConnection.ConnectionState == ConnectionState.Disconnect)
                     {
                         firewallTimeout = true;
                     }
@@ -699,48 +643,48 @@ namespace RCC
                 // TODO: IngameDbMngr.flushObserverCalls();
 
                 // check if we can send another dated block
-                if (NetworkConnection.getCurrentServerTick() != serverTick)
+                if (NetworkConnection.GetCurrentServerTick() != serverTick)
                 {
-                    serverTick = NetworkConnection.getCurrentServerTick();
-                    NetworkConnection.send(serverTick);
+                    serverTick = NetworkConnection.GetCurrentServerTick();
+                    NetworkConnection.Send(serverTick);
                 }
                 else
                 {
                     // Send dummy info
-                    NetworkConnection.send();
+                    NetworkConnection.Send();
                 }
 
                 // TODO: updateClientTime();
                 // TODO: IngameDbMngr.flushObserverCalls();
 
                 // SERVER INTERACTIONS WITH INTERFACE
-                if (Connection.WaitServerAnswer)
+                if (Client.Connection.WaitServerAnswer)
                 {
                     // Should we send the char selection without any user interaction?
-                    if (Connection.AutoSendCharSelection)
+                    if (Client.Connection.AutoSendCharSelection)
                     {
                         var charSelect = -1;
-                    
-                        if (ClientCfg.SelectCharacter != -1)
-                            charSelect = ClientCfg.SelectCharacter;
-                    
-                        Connection.WaitServerAnswer = false;
-                    
+
+                        if (ClientConfig.SelectCharacter != -1)
+                            charSelect = ClientConfig.SelectCharacter;
+
+                        Client.Connection.WaitServerAnswer = false;
+
                         // check that the pre selected character is available
-                        if (Connection.CharacterSummaries[charSelect].People == (int)TPeople.Unknown || charSelect > 4)
+                        if (Client.Connection.CharacterSummaries[charSelect].People == (int) People.Unknown || charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
                             throw new InvalidOperationException("preselected char does not exist");
                         }
-                    
+
                         // Auto-selection for fast launching (dev only)
                         //CAHManager::getInstance()->runActionHandler("launch_game", NULL, toString("slot=%d|edit_mode=0", charSelect));
-                        Connection.AutoSendCharSelection = false;
-                        CAHLaunchGame.execute(charSelect.ToString());
+                        Client.Connection.AutoSendCharSelection = false;
+                        ActionHandlerLaunchGame.Execute(charSelect.ToString());
                     }
 
                     // Clear sending buffer that may contain prevous QUIT_GAME when getting back to the char selection screen
-                    NetworkConnection.flushSendBuffer();
+                    NetworkConnection.FlushSendBuffer();
                 }
 
                 //// Ask the server if the name is not already used -> not used since we do not create chars
@@ -751,15 +695,15 @@ namespace RCC
                 //    Connection.WaitServerAnswer = false;
                 //}
 
-                if (NetworkManager.serverReceivedReady)
+                if (NetworkManager.ServerReceivedReady)
                 {
                     //nlinfo("impulseCallBack : received serverReceivedReady");
-                    NetworkManager.serverReceivedReady = false;
-                    Connection.WaitServerAnswer = false;
+                    NetworkManager.ServerReceivedReady = false;
+                    Client.Connection.WaitServerAnswer = false;
                     playerWantToGoInGame = true;
                 }
 
-                if (NetworkConnection._ConnectionState == ConnectionState.Disconnect)
+                if (NetworkConnection.ConnectionState == ConnectionState.Disconnect)
                 {
                     // Display the connection failure screen
                     // TODO Display the connection failure screen
@@ -771,39 +715,34 @@ namespace RCC
                     }
                 }
 
-                if (Connection.game_exit)
-                    return TInterfaceState.QUIT_THE_GAME;
+                if (Client.Connection.GameExit)
+                    return InterfaceState.QuitTheGame;
             }
 
-            //if (ClientCfg.SelectCharacter != -1)
-            //    PlayerSelectedSlot = ClientCfg.SelectCharacter;
+            //if (ClientConfig.SelectCharacter != -1)
+            //    PlayerSelectedSlot = ClientConfig.SelectCharacter;
 
             // -> ev_global_menu_exited
 
             //  Init the current Player Name (for interface.cfg and sentence.name save). Make a good File Name.
 
             //	return SELECT_CHARACTER;
-            return TInterfaceState.GOGOGO_IN_THE_GAME;
-
+            return InterfaceState.GoInTheGame;
         }
 
-        bool game_exit = false;
-
-        private bool mainLoop()
+        private bool MainLoop()
         {
             // TODO: mainLoopImp
             ConsoleIO.WriteLine("mainLoop");
 
             // Main loop. If the window is no more Active -> Exit.
-            while (/*!UserEntity->permanentDeath() &&*/ !game_exit)
+            while ( /*!UserEntity->permanentDeath() &&*/ !Client.Connection.GameExit)
             {
-
                 // If an action handler execute. NB: MUST BE DONE BEFORE ANY THING ELSE PROFILE CRASH!!!!!!!!!!!!!!!!!
 
                 // Test and may run a VBLock profile (only once)
 
                 // Fast mode.
-
 
 
                 //////////////////////////
@@ -818,7 +757,7 @@ namespace RCC
                 // NetWork Update.
 
                 // NetWork Update.
-                NetworkManager.update();
+                NetworkManager.Update();
                 //IngameDbMngr.flushObserverCalls();
                 //NLGUI::CDBManager::getInstance()->flushObserverCalls();
                 //bool prevDatabaseInitStatus = IngameDbMngr.initInProgress();
@@ -836,7 +775,7 @@ namespace RCC
                 //}
 
                 // Send new data Only when server tick changed.
-                if (NetworkConnection.getCurrentServerTick() > LastGameCycle)
+                if (NetworkConnection.GetCurrentServerTick() > _lastGameCycle)
                 {
                     // Put here things you have to send to the server only once per tick like user position.
                     // UPDATE COMPASS
@@ -848,14 +787,14 @@ namespace RCC
                     // Create the message for the server to move the user (except in combat mode).
 
                     // Send the Packet.
-                    NetworkManager.send(NetworkConnection.getCurrentServerTick());
+                    NetworkManager.Send(NetworkConnection.GetCurrentServerTick());
                     // Update the Last tick received from the server.
-                    LastGameCycle = NetworkConnection.getCurrentServerTick();
+                    _lastGameCycle = NetworkConnection.GetCurrentServerTick();
                 }
 
                 // Get the Connection State.
                 //lastConnectionState = connectionState;
-                var connectionState = NetworkConnection._ConnectionState;
+                //var connectionState = NetworkConnection._ConnectionState;
 
                 ///////////////
                 // FAR_TP -> //
@@ -865,7 +804,6 @@ namespace RCC
                 ///////////////
                 // <- FAR_TP //
                 ///////////////
-
             } // end of main loop
 
             // FAR TP STUFF HERE
@@ -878,11 +816,81 @@ namespace RCC
         }
 
         /// <summary>
-        /// Disconnect the client from the server (initiated from RCC)
+        ///     Disconnect the client from the server (initiated from RCC)
         /// </summary>
         public void Disconnect()
         {
-
         }
+
+        #region Thread-Invoke: Cross-thread method calls
+
+        /// <summary>
+        ///     Invoke a task on the main thread, wait for completion and retrieve return value.
+        /// </summary>
+        /// <param name="task">Task to run with any type or return value</param>
+        /// <returns>Any result returned from task, result type is inferred from the task</returns>
+        /// <example>bool result = InvokeOnMainThread(methodThatReturnsAbool);</example>
+        /// <example>bool result = InvokeOnMainThread(() => methodThatReturnsAbool(argument));</example>
+        /// <example>int result = InvokeOnMainThread(() => { yourCode(); return 42; });</example>
+        /// <typeparam name="T">Type of the return value</typeparam>
+        public T InvokeOnMainThread<T>(Func<T> task)
+        {
+            if (!InvokeRequired)
+            {
+                return task();
+            }
+            else
+            {
+                TaskWithResult<T> taskWithResult = new TaskWithResult<T>(task);
+                lock (_threadTasksLock)
+                {
+                    _threadTasks.Enqueue(taskWithResult.ExecuteSynchronously);
+                }
+
+                return taskWithResult.WaitGetResult();
+            }
+        }
+
+        /// <summary>
+        ///     Invoke a task on the main thread and wait for completion
+        /// </summary>
+        /// <param name="task">Task to run without return value</param>
+        /// <example>InvokeOnMainThread(methodThatReturnsNothing);</example>
+        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument));</example>
+        /// <example>InvokeOnMainThread(() => { yourCode(); });</example>
+        public void InvokeOnMainThread(Action task)
+        {
+            InvokeOnMainThread(() =>
+            {
+                task();
+                return true;
+            });
+        }
+
+        /// <summary>
+        ///     Check if running on a different thread and InvokeOnMainThread is required
+        /// </summary>
+        /// <returns>True if calling thread is not the main thread</returns>
+        public bool InvokeRequired
+        {
+            get
+            {
+                int callingThreadId = Thread.CurrentThread.ManagedThreadId;
+
+                //if (this != null)
+                //{
+                //    return this.GetNetReadThreadId() != callingThreadId;
+                //}
+                //else
+                //{
+                //    // net read thread (main thread) not yet ready
+                //    return false;
+                //}
+
+                return false;
+            }
+        }
+
+        #endregion
     }
 }

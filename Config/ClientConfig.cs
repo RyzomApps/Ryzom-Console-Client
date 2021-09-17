@@ -1,6 +1,11 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Minecraft Console Client'
+// <https://github.com/ORelio/Minecraft-Console-Client>,
+// which is released under CDDL-1.0 License.
+// <http://opensource.org/licenses/CDDL-1.0>
+// Original Copyright 2021 by ORelio and Contributers
+
+using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -9,11 +14,16 @@ using RCC.Helper;
 namespace RCC.Config
 {
     /// <summary>
-    /// Contains main settings for Ryzom Console Client
+    ///     Contains main settings for Ryzom Console Client
     /// </summary>
-
-    public static class ClientCfg
+    public static class ClientConfig
     {
+        // Logging
+        public enum FilterModeEnum
+        {
+            Blacklist,
+            Whitelist
+        }
         // === RYZOM STUFF
 
         public static string StartupHost = "shard.ryzom.com:40916";
@@ -37,9 +47,6 @@ namespace RCC.Config
 
         // Custom app variables 
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
-
-        // Logging
-        public enum FilterModeEnum { Blacklist, Whitelist }
         public static Regex ChatFilter = null;
         public static Regex DebugFilter = null;
         public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
@@ -48,10 +55,10 @@ namespace RCC.Config
         public static bool PrependTimestamp = false;
 
         //Other Settings
-        public static char internalCmdChar = '/';
+        public static char InternalCmdChar = '/';
 
         /// <summary>
-        /// Load settings from the given INI file
+        ///     Load settings from the given INI file
         /// </summary>
         /// <param name="file">File to load</param>
         public static void LoadFile(string file)
@@ -76,25 +83,27 @@ namespace RCC.Config
                     else
                     {
                         var argName = line.Split('=')[0];
-                        if (line.Length <= (argName.Length + 1)) continue;
+                        if (line.Length <= argName.Length + 1) continue;
 
                         var argValue = line.Substring(argName.Length + 1);
                         LoadSingleSetting(argName, argValue);
                     }
                 }
             }
-            catch (IOException) { }
+            catch (IOException)
+            {
+            }
         }
 
         /// <summary>
-        /// Write an INI file with default settings
+        ///     Write an INI file with default settings
         /// </summary>
         /// <param name="settingsfile">File to (over)write</param>
         public static void WriteDefaultSettings(string settingsfile)
         {
             // Load embedded default config and adjust line break for the current operating system
             string settingsContents = string.Join(Environment.NewLine,
-                Resources.client.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None));
+                Resources.client.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None));
 
             // Write configuration file with current version number
             File.WriteAllText(settingsfile,
@@ -105,7 +114,7 @@ namespace RCC.Config
         }
 
         /// <summary>
-        /// Load a single setting from INI file or command-line argument
+        ///     Load a single setting from INI file or command-line argument
         /// </summary>
         /// <param name="argName">Setting name</param>
         /// <param name="argValue">Setting value</param>
@@ -151,7 +160,8 @@ namespace RCC.Config
                     return true;
 
                 default:
-                    ConsoleIO.WriteLineFormatted("§cCould not parse setting " + argName + " with value '" + argValue + "'.");
+                    ConsoleIO.WriteLineFormatted("§cCould not parse setting " + argName + " with value '" + argValue +
+                                                 "'.");
                     return false;
             }
         }
@@ -168,7 +178,8 @@ namespace RCC.Config
                 argValue = argValue.Substring(0, argValue.Length - 1).Trim();
             }
 
-            if ((argValue.StartsWith("\"") && argValue.EndsWith("\"")) || (argValue.StartsWith("'") && argValue.EndsWith("'")))
+            if (argValue.StartsWith("\"") && argValue.EndsWith("\"") ||
+                argValue.StartsWith("'") && argValue.EndsWith("'"))
             {
                 argValue = argValue.Substring(1, argValue.Length - 2);
             }

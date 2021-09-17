@@ -1,10 +1,16 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
+// <http://dev.ryzom.com/projects/ryzom/>,
+// which is released under GNU Affero General Public License.
+// <http://www.gnu.org/licenses/>
+// Original Copyright 2010 by Winch Gate Property Limited
+
+using System;
 using System.Net;
 using System.Net.Sockets;
 
 namespace RCC.Network
 {
-    class UdpSimSock
+    class UdpSocket
     {
         private UdpClient udpMain;
 

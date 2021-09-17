@@ -1,18 +1,24 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Minecraft Console Client'
+// <https://github.com/ORelio/Minecraft-Console-Client>,
+// which is released under CDDL-1.0 License.
+// <http://opensource.org/licenses/CDDL-1.0>
+// Original Copyright 2021 by ORelio and Contributers
+
+using System;
 using System.IO;
 
 namespace RCC.Logger
 {
     public class FileLogLogger : FilteredLogger
     {
-        private string logFile;
-        private bool prependTimestamp;
-        private object logFileLock = new object();
+        private readonly string _logFile;
+        private readonly object _logFileLock = new object();
+        private readonly bool _prependTimestamp;
 
         public FileLogLogger(string file, bool prependTimestamp = false)
         {
-            logFile = file;
-            this.prependTimestamp = prependTimestamp;
+            _logFile = file;
+            _prependTimestamp = prependTimestamp;
             Save("### Log started at " + GetTimestamp() + " ###");
         }
 
@@ -28,16 +34,16 @@ namespace RCC.Logger
             {
                 // TODO: Verbatim
                 //msg = ChatBot.GetVerbatim(msg);
-                if (prependTimestamp)
+                if (_prependTimestamp)
                     msg = GetTimestamp() + ' ' + msg;
 
-                string directory = Path.GetDirectoryName(logFile);
-                if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                var directory = Path.GetDirectoryName(_logFile);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
-                lock (logFileLock)
+                lock (_logFileLock)
                 {
-                    FileStream stream = new FileStream(logFile, FileMode.OpenOrCreate);
-                    StreamWriter writer = new StreamWriter(stream);
+                    var stream = new FileStream(_logFile, FileMode.OpenOrCreate);
+                    var writer = new StreamWriter(stream);
                     stream.Seek(0, SeekOrigin.End);
                     writer.WriteLine(msg);
                     writer.Dispose();
@@ -54,36 +60,27 @@ namespace RCC.Logger
 
         private static string GetTimestamp()
         {
-            DateTime time = DateTime.Now;
-            return String.Format("{0}-{1}-{2} {3}:{4}:{5}",
-                time.Year.ToString("0000"),
-                time.Month.ToString("00"),
-                time.Day.ToString("00"),
-                time.Hour.ToString("00"),
-                time.Minute.ToString("00"),
-                time.Second.ToString("00"));
+            var time = DateTime.Now;
+            return
+                $"{time.Year:0000}-{time.Month:00}-{time.Day:00} {time.Hour:00}:{time.Minute:00}:{time.Second:00}";
         }
 
         public override void Chat(string msg)
         {
-            if (ChatEnabled)
+            if (!ChatEnabled) return;
+            if (ShouldDisplay(FilterChannel.Chat, msg))
             {
-                if (ShouldDisplay(FilterChannel.Chat, msg))
-                {
-                    LogAndSave(msg);
-                }
-                else Debug("[Logger] One Chat message filtered: " + msg);
+                LogAndSave(msg);
             }
+            else Debug("[Logger] One Chat message filtered: " + msg);
         }
 
         public override void Debug(string msg)
         {
-            if (DebugEnabled)
+            if (!DebugEnabled) return;
+            if (ShouldDisplay(FilterChannel.Debug, msg))
             {
-                if (ShouldDisplay(FilterChannel.Debug, msg))
-                {
-                    LogAndSave("§8[DEBUG] " + msg);
-                }
+                LogAndSave("§8[DEBUG] " + msg);
             }
         }
 

@@ -1,77 +1,71 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Minecraft Console Client'
+// <https://github.com/ORelio/Minecraft-Console-Client>,
+// which is released under CDDL-1.0 License.
+// <http://opensource.org/licenses/CDDL-1.0>
+// Original Copyright 2021 by ORelio and Contributers
+
+using System;
 using System.Threading;
 
 namespace RCC
 {
     /// <summary>
-    /// Holds an asynchronous task with return value
+    ///     Holds an asynchronous task with return value
     /// </summary>
     /// <typeparam name="T">Type of the return value</typeparam>
     public class TaskWithResult<T>
     {
-        private AutoResetEvent resultEvent = new AutoResetEvent(false);
-        private Func<T> task;
-        private T result = default(T);
-        private Exception exception = null;
-        private bool taskRun = false;
-        private object taskRunLock = new object();
+        private T _result;
+        private readonly AutoResetEvent _resultEvent = new AutoResetEvent(false);
+        private readonly Func<T> _task;
+        private readonly object _taskRunLock = new object();
 
         /// <summary>
-        /// Create a new asynchronous task with return value
+        ///     Create a new asynchronous task with return value
         /// </summary>
         /// <param name="task">Delegate with return value</param>
         public TaskWithResult(Func<T> task)
         {
-            this.task = task;
+            _task = task;
         }
 
         /// <summary>
-        /// Check whether the task has finished running
+        ///     Check whether the task has finished running
         /// </summary>
-        public bool HasRun
-        {
-            get
-            {
-                return taskRun;
-            }
-        }
+        public bool HasRun { get; private set; }
 
         /// <summary>
-        /// Get the task result (return value of the inner delegate)
+        ///     Get the task result (return value of the inner delegate)
         /// </summary>
         /// <exception cref="System.InvalidOperationException">Thrown if the task is not finished yet</exception>
         public T Result
         {
             get
             {
-                if (taskRun)
+                if (HasRun)
                 {
-                    return result;
+                    return _result;
                 }
-                else throw new InvalidOperationException("Attempting to retrieve the result of an unfinished task");
+
+                throw new InvalidOperationException("Attempting to retrieve the result of an unfinished task");
             }
         }
 
         /// <summary>
-        /// Get the exception thrown by the inner delegate, if any
+        ///     Get the exception thrown by the inner delegate, if any
         /// </summary>
-        public Exception Exception
-        {
-            get
-            {
-                return exception;
-            }
-        }
+        public Exception Exception { get; private set; } = null;
 
         /// <summary>
-        /// Execute the task in the current thread and set the <see cref="Result"/> property or <see cref=""/>to the returned value
+        ///     Execute the task in the current thread and set the <see cref="Result" /> property or to the returned
+        ///     value
         /// </summary>
         public void ExecuteSynchronously()
         {
             // Make sur the task will not run twice
-            lock (taskRunLock)
+            lock (_taskRunLock)
             {
-                if (taskRun)
+                if (HasRun)
                 {
                     throw new InvalidOperationException("Attempting to run a task twice");
                 }
@@ -80,44 +74,46 @@ namespace RCC
             // Run the task
             try
             {
-                result = task();
+                _result = _task();
             }
             catch (Exception e)
             {
-                exception = e;
+                Exception = e;
             }
 
             // Mark task as complete and release wait event
-            lock (taskRunLock)
+            lock (_taskRunLock)
             {
-                taskRun = true;
+                HasRun = true;
             }
-            resultEvent.Set();
+
+            _resultEvent.Set();
         }
 
         /// <summary>
-        /// Wait until the task has run from another thread and get the returned value or exception thrown by the task
+        ///     Wait until the task has run from another thread and get the returned value or exception thrown by the task
         /// </summary>
         /// <returns>Task result once available</returns>
         /// <exception cref="System.Exception">Any exception thrown by the task</exception>
         public T WaitGetResult()
         {
             // Wait only if the result is not available yet
-            bool mustWait = false;
-            lock (taskRunLock)
+            bool mustWait;
+            lock (_taskRunLock)
             {
-                mustWait = !taskRun;
+                mustWait = !HasRun;
             }
+
             if (mustWait)
             {
-                resultEvent.WaitOne();
+                _resultEvent.WaitOne();
             }
 
             // Receive exception from task
-            if (exception != null)
-                throw exception;
+            if (Exception != null)
+                throw Exception;
 
-            return result;
+            return _result;
         }
     }
 }

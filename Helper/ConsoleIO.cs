@@ -1,75 +1,81 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Minecraft Console Client'
+// <https://github.com/ORelio/Minecraft-Console-Client>,
+// which is released under CDDL-1.0 License.
+// <http://opensource.org/licenses/CDDL-1.0>
+// Original Copyright 2021 by ORelio and Contributers
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using static System.String;
 
 namespace RCC.Helper
 {
     /// <summary>
-    /// Allows simultaneous console input and output without breaking user input
-    /// (Without having this annoying behaviour : User inp[Some Console output]ut)
-    /// Provide some fancy features such as formatted output, text pasting and tab-completion.
-    /// By ORelio - (c) 2012-2018 - Available under the CDDL-1.0 license
+    ///     Allows simultaneous console input and output without breaking user input
+    ///     (Without having this annoying behaviour : User inp[Some Console output]ut)
+    ///     Provide some fancy features such as formatted output, text pasting and tab-completion.
+    ///     By ORelio - (c) 2012-2018 - Available under the CDDL-1.0 license
     /// </summary>
     public static class ConsoleIO
     {
-        private static IAutoComplete autocomplete_engine;
-        private static LinkedList<string> autocomplete_words = new LinkedList<string>();
-        private static LinkedList<string> previous = new LinkedList<string>();
-        private static readonly object io_lock = new object();
-        private static bool reading = false;
-        private static string buffer = "";
-        private static string buffer2 = "";
+        private static IAutoComplete _autocompleteEngine;
+        private static readonly LinkedList<string> AutocompleteWords = new LinkedList<string>();
+        private static readonly LinkedList<string> Previous = new LinkedList<string>();
+        private static readonly object IoLock = new object();
+        private static bool _reading;
+        private static string _buffer = "";
+        private static string _buffer2 = "";
 
         /// <summary>
-        /// Reset the IO mechanism and clear all buffers
+        ///     Determines whether to use interactive IO or basic IO.
+        ///     Set to true to disable interactive command prompt and use the default Console.Read|Write() methods.
+        ///     Color codes are printed as is when BasicIO is enabled.
         /// </summary>
-        public static void Reset()
-        {
-            lock (io_lock)
-            {
-                if (reading)
-                {
-                    ClearLineAndBuffer();
-                    reading = false;
-                    Console.Write("\b \b");
-                }
-            }
-        }
+        public static bool BasicIo = false;
 
         /// <summary>
-        /// Set an auto-completion engine for TAB autocompletion.
+        ///     Determines whether not to print color codes in BasicIO mode.
         /// </summary>
-        /// <param name="engine">Engine implementing the IAutoComplete interface</param>
-        public static void SetAutoCompleteEngine(IAutoComplete engine)
-        {
-            autocomplete_engine = engine;
-        }
+        public static bool BasicIoNoColor = false;
 
         /// <summary>
-        /// Determines whether to use interactive IO or basic IO.
-        /// Set to true to disable interactive command prompt and use the default Console.Read|Write() methods.
-        /// Color codes are printed as is when BasicIO is enabled.
-        /// </summary>
-        public static bool BasicIO = false;
-
-        /// <summary>
-        /// Determines whether not to print color codes in BasicIO mode.
-        /// </summary>
-        public static bool BasicIO_NoColor = false;
-
-        /// <summary>
-        /// Determine whether WriteLineFormatted() should prepend lines with timestamps by default.
+        ///     Determine whether WriteLineFormatted() should prepend lines with timestamps by default.
         /// </summary>
         public static bool EnableTimestamps = false;
 
         /// <summary>
-        /// Specify a generic log line prefix for WriteLogLine()
+        ///     Specify a generic log line prefix for WriteLogLine()
         /// </summary>
         public static string LogPrefix = "§8[Log] ";
 
         /// <summary>
-        /// Read a password from the standard input
+        ///     Reset the IO mechanism and clear all buffers
+        /// </summary>
+        public static void Reset()
+        {
+            lock (IoLock)
+            {
+                if (!_reading) return;
+
+                ClearLineAndBuffer();
+                _reading = false;
+                Console.Write("\b \b");
+            }
+        }
+
+        /// <summary>
+        ///     Set an auto-completion engine for TAB autocompletion.
+        /// </summary>
+        /// <param name="engine">Engine implementing the IAutoComplete interface</param>
+        public static void SetAutoCompleteEngine(IAutoComplete engine)
+        {
+            _autocompleteEngine = engine;
+        }
+
+        /// <summary>
+        ///     Read a password from the standard input
         /// </summary>
         public static string ReadPassword()
         {
@@ -86,6 +92,7 @@ namespace RCC.Helper
                             Console.Write("\b \b");
                             password.Remove(password.Length - 1, 1);
                         }
+
                         break;
 
                     case ConsoleKey.Escape:
@@ -105,6 +112,7 @@ namespace RCC.Helper
                             Console.Write('*');
                             password.Append(k.KeyChar);
                         }
+
                         break;
                 }
             }
@@ -114,34 +122,34 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        /// Read a line from the standard input
+        ///     Read a line from the standard input
         /// </summary>
         public static string ReadLine()
         {
-            if (BasicIO)
+            if (BasicIo)
             {
                 return Console.ReadLine();
             }
 
-            ConsoleKeyInfo k = new ConsoleKeyInfo();
+            var k = new ConsoleKeyInfo();
 
-            lock (io_lock)
+            lock (IoLock)
             {
                 Console.Write('>');
-                reading = true;
-                buffer = "";
-                buffer2 = "";
+                _reading = true;
+                _buffer = "";
+                _buffer2 = "";
             }
 
             while (k.Key != ConsoleKey.Enter)
             {
                 k = Console.ReadKey(true);
-                lock (io_lock)
+                lock (IoLock)
                 {
                     if (k.Key == ConsoleKey.V && k.Modifiers == ConsoleModifiers.Control)
                     {
-                        string clip = ReadClipboard();
-                        foreach (char c in clip)
+                        var clip = ReadClipboard();
+                        foreach (var c in clip)
                             AddChar(c);
                     }
                     else
@@ -164,54 +172,74 @@ namespace RCC.Helper
                                 GoRight();
                                 break;
                             case ConsoleKey.Home:
-                                while (buffer.Length > 0) { GoLeft(); }
+                                while (_buffer.Length > 0)
+                                {
+                                    GoLeft();
+                                }
+
                                 break;
                             case ConsoleKey.End:
-                                while (buffer2.Length > 0) { GoRight(); }
+                                while (_buffer2.Length > 0)
+                                {
+                                    GoRight();
+                                }
+
                                 break;
                             case ConsoleKey.Delete:
-                                if (buffer2.Length > 0)
+                                if (_buffer2.Length > 0)
                                 {
                                     GoRight();
                                     RemoveOneChar();
                                 }
+
                                 break;
                             case ConsoleKey.DownArrow:
-                                if (previous.Count > 0)
+                                if (Previous.Count > 0)
                                 {
                                     ClearLineAndBuffer();
-                                    buffer = previous.First.Value;
-                                    previous.AddLast(buffer);
-                                    previous.RemoveFirst();
-                                    Console.Write(buffer);
+                                    _buffer = Previous.First.Value;
+                                    Previous.AddLast(_buffer);
+                                    Previous.RemoveFirst();
+                                    Console.Write(_buffer);
                                 }
+
                                 break;
                             case ConsoleKey.UpArrow:
-                                if (previous.Count > 0)
+                                if (Previous.Count > 0)
                                 {
                                     ClearLineAndBuffer();
-                                    buffer = previous.Last.Value;
-                                    previous.AddFirst(buffer);
-                                    previous.RemoveLast();
-                                    Console.Write(buffer);
+                                    _buffer = Previous.Last.Value;
+                                    Previous.AddFirst(_buffer);
+                                    Previous.RemoveLast();
+                                    Console.Write(_buffer);
                                 }
+
                                 break;
                             case ConsoleKey.Tab:
-                                if (autocomplete_words.Count == 0 && autocomplete_engine != null && buffer.Length > 0)
-                                    foreach (string result in autocomplete_engine.AutoComplete(buffer))
-                                        autocomplete_words.AddLast(result);
-                                string word_autocomplete = null;
-                                if (autocomplete_words.Count > 0)
+                                if (AutocompleteWords.Count == 0 && _autocompleteEngine != null && _buffer.Length > 0)
+                                    foreach (string result in _autocompleteEngine.AutoComplete(_buffer))
+                                        AutocompleteWords.AddLast(result);
+                                string wordAutocomplete = null;
+                                if (AutocompleteWords.Count > 0)
                                 {
-                                    word_autocomplete = autocomplete_words.First.Value;
-                                    autocomplete_words.RemoveFirst();
-                                    autocomplete_words.AddLast(word_autocomplete);
+                                    wordAutocomplete = AutocompleteWords.First.Value;
+                                    AutocompleteWords.RemoveFirst();
+                                    AutocompleteWords.AddLast(wordAutocomplete);
                                 }
-                                if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != buffer)
+
+                                if (!IsNullOrEmpty(wordAutocomplete) && wordAutocomplete != _buffer)
                                 {
-                                    while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
-                                    foreach (char c in word_autocomplete) { AddChar(c); }
+                                    while (_buffer.Length > 0 && _buffer[^1] != ' ')
+                                    {
+                                        RemoveOneChar();
+                                    }
+
+                                    foreach (var c in wordAutocomplete)
+                                    {
+                                        AddChar(c);
+                                    }
                                 }
+
                                 break;
                             default:
                                 if (k.KeyChar != 0)
@@ -219,25 +247,26 @@ namespace RCC.Helper
                                 break;
                         }
                     }
+
                     if (k.Key != ConsoleKey.Tab)
-                        autocomplete_words.Clear();
+                        AutocompleteWords.Clear();
                 }
             }
 
-            lock (io_lock)
+            lock (IoLock)
             {
-                reading = false;
-                previous.AddLast(buffer + buffer2);
-                return buffer + buffer2;
+                _reading = false;
+                Previous.AddLast(_buffer + _buffer2);
+                return _buffer + _buffer2;
             }
         }
 
         /// <summary>
-        /// Debug routine: print all keys pressed in the console
+        ///     Debug routine: print all keys pressed in the console
         /// </summary>
         public static void DebugReadInput()
         {
-            ConsoleKeyInfo k = new ConsoleKeyInfo();
+            ConsoleKeyInfo k;
             while (true)
             {
                 k = Console.ReadKey(true);
@@ -246,20 +275,20 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        /// Write a string to the standard output, without newline character
+        ///     Write a string to the standard output, without newline character
         /// </summary>
         public static void Write(string text)
         {
-            if (!BasicIO)
+            if (!BasicIo)
             {
-                lock (io_lock)
+                lock (IoLock)
                 {
-                    if (reading)
+                    if (_reading)
                     {
                         try
                         {
-                            string buf = buffer;
-                            string buf2 = buffer2;
+                            var buf = _buffer;
+                            var buf2 = _buffer2;
                             ClearLineAndBuffer();
                             if (Console.CursorLeft == 0)
                             {
@@ -270,14 +299,18 @@ namespace RCC.Helper
                                 Console.CursorTop--;
                             }
                             else Console.Write("\b \b");
+
                             Console.Write(text);
-                            buffer = buf;
-                            buffer2 = buf2;
-                            Console.Write(">" + buffer);
-                            if (buffer2.Length > 0)
+                            _buffer = buf;
+                            _buffer2 = buf2;
+                            Console.Write(">" + _buffer);
+                            if (_buffer2.Length > 0)
                             {
-                                Console.Write(buffer2 + " \b");
-                                for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
+                                Console.Write(_buffer2 + " \b");
+                                for (var i = 0; i < _buffer2.Length; i++)
+                                {
+                                    GoBack();
+                                }
                             }
                         }
                         catch (ArgumentOutOfRangeException)
@@ -294,7 +327,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        /// Write a string to the standard output with a trailing newline
+        ///     Write a string to the standard output with a trailing newline
         /// </summary>
         public static void WriteLine(string line)
         {
@@ -302,7 +335,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        /// Write a single character to the standard output
+        ///     Write a single character to the standard output
         /// </summary>
         public static void Write(char c)
         {
@@ -310,86 +343,129 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        /// Write a Ryzom-Like formatted string to the standard output, using §c color codes
-        /// See Ryzom.gamepedia.com/Classic_server_protocol#Color_Codes for more info
+        ///     Write a Ryzom-Like formatted string to the standard output, using §c color codes
+        ///     See Ryzom.gamepedia.com/Classic_server_protocol#Color_Codes for more info
         /// </summary>
         /// <param name="str">String to write</param>
         /// <param name="acceptnewlines">If false, space are printed instead of newlines</param>
         /// <param name="displayTimestamp">
-        /// If false, no timestamp is prepended.
-        /// If true, "hh-mm-ss" timestamp will be prepended.
-        /// If unspecified, value is retrieved from EnableTimestamps.
+        ///     If false, no timestamp is prepended.
+        ///     If true, "hh-mm-ss" timestamp will be prepended.
+        ///     If unspecified, value is retrieved from EnableTimestamps.
         /// </param>
         public static void WriteLineFormatted(string str, bool acceptnewlines = true, bool? displayTimestamp = null)
         {
-            if (!String.IsNullOrEmpty(str))
+            if (!IsNullOrEmpty(str))
             {
                 if (!acceptnewlines)
                 {
                     str = str.Replace('\n', ' ');
                 }
+
                 if (displayTimestamp == null)
                 {
                     displayTimestamp = EnableTimestamps;
                 }
+
                 if (displayTimestamp.Value)
                 {
                     int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
-                    ConsoleIO.Write(String.Format("{0}:{1}:{2} ", hour.ToString("00"), minute.ToString("00"), second.ToString("00")));
+                    ConsoleIO.Write(Format("{0}:{1}:{2} ", hour.ToString("00"), minute.ToString("00"),
+                        second.ToString("00")));
                 }
-                if (BasicIO)
+
+                if (BasicIo)
                 {
-                    if (BasicIO_NoColor)
+                    if (BasicIoNoColor)
                     {
                         // TODO: Verbatim
                         //str = ChatBot.GetVerbatim(str);
                     }
+
                     Console.WriteLine(str);
                     return;
                 }
-                string[] parts = str.Split(new char[] { '§' });
+
+                var parts = str.Split(new char[] {'§'});
                 if (parts[0].Length > 0)
                 {
-                    ConsoleIO.Write(parts[0]);
+                    Write(parts[0]);
                 }
+
                 for (int i = 1; i < parts.Length; i++)
                 {
                     if (parts[i].Length > 0)
                     {
                         switch (parts[i][0])
                         {
-                            case '0': Console.ForegroundColor = ConsoleColor.Gray; break; //Should be Black but Black is non-readable on a black background
-                            case '1': Console.ForegroundColor = ConsoleColor.DarkBlue; break;
-                            case '2': Console.ForegroundColor = ConsoleColor.DarkGreen; break;
-                            case '3': Console.ForegroundColor = ConsoleColor.DarkCyan; break;
-                            case '4': Console.ForegroundColor = ConsoleColor.DarkRed; break;
-                            case '5': Console.ForegroundColor = ConsoleColor.DarkMagenta; break;
-                            case '6': Console.ForegroundColor = ConsoleColor.DarkYellow; break;
-                            case '7': Console.ForegroundColor = ConsoleColor.Gray; break;
-                            case '8': Console.ForegroundColor = ConsoleColor.DarkGray; break;
-                            case '9': Console.ForegroundColor = ConsoleColor.Blue; break;
-                            case 'a': Console.ForegroundColor = ConsoleColor.Green; break;
-                            case 'b': Console.ForegroundColor = ConsoleColor.Cyan; break;
-                            case 'c': Console.ForegroundColor = ConsoleColor.Red; break;
-                            case 'd': Console.ForegroundColor = ConsoleColor.Magenta; break;
-                            case 'e': Console.ForegroundColor = ConsoleColor.Yellow; break;
-                            case 'f': Console.ForegroundColor = ConsoleColor.White; break;
-                            case 'r': Console.ForegroundColor = ConsoleColor.Gray; break;
+                            case '0':
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                                break; //Should be Black but Black is non-readable on a black background
+                            case '1':
+                                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                                break;
+                            case '2':
+                                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                                break;
+                            case '3':
+                                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                                break;
+                            case '4':
+                                Console.ForegroundColor = ConsoleColor.DarkRed;
+                                break;
+                            case '5':
+                                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                                break;
+                            case '6':
+                                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                                break;
+                            case '7':
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                                break;
+                            case '8':
+                                Console.ForegroundColor = ConsoleColor.DarkGray;
+                                break;
+                            case '9':
+                                Console.ForegroundColor = ConsoleColor.Blue;
+                                break;
+                            case 'a':
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                break;
+                            case 'b':
+                                Console.ForegroundColor = ConsoleColor.Cyan;
+                                break;
+                            case 'c':
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                break;
+                            case 'd':
+                                Console.ForegroundColor = ConsoleColor.Magenta;
+                                break;
+                            case 'e':
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                break;
+                            case 'f':
+                                Console.ForegroundColor = ConsoleColor.White;
+                                break;
+                            case 'r':
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                                break;
                         }
 
                         if (parts[i].Length > 1)
                         {
-                            ConsoleIO.Write(parts[i].Substring(1, parts[i].Length - 1));
+                            Write(parts[i][1..]);
                         }
                     }
                 }
+
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
-            ConsoleIO.Write('\n');
+
+            Write('\n');
         }
 
         /// <summary>
-        /// Write a prefixed log line. Prefix is set in LogPrefix.
+        ///     Write a prefixed log line. Prefix is set in LogPrefix.
         /// </summary>
         /// <param name="text">Text of the log line</param>
         /// <param name="acceptnewlines">Allow line breaks</param>
@@ -400,29 +476,60 @@ namespace RCC.Helper
             WriteLineFormatted(LogPrefix + text);
         }
 
+        #region Clipboard management
+
+        /// <summary>
+        ///     Read a string from the Windows clipboard
+        /// </summary>
+        /// <returns>String from the Windows clipboard</returns>
+        private static string ReadClipboard()
+        {
+            string clipdata = "";
+            var staThread = new Thread(new ThreadStart(
+                delegate
+                {
+                    try
+                    {
+                        // TODO Clipboard
+                        //clipdata = Clipboard.GetText();
+                    }
+                    catch
+                    {
+                    }
+                }
+            ));
+            staThread.SetApartmentState(ApartmentState.STA);
+            staThread.Start();
+            staThread.Join();
+            return clipdata;
+        }
+
+        #endregion
+
         #region Subfunctions
 
         /// <summary>
-        /// Clear all text inside the input prompt
+        ///     Clear all text inside the input prompt
         /// </summary>
         private static void ClearLineAndBuffer()
         {
-            while (buffer2.Length > 0)
+            while (_buffer2.Length > 0)
             {
                 GoRight();
             }
-            while (buffer.Length > 0)
+
+            while (_buffer.Length > 0)
             {
                 RemoveOneChar();
             }
         }
 
         /// <summary>
-        /// Remove one character on the left of the cursor in input prompt
+        ///     Remove one character on the left of the cursor in input prompt
         /// </summary>
         private static void RemoveOneChar()
         {
-            if (buffer.Length > 0)
+            if (_buffer.Length > 0)
             {
                 try
                 {
@@ -430,15 +537,19 @@ namespace RCC.Helper
                     Console.Write(' ');
                     GoBack();
                 }
-                catch (ArgumentOutOfRangeException) { /* Console was resized!? */ }
-                buffer = buffer.Substring(0, buffer.Length - 1);
-
-                if (buffer2.Length > 0)
+                catch (ArgumentOutOfRangeException)
                 {
-                    Console.Write(buffer2);
+                    /* Console was resized!? */
+                }
+
+                _buffer = _buffer.Substring(0, _buffer.Length - 1);
+
+                if (_buffer2.Length > 0)
+                {
+                    Console.Write(_buffer2);
                     Console.Write(' ');
                     GoBack();
-                    for (int i = 0; i < buffer2.Length; i++)
+                    for (int i = 0; i < _buffer2.Length; i++)
                     {
                         GoBack();
                     }
@@ -447,7 +558,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        /// Move the cursor one character to the left inside the console, regardless of input prompt state
+        ///     Move the cursor one character to the left inside the console, regardless of input prompt state
         /// </summary>
         private static void GoBack()
         {
@@ -464,76 +575,49 @@ namespace RCC.Helper
                     Console.CursorLeft = Console.CursorLeft - 1;
                 }
             }
-            catch (ArgumentOutOfRangeException) { /* Console was resized!? */ }
+            catch (ArgumentOutOfRangeException)
+            {
+                /* Console was resized!? */
+            }
         }
 
         /// <summary>
-        /// Move the cursor one character to the left in input prompt, adjusting buffers accordingly
+        ///     Move the cursor one character to the left in input prompt, adjusting buffers accordingly
         /// </summary>
         private static void GoLeft()
         {
-            if (buffer.Length > 0)
-            {
-                buffer2 = "" + buffer[buffer.Length - 1] + buffer2;
-                buffer = buffer.Substring(0, buffer.Length - 1);
-                GoBack();
-            }
+            if (_buffer.Length <= 0) return;
+
+            _buffer2 = "" + _buffer[_buffer.Length - 1] + _buffer2;
+            _buffer = _buffer.Substring(0, _buffer.Length - 1);
+            GoBack();
         }
 
         /// <summary>
-        /// Move the cursor one character to the right in input prompt, adjusting buffers accordingly
+        ///     Move the cursor one character to the right in input prompt, adjusting buffers accordingly
         /// </summary>
         private static void GoRight()
         {
-            if (buffer2.Length > 0)
-            {
-                buffer = buffer + buffer2[0];
-                Console.Write(buffer2[0]);
-                buffer2 = buffer2.Substring(1);
-            }
+            if (_buffer2.Length <= 0) return;
+
+            _buffer = _buffer + _buffer2[0];
+            Console.Write(_buffer2[0]);
+            _buffer2 = _buffer2.Substring(1);
         }
 
         /// <summary>
-        /// Insert a new character in the input prompt
+        ///     Insert a new character in the input prompt
         /// </summary>
         /// <param name="c">New character</param>
         private static void AddChar(char c)
         {
             Console.Write(c);
-            buffer += c;
-            Console.Write(buffer2);
-            for (int i = 0; i < buffer2.Length; i++)
+            _buffer += c;
+            Console.Write(_buffer2);
+            for (var i = 0; i < _buffer2.Length; i++)
             {
                 GoBack();
             }
-        }
-
-        #endregion
-
-        #region Clipboard management
-
-        /// <summary>
-        /// Read a string from the Windows clipboard
-        /// </summary>
-        /// <returns>String from the Windows clipboard</returns>
-        private static string ReadClipboard()
-        {
-            string clipdata = "";
-            Thread staThread = new Thread(new ThreadStart(
-                delegate
-                {
-                    try
-                    {
-                        // TODO Clipboard
-                        //clipdata = Clipboard.GetText();
-                    }
-                    catch { }
-                }
-            ));
-            staThread.SetApartmentState(ApartmentState.STA);
-            staThread.Start();
-            staThread.Join();
-            return clipdata;
         }
 
         #endregion

@@ -1,20 +1,26 @@
-﻿using System;
+﻿// This code is a modified version of a file from 'CryptSharp'
+// <https://gist.github.com/aannenko/d47c90b0f92177286bb9814850888920>,
+// Original Copyright 2019 by aannenko
+
+using System;
 
 namespace RCC.Helper
 {
     /// <summary>
-    /// A performant .NET implementation of crypt(3) that leverages Span<T> type in order to hold and transform data.
-    /// Requires.NET Core 2.1 / .NET Standard 2.1 or later(Span<T> was introduced in .NET Core 2.1).
-    /// by aannenko
+    ///     A performant .NET implementation of crypt(3) that leverages Span
+    ///     T type in order to hold and transform data.
+    ///     Requires.NET Core 2.1 / .NET Standard 2.1 or later(Span
+    ///     T was introduced in .NET Core 2.1).
+    ///     by aannenko
     /// </summary>
     public static class CryptSharp
     {
-        private const string m_encryptionSaltCharacters =
+        private const string MEncryptionSaltCharacters =
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./";
 
-        private const int m_desIterations = 16;
+        private const int MDesIterations = 16;
 
-        private static readonly uint[] m_saltTranslation =
+        private static readonly uint[] MSaltTranslation =
         {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -34,13 +40,13 @@ namespace RCC.Helper
             0x3D, 0x3E, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00
         };
 
-        private static readonly bool[] m_shifts =
+        private static readonly bool[] MShifts =
         {
             false, false, true, true, true, true, true, true,
             false, true, true, true, true, true, true, false
         };
 
-        private static readonly uint[,] m_skb =
+        private static readonly uint[,] MSkb =
         {
             {
                 0x00000000, 0x00000010, 0x20000000, 0x20000010,
@@ -188,7 +194,7 @@ namespace RCC.Helper
             }
         };
 
-        private static readonly uint[,] m_SPTranslationTable =
+        private static readonly uint[,] MSpTranslationTable =
         {
             {
                 0x00820200, 0x00020000, 0x80800000, 0x80820200,
@@ -336,7 +342,7 @@ namespace RCC.Helper
             }
         };
 
-        private static readonly uint[] m_characterConversionTable =
+        private static readonly uint[] MCharacterConversionTable =
         {
             0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
             0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44,
@@ -348,17 +354,16 @@ namespace RCC.Helper
             0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A
         };
 
-        private static readonly Random _random = new Random();
+        private static readonly Random Random = new Random();
 
         public static string Crypt(ReadOnlySpan<char> textToEncrypt)
         {
-            int maxGeneratedNumber = m_encryptionSaltCharacters.Length;
-            int randomIndex;
+            var maxGeneratedNumber = MEncryptionSaltCharacters.Length;
             Span<char> encryptionSalt = stackalloc char[2];
-            for (int index = 0; index < 2; index++)
+            for (var index = 0; index < 2; index++)
             {
-                randomIndex = _random.Next(maxGeneratedNumber);
-                encryptionSalt[index] = m_encryptionSaltCharacters[randomIndex];
+                var randomIndex = Random.Next(maxGeneratedNumber);
+                encryptionSalt[index] = MEncryptionSaltCharacters[randomIndex];
             }
 
             return Crypt(encryptionSalt, textToEncrypt);
@@ -367,16 +372,16 @@ namespace RCC.Helper
         public static string Crypt(ReadOnlySpan<char> encryptionSalt, ReadOnlySpan<char> textToEncrypt)
         {
             if (encryptionSalt.Length != 2)
-                throw new ArgumentException("Encryption salt must be 2 characters long.", nameof(encryptionSalt));
+                throw new ArgumentException(@"Encryption salt must be 2 characters long.", nameof(encryptionSalt));
 
             Span<byte> encryptionKey = stackalloc byte[8];
             for (int index = 0; index < encryptionKey.Length && index < textToEncrypt.Length; index++)
-                encryptionKey[index] = (byte)(Convert.ToInt32(textToEncrypt[index]) << 1);
+                encryptionKey[index] = (byte) (Convert.ToInt32(textToEncrypt[index]) << 1);
 
-            Span<uint> schedule = stackalloc uint[m_desIterations * 2];
+            Span<uint> schedule = stackalloc uint[MDesIterations * 2];
             SetDESKey(encryptionKey, schedule);
-            uint firstSaltTranslator = m_saltTranslation[Convert.ToUInt32(encryptionSalt[0])];
-            uint secondSaltTranslator = m_saltTranslation[Convert.ToUInt32(encryptionSalt[1])] << 4;
+            uint firstSaltTranslator = MSaltTranslation[Convert.ToUInt32(encryptionSalt[0])];
+            uint secondSaltTranslator = MSaltTranslation[Convert.ToUInt32(encryptionSalt[1])] << 4;
             Span<uint> singleOutputKey = stackalloc uint[2];
             Body(schedule, firstSaltTranslator, secondSaltTranslator, singleOutputKey);
             Span<byte> binaryBuffer = stackalloc byte[9];
@@ -405,7 +410,7 @@ namespace RCC.Helper
                     }
                 }
 
-                encryptionBuffer[index] = Convert.ToChar(m_characterConversionTable[passwordCharacter]);
+                encryptionBuffer[index] = Convert.ToChar(MCharacterConversionTable[passwordCharacter]);
             }
 
             return encryptionBuffer.ToString();
@@ -427,13 +432,13 @@ namespace RCC.Helper
             secondInt = operationResults[1];
             PermOperation(secondInt, firstInt, 1, 0x55555555, operationResults);
             firstInt = operationResults[1] & 0x0FFFFFFF;
-            secondInt = (((operationResults[0] & 0xFF) << 16) | (operationResults[0] & 0xFF00) |
-                         ((operationResults[0] & 0xFF0000) >> 16) | ((operationResults[1] & 0xF0000000) >> 4));
+            secondInt = ((operationResults[0] & 0xFF) << 16) | (operationResults[0] & 0xFF00) |
+                        ((operationResults[0] & 0xFF0000) >> 16) | ((operationResults[1] & 0xF0000000) >> 4);
 
             int scheduleIndex = 0;
-            for (int index = 0; index < m_desIterations; index++)
+            for (int index = 0; index < MDesIterations; index++)
             {
-                if (m_shifts[index])
+                if (MShifts[index])
                 {
                     firstInt = (firstInt >> 2) | (firstInt << 26);
                     secondInt = (secondInt >> 2) | (secondInt << 26);
@@ -446,31 +451,34 @@ namespace RCC.Helper
 
                 firstInt &= 0x0FFFFFFF;
                 secondInt &= 0xFFFFFFF;
-                uint firstSkbValue = m_skb[0, firstInt & 0x3F] |
-                                     m_skb[1, ((firstInt >> 6) & 0x03) | ((firstInt >> 7) & 0x3C)] |
-                                     m_skb[2, ((firstInt >> 13) & 0x0F) | ((firstInt >> 14) & 0x30)] |
-                                     m_skb[3, ((firstInt >> 20) & 0x01) | ((firstInt >> 21) & 0x06) | ((firstInt >> 22) & 0x38)];
+                uint firstSkbValue = MSkb[0, firstInt & 0x3F] |
+                                     MSkb[1, ((firstInt >> 6) & 0x03) | ((firstInt >> 7) & 0x3C)] |
+                                     MSkb[2, ((firstInt >> 13) & 0x0F) | ((firstInt >> 14) & 0x30)] |
+                                     MSkb[3,
+                                         ((firstInt >> 20) & 0x01) | ((firstInt >> 21) & 0x06) |
+                                         ((firstInt >> 22) & 0x38)];
 
-                uint secondSkbValue = m_skb[4, secondInt & 0x3F] |
-                                      m_skb[5, ((secondInt >> 7) & 0x03) | ((secondInt >> 8) & 0x3C)] |
-                                      m_skb[6, (secondInt >> 15) & 0x3F] |
-                                      m_skb[7, ((secondInt >> 21) & 0x0F) | ((secondInt >> 22) & 0x30)];
+                uint secondSkbValue = MSkb[4, secondInt & 0x3F] |
+                                      MSkb[5, ((secondInt >> 7) & 0x03) | ((secondInt >> 8) & 0x3C)] |
+                                      MSkb[6, (secondInt >> 15) & 0x3F] |
+                                      MSkb[7, ((secondInt >> 21) & 0x0F) | ((secondInt >> 22) & 0x30)];
 
                 schedule[scheduleIndex++] = ((secondSkbValue << 16) | (firstSkbValue & 0xFFFF)) & 0xFFFFFFFF;
-                firstSkbValue = ((firstSkbValue >> 16) | (secondSkbValue & 0xFFFF0000));
+                firstSkbValue = (firstSkbValue >> 16) | (secondSkbValue & 0xFFFF0000);
                 firstSkbValue = (firstSkbValue << 4) | (firstSkbValue >> 28);
                 schedule[scheduleIndex++] = firstSkbValue & 0xFFFFFFFF;
             }
         }
 
-        private static void Body(Span<uint> schedule, uint firstSaltTranslator, uint secondSaltTranslator, Span<uint> singleOutputKey)
+        private static void Body(Span<uint> schedule, uint firstSaltTranslator, uint secondSaltTranslator,
+            Span<uint> singleOutputKey)
         {
             uint left = 0;
             uint right = 0;
             uint tempInt;
             for (int index = 0; index < 25; index++)
             {
-                for (int secondIndex = 0; secondIndex < m_desIterations * 2; secondIndex += 4)
+                for (int secondIndex = 0; secondIndex < MDesIterations * 2; secondIndex += 4)
                 {
                     left = DEncrypt(left, right, secondIndex, firstSaltTranslator, secondSaltTranslator, schedule);
                     right = DEncrypt(right, left, secondIndex + 2, firstSaltTranslator, secondSaltTranslator, schedule);
@@ -502,22 +510,23 @@ namespace RCC.Helper
             singleOutputKey[1] = operationResults[0];
         }
 
-        private static uint DEncrypt(uint left, uint right, int scheduleIndex, uint firstSaltTranslator, uint secondSaltTranslator, Span<uint> schedule)
+        private static uint DEncrypt(uint left, uint right, int scheduleIndex, uint firstSaltTranslator,
+            uint secondSaltTranslator, Span<uint> schedule)
         {
             uint thirdInt = right ^ (right >> 16);
             uint secondInt = thirdInt & firstSaltTranslator;
             thirdInt = thirdInt & secondSaltTranslator;
-            secondInt = (secondInt ^ (secondInt << 16)) ^ right ^ schedule[scheduleIndex];
-            uint firstInt = (thirdInt ^ (thirdInt << 16)) ^ right ^ schedule[scheduleIndex + 1];
+            secondInt = secondInt ^ (secondInt << 16) ^ right ^ schedule[scheduleIndex];
+            uint firstInt = thirdInt ^ (thirdInt << 16) ^ right ^ schedule[scheduleIndex + 1];
             firstInt = (firstInt >> 4) | (firstInt << 28);
-            left ^= (m_SPTranslationTable[1, firstInt & 0x3F] |
-                     m_SPTranslationTable[3, (firstInt >> 8) & 0x3F] |
-                     m_SPTranslationTable[5, (firstInt >> 16) & 0x3F] |
-                     m_SPTranslationTable[7, (firstInt >> 24) & 0x3F] |
-                     m_SPTranslationTable[0, secondInt & 0x3F] |
-                     m_SPTranslationTable[2, (secondInt >> 8) & 0x3F] |
-                     m_SPTranslationTable[4, (secondInt >> 16) & 0x3F] |
-                     m_SPTranslationTable[6, (secondInt >> 24) & 0x3F]);
+            left ^= MSpTranslationTable[1, firstInt & 0x3F] |
+                    MSpTranslationTable[3, (firstInt >> 8) & 0x3F] |
+                    MSpTranslationTable[5, (firstInt >> 16) & 0x3F] |
+                    MSpTranslationTable[7, (firstInt >> 24) & 0x3F] |
+                    MSpTranslationTable[0, secondInt & 0x3F] |
+                    MSpTranslationTable[2, (secondInt >> 8) & 0x3F] |
+                    MSpTranslationTable[4, (secondInt >> 16) & 0x3F] |
+                    MSpTranslationTable[6, (secondInt >> 24) & 0x3F];
 
             return left;
         }
@@ -525,25 +534,26 @@ namespace RCC.Helper
         private static uint FourBytesToInt(Span<byte> inputBytes, int offset)
         {
             int resultValue;
-            resultValue = (inputBytes[offset++] & 0xFF);
+            resultValue = inputBytes[offset++] & 0xFF;
             resultValue |= (inputBytes[offset++] & 0xFF) << 8;
             resultValue |= (inputBytes[offset++] & 0xFF) << 16;
             resultValue |= (inputBytes[offset] & 0xFF) << 24;
-            return (uint)resultValue;
+            return (uint) resultValue;
         }
 
         private static void IntToFourBytes(uint inputInt, Span<byte> outputBytes, int offset)
         {
-            outputBytes[offset++] = (byte)(inputInt & 0xFF);
-            outputBytes[offset++] = (byte)((inputInt >> 8) & 0xFF);
-            outputBytes[offset++] = (byte)((inputInt >> 16) & 0xFF);
-            outputBytes[offset] = (byte)((inputInt >> 24) & 0xFF);
+            outputBytes[offset++] = (byte) (inputInt & 0xFF);
+            outputBytes[offset++] = (byte) ((inputInt >> 8) & 0xFF);
+            outputBytes[offset++] = (byte) ((inputInt >> 16) & 0xFF);
+            outputBytes[offset] = (byte) ((inputInt >> 24) & 0xFF);
         }
 
-        private static void PermOperation(uint firstInt, uint secondInt, uint thirdInt, uint fourthInt, Span<uint> operationResults)
+        private static void PermOperation(uint firstInt, uint secondInt, uint thirdInt, uint fourthInt,
+            Span<uint> operationResults)
         {
-            uint tempInt = ((firstInt >> (int)thirdInt) ^ secondInt) & fourthInt;
-            firstInt ^= tempInt << (int)thirdInt;
+            uint tempInt = ((firstInt >> (int) thirdInt) ^ secondInt) & fourthInt;
+            firstInt ^= tempInt << (int) thirdInt;
             secondInt ^= tempInt;
             operationResults[0] = firstInt;
             operationResults[1] = secondInt;

@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using RCC.Client;
 using RCC.Helper;
-using RCC.Msg;
+using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
 {
     // TODO: say command is not working yet
-    public partial class Say : Command
+    public class Say : Command
     {
         public override string CmdName => "say";
         public override string CmdUsage => "<custom text>";
@@ -15,7 +15,7 @@ namespace RCC.Commands
 
         public override IEnumerable<string> getCMDAliases()
         {
-            return new[] { "s" };
+            return new[] {"s"};
         }
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
@@ -33,15 +33,15 @@ namespace RCC.Commands
             if (text.Length > 255)
                 text = text.Substring(0, 255);
 
-            CBitMemStream bms = new CBitMemStream();
+            BitMemoryStream bms = new BitMemoryStream();
             string msgType = "STRING:CHAT_MODE";
-            byte mode = (byte)TGroupType.arround;
+            byte mode = (byte) ChatGroupType.Around;
             uint dynamicChannelId = 0;
-            if (GenericMsgHeaderMngr.pushNameToStream(msgType, bms))
+            if (GenericMessageHeaderManager.PushNameToStream(msgType, bms))
             {
-                bms.serial(ref mode);
-                bms.serial(ref dynamicChannelId);
-                NetworkManager.push(bms);
+                bms.Serial(ref mode);
+                bms.Serial(ref dynamicChannelId);
+                NetworkManager.Push(bms);
                 //nlinfo("impulseCallBack : %s %d sent", msgType.c_str(), mode);
             }
             else
@@ -52,11 +52,11 @@ namespace RCC.Commands
             // send str to IOS
             msgType = "STRING:CHAT";
 
-            CBitMemStream out2 = new CBitMemStream();
-            if (GenericMsgHeaderMngr.pushNameToStream(msgType, out2))
+            BitMemoryStream out2 = new BitMemoryStream();
+            if (GenericMessageHeaderManager.PushNameToStream(msgType, out2))
             {
-                out2.serial(ref text);
-                NetworkManager.push(out2);
+                out2.Serial(ref text);
+                NetworkManager.Push(out2);
             }
             else
                 ConsoleIO.WriteLineFormatted($"§cUnknown message named '{msgType}'.");

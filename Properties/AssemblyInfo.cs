@@ -1,12 +1,13 @@
 ﻿using System.Reflection;
-
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Ryzom Console Client")]
-[assembly: AssemblyDescription("Ryzom Console Client (RCC) is a lightweight application that lets you connect to the server of the MMORPG Ryzom, send commands and receive text messages in a fast and simple way, without having to open the main Ryzom game. It also offers various automations for management and other purposes.")]
+[assembly:
+    AssemblyDescription(
+        "Ryzom Console Client (RCC) is a lightweight application that lets you connect to the server of the MMORPG Ryzom, send commands and receive text messages in a fast and simple way, without having to open the main Ryzom game. It also offers various automations for management and other purposes.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("")]

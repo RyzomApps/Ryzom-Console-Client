@@ -1,4 +1,10 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
+// <http://dev.ryzom.com/projects/ryzom/>,
+// which is released under GNU Affero General Public License.
+// <http://www.gnu.org/licenses/>
+// Original Copyright 2010 by Winch Gate Property Limited
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using RCC.Helper;
@@ -6,36 +12,37 @@ using RCC.Network;
 
 namespace RCC.NetworkAction
 {
-    public static class CActionFactory
+    public static class ActionFactory
     {
         const byte INVALID_SLOT = 0xFF;
 
-        public static Dictionary<TActionCode, KeyValuePair<Type, CAction>> RegisteredAction = new Dictionary<TActionCode, KeyValuePair<Type, CAction>>();
+        public static Dictionary<ActionCode, KeyValuePair<Type, Action>> RegisteredAction =
+            new Dictionary<ActionCode, KeyValuePair<Type, Action>>();
 
-        public static CAction unpack(CBitMemStream message, bool b)
+        public static Action unpack(BitMemoryStream message, bool b)
         {
-            CAction action = null;
+            Action action = null;
 
             // 32 1 32 1 1 1 2
 
-            if (message.Length * 8 - message.getPosInBit() >= 8)
+            if (message.Length * 8 - message.GetPosInBit() >= 8)
             {
-                TActionCode code;
+                ActionCode code;
 
                 bool shortcode = false;
-                message.serial(ref shortcode);
+                message.Serial(ref shortcode);
 
                 if (shortcode)
                 {
                     uint val = 0;
-                    message.serial(ref val, 2);
-                    code = (TActionCode)val;
+                    message.Serial(ref val, 2);
+                    code = (ActionCode) val;
                 }
                 else
                 {
                     byte val = 0;
-                    message.serial(ref val);
-                    code = (TActionCode)val;
+                    message.Serial(ref val);
+                    code = (ActionCode) val;
                 }
 
                 action = create(INVALID_SLOT, code);
@@ -53,7 +60,7 @@ namespace RCC.NetworkAction
             return action;
         }
 
-        internal static CAction create(byte slot, TActionCode code)
+        internal static Action create(byte slot, ActionCode code)
         {
             if (!RegisteredAction.ContainsKey(code))
             {
@@ -63,8 +70,9 @@ namespace RCC.NetworkAction
             else if (RegisteredAction[code].Value == null)
             {
                 // no action left in the store
-                var action = (CAction)Activator.CreateInstance(RegisteredAction[code].Key); // execute the factory function
-                                                                                            //nlinfo( "No action in store for code %u, creating action (total %u, total for code %u)", code, getNbActionsInStore(), getNbActionsInStore(action.Code) );
+                var action =
+                    (Action) Activator.CreateInstance(RegisteredAction[code].Key); // execute the factory function
+                //nlinfo( "No action in store for code %u, creating action (total %u, total for code %u)", code, getNbActionsInStore(), getNbActionsInStore(action.Code) );
 
                 if (action == null) return null;
 
@@ -74,7 +82,6 @@ namespace RCC.NetworkAction
                 action.Slot = slot;
                 action.reset();
                 return action;
-
             }
             else
             {
@@ -89,29 +96,29 @@ namespace RCC.NetworkAction
             }
         }
 
-        public static void remove(CAction action)
+        public static void remove(Action action)
         {
             if (action != null)
             {
-                RegisteredAction[action.Code] = new KeyValuePair<Type, CAction>(RegisteredAction[action.Code].Key, null);
+                RegisteredAction[action.Code] = new KeyValuePair<Type, Action>(RegisteredAction[action.Code].Key, null);
                 //nlinfo( "Inserting action in store for code %u (total %u, total for code %u)", action.Code, getNbActionsInStore(), getNbActionsInStore(action.Code) );
             }
         }
 
-        //public static void remove(CActionImpulsion action)
+        //public static void remove(ActionImpulsion action)
         //{
         //    if (action != NULL)
         //    {
-        //        CAction* ptr = static_cast<CAction*>(action);
+        //        Action* ptr = static_cast<Action*>(action);
         //        remove(ptr);
         //        action = NULL;
         //    }
         //}
 
         /// <summary>
-        /// Return the size IN BITS, not in bytes
+        ///     Return the size IN BITS, not in bytes
         /// </summary>
-        public static int size(CAction action)
+        public static int size(Action action)
         {
             // If you change this size, please update IMPULSE_ACTION_HEADER_SIZE in the front-end
 
@@ -122,11 +129,12 @@ namespace RCC.NetworkAction
 
             // size of the code
 
-            if (action.Code < (TActionCode)4)
+            if (action.Code < (ActionCode) 4)
                 headerBitSize = 1 + 2;
             else
             {
-                ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name + " called, but not implemented");
+                ConsoleIO.WriteLineFormatted("§c" + MethodBase.GetCurrentMethod().Name +
+                                             " called, but not implemented");
                 // TODO: fix that (sizeof(()action.Code) * 8) <- bdh: whats that about?
                 headerBitSize = 1 + /*(sizeof(()action.Code) * 8)*/ 8;
             }
@@ -134,15 +142,15 @@ namespace RCC.NetworkAction
             return headerBitSize + action.size();
         }
 
-        internal static void registerAction(TActionCode code, Type creator)
+        internal static void registerAction(ActionCode code, Type creator)
         {
-            if (!typeof(CAction).IsAssignableFrom(creator))
+            if (!typeof(Action).IsAssignableFrom(creator))
             {
-                ConsoleIO.WriteLine("CAction is not assignable from creator " + creator);
+                ConsoleIO.WriteLine("Action is not assignable from creator " + creator);
                 return;
             }
 
-            if ((int)code >= 256)
+            if ((int) code >= 256)
             {
                 ConsoleIO.WriteLine("Cannot register action code " + code + " because it exceeds 255");
                 return;
@@ -154,35 +162,35 @@ namespace RCC.NetworkAction
             }
             else
             {
-                RegisteredAction.Add(code, new KeyValuePair<Type, CAction>(creator, null));
+                RegisteredAction.Add(code, new KeyValuePair<Type, Action>(creator, null));
             }
         }
 
         /// <summary>
-        /// Pack an action to a bit stream. Set transmitTimestamp=true for server-->client,
-        /// false for client-->server. If true, set the current gamecycle.
+        ///     Pack an action to a bit stream. Set transmitTimestamp=true for server-->client,
+        ///     false for client-->server. If true, set the current gamecycle.
         /// </summary>
-        public static void pack(CAction action, CBitMemStream message)
+        public static void pack(Action action, BitMemoryStream message)
         {
             //H_BEFORE(FactoryPack);
             //sint32 val = message.getPosInBit ();
 
             // TODO: evaluate this
 
-            if ((int)action.Code < 4)
+            if ((int) action.Code < 4)
             {
                 // short code (0 1 2 3)
                 bool shortcode = true;
-                uint code = (uint)action.Code;
-                message.serial(ref shortcode);
-                message.serialAndLog2(ref code, 2);
+                uint code = (uint) action.Code;
+                message.Serial(ref shortcode);
+                message.SerialAndLog2(ref code, 2);
             }
             else
             {
                 bool shortcode = false;
-                short code = (short)action.Code;
-                message.serial(ref shortcode);
-                message.serial(ref code);
+                short code = (short) action.Code;
+                message.Serial(ref shortcode);
+                message.Serial(ref code);
             }
 
             action.pack(message);

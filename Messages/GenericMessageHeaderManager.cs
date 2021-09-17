@@ -1,18 +1,24 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
+// <http://dev.ryzom.com/projects/ryzom/>,
+// which is released under GNU Affero General Public License.
+// <http://www.gnu.org/licenses/>
+// Original Copyright 2010 by Winch Gate Property Limited
+
+using System;
 using System.Xml;
 using RCC.Helper;
 using RCC.Network;
 
-namespace RCC.Msg
+namespace RCC.Messages
 {
-    internal static class GenericMsgHeaderMngr
+    internal static class GenericMessageHeaderManager
     {
-        public static CNode _Root;
+        public static Node Root;
 
         /// <summary>
-        /// init
+        ///     init
         /// </summary>
-        public static void init(string filename)
+        public static void Init(string filename)
         {
             // open xml file
             var file = new XmlDocument();
@@ -29,25 +35,25 @@ namespace RCC.Msg
             }
 
             // create root node from root xml node
-            _Root = new CNode(file.DocumentElement, 0);
+            Root = new Node(file.DocumentElement, 0);
 
-            ConsoleIO.WriteLine("Loaded " + _Root.Nodes.Count + " messages nodes.");
+            ConsoleIO.WriteLine("Loaded " + Root.Nodes.Count + " messages nodes.");
         }
 
         /// <summary>
-        /// set callback
+        ///     set callback
         /// </summary>
-        public static bool setCallback(string msgName, Action<CBitMemStream> callback)
+        public static bool SetCallback(string msgName, Action<BitMemoryStream> callback)
         {
             // check root
-            if (_Root == null)
+            if (Root == null)
             {
                 ConsoleIO.WriteLine($"Can't set callback for message '{msgName}', Root not properly initialized.");
                 return false;
             }
 
             // search for msg node
-            CNode node = _Root.select(msgName);
+            var node = Root.Select(msgName);
 
             // check node
             if (node == null)
@@ -63,18 +69,18 @@ namespace RCC.Msg
         }
 
         /// <summary>
-        /// execute
+        ///     execute
         /// </summary>
-        public static void execute(CBitMemStream strm)
+        public static void Execute(BitMemoryStream strm)
         {
             // check root
-            if (_Root == null)
+            if (Root == null)
             {
                 ConsoleIO.WriteLine("§cCan't execute message , Root not properly initialized.");
                 return;
             }
 
-            var node = _Root.select(strm);
+            var node = Root.Select(strm);
 
             // check node
             if (node == null)
@@ -93,9 +99,9 @@ namespace RCC.Msg
             }
         }
 
-        public static bool pushNameToStream(string msgName, CBitMemStream strm)
+        public static bool PushNameToStream(string msgName, BitMemoryStream strm)
         {
-            var res = (_Root.select(msgName, strm) != null);
+            var res = Root.Select(msgName, strm) != null;
 
             if (!res)
             {

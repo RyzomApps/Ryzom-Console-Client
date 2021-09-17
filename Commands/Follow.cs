@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using RCC.Helper;
-using RCC.Msg;
+using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
@@ -15,12 +15,13 @@ namespace RCC.Commands
         {
             // Check parameters.
             if (!hasArg(command))
-            {   // Create the message and send.
+            {
+                // Create the message and send.
                 const string msgName = "TARGET:FOLLOW";
-                CBitMemStream out2 = new CBitMemStream();
-                if (GenericMsgHeaderMngr.pushNameToStream(msgName, out2))
+                BitMemoryStream out2 = new BitMemoryStream();
+                if (GenericMessageHeaderManager.PushNameToStream(msgName, out2))
                 {
-                    NetworkManager.push(out2);
+                    NetworkManager.Push(out2);
                 }
                 else
                     ConsoleIO.WriteLineFormatted($"§cUnknown message named '{msgName}'.");

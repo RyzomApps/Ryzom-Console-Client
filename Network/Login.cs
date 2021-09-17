@@ -1,4 +1,10 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
+// <http://dev.ryzom.com/projects/ryzom/>,
+// which is released under GNU Affero General Public License.
+// <http://www.gnu.org/licenses/>
+// Original Copyright 2010 by Winch Gate Property Limited
+
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -10,22 +16,22 @@ namespace RCC.Network
     public class Login
     {
         /// <summary>
-        /// NETWORK CONNECTION
+        ///     NETWORK CONNECTION
         /// </summary>
-        public static void checkLogin(RyzomClient client, string login, string password, string clientApp, string customParameters)
+        public static void CheckLogin(RyzomClient client, string login, string password, string clientApp, string customParameters)
         {
-            var url = "http://" + ClientCfg.StartupHost + ClientCfg.StartupPage;
+            var url = "http://" + ClientConfig.StartupHost + ClientConfig.StartupPage;
 
             var salt = GetServerSalt(login, url);
 
             var cryptedPassword = Crypt(password, salt);
 
-            var urlLogin = $"{url}?cmd=login&login={login}&password={cryptedPassword}&clientApplication={clientApp}&cp=2&lg={ClientCfg.LanguageCode}{customParameters}";
+            var urlLogin = $"{url}?cmd=login&login={login}&password={cryptedPassword}&clientApplication={clientApp}&cp=2&lg={ClientConfig.LanguageCode}{customParameters}";
 
             var request = WebRequest.CreateHttp(urlLogin);
             request.Method = "GET";
 
-            using var response = (HttpWebResponse)request.GetResponse();
+            using var response = (HttpWebResponse) request.GetResponse();
 
             using var reader =
                 new StreamReader(
@@ -34,7 +40,6 @@ namespace RCC.Network
 
             // Read stream content as string
             var responseString = reader.ReadToEnd();
-
 
             var first = responseString.IndexOf("\n\n", StringComparison.Ordinal);
 
@@ -74,7 +79,8 @@ namespace RCC.Network
                     var lines = responseString.Split('\n');
 
                     if (lines.Length != 2)
-                        throw new InvalidOperationException($"Invalid server return, found {lines.Length} lines, want 2");
+                        throw new InvalidOperationException(
+                            $"Invalid server return, found {lines.Length} lines, want 2");
 
                     var parts = lines[0].Split('#');
 
@@ -114,21 +120,19 @@ namespace RCC.Network
                     break;
                 }
             }
-
-            return;
         }
 
         /// <summary>
-        /// ask server for salt
+        ///     ask server for salt
         /// </summary>
         private static string GetServerSalt(string login, string url)
         {
-            var urlSalt = $"{url}?cmd=ask&cp=2&login={login}&lg={ClientCfg.LanguageCode}";
+            var urlSalt = $"{url}?cmd=ask&cp=2&login={login}&lg={ClientConfig.LanguageCode}";
 
             var requestSalt = WebRequest.CreateHttp(urlSalt);
             requestSalt.Method = "GET";
 
-            using var responseSalt = (HttpWebResponse)requestSalt.GetResponse();
+            using var responseSalt = (HttpWebResponse) requestSalt.GetResponse();
 
             using var readerSalt =
                 new StreamReader(
@@ -155,8 +159,8 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// Return a pointer to static data consisting of the "setting"
-        /// followed by an encryption produced by the "key" and "setting".
+        ///     Return a pointer to static data consisting of the "setting"
+        ///     followed by an encryption produced by the "key" and "setting".
         /// </summary>
         protected static string Crypt(string password, string setting)
         {

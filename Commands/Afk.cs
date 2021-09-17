@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using RCC.Helper;
-using RCC.Msg;
+using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
@@ -24,22 +24,22 @@ namespace RCC.Commands
 
             // send afk state
             string msgName = "COMMAND:AFK";
-            CBitMemStream out2 = new CBitMemStream();
-            if (GenericMsgHeaderMngr.pushNameToStream(msgName, out2))
+            BitMemoryStream out2 = new BitMemoryStream();
+            if (GenericMessageHeaderManager.PushNameToStream(msgName, out2))
             {
-                out2.serial(ref b);
-                NetworkManager.push(out2);
+                out2.Serial(ref b);
+                NetworkManager.Push(out2);
             }
             else
                 ConsoleIO.WriteLineFormatted($"§cUnknown message named '{msgName}'.");
 
             // custom afk txt
-            CBitMemStream outTxt = new CBitMemStream();
+            BitMemoryStream outTxt = new BitMemoryStream();
             msgName = "STRING:AFK_TXT";
-            if (GenericMsgHeaderMngr.pushNameToStream(msgName, outTxt))
+            if (GenericMessageHeaderManager.PushNameToStream(msgName, outTxt))
             {
-                outTxt.serial(ref customText);
-                NetworkManager.push(outTxt);
+                outTxt.Serial(ref customText);
+                NetworkManager.Push(outTxt);
             }
             else
             {

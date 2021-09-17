@@ -1,95 +1,99 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Minecraft Console Client'
+// <https://github.com/ORelio/Minecraft-Console-Client>,
+// which is released under CDDL-1.0 License.
+// <http://opensource.org/licenses/CDDL-1.0>
+// Original Copyright 2021 by ORelio and Contributers
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
 
 namespace RCC.WinAPI
 {
     /// <summary>
-    /// Perform clean up before quitting application
+    ///     Perform clean up before quitting application
     /// </summary>
     /// <remarks>
-    /// Only ctrl+c/ctrl+break will be captured when running on mono
+    ///     Only ctrl+c/ctrl+break will be captured when running on mono
     /// </remarks>
     public static class ExitCleanUp
     {
         /// <summary>
-        /// Store codes to run before quitting
+        ///     Store codes to run before quitting
         /// </summary>
-        private static List<Action> actions = new List<Action>();
+        private static readonly List<Action> Actions = new List<Action>();
+
+        private static readonly ConsoleCtrlHandler Handler;
 
         static ExitCleanUp()
         {
             try
             {
                 // Capture all close event
-                _handler += CleanUp;
+                Handler += CleanUp;
                 // Use delegate directly cause program to crash
-                SetConsoleCtrlHandler(_handler, true);
+                SetConsoleCtrlHandler(Handler, true);
             }
             catch (DllNotFoundException)
             {
                 // Probably on mono, fallback to ctrl+c only
-                Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
-                {
-                    RunCleanUp();
-                };
+                Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e) { RunCleanUp(); };
             }
         }
 
         /// <summary>
-        /// Add a new action to be performed before application exit
+        ///     Add a new action to be performed before application exit
         /// </summary>
         /// <param name="cleanUpCode">Action to run</param>
         public static void Add(Action cleanUpCode)
         {
-            actions.Add(cleanUpCode);
+            Actions.Add(cleanUpCode);
         }
 
         /// <summary>
-        /// Run all actions
+        ///     Run all actions
         /// </summary>
         /// <remarks>
-        /// For .Net native
+        ///     For .Net native
         /// </remarks>
         private static void RunCleanUp()
         {
-            foreach (Action action in actions)
+            foreach (Action action in Actions)
             {
                 action();
             }
         }
 
         /// <summary>
-        /// Run all actions
+        ///     Run all actions
         /// </summary>
         /// <param name="sig"></param>
         /// <returns></returns>
         /// <remarks>
-        /// For win32 API
+        ///     For win32 API
         /// </remarks>
         private static bool CleanUp(CtrlType sig)
         {
-            foreach (Action action in actions)
+            foreach (Action action in Actions)
             {
                 action();
             }
+
             return false;
         }
 
         [DllImport("Kernel32")]
         private static extern bool SetConsoleCtrlHandler(ConsoleCtrlHandler handler, bool add);
+
         private delegate bool ConsoleCtrlHandler(CtrlType sig);
-        private static ConsoleCtrlHandler _handler;
 
         enum CtrlType
         {
-            CTRL_C_EVENT = 0,
-            CTRL_BREAK_EVENT = 1,
-            CTRL_CLOSE_EVENT = 2,
-            CTRL_LOGOFF_EVENT = 5,
-            CTRL_SHUTDOWN_EVENT = 6
+            CtrlCEvent = 0,
+            CtrlBreakEvent = 1,
+            CtrlCloseEvent = 2,
+            CtrlLogoffEvent = 5,
+            CtrlShutdownEvent = 6
         }
     }
 }

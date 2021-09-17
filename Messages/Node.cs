@@ -1,37 +1,43 @@
-﻿using System;
+﻿// This code is a modified version of a file from the 'Ryzom - MMORPG Framework'
+// <http://dev.ryzom.com/projects/ryzom/>,
+// which is released under GNU Affero General Public License.
+// <http://www.gnu.org/licenses/>
+// Original Copyright 2010 by Winch Gate Property Limited
+
+using System;
 using System.Collections.Generic;
 using System.Xml;
 using RCC.Helper;
 using RCC.Network;
 
-namespace RCC.Msg
+namespace RCC.Messages
 {
     /// <summary>
-    /// CGenericXmlMsgHeaderManager::CNode
+    ///     CGenericXmlMsgHeaderManager::CNode
     /// </summary>
-    class CNode
+    internal class Node
     {
-        public List<CNode> Nodes;
-        public Dictionary<string, CNode> NodesByName;
-
-        public uint Value;
-        public string Name;
+        //public delegate void TMsgHeaderCallback(object[] arguments); // TMsgHeaderCallback -> Event Structure
+        public Action<BitMemoryStream> Callback;
         public string Description;
+        public List<MessageField> Format = new List<MessageField>(); // TMessageFormat
+        public string Name;
+        public uint NbBits;
+        public List<Node> Nodes;
+        public Dictionary<string, Node> NodesByName;
         public string SendTo;
         public bool UseCycle;
         public uint[] UserData = new uint[4];
-        public List<CMessageField> Format = new List<CMessageField>(); // TMessageFormat
-        public uint NbBits;
-        //public delegate void TMsgHeaderCallback(object[] arguments); // TMsgHeaderCallback -> Event Structure
-        public Action<CBitMemStream> Callback;
+
+        public uint Value;
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
-        public CNode(XmlElement xmlNode, uint value)
+        public Node(XmlElement xmlNode, uint value)
         {
-            Nodes = new List<CNode>();
-            NodesByName = new Dictionary<string, CNode>();
+            Nodes = new List<Node>();
+            NodesByName = new Dictionary<string, Node>();
 
             Value = value;
             UseCycle = false;
@@ -105,22 +111,23 @@ namespace RCC.Msg
                             case 's':
                                 if (scan.Length == 1)
                                     // here consider s as string
-                                    Format.Add(new CMessageField(TFieldType.String, 0));
+                                    Format.Add(new MessageField(FieldType.String, 0));
                                 else
                                 {
                                     // here consider s as sint
-                                    byte numBits = (byte)int.Parse(scan.Substring(1));
+                                    byte numBits = (byte) int.Parse(scan.Substring(1));
 
                                     if (numBits == 8)
-                                        Format.Add(new CMessageField(TFieldType.Sint8, numBits));
+                                        Format.Add(new MessageField(FieldType.Sint8, numBits));
                                     else if (numBits == 16)
-                                        Format.Add(new CMessageField(TFieldType.Sint16, numBits));
+                                        Format.Add(new MessageField(FieldType.Sint16, numBits));
                                     else if (numBits == 32)
-                                        Format.Add(new CMessageField(TFieldType.Sint32, numBits));
+                                        Format.Add(new MessageField(FieldType.Sint32, numBits));
                                     else if (numBits == 64)
-                                        Format.Add(new CMessageField(TFieldType.Sint64, numBits));
+                                        Format.Add(new MessageField(FieldType.Sint64, numBits));
                                     else
-                                        ConsoleIO.WriteLine("Can't use sint in format with other size than 8, 16, 32 or 64");
+                                        ConsoleIO.WriteLine(
+                                            "Can't use sint in format with other size than 8, 16, 32 or 64");
                                 }
 
                                 break;
@@ -128,44 +135,44 @@ namespace RCC.Msg
                             case 'u':
                                 if (scan == "uc")
                                     // here consider s as string
-                                    Format.Add(new CMessageField(TFieldType.UCString, 0));
+                                    Format.Add(new MessageField(FieldType.UcString, 0));
                                 else
                                 {
                                     // here consider s as sint
-                                    byte numBits = (byte)int.Parse(scan.Substring(1));
+                                    byte numBits = (byte) int.Parse(scan.Substring(1));
 
                                     if (numBits == 8)
-                                        Format.Add(new CMessageField(TFieldType.Uint8, numBits));
+                                        Format.Add(new MessageField(FieldType.Uint8, numBits));
                                     else if (numBits == 16)
-                                        Format.Add(new CMessageField(TFieldType.Uint16, numBits));
+                                        Format.Add(new MessageField(FieldType.Uint16, numBits));
                                     else if (numBits == 32)
-                                        Format.Add(new CMessageField(TFieldType.Uint32, numBits));
+                                        Format.Add(new MessageField(FieldType.Uint32, numBits));
                                     else if (numBits == 64)
-                                        Format.Add(new CMessageField(TFieldType.Uint64, numBits));
+                                        Format.Add(new MessageField(FieldType.Uint64, numBits));
                                     else
-                                        Format.Add(new CMessageField(TFieldType.BitSizedUint, numBits));
+                                        Format.Add(new MessageField(FieldType.BitSizedUint, numBits));
                                 }
 
                                 break;
 
                             case 'f':
                                 // here consider f as float
-                                Format.Add(new CMessageField(TFieldType.Float, 32));
+                                Format.Add(new MessageField(FieldType.Float, 32));
                                 break;
 
                             case 'd':
                                 // here consider d as double
-                                Format.Add(new CMessageField(TFieldType.Double, 64));
+                                Format.Add(new MessageField(FieldType.Double, 64));
                                 break;
 
                             case 'e':
                                 // here consider e as CEntityId
-                                Format.Add(new CMessageField(TFieldType.EntityId, 64));
+                                Format.Add(new MessageField(FieldType.EntityId, 64));
                                 break;
 
                             case 'b':
                                 // here consider b as bool
-                                Format.Add(new CMessageField(TFieldType.Bool, 1));
+                                Format.Add(new MessageField(FieldType.Bool, 1));
                                 break;
                         }
                     }
@@ -177,44 +184,44 @@ namespace RCC.Msg
                 foreach (XmlNode xmlChild in xmlNode.ChildNodes)
                 {
                     // check node is leaf or branch
-                    if (xmlChild.Name == "branch" || xmlChild.Name == "leaf")
+                    if (xmlChild.Name != "branch" && xmlChild.Name != "leaf") continue;
+
+                    if (xmlChild.NodeType != XmlNodeType.Element) break;
+
+                    // create a node from the child xml node
+                    var child = new Node((XmlElement) xmlChild, childValue);
+
+                    // check node doesn't exist yet in parent
+                    if (!NodesByName.ContainsKey(child.Name))
                     {
-                        if (xmlChild.NodeType != XmlNodeType.Element) break;
-
-                        // create a node from the child xml node
-                        var child = new CNode((XmlElement)xmlChild, childValue);
-
-                        // check node doesn't exist yet in parent
-                        if (!NodesByName.ContainsKey(child.Name))
-                        {
-                            // add it to parent's children
-                            NodesByName.Add(child.Name, child);
-                            Nodes.Add(child);
-                            ++childValue;
-                        }
-                        else
-                        {
-                            ConsoleIO.WriteLine("Child '" + child.Name + "' in node '" + Name + "' already exists, unable to add it");
-                            // delete child;
-                        }
+                        // add it to parent's children
+                        NodesByName.Add(child.Name, child);
+                        Nodes.Add(child);
+                        ++childValue;
+                    }
+                    else
+                    {
+                        ConsoleIO.WriteLine("Child '" + child.Name + "' in node '" + Name +
+                                            "' already exists, unable to add it");
+                        // delete child;
                     }
                 }
             }
 
             // compute number of bits from the number of children
-            NbBits = (childValue == 0) ? 0 : getPowerOf2(childValue);
+            NbBits = childValue == 0 ? 0 : Misc.GetPowerOf2(childValue);
         }
 
         /// <summary>
-        /// select node using name, no other action performed
+        ///     select node using name, no other action performed
         /// </summary>
-        internal CNode select(string msgName)
+        internal Node Select(string msgName)
         {
             var node = this;
 
-            string[] subSplitted = msgName.Split(":");
+            var subSplitted = msgName.Split(":");
 
-            for (int i = 0; i < subSplitted.Length; i++)
+            for (var i = 0; i < subSplitted.Length; i++)
             {
                 var sub = subSplitted[i];
 
@@ -235,9 +242,9 @@ namespace RCC.Msg
 
 
         /// <summary>
-        /// select node using name, and write bits in stream
+        ///     select node using name, and write bits in stream
         /// </summary>
-        internal CNode select(string name, CBitMemStream strm)
+        internal Node Select(string name, BitMemoryStream strm)
         {
             var node = this;
 
@@ -249,7 +256,8 @@ namespace RCC.Msg
 
                 if (node.NbBits == 0)
                 {
-                    ConsoleIO.WriteLineFormatted($"§eCouldn't select node '{sub}', parent '{node.Name}' has no bit per child");
+                    ConsoleIO.WriteLineFormatted(
+                        $"§eCouldn't select node '{sub}', parent '{node.Name}' has no bit per child");
                     return null;
                 }
 
@@ -263,7 +271,7 @@ namespace RCC.Msg
                 node = node.NodesByName[sub];
 
                 var index = node.Value;
-                strm.serialAndLog2(ref index, nodeOld.NbBits);
+                strm.SerialAndLog2(ref index, nodeOld.NbBits);
 
                 if (i == subSplitted.Length - 1)
                     return node;
@@ -274,60 +282,41 @@ namespace RCC.Msg
 
 
         /// <summary>
-        /// select node using bits stream
+        ///     select node using bits stream
         /// </summary>
-        public CNode select(CBitMemStream strm)
+        public Node Select(BitMemoryStream strm)
         {
-            CNode node = this;
+            var node = this;
 
             while (node != null && node.NbBits != 0)
             {
                 uint index = 0;
-                strm.serialAndLog2(ref index, node.NbBits);
+                strm.SerialAndLog2(ref index, node.NbBits);
 
                 if (index >= node.Nodes.Count)
                 {
-                    ConsoleIO.WriteLine("Couldn't select node from stream, invalid index " + index + " in parent '" + node.Name + "'");
+                    ConsoleIO.WriteLine("Couldn't select node from stream, invalid index " + index + " in parent '" +
+                                        node.Name + "'");
                     return null;
                 }
 
-                node = node.Nodes[(int)index];
+                node = node.Nodes[(int) index];
             }
 
             return node;
         }
 
         /// <summary>
-        /// Destructor
+        ///     Destructor
         /// </summary>
-        ~CNode()
+        ~Node()
         {
             uint i;
             for (i = 0; i < Nodes.Count; ++i)
             {
                 //    delete Nodes[i];
-                Nodes[(int)i] = null;
+                Nodes[(int) i] = null;
             }
-        }
-
-        /// <summary>
-        /// Return the power of 2 of v.
-        /// </summary>
-        /// <example>
-        /// getPowerOf2(8) is 3
-        /// getPowerOf2(5) is 3
-        /// </example>>
-        private static uint getPowerOf2(uint v)
-        {
-            uint res = 1;
-            uint ret = 0;
-            while (res < v)
-            {
-                ret++;
-                res <<= 1;
-            }
-
-            return ret;
         }
     }
 }
