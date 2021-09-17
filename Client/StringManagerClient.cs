@@ -4,9 +4,9 @@ using RCC.Network;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
-using RCC.Helper;
+using static RCC.Client.DynamicStringInfo;
+using System.Threading;
 
 namespace RCC.Client
 {
@@ -58,7 +58,7 @@ namespace RCC.Client
         {
             //H_AUTO(CStringManagerClient_receiveDynString)
 
-            var dynInfo = new DynamicStringInfo { Status = DynamicStringInfo.TStatus.Received };
+            var dynInfo = new DynamicStringInfo { Status = TStatus.Received };
 
             // read the dynamic string Id
             uint dynId = 0;
@@ -71,13 +71,17 @@ namespace RCC.Client
 
             // try to build the string
             dynInfo.Message = bms;
-            BuildDynString(ref dynInfo);
+            BuildDynString(dynInfo);
 
-            if (dynInfo.Status == DynamicStringInfo.TStatus.Complete)
+            if (dynInfo.Status == TStatus.Complete)
             {
                 RyzomClient.Log?.Info($"DynString {dynId} available : [{dynInfo.String}]");
 
-                ReceivedDynStrings.Add(dynId, dynInfo);
+                if (ReceivedDynStrings.ContainsKey(dynId))
+                    ReceivedDynStrings[dynId] = dynInfo;
+                else
+                    ReceivedDynStrings.Add(dynId, dynInfo);
+
                 // security, if dynstring Message received twice, it is possible that the dynstring is still in waiting list
                 WaitingDynStrings.Remove(dynId);
 
@@ -118,9 +122,9 @@ namespace RCC.Client
         /// <summary>
         ///     assemble the dynamic string from DynamicStringInfo
         /// </summary>
-        private static bool BuildDynString(ref DynamicStringInfo dynInfo)
+        private static bool BuildDynString(DynamicStringInfo dynInfo)
         {
-            if (dynInfo.Status == DynamicStringInfo.TStatus.Received)
+            if (dynInfo.Status == TStatus.Received)
             {
                 if (!GetString(dynInfo.StringId, out dynInfo.String))
                 {
@@ -128,219 +132,267 @@ namespace RCC.Client
                     return false;
                 }
 
-                //// ok, we have the base string, we can serial the parameters
+                // ok, we have the base string, we can serial the parameters
                 //string.iterator first(dynInfo.String.begin()), last(dynInfo.String.end());
-                //for (; first != last; ++first)
-                //{
-                //	if (*first == '%')
-                //	{
-                //		first++;
-                //		if (first != last && *first != '%')
-                //		{
-                //			// we have a replacement point.
-                //			TParamValue param;
-                //			param.ReplacementPoint = (first - 1) - dynInfo.String.begin();
-                //			switch (*first)
-                //			{
-                //				case 's':
-                //					param.Type = string_id;
-                //					try
-                //					{
-                //						dynInfo.Message.serial(param.StringId);
-                //					}
-                //					catch (const Exception &)
-                //			{
-                //	param.StringId = EmptyStringId;
-                //}
-                //break;
-                //		case 'i':
-                //			param.Type = integer;
-                //try
-                //{
-                //	dynInfo.Message.serial(param.Integer);
-                //}
-                //catch (const Exception &)
-                //			{
-                //	param.Integer = 0;
-                //}
-                //break;
-                //		case 't':
-                //			param.Type = time;
-                //try
-                //{
-                //	dynInfo.Message.serial(param.Time);
-                //}
-                //catch (const Exception &)
-                //			{
-                //	param.Time = 0;
-                //}
-                //break;
-                //		case '$':
-                //			param.Type = money;
-                //try
-                //{
-                //	dynInfo.Message.serial(param.Money);
-                //}
-                //catch (const Exception &)
-                //			{
-                //	param.Money = 0;
-                //}
-                //break;
-                //		case 'm':
-                //			param.Type = dyn_string_id;
-                //try
-                //{
-                //	dynInfo.Message.serial(param.DynStringId);
-                //}
-                //catch (const Exception &)
-                //			{
-                //	param.DynStringId = EmptyDynStringId;
-                //}
-                //break;
-                //default:
-                //			nlwarning("Error: unknown replacement tag %%%c", (char)*first);
-                //return false;
-                //}
-                //
-                //dynInfo.Params.push_back(param);
-                //}
-                //}
-                //}
-                dynInfo.Status = DynamicStringInfo.TStatus.Serialized;
+
+                for (int i = 0; i < dynInfo.String.Length - 1; i++)
+                {
+                    //for (; first != last; ++first)
+                    //{
+
+                    var character = dynInfo.String[i];
+
+                    if (character == '%')
+                    {
+                        i++;
+                        character = dynInfo.String[i];
+
+                        if (/*character != last &&*/ character != '%')
+                        {
+                            // we have a replacement point.
+                            ParamValue param = new ParamValue
+                            {
+                                ReplacementPoint = i - 1 //(character - 1) - dynInfo.String.begin();
+                            };
+
+                            switch (character)
+                            {
+                                case 's':
+                                    param.Type = TParamType.StringID;
+                                    try
+                                    {
+                                        param.StringId = 0;
+                                        dynInfo.Message.Serial(ref param.StringId);
+                                    }
+                                    catch (Exception) { }
+                                    break;
+
+                                case 'i':
+                                    param.Type = TParamType.Integer;
+                                    try
+                                    {
+                                        param.Integer = 0;
+                                        dynInfo.Message.Serial(ref param.Integer);
+                                    }
+                                    catch (Exception) { }
+                                    break;
+
+                                case 't':
+                                    param.Type = TParamType.Time;
+                                    try
+                                    {
+                                        param.Time = 0;
+                                        dynInfo.Message.Serial(ref param.Time);
+                                    }
+                                    catch (Exception) { }
+                                    break;
+
+                                case '$':
+                                    param.Type = TParamType.Money;
+                                    try
+                                    {
+                                        param.Money = 0;
+                                        byte[] moneyArr = new byte[64];
+                                        dynInfo.Message.Serial(ref moneyArr);
+                                        param.Money = BitConverter.ToUInt64(moneyArr);
+                                    }
+                                    catch (Exception) { }
+                                    break;
+
+                                case 'm':
+                                    param.Type = TParamType.DynStringID;
+                                    try
+                                    {
+                                        param.DynStringId = 0;
+                                        dynInfo.Message.Serial(ref param.DynStringId);
+                                    }
+                                    catch (Exception) { }
+                                    break;
+
+                                default:
+                                    RyzomClient.Log.Warn("Error: unknown replacement tag %%%c", (char)character);
+                                    return false;
+                            }
+
+                            dynInfo.Params.Add(param);
+                        }
+                    }
+                }
+                dynInfo.Status = TStatus.Serialized;
             }
 
-            if (dynInfo.Status == DynamicStringInfo.TStatus.Serialized)
+            if (dynInfo.Status == TStatus.Serialized)
             {
-                //// try to retreive all string parameter to build the string.
-                //string temp = "";
+                // try to retreive all string parameter to build the string.
+                StringBuilder temp = new StringBuilder();
                 //temp.reserve(dynInfo.String.size() * 2);
+
                 //string.iterator src(dynInfo.String.begin());
                 //string.iterator move = src;
                 //
                 //std.vector<TParamValue>.iterator first(dynInfo.Params.begin()), last(dynInfo.Params.end());
+                int move = 0;
+
                 //for (; first != last; ++first)
                 //{
-                //	TParamValue & param = *first;
-                //	switch (param.Type)
-                //	{
-                //		case string_id:
-                //			{
-                //				string str;
-                //				if (!getString(param.StringId, str))
-                //					return false;
-                //
-                //				string.size_type p1 = str.find('[');
-                //				if (p1 != string.npos)
-                //				{
-                //					str = str.substr(0, p1) + STRING_MANAGER.CStringManagerClient.getLocalizedName(str.substr(p1));
-                //				}
-                //
-                //				// If the string is a player name, we may have to remove the shard name (if the string looks like a player name)
-                //				if (!str.empty() && !PlayerSelectedHomeShardNameWithParenthesis.empty())
-                //				{
-                //					// fast pre-test
-                //					if (str[str.size() - 1] == ')')
-                //					{
-                //						// the player name must be at least bigger than the string with ()
-                //						if (str.size() > PlayerSelectedHomeShardNameWithParenthesis.size())
-                //						{
-                //							// If the shard name is the same as the player home shard name, remove it
-                //							uint len = (uint)PlayerSelectedHomeShardNameWithParenthesis.size();
-                //							uint start = (uint)str.size() - len;
-                //							if (ucstrnicmp(str, start, len, PlayerSelectedHomeShardNameWithParenthesis) == 0)
-                //								str.resize(start);
-                //						}
-                //					}
-                //				}
-                //
-                //				// If the string contains a title, then remove it
-                //				string.size_type pos = str.find('$');
-                //				if (!str.empty() && pos != string.npos)
-                //				{
-                //					str = CEntityCL.removeTitleFromName(str);
-                //				}
-                //
-                //				// if the string contains a special rename of creature, remove it
-                //				if (str.size() > 2 && str[0] == '<' && str[1] == '#')
-                //				{
-                //					str = toUpper(str[2]) + str.substr(3);
-                //				}
-                //
-                //				// append this string
-                //				temp.append(move, src + param.ReplacementPoint);
-                //				temp += str;
-                //				move = dynInfo.String.begin() + param.ReplacementPoint + 2;
-                //			}
-                //
-                //			break;
-                //		case integer:
-                //			{
-                //				char value[1024];
-                //				sprintf(value, "%d", param.Integer);
-                //				temp.append(move, src + param.ReplacementPoint);
-                //				temp += string(value);
-                //				move = dynInfo.String.begin() + param.ReplacementPoint + 2;
-                //			}
-                //			break;
-                //		case time:
-                //			{
-                //				string value;
-                //				uint time = (uint)param.Time;
-                //				if (time >= (10 * 60 * 60))
-                //				{
-                //					uint nbHours = time / (10 * 60 * 60);
-                //					time -= nbHours * 10 * 60 * 60;
-                //					value = toString("%d ", nbHours) + CI18N.get("uiMissionTimerHour") + " ";
-                //
-                //					uint nbMinutes = time / (10 * 60);
-                //					time -= nbMinutes * 10 * 60;
-                //					value = value + toString("%d ", nbMinutes) + CI18N.get("uiMissionTimerMinute") + " ";
-                //				}
-                //				else if (time >= (10 * 60))
-                //				{
-                //					uint nbMinutes = time / (10 * 60);
-                //					time -= nbMinutes * 10 * 60;
-                //					value = value + toString("%d ", nbMinutes) + CI18N.get("uiMissionTimerMinute") + " ";
-                //				}
-                //				uint nbSeconds = time / 10;
-                //				value = value + toString("%d", nbSeconds) + CI18N.get("uiMissionTimerSecond");
-                //				temp.append(move, src + param.ReplacementPoint);
-                //				temp += value;
-                //				move = dynInfo.String.begin() + param.ReplacementPoint + 2;
-                //			}
-                //			break;
-                //		case money:
-                //			///\todo nicoB/Boris : this is a temp patch that display money as integers
-                //			{
-                //				char value[1024];
-                //				sprintf(value, "%u", (uint)param.Money);
-                //				temp.append(move, src + param.ReplacementPoint);
-                //				temp += string(value);
-                //				move = dynInfo.String.begin() + param.ReplacementPoint + 2;
-                //			}
-                //			// TODO (from ryzom code)
-                //			//					temp.append(move, src+param.ReplacementPoint);
-                //			//					move = dynInfo.String.begin()+param.ReplacementPoint+2;
-                //			break;
-                //		case dyn_string_id:
-                //			{
-                //				string dynStr;
-                //				if (!getDynString(param.DynStringId, dynStr))
-                //					return false;
-                //				temp.append(move, src + param.ReplacementPoint);
-                //				temp += dynStr;
-                //				move = dynInfo.String.begin() + param.ReplacementPoint + 2;
-                //			}
-                //			break;
-                //		default:
-                //			nlwarning("Unknown parameter type.");
-                //			break;
-                //	}
-                //}
-                //// append the rest of the string
-                //temp.append(move, dynInfo.String.end());
-                //
-                //// apply any 'delete' character in the string and replace double '%'
+                for (int i = 0; i < dynInfo.Params.Count; i++)
+                {
+                    //for (; first != last; ++first)
+                    //{
+
+                    var param = dynInfo.Params[i];
+
+                    //TParamValue & param = *first;
+
+                    switch (param.Type)
+                    {
+                        case TParamType.StringID:
+                            {
+                                if (!GetString(param.StringId, out string str))
+                                    return false;
+
+                                int p1 = str.IndexOf('[');
+
+                                if (p1 != -1)
+                                {
+                                    // TODO GetLocalizedName 
+                                    //str = str.Substring(0, p1) + StringManagerClient.GetLocalizedName(str.Substring(p1));
+                                }
+
+                                // If the string is a player name, we may have to remove the shard name (if the string looks like a player name)
+                                if (str.Length != 0 && Connection.PlayerSelectedHomeShardNameWithParenthesis.Length > 0)
+                                {
+                                    // fast pre-test
+                                    if (str[^1] == ')')
+                                    {
+                                        // the player name must be at least bigger than the string with ()
+                                        if (str.Length > Connection.PlayerSelectedHomeShardNameWithParenthesis.Length)
+                                        {
+                                            // If the shard name is the same as the player home shard name, remove it
+                                            uint len = (uint)Connection.PlayerSelectedHomeShardNameWithParenthesis.Length;
+                                            uint start = (uint)str.Length - len;
+
+                                            // TODO remove the shard from player name
+                                            //if (ucstrnicmp(str, start, len, Connection.PlayerSelectedHomeShardNameWithParenthesis) == 0)
+                                            //	str.resize(start);
+                                        }
+                                    }
+                                }
+
+                                // If the string contains a title, then remove it
+                                int pos = str.IndexOf('$');
+
+                                if (str.Length > 0 && pos != -1)
+                                {
+                                    // todo remove title from name
+                                    //str = CEntityCL.removeTitleFromName(str);
+                                }
+
+                                // if the string contains a special rename of creature, remove it
+                                if (str.Length > 2 && str[0] == '<' && str[1] == '#')
+                                {
+                                    str = char.ToUpper(str[2]) + str.Substring(3);
+                                }
+
+                                // append this string
+                                //temp.Append(move, src + param.ReplacementPoint);
+                                //temp += str;
+                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
+
+                                temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
+                                temp.Append(str);
+                                move = param.ReplacementPoint + 2;
+                            }
+                            break;
+
+                        case TParamType.Integer:
+                            {
+                                //char value[1024];
+                                //sprintf(value, "%d", param.Integer);
+                                //temp.append(move, src + param.ReplacementPoint);
+                                //temp += string(value);
+                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
+                                var str = $"{param.Integer}";
+                                temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
+                                temp.Append(str);
+                                move = param.ReplacementPoint + 2;
+                            }
+                            break;
+
+                        case TParamType.Time:
+                            {
+                                //string value;
+                                //uint time = (uint)param.Time;
+                                //if (time >= (10 * 60 * 60))
+                                //{
+                                //	uint nbHours = time / (10 * 60 * 60);
+                                //	time -= nbHours * 10 * 60 * 60;
+                                //	value = toString("%d ", nbHours) + CI18N.get("uiMissionTimerHour") + " ";
+                                //
+                                //	uint nbMinutes = time / (10 * 60);
+                                //	time -= nbMinutes * 10 * 60;
+                                //	value = value + toString("%d ", nbMinutes) + CI18N.get("uiMissionTimerMinute") + " ";
+                                //}
+                                //else if (time >= (10 * 60))
+                                //{
+                                //	uint nbMinutes = time / (10 * 60);
+                                //	time -= nbMinutes * 10 * 60;
+                                //	value = value + toString("%d ", nbMinutes) + CI18N.get("uiMissionTimerMinute") + " ";
+                                //}
+                                //uint nbSeconds = time / 10;
+                                //value = value + toString("%d", nbSeconds) + CI18N.get("uiMissionTimerSecond");
+                                //temp.append(move, src + param.ReplacementPoint);
+                                //temp += value;
+                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
+                                var str = $"{param.Time}";
+                                temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
+                                temp.Append(str);
+                                move = param.ReplacementPoint + 2;
+                            }
+                            break;
+
+                        case TParamType.Money:
+                            ///\todo nicoB/Boris : this is a temp patch that display money as integers
+                            {
+                                //char value[1024];
+                                //sprintf(value, "%u", (uint)param.Money);
+                                //temp.append(move, src + param.ReplacementPoint);
+                                //temp += string(value);
+                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
+                                var str = $"{param.Money}";
+                                temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
+                                temp.Append(str);
+                                move = param.ReplacementPoint + 2;
+                            }
+                            // TODO (from ryzom code)
+                            //					temp.append(move, src+param.ReplacementPoint);
+                            //					move = dynInfo.String.begin()+param.ReplacementPoint+2;
+                            break;
+
+                        case TParamType.DynStringID:
+                            {
+                                if (!GetDynString(param.DynStringId, out string dynStr))
+                                    return false;
+                                //temp.append(move, src + param.ReplacementPoint);
+                                //temp += dynStr;
+                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
+
+                                var str = $"{dynStr}";
+                                temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
+                                temp.Append(str);
+                                move = param.ReplacementPoint + 2;
+                            }
+                            break;
+
+                        default:
+                            RyzomClient.Log.Warn("Unknown parameter type.");
+                            break;
+                    }
+                }
+                // append the rest of the string
+                temp.Append(dynInfo.String.Substring(move, dynInfo.String.Length - move));
+
+                // apply any 'delete' character in the string and replace double '%'
                 //{
                 //	uint i = 0;
                 //	while (i < temp.size())
@@ -359,17 +411,62 @@ namespace RCC.Client
                 //	}
                 //}
 
-                dynInfo.Status = DynamicStringInfo.TStatus.Complete;
+                dynInfo.Status = TStatus.Complete;
                 dynInfo.Message = null;
-                //dynInfo.String = temp;
+                dynInfo.String = temp.ToString();
                 return true;
             }
 
-            if (dynInfo.Status == DynamicStringInfo.TStatus.Complete)
+            if (dynInfo.Status == TStatus.Complete)
                 return true;
 
             RyzomClient.Log?.Warn($"Inconsistent dyn string status : {dynInfo.Status}");
             return false;
+        }
+
+        private static bool GetDynString(uint dynStringId, out string result)
+        {
+            result = "";
+
+            if (dynStringId == 0)
+                return true;
+
+            if (ReceivedDynStrings.ContainsKey(dynStringId))
+            {
+                // ok, we have the string with all the parts.
+                result = ReceivedDynStrings[dynStringId].String;
+
+                // security/antiloop checking
+                if (WaitingDynStrings.ContainsKey(dynStringId))
+                {
+                    RyzomClient.Log?.Warn($"CStringManager::getDynString : the string {dynStringId} is received but still in _WaintingDynStrings !");
+                    WaitingDynStrings.Remove(dynStringId);
+                }
+
+                return true;
+            }
+            else
+            {
+                // check to see if the string is available now.
+                if (!WaitingDynStrings.ContainsKey(dynStringId))
+                {
+                    result = "";
+                    return false;
+                }
+
+                if (BuildDynString(WaitingDynStrings[dynStringId]))
+                {
+                    result = WaitingDynStrings[dynStringId].String;
+                    ReceivedDynStrings.Add(dynStringId, WaitingDynStrings[dynStringId]);
+                    WaitingDynStrings.Remove(dynStringId);
+
+                    return true;
+                }
+
+                result = "";
+
+                return false;
+            }
         }
 
         /// <summary>
@@ -377,22 +474,20 @@ namespace RCC.Client
         /// </summary>
         private static bool GetString(uint stringId, out string result)
         {
-            //TStringsContainer.iterator it(_ReceivedStrings.find(stringId));
             if (!ReceivedStrings.ContainsKey(stringId))
             {
-                //CHashSet<uint>.iterator it(_WaitingStrings.find(stringId));
                 if (!WaitingStrings.Contains(stringId))
                 {
                     WaitingStrings.Add(stringId);
-                    // need to ask for this string.
 
+                    // need to ask for this string.
                     var bms = new BitMemoryStream();
                     const string msgType = "STRING_MANAGER:STRING_RQ";
 
                     if (GenericMessageHeaderManager.PushNameToStream(msgType, bms))
                     {
                         bms.Serial(ref stringId);
-                        //NetworkManager.Push(bms);
+                        NetworkManager.Push(bms);
                         RyzomClient.Log?.Info(
                             "<CStringManagerClient.getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
                     }
@@ -563,12 +658,11 @@ namespace RCC.Client
 
                 RyzomClient.Log.Info($"SM : Try to open the string cache : {_CacheFilename}");
 
-                if (System.IO.File.Exists(_CacheFilename))
+                if (File.Exists(_CacheFilename))
                 {
                     // there is a cache file, check date reset it if needed
                     {
                         using var fileStream = new FileStream(_CacheFilename, FileMode.Open);
-                        //file.serial(_Timestamp);
 
                         var timeBytes = new byte[4];
 
@@ -580,15 +674,15 @@ namespace RCC.Client
                     if (_Timestamp != timestamp)
                     {
                         RyzomClient.Log.Info("SM: Clearing string cache : outofdate");
-                        // the cache is not sync, reset it
-                        //NLMISC.COFile file(_CacheFilename);
-                        //file.serial(timestamp);
 
+                        // the cache is not sync, reset it TODO this is not working correctly
                         using var fileStream = new FileStream(_CacheFilename, FileMode.Open);
 
                         var timeBytes = BitConverter.GetBytes(_Timestamp);
 
                         fileStream.Write(timeBytes, 0, 4);
+
+                        fileStream.Close();
                     }
                     else
                     {
@@ -597,12 +691,16 @@ namespace RCC.Client
                 }
                 else
                 {
-                    //throw new NotImplementedException();
                     RyzomClient.Log.Info("SM: Creating string cache");
-                    //// cache file don't exist, create it with the timestamp
-                    //NLMISC.COFile file(_CacheFilename);
-                    //file.serial(timestamp);
-                    RyzomClient.Log.Warn("SM : NotImplemented");
+
+                    // cache file don't exist, create it with the timestamp
+                    using var fileStream = new FileStream(_CacheFilename, FileMode.OpenOrCreate);
+
+                    var timeBytes = BitConverter.GetBytes(_Timestamp);
+
+                    fileStream.Write(timeBytes, 0, 4);
+
+                    fileStream.Close();
                 }
 
                 // clear all current data.
@@ -621,7 +719,7 @@ namespace RCC.Client
                 fileStream2.Read(timeBytes2, 0, 4);
 
                 _Timestamp = BitConverter.ToUInt32(timeBytes2);
-                Debug.Assert(_Timestamp == timestamp);
+                //Debug.Assert(_Timestamp == timestamp);
 
                 while (fileStream2.Position < fileStream2.Length)
                 {
@@ -644,7 +742,8 @@ namespace RCC.Client
 
                     //RyzomClient.Log.Info($"SM : loading string [{id}] as [{str}] in cache");
 
-                    ReceivedStrings.Add(id, str);
+                    if (!ReceivedStrings.ContainsKey(id))
+                        ReceivedStrings.Add(id, str);
                 }
 
                 _CacheLoaded = true;

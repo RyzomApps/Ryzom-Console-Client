@@ -720,6 +720,27 @@ namespace RCC
             // -> ev_global_menu_exited
 
             //  Init the current Player Name (for interface.cfg and sentence.name save). Make a good File Name.
+            string playerName = Client.Connection.CharacterSummaries[Client.Connection.PlayerSelectedSlot].Name;
+            //Client.Connection.PlayerSelectedFileName = buildPlayerNameForSaveFile(playerName);
+
+            // Init the current Player Home shard Id and name
+            //Client.Connection.CharacterHomeSessionId = Client.Connection.CharacterSummaries[Client.Connection.PlayerSelectedSlot].Mainland;
+            //Client.Connection.PlayerSelectedMainland = Client.Connection.CharacterSummaries[Client.Connection.PlayerSelectedSlot].Mainland;
+            //Client.Connection.PlayerSelectedHomeShardName = "";
+            //Client.Connection.PlayerSelectedHomeShardNameWithParenthesis = "";
+
+            // workaround
+            Client.Connection.PlayerSelectedHomeShardNameWithParenthesis = '(' + playerName + ')'; 
+
+            //for (uint i = 0; i < CShardNames::getInstance().getSessionNames().size(); i++)
+            //{
+            //    const CShardNames::TSessionName &sessionName = CShardNames::getInstance().getSessionNames()[i];
+            //    if (PlayerSelectedMainland == sessionName.SessionId)
+            //    {
+            //        PlayerSelectedHomeShardName = sessionName.DisplayName;
+            //        PlayerSelectedHomeShardNameWithParenthesis = '(' + PlayerSelectedHomeShardName + ')';
+            //    }
+            //}
 
             //	return SELECT_CHARACTER;
             return InterfaceState.GoInTheGame;

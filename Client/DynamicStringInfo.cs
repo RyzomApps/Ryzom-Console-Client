@@ -9,7 +9,7 @@ namespace RCC.Client
     internal class DynamicStringInfo
     {
         public BitMemoryStream Message;
-        public List<ParamValue> Params;
+        public List<ParamValue> Params = new List<ParamValue>();
 
         public TStatus Status;
         public string String;
@@ -35,7 +35,7 @@ namespace RCC.Client
         internal struct ParamValue
         {
             public TParamType Type;
-            public string ReplacementPoint;
+            public int ReplacementPoint;
 
             public uint StringId;
             public int Integer;

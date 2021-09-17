@@ -14,6 +14,8 @@ namespace RCC.Client
         public static List<CharacterSummary> CharacterSummaries = new List<CharacterSummary>();
         public static bool WaitServerAnswer;
 
+        public static string PlayerSelectedHomeShardNameWithParenthesis = "";
+
         public static bool GameExit = false;
 
         public static bool UserChar;
