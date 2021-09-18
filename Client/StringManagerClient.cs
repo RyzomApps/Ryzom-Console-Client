@@ -469,6 +469,8 @@ namespace RCC.Client
             }
         }
 
+        static int counter = 0;
+
         /// <summary>
         /// request the stringId from the local cache or if missing ask the server
         /// </summary>
@@ -486,10 +488,14 @@ namespace RCC.Client
 
                     if (GenericMessageHeaderManager.PushNameToStream(msgType, bms))
                     {
-                        bms.Serial(ref stringId);
-                        NetworkManager.Push(bms);
-                        RyzomClient.Log?.Info(
-                            "<CStringManagerClient.getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
+                        counter++;
+                        if (counter > 6) // TODO remove test counter
+                        {
+                            bms.Serial(ref stringId);
+                            NetworkManager.Push(bms);
+                            RyzomClient.Log?.Info(
+                                "<CStringManagerClient.getString> sending 'STRING_MANAGER:STRING_RQ' message to server");
+                        }
                     }
                     else
                     {
@@ -661,9 +667,8 @@ namespace RCC.Client
                 if (File.Exists(_CacheFilename))
                 {
                     // there is a cache file, check date reset it if needed
+                    using (var fileStream = new FileStream(_CacheFilename, FileMode.Open))
                     {
-                        using var fileStream = new FileStream(_CacheFilename, FileMode.Open);
-
                         var timeBytes = new byte[4];
 
                         fileStream.Read(timeBytes, 0, 4);
@@ -678,11 +683,9 @@ namespace RCC.Client
                         // the cache is not sync, reset it TODO this is not working correctly
                         using var fileStream = new FileStream(_CacheFilename, FileMode.Open);
 
-                        var timeBytes = BitConverter.GetBytes(_Timestamp);
+                        var timeBytes = BitConverter.GetBytes(timestamp);
 
                         fileStream.Write(timeBytes, 0, 4);
-
-                        fileStream.Close();
                     }
                     else
                     {
@@ -696,11 +699,9 @@ namespace RCC.Client
                     // cache file don't exist, create it with the timestamp
                     using var fileStream = new FileStream(_CacheFilename, FileMode.OpenOrCreate);
 
-                    var timeBytes = BitConverter.GetBytes(_Timestamp);
+                    var timeBytes = BitConverter.GetBytes(timestamp);
 
                     fileStream.Write(timeBytes, 0, 4);
-
-                    fileStream.Close();
                 }
 
                 // clear all current data.

@@ -543,9 +543,11 @@ namespace RCC.Network
             uint stringId = 0;
             string strUtf8 = "";
             impulse.Serial(ref stringId);
-            impulse.Serial(ref strUtf8);
+            impulse.Serial(ref strUtf8, false);
             //string str;
             //str.fromUtf8(strUtf8);
+
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
 
             StringManagerClient.ReceiveString(stringId, strUtf8);
         }

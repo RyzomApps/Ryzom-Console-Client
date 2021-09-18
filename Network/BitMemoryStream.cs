@@ -26,7 +26,7 @@ namespace RCC.Network
         /// <summary>
         ///     Byte Position of the reader/writer in the Stream
         /// </summary>
-        public int Pos => (int) (_bitPos / 8d);
+        public int Pos => (int)(_bitPos / 8d);
 
         /// <summary>
         ///     Free bits in the current byte of the reader/writer
@@ -41,9 +41,9 @@ namespace RCC.Network
             get
             {
                 if (IsReading())
-                    return (int) (_contentBits.Length / 8d);
+                    return (int)(_contentBits.Length / 8d);
 
-                return (int) ((_bitPos - 1) / 8d) + 1;
+                return (int)((_bitPos - 1) / 8d) + 1;
             }
         }
 
@@ -85,7 +85,7 @@ namespace RCC.Network
             }
             else
             {
-                byte[] bytes = {obj};
+                byte[] bytes = { obj };
                 AddToArray(bytes);
             }
         }
@@ -234,16 +234,16 @@ namespace RCC.Network
         /// <summary>
         ///     serializes type string (see ucstring)
         /// </summary>
-        public void Serial(ref string obj)
+        public void Serial(ref string obj, bool doubled = true)
         {
             if (IsReading())
             {
                 int len = 0;
                 Serial(ref len);
-                byte[] b = new byte[len * 2];
+                byte[] b = new byte[len * (doubled ? 2 : 1)];
 
                 // Read the string.
-                for (uint i = 0; i != len * 2; ++i)
+                for (uint i = 0; i != len * (doubled ? 2 : 1); ++i)
                     Serial(ref b[i]);
 
                 obj = Encoding.UTF8.GetString(b).Replace("\0", "");
@@ -271,7 +271,7 @@ namespace RCC.Network
             if (IsReading())
             {
                 //short value = -1;
-                Serial(ref obj, (int) nbBits);
+                Serial(ref obj, (int)nbBits);
                 //obj = value;
                 return;
             }
@@ -400,7 +400,7 @@ namespace RCC.Network
             {
                 // if the element is 'true' set the bit at that position
                 if (boolArr[offset + i])
-                    result |= (byte) (1 << (7 - i));
+                    result |= (byte)(1 << (7 - i));
             }
 
             return result;
@@ -452,7 +452,7 @@ namespace RCC.Network
                 for (i = 0; i != len; ++i)
                 {
                     Serial(ref v);
-                    buf.AddToArray(new[] {v});
+                    buf.AddToArray(new[] { v });
                 }
             }
             else
