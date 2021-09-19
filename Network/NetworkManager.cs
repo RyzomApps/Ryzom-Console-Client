@@ -2,6 +2,7 @@
 using System.Numerics;
 using System.Reflection;
 using System.Threading;
+using RCC.Chat;
 using RCC.Client;
 using RCC.Helper;
 using RCC.Messages;
@@ -78,6 +79,8 @@ namespace RCC.Network
             // 	const vector<CChange> &changes = NetMngr.getChanges();
 
             // TODO:  Manage changes
+
+            ChatManager.FlushBuffer(RyzomClient.GetInstance());
 
             // TODO: update everyting
 
@@ -532,7 +535,7 @@ namespace RCC.Network
 
             StringManagerClient.LoadCache(timestamp);
 
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
+            RyzomClient.Log?.Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
         }
 
         /// <summary>
@@ -547,7 +550,7 @@ namespace RCC.Network
             //string str;
             //str.fromUtf8(strUtf8);
 
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
+            RyzomClient.Log?.Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
 
             StringManagerClient.ReceiveString(stringId, strUtf8);
         }
@@ -674,7 +677,8 @@ namespace RCC.Network
 
         private static void ImpulseDynString(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            //RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            ChatManager.ProcessChatStringWithNoSender(impulse, ChatGroupType.System, RyzomClient.GetInstance());
         }
 
         private static void ImpulseChat2(BitMemoryStream impulse)
@@ -689,12 +693,12 @@ namespace RCC.Network
 
         private static void ImpulseTell(BitMemoryStream impulse)
         {
-            ChatManager.ProcessTellString(impulse, null);
+            ChatManager.ProcessTellString(impulse, RyzomClient.GetInstance());
         }
 
         private static void ImpulseChat(BitMemoryStream impulse)
         {
-            ChatManager.ProcessChatString(impulse, null);
+            ChatManager.ProcessChatString(impulse, RyzomClient.GetInstance());
         }
 
         private static void ImpulsePermanentUnban(BitMemoryStream impulse)

@@ -1,4 +1,4 @@
-﻿namespace RCC.Client
+﻿namespace RCC.Chat
 {
     /// <summary>
     ///     Type of the chat channel (e.g. around, region, dynamic).

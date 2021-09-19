@@ -53,6 +53,51 @@ namespace RCC.Config
         //Other Settings
         public static char InternalCmdChar = '/';
 
+        // Read : "ID", "R G B A MODE [FX]"
+        public static Dictionary<string, string> SystemInfoColors = new Dictionary<string, string>() {
+            // OLD STUFF Here for compatibility
+            { "RG", "0   0   0   255 normal" }, // Black to see when there is an error
+            //{ "BC", "0   0   0   255 normal" }, // Black to see when there is an error
+            { "JA", "0   0   0   255 normal" }, // Black to see when there is an error
+            { "BL", "0   0   0   255 normal" }, // Black to see when there is an error
+            { "VE", "0   0   0   255 normal" }, // Black to see when there is an error
+            { "VI", "0   0   0   255 normal" }, // Black to see when there is an error
+
+            // NEW System Info Categories
+            { "SYS",    "255 255 255 255 normal"    }, // Default system messages
+            { "BC", "255 255 255 255 centeraround"  }, // Broadcast messages
+            { "TAGBC",  "255 255 255 255 centeraround" }, // Taged broadcast messages : color should remain white as some word are tagged
+            { "XP", "255 255 64  255 over"      }, // XP Gain
+            { "SP", "255 255 64  255 over"      }, // SP Gain
+            { "TTL",    "255 255 64  255 over"      }, // Title
+            { "TSK",    "255 255 255 255 over"      }, // Task
+            { "ZON",    "255 255 255 255 center"    }, // Zone
+            { "DG", "255 0   0   255 normal"    }, // Damage to me
+            { "DMG",    "255 0   0   255 normal"    }, // Damage to me
+            { "DGP",    "200 0   0   255 normal"    }, // Damage to me from player
+            { "DGM",    "255 128 64  255 normal"    }, // Damage from me
+            { "MIS",    "150 150 150 255 normal"    }, // The opponent misses
+            { "MISM",   "255 255 255 255 normal"    }, // I miss
+            { "ITM",    "0   200 0   255 over"      }, // Item
+            { "ITMO",   "170 170 255 255 overonly"  }, // Item other in group
+            { "ITMF",   "220 0   220 255 over"      }, // Item failed
+            { "SPL",    "50  50  250 255 normal"    }, // Spell to me
+            { "SPLM",   "50  150 250 255 normal"    }, // Spell from me
+            { "EMT",    "255 150 150 255 normal"    }, // Emote
+            { "MTD",    "255 255 0   255 over"      }, // Message Of The Day
+            { "FORLD","64  255 64  255 overonly"    }, // Forage Locate Deposit
+            { "CHK",    "255 120 60  255 center"    }, // Tous ce qui ne remplit pas une condition
+            { "CHKCB","255 255  0  255 center"  }, // Tous ce qui ne remplit pas une condition en combat (trop loin, cible invalide, pas assez de mana, etc.)
+            { "PVPTM","255 120 60  255 overonly"    }, // PVP timer
+            { "THM",    "255 255 64  255 over misc_levelup.ps"  }, // Thema finished
+            { "AMB",    "255 255 64  255 center"    }, // Ambiance
+            { "ISE",    "192 208 255 255 normal"    }, // Item special effect
+            { "ISE2",   "192 208 255 255 center"    }, // Item special effect with center text (for effects without flying text)
+            { "OSM",    "128 160 255 255 center"    }, // Outpost state message
+            { "AROUND","255 255 0 255 around"   }, // Only in around channel
+            { "R2_INVITE","0 255 0 255 around" } // Ring invitation
+        };
+
         /// <summary>
         ///     Load settings from the given INI file
         /// </summary>
@@ -99,7 +144,7 @@ namespace RCC.Config
         {
             // Load embedded default config and adjust line break for the current operating system
             string settingsContents = string.Join(Environment.NewLine,
-                Resources.client.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None));
+                Resources.client.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None));
 
             // Write configuration file with current version number
             File.WriteAllText(settingsfile,

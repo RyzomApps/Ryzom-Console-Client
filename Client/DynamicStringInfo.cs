@@ -22,7 +22,7 @@ namespace RCC.Client
             Complete
         };
 
-        internal enum TParamType : byte
+        internal enum ParamType : byte
         {
             StringID,
             Integer,
@@ -34,7 +34,7 @@ namespace RCC.Client
 
         internal struct ParamValue
         {
-            public TParamType Type;
+            public ParamType Type;
             public int ReplacementPoint;
 
             public uint StringId;

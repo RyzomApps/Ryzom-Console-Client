@@ -380,12 +380,13 @@ namespace RCC.Network
             {
                 SendSystemLogin();
                 _latestLoginTime = _updateTime;
+
                 if (_mLoginAttempts > 24)
                 {
                     _mLoginAttempts = 0;
                     Disconnect(); // will send disconnection message
                     RyzomClient.Log?.Warn("CNET: Too many LOGIN attempts, connection problem");
-                    // exit now from loop, don't expect a new state
+                    return false; // exit now from loop, don't expect a new state
                 }
                 else
                 {
@@ -407,7 +408,6 @@ namespace RCC.Network
         private static bool StateSynchronize()
         {
             while (_connection.IsDataAvailable()) // && _TotalMessages<5)
-
             {
                 _decodedHeader = false;
                 var msgin = new BitMemoryStream(true);
@@ -483,6 +483,7 @@ namespace RCC.Network
             var now = RyzomGetLocalTime();
             var diff = now - previousTime;
             previousTime = now;
+
             if (diff > 3000 && !_connection.IsDataAvailable())
             {
                 return false;
@@ -523,19 +524,9 @@ namespace RCC.Network
                             // receive probe, and goto state probe
                             ConnectionState = ConnectionState.Probe;
                             // reset client impulse & vars
-                            /*
-                                                    _ImpulseDecoder.reset();
-                                                    _PropertyDecoder.clear();
-                                                    _PacketStamps.clear();
-                                                    // clears sent actions
-                                                    while (!_Actions.empty())
-                                                        CActionFactory::getInstance()->remove(_Actions.front().Actions),
-                                                    _Actions.clear();
-                                                    _AckBitMask = 0;
-                                                    _LastReceivedNumber = 0xffffffff;
-                                */
+                            //Reset();
                             //nldebug("CNET[%p]: connected->probe", this);
-                            //_Changes.push_back(CChange(0, ProbeReceived)); TODO: Changes
+                            //_Changes.Add(CChange(0, ProbeReceived));
                             ReceiveSystemProbe(msgin);
                             return true;
 
