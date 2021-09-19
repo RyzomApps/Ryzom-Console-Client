@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using RCC.Messages;
 using RCC.Network;
 
@@ -31,6 +32,9 @@ namespace RCC.Commands
 
                 out2.Serial(ref temp);
                 out2.Serial(ref list);
+
+                Debug.Print(out2.ToString());
+
                 NetworkManager.Push(out2);
             }
             else

@@ -250,13 +250,26 @@ namespace RCC.Network
             }
             else
             {
-                var str8 = new byte[obj.Length];
+                obj = new string(obj.Reverse().ToArray());
+                var str8 = new byte[obj.Length * (doubled ? 2 : 1)];
+                int index2 = 0;
+
+                int len = obj.Length;
+                Serial(ref len);
 
                 for (var index = 0; index < obj.ToCharArray().Length; index++)
                 {
                     var c = obj.ToCharArray()[index];
                     var bytes = BitConverter.GetBytes(c);
-                    str8[index] = bytes[0];
+
+                    str8[index2] = bytes[0];
+                    index2++;
+
+                    if (doubled)
+                    {
+                        str8[index2] = 0;
+                        index2++;
+                    }
                 }
 
                 AddToArray(str8);
@@ -553,12 +566,12 @@ namespace RCC.Network
             {
                 for (var index = 0; index < _contentBits.Length; index++)
                 {
+                    if (_bitPos == index) ret += "<P>";
+                    
                     ret += _contentBits[index] ? "1" : "0";
 
                     if (index % (8 * 8) == 8 * 8 - 1) ret += "\r\n";
                     else if (index % 8 == 8 - 1) ret += " ";
-
-                    if (_bitPos == index) ret += "<B>";
                 }
             }
 

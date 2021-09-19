@@ -955,8 +955,7 @@ namespace RCC
                 }
             }
 
-            Log.Chat(color + finalString);
-            //throw new NotImplementedException();
+            Log.Chat($"[{mode}]{(stringCategory.Length > 0 ? $"[{stringCategory.ToUpper()}]" : "")}{color} {finalString}");
         }
 
         public void DisplayTell(string ucstr, string senderName)

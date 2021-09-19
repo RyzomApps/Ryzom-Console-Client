@@ -246,7 +246,7 @@ namespace RCC.Client
 
             if (dynInfo.Status == TStatus.Complete)
             {
-                RyzomClient.Log?.Info($"DynString {dynId} available : [{dynInfo.String}]");
+                RyzomClient.Log?.Debug($"DynString {dynId} available : [{dynInfo.String}]");
 
                 if (ReceivedDynStrings.ContainsKey(dynId))
                     ReceivedDynStrings[dynId] = dynInfo;
