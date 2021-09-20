@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using RCC.Chat;
-using RCC.Client;
 using RCC.Messages;
 using RCC.Network;
 

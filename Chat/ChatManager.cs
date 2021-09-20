@@ -6,22 +6,22 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Network;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using RCC.Client;
+using RCC.Network;
 
 namespace RCC.Chat
 {
-
     /// <summary>
     ///     Class for management of incoming and outgoing chat messages
     /// </summary>
     internal static class ChatManager
     {
         public const uint INVALID_DATASET_INDEX = 0x00FFFFFF;
-        static List<ChatMsgNode> _ChatBuffer = new List<ChatMsgNode>();
+
+        const int PreTagSize = 5;
+        static readonly List<ChatMsgNode> _ChatBuffer = new List<ChatMsgNode>();
 
         /// <summary>
         ///     interprets the incoming tell string
@@ -49,7 +49,7 @@ namespace RCC.Chat
 
             // display
             BuildTellSentence(senderStr, chatMsg.Content, out string ucstr);
-            chatDisplayer.DisplayTell(/*chatMsg.CompressedIndex, */ucstr, senderStr);
+            chatDisplayer.DisplayTell( /*chatMsg.CompressedIndex, */ucstr, senderStr);
         }
 
         /// <summary>
@@ -91,10 +91,12 @@ namespace RCC.Chat
             // display
             string ucstr;
             BuildChatSentence(chatMsg.CompressedIndex, senderStr, chatMsg.Content, type, out ucstr);
-            chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, chatMsg.DynChatChanID, senderStr);
+            chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, chatMsg.DynChatChanID,
+                senderStr);
         }
 
-        internal static void ProcessChatStringWithNoSender(BitMemoryStream bms, ChatGroupType type, IChatDisplayer chatDisplayer)
+        internal static void ProcessChatStringWithNoSender(BitMemoryStream bms, ChatGroupType type,
+            IChatDisplayer chatDisplayer)
         {
             Debug.Assert(type != ChatGroupType.DynChat);
 
@@ -133,7 +135,7 @@ namespace RCC.Chat
             //ChatMsgNode itMsg;
 
             for (int i = 0; i < _ChatBuffer.Count; i++)
-            //for (itMsg = _ChatBuffer.begin(); itMsg != _ChatBuffer.end();)
+                //for (itMsg = _ChatBuffer.begin(); itMsg != _ChatBuffer.end();)
             {
                 ChatMsgNode itMsg = _ChatBuffer[i];
                 ChatGroupType type = itMsg.ChatMode;
@@ -176,19 +178,20 @@ namespace RCC.Chat
 
                     // display
                     if (itMsg.DisplayAsTell)
-                        chatDisplayer.DisplayTell(/*itMsg->CompressedIndex, */ucstr, sender);
+                        chatDisplayer.DisplayTell( /*itMsg->CompressedIndex, */ucstr, sender);
                     else
-                        chatDisplayer.DisplayChat(itMsg.CompressedIndex, ucstr, content, type, itMsg.DynChatChanID, sender);
+                        chatDisplayer.DisplayChat(itMsg.CompressedIndex, ucstr, content, type, itMsg.DynChatChanID,
+                            sender);
 
                     //list<ChatMsgNode>::iterator itTmp = itMsg++;
                     _ChatBuffer.Remove(itMsg);
                 }
+
                 //else
                 //{
                 //    ++itMsg;
                 //}
             }
-
         }
 
         // ***************************************************************************
@@ -231,7 +234,8 @@ namespace RCC.Chat
             }
         }
 
-        static void BuildChatSentence(uint compressedSenderIndex, string sender, string msg, ChatGroupType type, out string result)
+        static void BuildChatSentence(uint compressedSenderIndex, string sender, string msg, ChatGroupType type,
+            out string result)
         {
             // if its a tell, then use buildTellSentence
             if (type == ChatGroupType.Tell)
@@ -311,6 +315,7 @@ namespace RCC.Chat
                     result = $"{cat}{csr}{senderName} says: {finalMsg}";
                     break;
             }
+
             //}
         }
 
@@ -323,8 +328,6 @@ namespace RCC.Chat
                 return str;
         }
 
-        const int PreTagSize = 5;
-
         public static string GetStringCategoryIfAny(string src, out string dest)
         {
             char[] colorCode = new char[0];
@@ -335,14 +338,15 @@ namespace RCC.Chat
                 // Skip <NEW> or <CHG> if present at beginning
                 string preTag = "";
 
-                const string newTag = ("<NEW>");
-                if ((src.Length >= PreTagSize) && (src.Substring(0, PreTagSize) == newTag))
+                const string newTag = "<NEW>";
+                if (src.Length >= PreTagSize && src.Substring(0, PreTagSize) == newTag)
                 {
                     startPos = PreTagSize;
                     preTag = newTag;
                 }
-                const string chgTag = ("<CHG>");
-                if ((src.Length >= PreTagSize) && (src.Substring(0, PreTagSize) == chgTag))
+
+                const string chgTag = "<CHG>";
+                if (src.Length >= PreTagSize && src.Substring(0, PreTagSize) == chgTag)
                 {
                     startPos = PreTagSize;
                     preTag = chgTag;
@@ -361,6 +365,7 @@ namespace RCC.Chat
                         {
                             colorCode[k] = char.ToLower(src[k + startPos + 1]);
                         }
+
                         string destTmp = "";
                         if (startPos != 0)
                             destTmp = preTag; // leave <NEW> or <CHG> in the dest string
@@ -381,6 +386,7 @@ namespace RCC.Chat
             {
                 dest = src;
             }
+
             return new string(colorCode);
         }
     }

@@ -34,7 +34,7 @@ namespace RCC.Network
         /// <summary>
         ///     Byte Position of the reader/writer in the Stream
         /// </summary>
-        public int Pos => (int)(_bitPos / 8d);
+        public int Pos => (int) (_bitPos / 8d);
 
         /// <summary>
         ///     Free bits in the current byte of the reader/writer
@@ -49,9 +49,9 @@ namespace RCC.Network
             get
             {
                 if (IsReading())
-                    return (int)(_contentBits.Length / 8d);
+                    return (int) (_contentBits.Length / 8d);
 
-                return (int)((_bitPos - 1) / 8d) + 1;
+                return (int) ((_bitPos - 1) / 8d) + 1;
             }
         }
 
@@ -93,7 +93,7 @@ namespace RCC.Network
             }
             else
             {
-                byte[] bytes = { obj };
+                byte[] bytes = {obj};
                 AddToArray(bytes);
             }
         }
@@ -292,7 +292,7 @@ namespace RCC.Network
             if (IsReading())
             {
                 //short value = -1;
-                Serial(ref obj, (int)nbBits);
+                Serial(ref obj, (int) nbBits);
                 //obj = value;
                 return;
             }
@@ -421,7 +421,7 @@ namespace RCC.Network
             {
                 // if the element is 'true' set the bit at that position
                 if (boolArr[offset + i])
-                    result |= (byte)(1 << (7 - i));
+                    result |= (byte) (1 << (7 - i));
             }
 
             return result;
@@ -473,7 +473,7 @@ namespace RCC.Network
                 for (i = 0; i != len; ++i)
                 {
                     Serial(ref v);
-                    buf.AddToArray(new[] { v });
+                    buf.AddToArray(new[] {v});
                 }
             }
             else
@@ -575,7 +575,7 @@ namespace RCC.Network
                 for (var index = 0; index < _contentBits.Length; index++)
                 {
                     if (_bitPos == index) ret += "<P>";
-                    
+
                     ret += _contentBits[index] ? "1" : "0";
 
                     if (index % (8 * 8) == 8 * 8 - 1) ret += "\r\n";

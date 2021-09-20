@@ -12,11 +12,11 @@ namespace RCC.Chat
 {
     public class ChatMsg2
     {
-        public uint CompressedIndex;
-        public uint SenderNameId;
         public ChatGroupType ChatMode;
-        public uint PhraseId;
+        public uint CompressedIndex;
         public string CustomTxt;
+        public uint PhraseId;
+        public uint SenderNameId;
 
         public ChatMsg2()
         {
@@ -33,7 +33,7 @@ namespace RCC.Chat
             f.Serial(ref SenderNameId);
             byte ChatModeByte = 0;
             f.Serial(ref ChatModeByte);
-            ChatMode = (ChatGroupType)ChatModeByte;
+            ChatMode = (ChatGroupType) ChatModeByte;
             f.Serial(ref PhraseId);
             f.Serial(ref CustomTxt);
         }

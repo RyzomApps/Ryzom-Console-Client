@@ -547,7 +547,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// Update the local string set
+        ///     Update the local string set
         /// </summary>
         private static void ImpulseStringResp(BitMemoryStream impulse)
         {
@@ -826,8 +826,8 @@ namespace RCC.Network
             //}
             //else
             //{
-            var userEntityInitPos = new Vector3((float)x / 1000.0f, (float)y / 1000.0f, (float)z / 1000.0f);
-            var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
+            var userEntityInitPos = new Vector3((float) x / 1000.0f, (float) y / 1000.0f, (float) z / 1000.0f);
+            var userEntityInitFront = new Vector3((float) Math.Cos(heading), (float) Math.Sin(heading), 0f);
 
             RyzomClient.Log?.Info($"<ImpulseUserChar> pos : {userEntityInitPos}  heading : {heading}");
 
@@ -868,7 +868,7 @@ namespace RCC.Network
             {
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
-                if ((PeopleType)cs.People != PeopleType.Unknown)
+                if ((PeopleType) cs.People != PeopleType.Unknown)
                     RyzomClient.Log?.Info($"Found character {cs.Name} from shard {cs.Mainland} in slot {i}");
                 Connection.CharacterSummaries.Add(cs);
             }
@@ -967,7 +967,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// Decode handshake to check versions
+        ///     Decode handshake to check versions
         /// </summary>
         /// <param name="impulse"></param>
         private static void CheckHandshake(BitMemoryStream impulse)

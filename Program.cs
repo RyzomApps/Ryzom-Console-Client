@@ -1,4 +1,10 @@
-﻿using System;
+﻿///////////////////////////////////////////////////////////////////
+// Ryzom Console Client
+// https://github.com/RyzomApps/RCC
+// Copyright 2021 bierdosenhalter and Contributers
+///////////////////////////////////////////////////////////////////
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;

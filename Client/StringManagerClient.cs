@@ -7,13 +7,12 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using RCC.Messages;
-using RCC.Network;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using RCC.Messages;
+using RCC.Network;
 using static RCC.Client.DynamicStringInfo;
-using System.Linq;
 
 namespace RCC.Client
 {
@@ -25,27 +24,33 @@ namespace RCC.Client
         static readonly Dictionary<uint, string> ReceivedStrings = new Dictionary<uint, string>();
         private static readonly HashSet<uint> WaitingStrings = new HashSet<uint>();
 
-        static readonly Dictionary<uint, DynamicStringInfo> ReceivedDynStrings = new Dictionary<uint, DynamicStringInfo>();
-        static readonly Dictionary<uint, DynamicStringInfo> WaitingDynStrings = new Dictionary<uint, DynamicStringInfo>();
+        static readonly Dictionary<uint, DynamicStringInfo> ReceivedDynStrings =
+            new Dictionary<uint, DynamicStringInfo>();
+
+        static readonly Dictionary<uint, DynamicStringInfo> WaitingDynStrings =
+            new Dictionary<uint, DynamicStringInfo>();
 
         /// <summary>
-        /// String waiting the string value from the server.
+        ///     String waiting the string value from the server.
         /// </summary>
         static readonly Dictionary<uint, StringWaiter> StringsWaiters = new Dictionary<uint, StringWaiter>();
 
         /// <summary>
-        /// String waiting the dyn string value from the server.
+        ///     String waiting the dyn string value from the server.
         /// </summary>
         static readonly Dictionary<uint, StringWaiter> DynStringsWaiters = new Dictionary<uint, StringWaiter>();
 
         /// <summary>
-        /// Callback for string value from the server
+        ///     Callback for string value from the server
         /// </summary>
-        static readonly Dictionary<uint, StringWaitCallback> StringsCallbacks = new Dictionary<uint, StringWaitCallback>();
+        static readonly Dictionary<uint, StringWaitCallback> StringsCallbacks =
+            new Dictionary<uint, StringWaitCallback>();
+
         /// <summary>
-        /// Callback for dyn string value from the server
+        ///     Callback for dyn string value from the server
         /// </summary>
-        static readonly Dictionary<uint, StringWaitCallback> DynStringsCallbacks = new Dictionary<uint, StringWaitCallback>();
+        static readonly Dictionary<uint, StringWaitCallback> DynStringsCallbacks =
+            new Dictionary<uint, StringWaitCallback>();
 
         static readonly Dictionary<string, string> DynStrings = new Dictionary<string, string>();
 
@@ -176,7 +181,7 @@ namespace RCC.Client
         }
 
         /// <summary>
-        /// flush the server string cache
+        ///     flush the server string cache
         /// </summary>
         public static void FlushStringCache()
         {
@@ -204,7 +209,7 @@ namespace RCC.Client
         /// </summary>
         public static void ReceiveDynString(BitMemoryStream bms)
         {
-            var dynInfo = new DynamicStringInfo { Status = TStatus.Received };
+            var dynInfo = new DynamicStringInfo {Status = TStatus.Received};
 
             // read the dynamic string Id
             uint dynId = 0;
@@ -289,7 +294,10 @@ namespace RCC.Client
                                         param.StringId = 0;
                                         dynInfo.Message.Serial(ref param.StringId);
                                     }
-                                    catch (Exception) { }
+                                    catch (Exception)
+                                    {
+                                    }
+
                                     break;
 
                                 case 'i':
@@ -299,7 +307,10 @@ namespace RCC.Client
                                         param.Integer = 0;
                                         dynInfo.Message.Serial(ref param.Integer);
                                     }
-                                    catch (Exception) { }
+                                    catch (Exception)
+                                    {
+                                    }
+
                                     break;
 
                                 case 't':
@@ -309,7 +320,10 @@ namespace RCC.Client
                                         param.Time = 0;
                                         dynInfo.Message.Serial(ref param.Time);
                                     }
-                                    catch (Exception) { }
+                                    catch (Exception)
+                                    {
+                                    }
+
                                     break;
 
                                 case '$':
@@ -321,7 +335,10 @@ namespace RCC.Client
                                         dynInfo.Message.Serial(ref moneyArr);
                                         param.Money = BitConverter.ToUInt64(moneyArr);
                                     }
-                                    catch (Exception) { }
+                                    catch (Exception)
+                                    {
+                                    }
+
                                     break;
 
                                 case 'm':
@@ -331,11 +348,14 @@ namespace RCC.Client
                                         param.DynStringId = 0;
                                         dynInfo.Message.Serial(ref param.DynStringId);
                                     }
-                                    catch (Exception) { }
+                                    catch (Exception)
+                                    {
+                                    }
+
                                     break;
 
                                 default:
-                                    RyzomClient.Log.Warn("Error: unknown replacement tag %%%c", (char)character);
+                                    RyzomClient.Log.Warn("Error: unknown replacement tag %%%c", (char) character);
                                     return false;
                             }
 
@@ -343,6 +363,7 @@ namespace RCC.Client
                         }
                     }
                 }
+
                 dynInfo.Status = TStatus.Serialized;
             }
 
@@ -360,137 +381,137 @@ namespace RCC.Client
                     switch (param.Type)
                     {
                         case ParamType.StringID:
+                        {
+                            if (!GetString(param.StringId, out string str))
+                                return false;
+
+                            int p1 = str.IndexOf('[');
+
+                            if (p1 != -1)
                             {
-                                if (!GetString(param.StringId, out string str))
-                                    return false;
+                                // TODO GetLocalizedName 
+                                //str = str.Substring(0, p1) + StringManagerClient.GetLocalizedName(str.Substring(p1));
+                            }
 
-                                int p1 = str.IndexOf('[');
-
-                                if (p1 != -1)
+                            // If the string is a player name, we may have to remove the shard name (if the string looks like a player name)
+                            if (str.Length != 0 && Connection.PlayerSelectedHomeShardNameWithParenthesis.Length > 0)
+                            {
+                                // fast pre-test
+                                if (str[^1] == ')')
                                 {
-                                    // TODO GetLocalizedName 
-                                    //str = str.Substring(0, p1) + StringManagerClient.GetLocalizedName(str.Substring(p1));
-                                }
-
-                                // If the string is a player name, we may have to remove the shard name (if the string looks like a player name)
-                                if (str.Length != 0 && Connection.PlayerSelectedHomeShardNameWithParenthesis.Length > 0)
-                                {
-                                    // fast pre-test
-                                    if (str[^1] == ')')
+                                    // the player name must be at least bigger than the string with ()
+                                    if (str.Length > Connection.PlayerSelectedHomeShardNameWithParenthesis.Length)
                                     {
-                                        // the player name must be at least bigger than the string with ()
-                                        if (str.Length > Connection.PlayerSelectedHomeShardNameWithParenthesis.Length)
-                                        {
-                                            // If the shard name is the same as the player home shard name, remove it
-                                            uint len = (uint)Connection.PlayerSelectedHomeShardNameWithParenthesis.Length;
-                                            uint start = (uint)str.Length - len;
+                                        // If the shard name is the same as the player home shard name, remove it
+                                        uint len = (uint) Connection.PlayerSelectedHomeShardNameWithParenthesis.Length;
+                                        uint start = (uint) str.Length - len;
 
-                                            // TODO remove the shard from player name
-                                            //if (ucstrnicmp(str, start, len, Connection.PlayerSelectedHomeShardNameWithParenthesis) == 0)
-                                            //	str.resize(start);
-                                        }
+                                        // TODO remove the shard from player name
+                                        //if (ucstrnicmp(str, start, len, Connection.PlayerSelectedHomeShardNameWithParenthesis) == 0)
+                                        //	str.resize(start);
                                     }
                                 }
-
-                                // If the string contains a title, then remove it
-                                int pos = str.IndexOf('$');
-
-                                if (str.Length > 0 && pos != -1)
-                                {
-                                    // todo remove title from name
-                                    //str = CEntityCL.removeTitleFromName(str);
-                                }
-
-                                // if the string contains a special rename of creature, remove it
-                                if (str.Length > 2 && str[0] == '<' && str[1] == '#')
-                                {
-                                    str = char.ToUpper(str[2]) + str.Substring(3);
-                                }
-
-                                // append this string
-                                temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
-                                temp.Append(str);
-                                move = param.ReplacementPoint + 2;
                             }
+
+                            // If the string contains a title, then remove it
+                            int pos = str.IndexOf('$');
+
+                            if (str.Length > 0 && pos != -1)
+                            {
+                                // todo remove title from name
+                                //str = CEntityCL.removeTitleFromName(str);
+                            }
+
+                            // if the string contains a special rename of creature, remove it
+                            if (str.Length > 2 && str[0] == '<' && str[1] == '#')
+                            {
+                                str = char.ToUpper(str[2]) + str.Substring(3);
+                            }
+
+                            // append this string
+                            temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
+                            temp.Append(str);
+                            move = param.ReplacementPoint + 2;
+                        }
                             break;
 
                         case ParamType.Integer:
-                            {
-                                //char value[1024];
-                                //sprintf(value, "%d", param.Integer);
-                                //temp.append(move, src + param.ReplacementPoint);
-                                //temp += string(value);
-                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
-                                var str = $"{param.Integer}";
-                                temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
-                                temp.Append(str);
-                                move = param.ReplacementPoint + 2;
-                            }
+                        {
+                            //char value[1024];
+                            //sprintf(value, "%d", param.Integer);
+                            //temp.append(move, src + param.ReplacementPoint);
+                            //temp += string(value);
+                            //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
+                            var str = $"{param.Integer}";
+                            temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
+                            temp.Append(str);
+                            move = param.ReplacementPoint + 2;
+                        }
                             break;
 
                         case ParamType.Time:
-                            {
-                                //string value;
-                                //uint time = (uint)param.Time;
-                                //if (time >= (10 * 60 * 60))
-                                //{
-                                //	uint nbHours = time / (10 * 60 * 60);
-                                //	time -= nbHours * 10 * 60 * 60;
-                                //	value = toString("%d ", nbHours) + CI18N.get("uiMissionTimerHour") + " ";
-                                //
-                                //	uint nbMinutes = time / (10 * 60);
-                                //	time -= nbMinutes * 10 * 60;
-                                //	value = value + toString("%d ", nbMinutes) + CI18N.get("uiMissionTimerMinute") + " ";
-                                //}
-                                //else if (time >= (10 * 60))
-                                //{
-                                //	uint nbMinutes = time / (10 * 60);
-                                //	time -= nbMinutes * 10 * 60;
-                                //	value = value + toString("%d ", nbMinutes) + CI18N.get("uiMissionTimerMinute") + " ";
-                                //}
-                                //uint nbSeconds = time / 10;
-                                //value = value + toString("%d", nbSeconds) + CI18N.get("uiMissionTimerSecond");
-                                //temp.append(move, src + param.ReplacementPoint);
-                                //temp += value;
-                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
-                                var str = $"{param.Time}";
-                                temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
-                                temp.Append(str);
-                                move = param.ReplacementPoint + 2;
-                            }
+                        {
+                            //string value;
+                            //uint time = (uint)param.Time;
+                            //if (time >= (10 * 60 * 60))
+                            //{
+                            //	uint nbHours = time / (10 * 60 * 60);
+                            //	time -= nbHours * 10 * 60 * 60;
+                            //	value = toString("%d ", nbHours) + CI18N.get("uiMissionTimerHour") + " ";
+                            //
+                            //	uint nbMinutes = time / (10 * 60);
+                            //	time -= nbMinutes * 10 * 60;
+                            //	value = value + toString("%d ", nbMinutes) + CI18N.get("uiMissionTimerMinute") + " ";
+                            //}
+                            //else if (time >= (10 * 60))
+                            //{
+                            //	uint nbMinutes = time / (10 * 60);
+                            //	time -= nbMinutes * 10 * 60;
+                            //	value = value + toString("%d ", nbMinutes) + CI18N.get("uiMissionTimerMinute") + " ";
+                            //}
+                            //uint nbSeconds = time / 10;
+                            //value = value + toString("%d", nbSeconds) + CI18N.get("uiMissionTimerSecond");
+                            //temp.append(move, src + param.ReplacementPoint);
+                            //temp += value;
+                            //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
+                            var str = $"{param.Time}";
+                            temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
+                            temp.Append(str);
+                            move = param.ReplacementPoint + 2;
+                        }
                             break;
 
                         case ParamType.Money:
                             ///\todo nicoB/Boris : this is a temp patch that display money as integers
-                            {
-                                //char value[1024];
-                                //sprintf(value, "%u", (uint)param.Money);
-                                //temp.append(move, src + param.ReplacementPoint);
-                                //temp += string(value);
-                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
-                                var str = $"{param.Money}";
-                                temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
-                                temp.Append(str);
-                                move = param.ReplacementPoint + 2;
-                            }
+                        {
+                            //char value[1024];
+                            //sprintf(value, "%u", (uint)param.Money);
+                            //temp.append(move, src + param.ReplacementPoint);
+                            //temp += string(value);
+                            //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
+                            var str = $"{param.Money}";
+                            temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
+                            temp.Append(str);
+                            move = param.ReplacementPoint + 2;
+                        }
                             // TODO (from ryzom code)
                             //					temp.append(move, src+param.ReplacementPoint);
                             //					move = dynInfo.String.begin()+param.ReplacementPoint+2;
                             break;
 
                         case ParamType.DynStringID:
-                            {
-                                if (!GetDynString(param.DynStringId, out string dynStr))
-                                    return false;
-                                //temp.append(move, src + param.ReplacementPoint);
-                                //temp += dynStr;
-                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
+                        {
+                            if (!GetDynString(param.DynStringId, out string dynStr))
+                                return false;
+                            //temp.append(move, src + param.ReplacementPoint);
+                            //temp += dynStr;
+                            //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
 
-                                var str = $"{dynStr}";
-                                temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
-                                temp.Append(str);
-                                move = param.ReplacementPoint + 2;
-                            }
+                            var str = $"{dynStr}";
+                            temp.Append(dynInfo.String.Substring(move, param.ReplacementPoint - move));
+                            temp.Append(str);
+                            move = param.ReplacementPoint + 2;
+                        }
                             break;
 
                         default:
@@ -498,6 +519,7 @@ namespace RCC.Client
                             break;
                     }
                 }
+
                 // append the rest of the string
                 temp.Append(dynInfo.String.Substring(move, dynInfo.String.Length - move));
 
@@ -548,7 +570,8 @@ namespace RCC.Client
                 // security/antiloop checking
                 if (WaitingDynStrings.ContainsKey(dynStringId))
                 {
-                    RyzomClient.Log?.Warn($"CStringManager::getDynString : the string {dynStringId} is received but still in _WaintingDynStrings !");
+                    RyzomClient.Log?.Warn(
+                        $"CStringManager::getDynString : the string {dynStringId} is received but still in _WaintingDynStrings !");
                     WaitingDynStrings.Remove(dynStringId);
                 }
 
@@ -579,7 +602,7 @@ namespace RCC.Client
         }
 
         /// <summary>
-        /// request the stringId from the local cache or if missing ask the server
+        ///     request the stringId from the local cache or if missing ask the server
         /// </summary>
         public static bool GetString(uint stringId, out string result)
         {
@@ -601,9 +624,10 @@ namespace RCC.Client
 
                     if (GenericMessageHeaderManager.PushNameToStream(msgType, bms))
                     {
-                            bms.Serial(ref stringId);
-                            NetworkManager.Push(bms);
-                            RyzomClient.Log?.Debug($"<CStringManagerClient.getString> sending 'STRING_MANAGER:STRING_RQ' message to server for stringId {stringId}");
+                        bms.Serial(ref stringId);
+                        NetworkManager.Push(bms);
+                        RyzomClient.Log?.Debug(
+                            $"<CStringManagerClient.getString> sending 'STRING_MANAGER:STRING_RQ' message to server for stringId {stringId}");
                     }
                     else
                     {
@@ -643,7 +667,8 @@ namespace RCC.Client
 
             if (ReceivedStrings.ContainsKey(stringId))
             {
-                RyzomClient.Log.Warn($"Receiving stringID {stringId} ({str}), already in received string ({ReceivedStrings[stringId]}), replacing with new value.");
+                RyzomClient.Log.Warn(
+                    $"Receiving stringID {stringId} ({str}), already in received string ({ReceivedStrings[stringId]}), replacing with new value.");
 
                 if (ReceivedStrings[stringId] != str)
                     ReceivedStrings[stringId] = str;

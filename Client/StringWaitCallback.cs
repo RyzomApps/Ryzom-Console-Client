@@ -1,8 +1,8 @@
 ﻿namespace RCC.Client
 {
     /// <summary>
-    /// Implement this class if you want to wait for
-    /// string to be delivered.
+    ///     Implement this class if you want to wait for
+    ///     string to be delivered.
     /// </summary>
     public abstract class StringWaitCallback
     {

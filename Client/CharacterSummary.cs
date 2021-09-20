@@ -62,7 +62,7 @@ namespace RCC.Client
             _visualPropA = 0;
             _visualPropB = 0;
             _visualPropC = 0;
-            People = (int) Client.PeopleType.Unknown; // 142;
+            People = (int) PeopleType.Unknown; // 142;
             _title = 238;
             _characterSlot = 255;
             _inRingSession = false;

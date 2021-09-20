@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
-using RCC.Client;
 using RCC.Messages;
 using RCC.Network;
 
@@ -15,7 +13,7 @@ namespace RCC.Commands
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
             // If we are not connected, quit now TODO
-            if (false /*!RyzomClient.ConnectionReadySent*/) 
+            if (false /*!RyzomClient.ConnectionReadySent*/)
             {
                 Connection.GameExit = true;
                 RyzomClient.Log.Info("User Request to Quit ryzom");
@@ -27,7 +25,7 @@ namespace RCC.Commands
                 var out2 = new BitMemoryStream();
                 GenericMessageHeaderManager.PushNameToStream(msgName, out2);
                 var bypassDisconnectionTimer = false; // no need on a ring shard, as it's very short
-                    out2.Serial(ref bypassDisconnectionTimer);
+                out2.Serial(ref bypassDisconnectionTimer);
 
                 //FarTP.writeSecurityCodeForDisconnection(out2); // must always be written because of msg.xml (or could have a special handler in the FS)
                 uint sessionId = 0;

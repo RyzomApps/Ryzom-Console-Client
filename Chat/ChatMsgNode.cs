@@ -10,29 +10,36 @@ namespace RCC.Chat
 {
     public class ChatMsgNode
     {
-        public uint CompressedIndex;
-        public uint SenderNameId;
         public ChatGroupType ChatMode;
-        public uint DynChatChanID;
+
+        public uint CompressedIndex;
+
         // For Chat and Tell messages
         public string Content;
-        // For Chat2 and Tell2 messages
-        public uint PhraseId;
-        // Use PhraseId or Content?
-        public bool UsePhraseId;
+
         // displayTell() or displayChat()
         public bool DisplayAsTell;
 
+        public uint DynChatChanID;
+
+        // For Chat2 and Tell2 messages
+        public uint PhraseId;
+
+        public uint SenderNameId;
+
+        // Use PhraseId or Content?
+        public bool UsePhraseId;
+
         public ChatMsgNode(ChatMsg chatMsg, bool displayAsTell)
         {
-            CompressedIndex= chatMsg.CompressedIndex;
-        	SenderNameId= chatMsg.SenderNameId;
-        	ChatMode= chatMsg.ChatMode;
-        	DynChatChanID= chatMsg.DynChatChanID;
-        	Content= chatMsg.Content;
-        	PhraseId= 0;
-        	UsePhraseId= false;
-        	DisplayAsTell= displayAsTell;
+            CompressedIndex = chatMsg.CompressedIndex;
+            SenderNameId = chatMsg.SenderNameId;
+            ChatMode = chatMsg.ChatMode;
+            DynChatChanID = chatMsg.DynChatChanID;
+            Content = chatMsg.Content;
+            PhraseId = 0;
+            UsePhraseId = false;
+            DisplayAsTell = displayAsTell;
         }
 
         public ChatMsgNode(ChatMsg2 chatMsg, bool displayAsTell)

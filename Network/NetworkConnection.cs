@@ -16,7 +16,6 @@ using System.Threading;
 using RCC.Config;
 using RCC.Helper;
 using RCC.Network.Action;
-using Action = RCC.Network.Action.Action;
 
 namespace RCC.Network
 {

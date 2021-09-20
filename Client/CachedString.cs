@@ -10,7 +10,7 @@ namespace RCC.Client
 {
     public class CachedString
     {
-        public uint StringId;
         public string String;
+        public uint StringId;
     };
 }
