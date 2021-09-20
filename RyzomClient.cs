@@ -10,7 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading;
+using MinecraftClient;
 using RCC.Chat;
 using RCC.Client;
 using RCC.Config;
@@ -35,7 +37,11 @@ namespace RCC
         private static readonly Dictionary<string, Command> Cmds = new Dictionary<string, Command>();
 
         private static bool _commandsLoaded = false;
-        private static readonly List<ChatBot> BotsOnHold = new List<ChatBot>();
+
+        private static DateTime nextMessageSendTime = DateTime.MinValue;
+
+        private readonly List<ChatBot> bots = new List<ChatBot>();
+        private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
 
         static uint _lastGameCycle;
 
@@ -68,6 +74,8 @@ namespace RCC
         public string R2ServerVersion { get; set; }
         public string R2BackupPatchURL { get; set; }
         public string[] R2PatchUrLs { get; set; }
+
+        public List<ChatBot> GetLoadedChatBots() { return new List<ChatBot>(bots); }
 
         public void DisplayChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode,
             uint dynChatId, string senderName, uint bubbleTimer = 0)
@@ -162,7 +170,7 @@ namespace RCC
             /* Load commands from Commands namespace */
             LoadCommands();
 
-            if (BotsOnHold.Count == 0)
+            if (botsOnHold.Count == 0)
             {
                 //if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
                 //if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
@@ -182,7 +190,7 @@ namespace RCC
                 //if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                 //Add your ChatBot here by uncommenting and adapting
-                //BotLoad(new ChatBots.YourBot());
+                BotLoad(new Bots.OnlinePlayersLogger());
             }
 
             //foreach (ChatBot bot in botsOnHold)
@@ -192,11 +200,90 @@ namespace RCC
             _timeoutdetector = new Thread(TimeoutDetector) {Name = "RCC Connection timeout detector"};
             _timeoutdetector.Start();
 
+            foreach (ChatBot bot in botsOnHold)
+                BotLoad(bot, false);
+            botsOnHold.Clear();
+
             _cmdprompt = new Thread(new ThreadStart(CommandPrompt));
             _cmdprompt.Name = "RCC Command prompt";
             _cmdprompt.Start();
 
             Main();
+        }
+
+        /// <summary>
+        /// Load a new bot
+        /// </summary>
+        public void BotLoad(ChatBot b, bool init = true)
+        {
+            if (InvokeRequired)
+            {
+                InvokeOnMainThread(() => BotLoad(b, init));
+                return;
+            }
+
+            b.SetHandler(this);
+            bots.Add(b);
+            if (init)
+                DispatchBotEvent(bot => bot.Initialize(), new[] { b });
+            if (NetworkConnection.ConnectionState == ConnectionState.Connected)
+                DispatchBotEvent(bot => bot.AfterGameJoined(), new[] { b });
+        }
+
+        /// <summary>
+        /// Unload a bot
+        /// </summary>
+        public void BotUnLoad(ChatBot b)
+        {
+            if (InvokeRequired)
+            {
+                InvokeOnMainThread(() => BotUnLoad(b));
+                return;
+            }
+
+            bots.RemoveAll(item => ReferenceEquals(item, b));
+        }
+
+        /// <summary>
+        /// Called ~10 times per second by the protocol handler
+        /// </summary>
+        public void OnUpdate()
+        {
+            foreach (var bot in bots.ToArray())
+            {
+                try
+                {
+                    bot.Update();
+                    bot.UpdateInternal();
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
+
+            lock (_chatQueue)
+            {
+                if (_chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
+                {
+                    string text = _chatQueue.Dequeue();
+                    //handler.SendChatMessage(text); TODO send text messages
+                    //nextMessageSendTime = DateTime.Now + ClientConfig.messageCooldown;
+                }
+            }
+
+            //lock (threadTasksLock)
+            //{
+            //    while (threadTasks.Count > 0)
+            //    {
+            //        Action taskToRun = threadTasks.Dequeue();
+            //        taskToRun();
+            //    }
+            //}
         }
 
         /// <summary>
@@ -349,6 +436,48 @@ namespace RCC
                 }
                 else _chatQueue.Enqueue(text);
             }
+        }
+
+        /// <summary>
+        /// Register a custom console command
+        /// </summary>
+        /// <param name="cmdName">Name of the command</param>
+        /// <param name="cmdDesc">Description/usage of the command</param>
+        /// <param name="callback">Method for handling the command</param>
+        /// <returns>True if successfully registered</returns>
+        public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, ChatBot.CommandRunner callback)
+        {
+            if (Cmds.ContainsKey(cmdName.ToLower()))
+            {
+                return false;
+            }
+            else
+            {
+                Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
+                Cmds.Add(cmdName.ToLower(), cmd);
+                CmdNames.Add(cmdName.ToLower());
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Unregister a console command
+        /// </summary>
+        /// <remarks>
+        /// There is no check for the command is registered by above method or is embedded command.
+        /// Which mean this can unload any command
+        /// </remarks>
+        /// <param name="cmdName">The name of command to be unregistered</param>
+        /// <returns></returns>
+        public bool UnregisterCommand(string cmdName)
+        {
+            if (Cmds.ContainsKey(cmdName.ToLower()))
+            {
+                Cmds.Remove(cmdName.ToLower());
+                CmdNames.Remove(cmdName.ToLower());
+                return true;
+            }
+            else return false;
         }
 
         /// <summary>
@@ -855,6 +984,7 @@ namespace RCC
 
                 // Fast mode.
 
+                OnUpdate();
 
                 //////////////////////////
                 // INITIALIZE THE FRAME //
@@ -931,6 +1061,64 @@ namespace RCC
         /// </summary>
         public void Disconnect()
         {
+            DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, ""));
+
+            botsOnHold.Clear();
+            botsOnHold.AddRange(bots);
+
+            if (_cmdprompt != null)
+                _cmdprompt.Abort();
+
+            if (_timeoutdetector != null)
+            {
+                _timeoutdetector.Abort();
+                _timeoutdetector = null;
+            }
+        }
+
+        /// <summary>
+        /// Dispatch a ChatBot event with automatic exception handling
+        /// </summary>
+        /// <example>
+        /// Example for calling SomeEvent() on all bots at once:
+        /// DispatchBotEvent(bot => bot.SomeEvent());
+        /// </example>
+        /// <param name="action">Action to execute on each bot</param>
+        /// <param name="botList">Only fire the event for the specified bot list (default: all bots)</param>
+        private void DispatchBotEvent(Action<ChatBot> action, IEnumerable<ChatBot> botList = null)
+        {
+            ChatBot[] selectedBots;
+
+            if (botList != null)
+            {
+                selectedBots = botList.ToArray();
+            }
+            else
+            {
+                selectedBots = bots.ToArray();
+            }
+
+            foreach (ChatBot bot in selectedBots)
+            {
+                try
+                {
+                    action(bot);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        //Retrieve parent method name to determine which event caused the exception
+                        System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                        System.Reflection.MethodBase method = frame.GetMethod();
+                        string parentMethodName = method.Name;
+
+                        //Display a meaningful error message to help debugging the ChatBot
+                        Log.Error(parentMethodName + ": Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught here as in can happen when disconnecting from server
+                }
+            }
         }
 
         #region Thread-Invoke: Cross-thread method calls
@@ -1003,5 +1191,13 @@ namespace RCC
         }
 
         #endregion
+
+        /// <summary>
+        /// Called when a server was successfully joined
+        /// </summary>
+        public void OnGameJoined()
+        {
+            DispatchBotEvent(bot => bot.AfterGameJoined());
+        }
     }
 }

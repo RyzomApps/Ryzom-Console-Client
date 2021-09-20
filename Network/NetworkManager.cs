@@ -758,6 +758,8 @@ namespace RCC.Network
 
             CheckHandshake(impulse);
 
+            ((RyzomClient)RyzomClient.GetInstance()).OnGameJoined();
+
             //LoginSM.pushEvent(CLoginStateMachine::ev_ready_received);
         }
 
