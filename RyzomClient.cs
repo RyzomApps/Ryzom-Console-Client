@@ -1,4 +1,12 @@
-﻿using System;
+﻿///////////////////////////////////////////////////////////////////
+// This file contains modified code from 'Minecraft Console Client'
+// https://github.com/ORelio/Minecraft-Console-Client
+// which is released under CDDL-1.0 License
+// http://opensource.org/licenses/CDDL-1.0
+// Copyright 2021 ORelio and Contributers
+///////////////////////////////////////////////////////////////////
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -33,6 +41,8 @@ namespace RCC
 
         public static ILogger Log;
 
+        static RyzomClient _instance;
+
         private readonly Queue<string> _chatQueue = new Queue<string>();
 
         private readonly Queue<Action> _threadTasks = new Queue<Action>();
@@ -40,13 +50,6 @@ namespace RCC
 
         Thread _cmdprompt;
         Thread _timeoutdetector;
-
-        static RyzomClient _instance;
-
-        internal static IChatDisplayer GetInstance()
-        {
-            return _instance;
-        }
 
         /// <summary>
         ///     Starts the main chat client
@@ -65,6 +68,87 @@ namespace RCC
         public string R2ServerVersion { get; set; }
         public string R2BackupPatchURL { get; set; }
         public string[] R2PatchUrLs { get; set; }
+
+        public void DisplayChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode,
+            uint dynChatId, string senderName, uint bubbleTimer = 0)
+        {
+            var color = "§f";
+
+            switch (mode)
+            {
+                case ChatGroupType.DynChat:
+                    color = "§b";
+                    break;
+                case ChatGroupType.Shout:
+                    color = "§c";
+                    break;
+                case ChatGroupType.Team:
+                    color = "§9";
+                    break;
+                case ChatGroupType.Guild:
+                    color = "§a";
+                    break;
+                case ChatGroupType.Civilization:
+                    color = "§d";
+                    break;
+                case ChatGroupType.Territory:
+                    color = "§d";
+                    break;
+                case ChatGroupType.Universe:
+                    color = "§6";
+                    break;
+                case ChatGroupType.Region:
+                    color = "§7";
+                    break;
+                case ChatGroupType.Tell:
+                    color = "§f";
+                    break;
+                default:
+                    /*nlwarning("unknown group type"); return;*/
+                    break;
+            }
+
+            string stringCategory = ChatManager.GetStringCategory(ucstr, out string finalString).ToUpper();
+
+            // Override color if the string contains the color
+            if (stringCategory.Length > 0 && stringCategory != "SYS")
+            {
+                if (ClientConfig.SystemInfoColors.ContainsKey(stringCategory))
+                {
+                    var paramString = ClientConfig.SystemInfoColors[stringCategory];
+
+                    while (paramString.Contains("  ")) paramString.Replace("  ", " ");
+
+                    var paramStringSplit = paramString.Split(" ");
+
+                    if (paramStringSplit.Length >= 3)
+                    {
+                        var col = Color.FromArgb(int.Parse(paramStringSplit[0]), int.Parse(paramStringSplit[1]),
+                            int.Parse(paramStringSplit[2]));
+
+                        color = "";
+                        Console.ForegroundColor = Misc.FromColor(col);
+                    }
+                }
+            }
+
+            Log.Chat(
+                $"[{mode}]{(stringCategory.Length > 0 ? $"[{stringCategory.ToUpper()}]" : "")}{color} {finalString}");
+        }
+
+        public void DisplayTell(string ucstr, string senderName)
+        {
+            Log.Chat(ucstr);
+        }
+
+        public void ClearChannel(ChatGroupType mode, uint dynChatDbIndex)
+        {
+        }
+
+        internal static IChatDisplayer GetInstance()
+        {
+            return _instance;
+        }
 
         /// <summary>
         ///     Starts the main chat client, wich will login to the server.
@@ -105,7 +189,7 @@ namespace RCC
             //    BotLoad(bot, false);
             //botsOnHold.Clear();
 
-            _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
+            _timeoutdetector = new Thread(TimeoutDetector) {Name = "RCC Connection timeout detector"};
             _timeoutdetector.Start();
 
             _cmdprompt = new Thread(new ThreadStart(CommandPrompt));
@@ -129,7 +213,7 @@ namespace RCC
 
                     try
                     {
-                        Command cmd = (Command)Activator.CreateInstance(type);
+                        Command cmd = (Command) Activator.CreateInstance(type);
                         Cmds[cmd.CmdName.ToLower()] = cmd;
                         CmdNames.Add(cmd.CmdName.ToLower());
                         foreach (string alias in cmd.getCMDAliases())
@@ -676,7 +760,7 @@ namespace RCC
                         Client.Connection.WaitServerAnswer = false;
 
                         // check that the pre selected character is available
-                        if (Client.Connection.CharacterSummaries[charSelect].People == (int)People.Unknown ||
+                        if (Client.Connection.CharacterSummaries[charSelect].People == (int) People.Unknown ||
                             charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
@@ -892,81 +976,6 @@ namespace RCC
                 task();
                 return true;
             });
-        }
-
-        public void DisplayChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, uint dynChatId, string senderName, uint bubbleTimer = 0)
-        {
-            var color = "§f";
-
-            switch (mode)
-            {
-                case ChatGroupType.DynChat:
-                    color = "§b";
-                    break;
-                case ChatGroupType.Shout:
-                    color = "§c";
-                    break;
-                case ChatGroupType.Team:
-                    color = "§9";
-                    break;
-                case ChatGroupType.Guild:
-                    color = "§a";
-                    break;
-                case ChatGroupType.Civilization:
-                    color = "§d";
-                    break;
-                case ChatGroupType.Territory:
-                    color = "§d";
-                    break;
-                case ChatGroupType.Universe:
-                    color = "§6";
-                    break;
-                case ChatGroupType.Region:
-                    color = "§7";
-                    break;
-                case ChatGroupType.Tell:
-                    color = "§f";
-                    break;
-                default:
-                    /*nlwarning("unknown group type"); return;*/
-                    break;
-            }
-
-            string stringCategory = ChatManager.GetStringCategory(ucstr, out string finalString).ToUpper();
-
-            // Override color if the string contains the color
-            if (stringCategory.Length > 0 && stringCategory != "SYS")
-            {
-                if (ClientConfig.SystemInfoColors.ContainsKey(stringCategory))
-                {
-                    var paramString = ClientConfig.SystemInfoColors[stringCategory];
-
-                    while (paramString.Contains("  ")) paramString.Replace("  ", " ");
-
-                    var paramStringSplit = paramString.Split(" ");
-
-                    if (paramStringSplit.Length >= 3)
-                    {
-                        var col = Color.FromArgb(int.Parse(paramStringSplit[0]), int.Parse(paramStringSplit[1]), int.Parse(paramStringSplit[2]));
-
-                        color = "";
-                        Console.ForegroundColor = Misc.FromColor(col);
-                    }
-                }
-            }
-
-            Log.Chat($"[{mode}]{(stringCategory.Length > 0 ? $"[{stringCategory.ToUpper()}]" : "")}{color} {finalString}");
-        }
-
-        public void DisplayTell(string ucstr, string senderName)
-        {
-            Log.Chat(ucstr);
-            //throw new NotImplementedException();
-        }
-
-        public void ClearChannel(ChatGroupType mode, uint dynChatDbIndex)
-        {
-            //throw new NotImplementedException();
         }
 
         /// <summary>

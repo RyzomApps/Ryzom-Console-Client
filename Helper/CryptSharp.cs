@@ -1,4 +1,10 @@
-﻿using System;
+﻿///////////////////////////////////////////////////////////////////
+// This file contains modified code from 'CryptSharp'
+// https://gist.github.com/aannenko/d47c90b0f92177286bb9814850888920
+// Copyright 2019 by aannenko
+///////////////////////////////////////////////////////////////////
+
+using System;
 
 namespace RCC.Helper
 {

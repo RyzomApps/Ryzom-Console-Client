@@ -6,20 +6,13 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Messages
+namespace RCC.Helper
 {
-    /// <summary>
-    ///     A message field - TMessageFormat with message type and bit size
-    /// </summary>
-    internal class MessageField
+    public enum InterfaceState
     {
-        byte _bitSize;
-        FieldType _type;
-
-        public MessageField(FieldType type, byte bitSize = 0)
-        {
-            _type = type;
-            _bitSize = bitSize;
-        }
+        AutoLogin, // -> GLOBAL_MENU, QUIT (if connection errors)
+        GlobalMenu, // -> SELECT_CHARACTER, QUIT (if connection errors)
+        GoInTheGame, // -> launch the game
+        QuitTheGame // -> quit the game
     };
 }
