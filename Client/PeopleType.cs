@@ -11,7 +11,7 @@ namespace RCC.Client
     /// <summary>
     ///     Entity type specification
     /// </summary>
-    public enum People
+    public enum PeopleType
     {
         Undefined = -1,
         Humanoid = 0,

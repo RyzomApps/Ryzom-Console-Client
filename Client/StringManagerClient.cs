@@ -17,39 +17,6 @@ using System.Linq;
 
 namespace RCC.Client
 {
-    public class StringWaiter
-    {
-        /// Pointer to the ucstring to fill
-        public string Result;
-        /// Pointer to the remover that contains this string reference
-        public object Remover;
-    };
-
-    public class CacheString
-    {
-        public uint StringId;
-        public string String;
-    };
-
-    /// <summary>
-    /// Implement this class if you want to wait for
-    /// string to be delivered.
-    /// </summary>
-    public abstract class StringWaitCallback
-    {
-        /// Overide this method to receive callback for string.
-        public abstract void OnStringAvailable(uint stringId, string value);
-
-        /// Overide this method to receive callback for dynamic string.
-        public abstract void OnDynStringAvailable(uint stringId, string value);
-
-        ~StringWaitCallback()
-        {
-            // signal the string manager that this waiter is destroyed
-            StringManagerClient.RemoveStringWaiter(this);
-        }
-    };
-
     /// <summary>
     ///     Management for dynamically generated text from servers
     /// </summary>
@@ -82,7 +49,7 @@ namespace RCC.Client
 
         static readonly Dictionary<string, string> DynStrings = new Dictionary<string, string>();
 
-        private static readonly List<CacheString> CacheStringToSave = new List<CacheString>();
+        private static readonly List<CachedString> CacheStringToSave = new List<CachedString>();
 
         private static string _ShardId;
         private static string _LanguageCode;
@@ -693,7 +660,7 @@ namespace RCC.Client
                 // update the string cache. DON'T SAVE now cause
                 if (_CacheInited && _CacheFilename.Length > 0)
                 {
-                    var cs = new CacheString
+                    var cs = new CachedString
                     {
                         StringId = stringId,
                         String = str

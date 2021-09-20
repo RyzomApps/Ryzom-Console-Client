@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.NetworkAction
+namespace RCC.Network.Action
 {
     /// <summary>
     ///     base for actions with impusions

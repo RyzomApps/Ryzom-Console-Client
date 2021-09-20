@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Helper
+namespace RCC.Client
 {
     public enum InterfaceState
     {

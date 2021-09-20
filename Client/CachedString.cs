@@ -6,20 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Messages
+namespace RCC.Client
 {
-    /// <summary>
-    ///     A message field - TMessageFormat with message type and bit size
-    /// </summary>
-    internal class MessageField
+    public class CachedString
     {
-        byte _bitSize;
-        MessageFieldType _type;
-
-        public MessageField(MessageFieldType type, byte bitSize = 0)
-        {
-            _type = type;
-            _bitSize = bitSize;
-        }
+        public uint StringId;
+        public string String;
     };
 }

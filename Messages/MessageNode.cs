@@ -114,20 +114,20 @@ namespace RCC.Messages
                             case 's':
                                 if (scan.Length == 1)
                                     // here consider s as string
-                                    Format.Add(new MessageField(FieldType.String, 0));
+                                    Format.Add(new MessageField(MessageFieldType.String, 0));
                                 else
                                 {
                                     // here consider s as sint
                                     byte numBits = (byte) int.Parse(scan.Substring(1));
 
                                     if (numBits == 8)
-                                        Format.Add(new MessageField(FieldType.Sint8, numBits));
+                                        Format.Add(new MessageField(MessageFieldType.Sint8, numBits));
                                     else if (numBits == 16)
-                                        Format.Add(new MessageField(FieldType.Sint16, numBits));
+                                        Format.Add(new MessageField(MessageFieldType.Sint16, numBits));
                                     else if (numBits == 32)
-                                        Format.Add(new MessageField(FieldType.Sint32, numBits));
+                                        Format.Add(new MessageField(MessageFieldType.Sint32, numBits));
                                     else if (numBits == 64)
-                                        Format.Add(new MessageField(FieldType.Sint64, numBits));
+                                        Format.Add(new MessageField(MessageFieldType.Sint64, numBits));
                                     else
                                         RyzomClient.Log?.Warn(
                                             "Can't use sint in format with other size than 8, 16, 32 or 64");
@@ -138,44 +138,44 @@ namespace RCC.Messages
                             case 'u':
                                 if (scan == "uc")
                                     // here consider s as string
-                                    Format.Add(new MessageField(FieldType.UcString, 0));
+                                    Format.Add(new MessageField(MessageFieldType.UcString, 0));
                                 else
                                 {
                                     // here consider s as sint
                                     byte numBits = (byte) int.Parse(scan.Substring(1));
 
                                     if (numBits == 8)
-                                        Format.Add(new MessageField(FieldType.Uint8, numBits));
+                                        Format.Add(new MessageField(MessageFieldType.Uint8, numBits));
                                     else if (numBits == 16)
-                                        Format.Add(new MessageField(FieldType.Uint16, numBits));
+                                        Format.Add(new MessageField(MessageFieldType.Uint16, numBits));
                                     else if (numBits == 32)
-                                        Format.Add(new MessageField(FieldType.Uint32, numBits));
+                                        Format.Add(new MessageField(MessageFieldType.Uint32, numBits));
                                     else if (numBits == 64)
-                                        Format.Add(new MessageField(FieldType.Uint64, numBits));
+                                        Format.Add(new MessageField(MessageFieldType.Uint64, numBits));
                                     else
-                                        Format.Add(new MessageField(FieldType.BitSizedUint, numBits));
+                                        Format.Add(new MessageField(MessageFieldType.BitSizedUint, numBits));
                                 }
 
                                 break;
 
                             case 'f':
                                 // here consider f as float
-                                Format.Add(new MessageField(FieldType.Float, 32));
+                                Format.Add(new MessageField(MessageFieldType.Float, 32));
                                 break;
 
                             case 'd':
                                 // here consider d as double
-                                Format.Add(new MessageField(FieldType.Double, 64));
+                                Format.Add(new MessageField(MessageFieldType.Double, 64));
                                 break;
 
                             case 'e':
                                 // here consider e as CEntityId
-                                Format.Add(new MessageField(FieldType.EntityId, 64));
+                                Format.Add(new MessageField(MessageFieldType.EntityId, 64));
                                 break;
 
                             case 'b':
                                 // here consider b as bool
-                                Format.Add(new MessageField(FieldType.Bool, 1));
+                                Format.Add(new MessageField(MessageFieldType.Bool, 1));
                                 break;
                         }
                     }

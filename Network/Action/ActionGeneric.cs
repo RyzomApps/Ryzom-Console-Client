@@ -7,9 +7,8 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.IO;
-using RCC.Network;
 
-namespace RCC.NetworkAction
+namespace RCC.Network.Action
 {
     /// <summary>
     ///     generic action that was sent over the network connection

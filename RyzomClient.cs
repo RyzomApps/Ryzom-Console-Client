@@ -623,7 +623,7 @@ namespace RCC
         /// </summary>
         private bool Connection(string cookie, string fsaddr)
         {
-            Client.Connection.GameExit = false;
+            Network.Connection.GameExit = false;
 
             // Preload continents
 
@@ -632,12 +632,12 @@ namespace RCC
             // Init user interface
 
             // Init global variables
-            Client.Connection.UserChar = false;
-            Client.Connection.NoUserChar = false;
-            Client.Connection.ConnectInterf = true;
-            Client.Connection.CreateInterf = true;
-            Client.Connection.CharacterInterf = true;
-            Client.Connection.WaitServerAnswer = false;
+            Network.Connection.UserChar = false;
+            Network.Connection.NoUserChar = false;
+            Network.Connection.ConnectInterf = true;
+            Network.Connection.CreateInterf = true;
+            Network.Connection.CharacterInterf = true;
+            Network.Connection.WaitServerAnswer = false;
 
             //FarTP.setOutgame();
 
@@ -695,7 +695,7 @@ namespace RCC
                 StringManagerClient.InitCache(fsaddr, ClientConfig.LanguageCode);
             }
 
-            Client.Connection.WaitServerAnswer = true;
+            Network.Connection.WaitServerAnswer = true;
 
             return InterfaceState.GlobalMenu;
         }
@@ -747,20 +747,20 @@ namespace RCC
                 // TODO: IngameDbMngr.flushObserverCalls();
 
                 // SERVER INTERACTIONS WITH INTERFACE
-                if (Client.Connection.WaitServerAnswer)
+                if (Network.Connection.WaitServerAnswer)
                 {
                     // Should we send the char selection without any user interaction?
-                    if (Client.Connection.AutoSendCharSelection)
+                    if (Network.Connection.AutoSendCharSelection)
                     {
                         var charSelect = -1;
 
                         if (ClientConfig.SelectCharacter != -1)
                             charSelect = ClientConfig.SelectCharacter;
 
-                        Client.Connection.WaitServerAnswer = false;
+                        Network.Connection.WaitServerAnswer = false;
 
                         // check that the pre selected character is available
-                        if (Client.Connection.CharacterSummaries[charSelect].People == (int) People.Unknown ||
+                        if (Network.Connection.CharacterSummaries[charSelect].People == (int) PeopleType.Unknown ||
                             charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
@@ -769,7 +769,7 @@ namespace RCC
 
                         // Auto-selection for fast launching (dev only)
                         //CAHManager::getInstance()->runActionHandler("launch_game", NULL, toString("slot=%d|edit_mode=0", charSelect));
-                        Client.Connection.AutoSendCharSelection = false;
+                        Network.Connection.AutoSendCharSelection = false;
                         ActionHandlerLaunchGame.Execute(charSelect.ToString());
                     }
 
@@ -789,7 +789,7 @@ namespace RCC
                 {
                     //nlinfo("impulseCallBack : received serverReceivedReady");
                     NetworkManager.ServerReceivedReady = false;
-                    Client.Connection.WaitServerAnswer = false;
+                    Network.Connection.WaitServerAnswer = false;
                     playerWantToGoInGame = true;
                 }
 
@@ -805,7 +805,7 @@ namespace RCC
                     }
                 }
 
-                if (Client.Connection.GameExit)
+                if (Network.Connection.GameExit)
                     return InterfaceState.QuitTheGame;
             }
 
@@ -815,7 +815,7 @@ namespace RCC
             // -> ev_global_menu_exited
 
             //  Init the current Player Name (for interface.cfg and sentence.name save). Make a good File Name.
-            string playerName = Client.Connection.CharacterSummaries[Client.Connection.PlayerSelectedSlot].Name;
+            string playerName = Network.Connection.CharacterSummaries[Network.Connection.PlayerSelectedSlot].Name;
             //Client.Connection.PlayerSelectedFileName = buildPlayerNameForSaveFile(playerName);
 
             // Init the current Player Home shard Id and name
@@ -825,7 +825,7 @@ namespace RCC
             //Client.Connection.PlayerSelectedHomeShardNameWithParenthesis = "";
 
             // workaround
-            Client.Connection.PlayerSelectedHomeShardNameWithParenthesis = '(' + playerName + ')';
+            Network.Connection.PlayerSelectedHomeShardNameWithParenthesis = '(' + playerName + ')';
 
             //for (uint i = 0; i < CShardNames::getInstance().getSessionNames().size(); i++)
             //{
@@ -847,7 +847,7 @@ namespace RCC
             Log?.Debug("mainLoop");
 
             // Main loop. If the window is no more Active -> Exit.
-            while ( /*!UserEntity->permanentDeath() &&*/ !Client.Connection.GameExit)
+            while ( /*!UserEntity->permanentDeath() &&*/ !Network.Connection.GameExit)
             {
                 // If an action handler execute. NB: MUST BE DONE BEFORE ANY THING ELSE PROFILE CRASH!!!!!!!!!!!!!!!!!
 

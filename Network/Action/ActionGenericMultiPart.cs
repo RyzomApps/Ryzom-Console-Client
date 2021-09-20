@@ -7,9 +7,8 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using RCC.Network;
 
-namespace RCC.NetworkAction
+namespace RCC.Network.Action
 {
     /// <summary>
     ///     represents an action that is splitted into serveral parts for transport

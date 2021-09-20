@@ -8,9 +8,8 @@
 
 using System;
 using System.Collections.Generic;
-using RCC.Network;
 
-namespace RCC.NetworkAction
+namespace RCC.Network.Action
 {
     /// <summary>
     ///     a block of actions for sending and receiving

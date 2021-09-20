@@ -8,9 +8,8 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using RCC.Network;
 
-namespace RCC.NetworkAction
+namespace RCC.Network.Action
 {
     /// <summary>
     ///     temporary multipart holder until the generic action is complete

@@ -8,7 +8,7 @@
 
 namespace RCC.Chat
 {
-    public class CChatMsgNode
+    public class ChatMsgNode
     {
         public uint CompressedIndex;
         public uint SenderNameId;
@@ -23,7 +23,7 @@ namespace RCC.Chat
         // displayTell() or displayChat()
         public bool DisplayAsTell;
 
-        public CChatMsgNode(CChatMsg chatMsg, bool displayAsTell)
+        public ChatMsgNode(ChatMsg chatMsg, bool displayAsTell)
         {
             CompressedIndex= chatMsg.CompressedIndex;
         	SenderNameId= chatMsg.SenderNameId;
@@ -35,7 +35,7 @@ namespace RCC.Chat
         	DisplayAsTell= displayAsTell;
         }
 
-        public CChatMsgNode(CChatMsg2 chatMsg, bool displayAsTell)
+        public ChatMsgNode(ChatMsg2 chatMsg, bool displayAsTell)
         {
             CompressedIndex = chatMsg.CompressedIndex;
             SenderNameId = chatMsg.SenderNameId;

@@ -7,8 +7,9 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using RCC.Client;
 
-namespace RCC.Client
+namespace RCC.Network
 {
     /// <summary>
     ///     Stores information about the connection to the ryzom server.

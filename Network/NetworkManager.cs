@@ -868,7 +868,7 @@ namespace RCC.Network
             {
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
-                if ((People)cs.People != People.Unknown)
+                if ((PeopleType)cs.People != PeopleType.Unknown)
                     RyzomClient.Log?.Info($"Found character {cs.Name} from shard {cs.Mainland} in slot {i}");
                 Connection.CharacterSummaries.Add(cs);
             }

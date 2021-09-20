@@ -15,8 +15,8 @@ using System.Reflection;
 using System.Threading;
 using RCC.Config;
 using RCC.Helper;
-using RCC.NetworkAction;
-using Action = RCC.NetworkAction.Action;
+using RCC.Network.Action;
+using Action = RCC.Network.Action.Action;
 
 namespace RCC.Network
 {
@@ -340,23 +340,23 @@ namespace RCC.Network
                     byte message = 0;
                     msgin.Serial(ref message);
 
-                    switch ((SystemMessage) message)
+                    switch ((SystemMessageType) message)
                     {
-                        case SystemMessage.SystemSyncCode:
+                        case SystemMessageType.SystemSyncCode:
                             // receive sync, decode sync
                             ConnectionState = ConnectionState.Synchronize;
                             RyzomClient.Log?.Debug("CNET: login->synchronize");
                             ReceiveSystemSync(msgin);
                             return true;
 
-                        case SystemMessage.SystemStalledCode:
+                        case SystemMessageType.SystemStalledCode:
                             // receive stalled, decode stalled and state stalled
                             ConnectionState = ConnectionState.Stalled;
                             RyzomClient.Log?.Debug("CNET: login->stalled");
                             ReceiveSystemStalled(msgin);
                             return true;
 
-                        case SystemMessage.SystemProbeCode:
+                        case SystemMessageType.SystemProbeCode:
                             // receive probe, decode probe and state probe
                             ConnectionState = ConnectionState.Probe;
                             //_Changes.push_back(CChange(0, ProbeReceived));
@@ -364,7 +364,7 @@ namespace RCC.Network
                             ReceiveSystemProbe(msgin);
                             return true;
 
-                        case SystemMessage.SystemServerDownCode:
+                        case SystemMessageType.SystemServerDownCode:
                             Disconnect(); // will send disconnection message
                             RyzomClient.Log?.Error("BACK-END DOWN");
                             return false; // exit now from loop, don't expect a new state
@@ -427,9 +427,9 @@ namespace RCC.Network
                     byte message = 0;
                     msgin.Serial(ref message);
 
-                    switch ((SystemMessage) message)
+                    switch ((SystemMessageType) message)
                     {
-                        case SystemMessage.SystemProbeCode:
+                        case SystemMessageType.SystemProbeCode:
                             // receive probe, decode probe and state probe
                             ConnectionState = ConnectionState.Probe;
                             //nldebug("CNET[%p]: synchronize->probe", this);
@@ -437,19 +437,19 @@ namespace RCC.Network
                             ReceiveSystemProbe(msgin);
                             return true;
 
-                        case SystemMessage.SystemStalledCode:
+                        case SystemMessageType.SystemStalledCode:
                             // receive stalled, decode stalled and state stalled
                             ConnectionState = ConnectionState.Stalled;
                             //nldebug("CNET[%p]: synchronize->stalled", this);
                             ReceiveSystemStalled(msgin);
                             return true;
 
-                        case SystemMessage.SystemSyncCode:
+                        case SystemMessageType.SystemSyncCode:
                             // receive sync, decode sync
                             ReceiveSystemSync(msgin);
                             break;
 
-                        case SystemMessage.SystemServerDownCode:
+                        case SystemMessageType.SystemServerDownCode:
                             Disconnect(); // will send disconnection message
                             RyzomClient.Log?.Error("BACK-END DOWN");
                             return false; // exit now from loop, don't expect a new state
@@ -526,9 +526,9 @@ namespace RCC.Network
                     byte message = 0;
                     msgin.Serial(ref message);
 
-                    switch ((SystemMessage) message)
+                    switch ((SystemMessageType) message)
                     {
-                        case SystemMessage.SystemProbeCode:
+                        case SystemMessageType.SystemProbeCode:
                             // receive probe, and goto state probe
                             ConnectionState = ConnectionState.Probe;
                             // reset client impulse & vars
@@ -538,21 +538,21 @@ namespace RCC.Network
                             ReceiveSystemProbe(msgin);
                             return true;
 
-                        case SystemMessage.SystemSyncCode:
+                        case SystemMessageType.SystemSyncCode:
                             // receive stalled, decode stalled and state stalled
                             ConnectionState = ConnectionState.Synchronize;
                             //nldebug("CNET[%p]: connected->synchronize", this);
                             ReceiveSystemSync(msgin);
                             return true;
 
-                        case SystemMessage.SystemStalledCode:
+                        case SystemMessageType.SystemStalledCode:
                             // receive stalled, decode stalled and state stalled
                             ConnectionState = ConnectionState.Stalled;
                             //nldebug("CNET[%p]: connected->stalled", this);
                             ReceiveSystemStalled(msgin);
                             return true;
 
-                        case SystemMessage.SystemServerDownCode:
+                        case SystemMessageType.SystemServerDownCode:
                             Disconnect(); // will send disconnection message
                             RyzomClient.Log?.Error("BACK-END DOWN");
                             return false; // exit now from loop, don't expect a new state
@@ -592,28 +592,28 @@ namespace RCC.Network
                     byte message = 0;
                     msgin.Serial(ref message);
 
-                    switch ((SystemMessage) message)
+                    switch ((SystemMessageType) message)
                     {
-                        case SystemMessage.SystemSyncCode:
+                        case SystemMessageType.SystemSyncCode:
                             // receive sync, decode sync and state synchronize
                             ConnectionState = ConnectionState.Synchronize;
                             //nldebug("CNET[%p]: probe->synchronize", this);
                             ReceiveSystemSync(msgin);
                             return true;
 
-                        case SystemMessage.SystemStalledCode:
+                        case SystemMessageType.SystemStalledCode:
                             // receive sync, decode sync and state synchronize
                             ConnectionState = ConnectionState.Stalled;
                             //nldebug("CNET[%p]: probe->stalled", this);
                             ReceiveSystemStalled(msgin);
                             return true;
 
-                        case SystemMessage.SystemProbeCode:
+                        case SystemMessageType.SystemProbeCode:
                             // receive sync, decode sync
                             ReceiveSystemProbe(msgin);
                             break;
 
-                        case SystemMessage.SystemServerDownCode:
+                        case SystemMessageType.SystemServerDownCode:
                             Disconnect(); // will send disconnection message
                             RyzomClient.Log?.Error("BACK-END DOWN");
                             return false; // exit now from loop, don't expect a new state
@@ -671,7 +671,7 @@ namespace RCC.Network
         {
             RyzomClient.Log?.Debug($"CNET: received normal message Packet={LastReceivedNumber} Ack={_lastReceivedAck}");
 
-            var actions = new List<Action>();
+            var actions = new List<Action.Action>();
             ImpulseDecoder.Decode(msgin, _currentReceivedNumber, _lastReceivedAck, _currentSendNumber, actions);
 
             ++_normalPacketsReceived;
@@ -1124,7 +1124,7 @@ namespace RCC.Network
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            var sync = (byte) SystemMessage.SystemAckSyncCode;
+            var sync = (byte) SystemMessageType.SystemAckSyncCode;
             message.Serial(ref sync);
             message.Serial(ref LastReceivedNumber);
             message.Serial(ref _lastAckInLongAck);
@@ -1157,7 +1157,7 @@ namespace RCC.Network
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            byte probe = (byte) SystemMessage.SystemAckProbeCode;
+            byte probe = (byte) SystemMessageType.SystemAckProbeCode;
             int numprobes = LatestProbes.Count;
 
             message.Serial(ref probe);
@@ -1189,7 +1189,7 @@ namespace RCC.Network
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            byte disconnection = (byte) SystemMessage.SystemDisconnectionCode;
+            byte disconnection = (byte) SystemMessageType.SystemDisconnectionCode;
 
             message.Serial(ref disconnection);
 
@@ -1224,7 +1224,7 @@ namespace RCC.Network
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            byte login = (byte) SystemMessage.SystemLoginCode;
+            byte login = (byte) SystemMessageType.SystemLoginCode;
             message.Serial(ref login);
 
             //message.serial(Cookie);
@@ -1520,7 +1520,7 @@ namespace RCC.Network
         /// <summary>
         ///     pushes an action to be sent by the client to the send queue
         /// </summary>
-        static void Push(Action action)
+        static void Push(Action.Action action)
         {
             if (Actions.Count == 0 || Actions[^1].Cycle != 0)
             {

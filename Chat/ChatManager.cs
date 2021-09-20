@@ -21,14 +21,14 @@ namespace RCC.Chat
     internal static class ChatManager
     {
         public const uint INVALID_DATASET_INDEX = 0x00FFFFFF;
-        static List<CChatMsgNode> _ChatBuffer = new List<CChatMsgNode>();
+        static List<ChatMsgNode> _ChatBuffer = new List<ChatMsgNode>();
 
         /// <summary>
         ///     interprets the incoming tell string
         /// </summary>
         public static void ProcessTellString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
         {
-            CChatMsg chatMsg = new CChatMsg();
+            ChatMsg chatMsg = new ChatMsg();
 
             // Serial. For tell message, there is no chat mode, coz we know we are in tell mode !
             bms.Serial(ref chatMsg.CompressedIndex);
@@ -42,7 +42,7 @@ namespace RCC.Chat
             complete &= StringManagerClient.GetString(chatMsg.SenderNameId, out string senderStr);
             if (!complete)
             {
-                _ChatBuffer.Add(new CChatMsgNode(chatMsg, true));
+                _ChatBuffer.Add(new ChatMsgNode(chatMsg, true));
                 RyzomClient.Log.Debug("<impulseTell> Received TELL, put in buffer : waiting association");
                 return;
             }
@@ -62,7 +62,7 @@ namespace RCC.Chat
             //updateDynamicChatChannels(chatDisplayer); TODO
             //
             //// serial
-            CChatMsg chatMsg = new CChatMsg();
+            ChatMsg chatMsg = new ChatMsg();
             chatMsg.Serial(bms);
 
             ChatGroupType type = chatMsg.ChatMode;
@@ -83,7 +83,7 @@ namespace RCC.Chat
             // if !complete, wait
             if (!complete)
             {
-                _ChatBuffer.Add(new CChatMsgNode(chatMsg, false));
+                _ChatBuffer.Add(new ChatMsgNode(chatMsg, false));
                 //nldebug("<impulseChat> Received CHAT, put in buffer : waiting association");
                 return;
             }
@@ -99,7 +99,7 @@ namespace RCC.Chat
             Debug.Assert(type != ChatGroupType.DynChat);
 
             // serial
-            CChatMsg2 chatMsg = new CChatMsg2();
+            ChatMsg2 chatMsg = new ChatMsg2();
             uint phraseID = 0;
             bms.Serial(ref phraseID);
             //if (PermanentlyBanned) return;
@@ -113,7 +113,7 @@ namespace RCC.Chat
 
             if (!complete)
             {
-                _ChatBuffer.Add(new CChatMsgNode(chatMsg, false));
+                _ChatBuffer.Add(new ChatMsgNode(chatMsg, false));
                 //nldebug("<impulseDynString> Received CHAT, put in buffer : waiting association");
                 return;
             }
@@ -130,12 +130,12 @@ namespace RCC.Chat
 
             // **** Process waiting messages
 
-            //CChatMsgNode itMsg;
+            //ChatMsgNode itMsg;
 
             for (int i = 0; i < _ChatBuffer.Count; i++)
             //for (itMsg = _ChatBuffer.begin(); itMsg != _ChatBuffer.end();)
             {
-                CChatMsgNode itMsg = _ChatBuffer[i];
+                ChatMsgNode itMsg = _ChatBuffer[i];
                 ChatGroupType type = itMsg.ChatMode;
                 string sender = "";
                 string content;
@@ -180,7 +180,7 @@ namespace RCC.Chat
                     else
                         chatDisplayer.DisplayChat(itMsg.CompressedIndex, ucstr, content, type, itMsg.DynChatChanID, sender);
 
-                    //list<CChatMsgNode>::iterator itTmp = itMsg++;
+                    //list<ChatMsgNode>::iterator itTmp = itMsg++;
                     _ChatBuffer.Remove(itMsg);
                 }
                 //else

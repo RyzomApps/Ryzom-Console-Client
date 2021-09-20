@@ -10,21 +10,21 @@ using RCC.Network;
 
 namespace RCC.Chat
 {
-    public class CChatMsg2
+    public class ChatMsg
     {
         public uint CompressedIndex;
         public uint SenderNameId;
         public ChatGroupType ChatMode;
-        public uint PhraseId;
-        public string CustomTxt;
+        public uint DynChatChanID;
+        public string Content;
 
-        public CChatMsg2()
+        public ChatMsg()
         {
             CompressedIndex = ChatManager.INVALID_DATASET_INDEX;
             SenderNameId = 0;
             ChatMode = 0;
-            PhraseId = 0;
-            CustomTxt = "";
+            DynChatChanID = 0;
+            Content = "";
         }
 
         public void Serial(BitMemoryStream f)
@@ -34,8 +34,10 @@ namespace RCC.Chat
             byte ChatModeByte = 0;
             f.Serial(ref ChatModeByte);
             ChatMode = (ChatGroupType)ChatModeByte;
-            f.Serial(ref PhraseId);
-            f.Serial(ref CustomTxt);
+            if (ChatMode == ChatGroupType.DynChat)
+                f.Serial(ref DynChatChanID);
+            f.Serial(ref Content);
         }
     };
+
 }
