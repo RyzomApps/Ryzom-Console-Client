@@ -14,6 +14,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using RCC;
 using RCC.Helper;
+using RCC.Network;
 
 namespace MinecraftClient
 {
@@ -101,10 +102,10 @@ namespace MinecraftClient
 
         /// <summary>
         /// Anything you want to initialize your bot, will be called on load by MinecraftCom
-        /// This method is called only once, whereas AfterGameJoined() is called once per server join.
+        /// This method is called only once, whereas OnGameJoined() is called once per server join.
         ///
         /// NOTE: Chat messages cannot be sent at this point in the login process.
-        /// If you want to send a message when the bot is loaded, use AfterGameJoined.
+        /// If you want to send a message when the bot is loaded, use OnGameJoined.
         /// </summary>
         public virtual void Initialize() { }
 
@@ -115,7 +116,13 @@ namespace MinecraftClient
         /// NOTE: This is not always right after joining the server - if the bot was loaded after logging
         /// in this is still called.
         /// </summary>
-        public virtual void AfterGameJoined() { }
+        public virtual void OnGameJoined() { }
+
+        public virtual void OnGameTeamContactStatus(uint contactId, CharConnectionState online) { }
+
+        public virtual void OnGameTeamContactInit(List<uint> vFriendListName, List<CharConnectionState> vFriendListOnline, List<string> vIgnoreListName) { }
+
+        public virtual void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList) { }
 
         /// <summary>
         /// Will be called every ~100ms (10fps) if loaded in MinecraftCom

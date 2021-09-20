@@ -227,7 +227,7 @@ namespace RCC
             if (init)
                 DispatchBotEvent(bot => bot.Initialize(), new[] { b });
             if (NetworkConnection.ConnectionState == ConnectionState.Connected)
-                DispatchBotEvent(bot => bot.AfterGameJoined(), new[] { b });
+                DispatchBotEvent(bot => bot.OnGameJoined(), new[] { b });
         }
 
         /// <summary>
@@ -1197,7 +1197,34 @@ namespace RCC
         /// </summary>
         public void OnGameJoined()
         {
-            DispatchBotEvent(bot => bot.AfterGameJoined());
+            DispatchBotEvent(bot => bot.OnGameJoined());
         }
+
+        /// <summary>
+        /// Called when one of the characters from the friend list updates
+        /// </summary>
+        /// <param name="contactId">id</param>
+        /// <param name="online">new status</param>
+        public void OnGameTeamContactStatus(uint contactId, CharConnectionState online)
+        {
+            DispatchBotEvent(bot => bot.OnGameTeamContactStatus(contactId, online));
+        }
+
+        /// <summary>
+        /// Called when friend list and ignore list from the contact list are initialized
+        /// </summary>
+        internal void OnGameTeamContactInit(List<uint> vFriendListName, List<CharConnectionState> vFriendListOnline, List<string> vIgnoreListName)
+        {
+            DispatchBotEvent(bot => bot.OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName));
+        }
+
+        /// <summary>
+        /// Called when one character from the friend or ignore list is created
+        /// </summary>
+        internal void OnTeamContactCreate(uint contactId, uint nameId, CharConnectionState online, byte nList)
+        {
+            DispatchBotEvent(bot => bot.OnTeamContactCreate(contactId, nameId, online, nList));
+        }
+
     }
 }

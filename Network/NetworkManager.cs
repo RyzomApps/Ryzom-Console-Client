@@ -7,9 +7,11 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
 using System.Threading;
+using RCC.Bots;
 using RCC.Chat;
 using RCC.Client;
 using RCC.Helper;
@@ -601,19 +603,87 @@ namespace RCC.Network
             RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// update one of the character from the friend list
+        /// </summary>
         private static void ImpulseTeamContactStatus(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            uint contactId = 0;
+            byte state = 0;
+
+            impulse.Serial(ref contactId);
+            impulse.Serial(ref state);
+
+            var online = (CharConnectionState)state;
+
+            ((RyzomClient)RyzomClient.GetInstance()).OnGameTeamContactStatus(contactId, online);
         }
 
         private static void ImpulseTeamContactCreate(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            uint contactId = 0;
+            uint nameId = 0;
+            byte state = 0;
+            byte nList = 0;
+
+            impulse.Serial(ref contactId);
+            impulse.Serial(ref nameId);
+            impulse.Serial(ref state);
+            impulse.Serial(ref nList);
+
+            var online = (CharConnectionState)state;
+
+            // client patch to resolve bad server response when requesting ignore list contact creation
+            if (nList == 1)     // ignore list
+            {
+                // prevent adding an empty player to ignore list
+                if (nameId == 0) return;
+            }
+
+            ((RyzomClient)RyzomClient.GetInstance()).OnTeamContactCreate(contactId, nameId, online, nList);
         }
 
+        /// <summary>
+        /// initialize friend list and ignore list from the contact list
+        /// </summary>
         private static void ImpulseTeamContactInit(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            List<uint> vFriendListName;
+            List<CharConnectionState> vFriendListOnline;
+            List<string> vIgnoreListName = new List<string>();
+
+            var len = 0;
+            impulse.Serial(ref len);
+
+            vFriendListName = new List<uint>(len);
+
+            for (var i = 0; i < len; i++)
+            {
+                uint value = 0;
+                impulse.Serial(ref value);
+                vFriendListName.Add(value);
+            }
+
+            uint nbState = 0;
+            impulse.Serial(ref nbState);
+
+            vFriendListOnline = new List<CharConnectionState>((int)nbState);
+
+            for (var i = 0; i < nbState; ++i)
+            {
+                byte state = 0;
+                impulse.Serial(ref state);
+                vFriendListOnline.Add((CharConnectionState)state);
+            }
+
+            //	impulse.serialCont(vFriendListOnline);
+            //impulse.SerialCont(vIgnoreListName); TODO: do we need them?
+
+            //nlinfo("impulseCallback : Received TEAM:CONTACT_INIT nbfriend:%d nbignore:%d", vFriendListName.size(), vIgnoreListName.size());
+
+            //PeopleInterraction.initContactLists(vFriendListName, vFriendListOnline, vIgnoreListName);
+
+            ((RyzomClient)RyzomClient.GetInstance()).OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
         }
 
         private static void ImpulseTeamShareClose(BitMemoryStream impulse)
@@ -633,7 +703,7 @@ namespace RCC.Network
 
         private static void ImpulseTeamInvitation(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} -> AutoJoin");
 
             GenericMessageHeaderManager.SendMsgToServer("TEAM:JOIN");
         }
@@ -828,8 +898,8 @@ namespace RCC.Network
             //}
             //else
             //{
-            var userEntityInitPos = new Vector3((float) x / 1000.0f, (float) y / 1000.0f, (float) z / 1000.0f);
-            var userEntityInitFront = new Vector3((float) Math.Cos(heading), (float) Math.Sin(heading), 0f);
+            var userEntityInitPos = new Vector3((float)x / 1000.0f, (float)y / 1000.0f, (float)z / 1000.0f);
+            var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
 
             RyzomClient.Log?.Info($"<ImpulseUserChar> pos : {userEntityInitPos}  heading : {heading}");
 
@@ -870,7 +940,7 @@ namespace RCC.Network
             {
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
-                if ((PeopleType) cs.People != PeopleType.Unknown)
+                if ((PeopleType)cs.People != PeopleType.Unknown)
                     RyzomClient.Log?.Info($"Found character {cs.Name} from shard {cs.Mainland} in slot {i}");
                 Connection.CharacterSummaries.Add(cs);
             }

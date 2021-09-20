@@ -31,6 +31,11 @@ namespace RCC
         public static readonly string BuildInfo;
 
         /// <summary>
+        ///     Detect if the user is running Ryzom Console Client through Mono
+        /// </summary>
+        public static bool IsUsingMono => Type.GetType("Mono.Runtime") != null;
+
+        /// <summary>
         ///     Static initialization of build information, read from assembly information
         /// </summary>
         static Program()
@@ -42,25 +47,31 @@ namespace RCC
                 BuildInfo = attribute.Configuration;
         }
 
-
-        /// <summary>
-        ///     Detect if the user is running Ryzom Console Client through Mono
-        /// </summary>
-        public static bool IsUsingMono => Type.GetType("Mono.Runtime") != null;
-
         // TODO: add parameters: 
         // login
         // password
         // shard_id
         // slot
 
+        private static void Banner()
+        {
+            ConsoleIO.WriteLineFormatted(" ");
+            ConsoleIO.WriteLineFormatted(" §f    _/_/_/  §e     _/_/_/§c     _/_/_/ ");
+            ConsoleIO.WriteLineFormatted(" §f   _/    _/ §e  _/       §c  _/        ");
+            ConsoleIO.WriteLineFormatted(" §f  _/_/_/    §e _/        §c _/         ");
+            ConsoleIO.WriteLineFormatted(" §f _/    _/   §e_/         §c_/          ");
+            ConsoleIO.WriteLineFormatted(" §f_/    _/    §e _/_/_/    §c _/_/_/     ");
+            ConsoleIO.WriteLineFormatted(" ");
+        }
+
         /// <summary>
         ///     The main entry point of Ryzom Console Client
         /// </summary>
         private static void Main(string[] args)
         {
-            ConsoleIO.WriteLineFormatted(
-                $"§bConsole Client for Ryzom §av{Version}§b - By bierdosenhalter & Contributors");
+            Banner();
+
+            ConsoleIO.WriteLineFormatted($"§bConsole Client for Ryzom §av{Version}§b - By bierdosenhalter & Contributors");
 
             // Debug input ?
             if (args.Length == 1 && args[0] == "--keyboard-debug")
