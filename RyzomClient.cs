@@ -354,7 +354,7 @@ namespace RCC
                 return true;
             }
             catch (SocketException) { return false; }
-            catch (System.IO.IOException) { return false; }
+            catch (IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
 
@@ -1056,6 +1056,8 @@ namespace RCC
             // Main loop. If the window is no more Active -> Exit.
             while ( /*!UserEntity->permanentDeath() &&*/ !Network.Connection.GameExit)
             {
+                Thread.Sleep(100);
+
                 // If an action handler execute. NB: MUST BE DONE BEFORE ANY THING ELSE PROFILE CRASH!!!!!!!!!!!!!!!!!
 
                 // Test and may run a VBLock profile (only once)

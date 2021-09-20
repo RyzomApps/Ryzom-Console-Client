@@ -23,18 +23,39 @@ namespace RCC.Bots
         private DateTime _lastUpdateToServer = DateTime.MinValue;
         readonly TimeSpan _intervalIntervalUpdateToServer = TimeSpan.FromSeconds(60);
 
+        Queue<string> namesToAdd = new Queue<string>();
+
         public override void Initialize()
         {
             RyzomClient.Log.Info("Bot 'OnlinePlayersLogger' initialized.");
             RegisterChatBotCommand("list", "Lists all online players in the friend list.", "", Command);
+            RegisterChatBotCommand("addfriendfile", "Adds a newline separated text file of player names to the friends list.", "", Command);
             if (ClientConfig.OnlinePlayersApi.Trim().Equals(string.Empty))
                 RyzomClient.Log.Info("No server for player online status updates set: Not using this feature.");
         }
+
+        Random r = new Random();
 
         public override void Update()
         {
             if (!_initialized)
                 return;
+
+            if (r.NextDouble() < 0.66)
+                return;
+
+            if (namesToAdd.Count > 0)
+            {
+                var name = namesToAdd.Dequeue();
+
+                if (_friendNames.ContainsValue(name))
+                    return;
+
+                RyzomClient.Log.Info($"Trying to add {name} to the friend list.");
+                new AddFriend().Run((RyzomClient)RyzomClient.GetInstance(), "addfriend " + name, null);
+
+                return;
+            }
 
             foreach (var id in _friendNames.Keys)
             {
@@ -46,7 +67,7 @@ namespace RCC.Bots
                     _friendNames[id] = Entity.RemoveTitleAndShardFromName(name).ToLower();
                 }
 
-                break; // nach einem namen müssen wir leider schluss machen, da noch ein problem mit mehreren actions in einem action block beim senden besteht -> disco
+                return; // nach einem namen müssen wir leider schluss machen, da noch ein problem mit mehreren actions in einem action block beim senden besteht -> disco
             }
 
             if (ClientConfig.OnlinePlayersApi.Trim().Equals(string.Empty))
@@ -57,13 +78,16 @@ namespace RCC.Bots
 
             _lastUpdateToServer = DateTime.Now + _intervalIntervalUpdateToServer;
 
-            foreach (var id in _friendNames.Keys)
+            Task.Factory.StartNew(() =>
             {
-                if (_friendNames[id] == string.Empty)
-                    continue;
+                foreach (var id in _friendNames.Keys)
+                {
+                    if (_friendNames[id] == string.Empty)
+                        continue;
 
-                Task.Factory.StartNew(() => SendUpdate(_friendNames[id], _friendOnline[id]));
-            }
+                    SendUpdate(_friendNames[id], _friendOnline[id]);
+                }
+            });
         }
 
         public override void OnGameTeamContactStatus(uint contactId, CharConnectionState online)
@@ -71,7 +95,7 @@ namespace RCC.Bots
             var friend = _friendOnline.ElementAt((int)contactId);
 
             _friendOnline[friend.Key] = online;
-            var name = _friendNames[friend.Key] != string.Empty ? _friendNames[friend.Key] : "{contactId}";
+            var name = _friendNames[friend.Key] != string.Empty ? _friendNames[friend.Key] : $"{contactId}";
 
             RyzomClient.Log.Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
         }
@@ -119,28 +143,70 @@ namespace RCC.Bots
 
             if (_friendNames.ContainsValue(name)) return;
 
+            if (name.StartsWith("~"))
+                name = name[1..];
+
             RyzomClient.Log.Info($"{name} will be added to the friends list.");
             new AddFriend().Run((RyzomClient)RyzomClient.GetInstance(), "addfriend " + name, null);
         }
 
         public string Command(string cmd, string[] args)
         {
-            var online = new List<string>();
-
-            foreach (var id in _friendOnline.Keys)
+            if (cmd.IndexOf(" ") != -1)
             {
-                var state = _friendOnline[id];
-
-                if (state != CharConnectionState.CcsOnline) continue;
-
-                var name = _friendNames[id];
-                online.Add(name);
+                cmd = cmd.Substring(0, cmd.IndexOf(" "));
             }
 
-            var ret = $"There are {online.Count}/{_friendOnline.Count} players online:\r\n";
-            ret += string.Join(", ", online);
+            if (cmd.ToLower() == "list")
+            {
+                var online = new List<string>();
 
-            return ret;
+                foreach (var id in _friendOnline.Keys)
+                {
+                    var state = _friendOnline[id];
+
+                    if (state != CharConnectionState.CcsOnline) continue;
+
+                    var name = !_friendNames[id].Equals(string.Empty) ? _friendNames[id] : $"{id}";
+                    online.Add(name);
+                }
+
+                var ret = $"There are {online.Count}/{_friendOnline.Count} players online:\r\n";
+                ret += string.Join(", ", online);
+
+                return ret;
+            }
+            else if (cmd.ToLower() == "addfriendfile")
+            {
+                if (args.Length != 1)
+                {
+                    RyzomClient.Log?.Warn($"Please specify a file of players to add.");
+                    return "";
+                }
+
+                var path = args[0];
+
+                if (!File.Exists(path))
+                {
+                    RyzomClient.Log?.Warn($"File does not exist.");
+                    return "";
+                }
+
+                // Open the file to read from.
+                string[] readText = File.ReadAllLines(path);
+                foreach (string name in readText)
+                {
+                    //if (name.Trim() != string.Empty)
+                    //    new AddFriend().Run((RyzomClient)RyzomClient.GetInstance(), "addfriend " + name, null);
+
+                    namesToAdd.Enqueue(name);
+                }
+
+                return "";
+            }
+
+            RyzomClient.Log?.Warn($"Command unknown: " + cmd);
+            return "";
         }
 
         public static void SendUpdate(string name, CharConnectionState status)
@@ -172,8 +238,9 @@ namespace RCC.Bots
 
                 //Debug.Print(result);
             }
-            catch
+            catch (Exception e)
             {
+                RyzomClient.Log.Error("Error while posting to the players API: " + e.Message);
             }
         }
     }

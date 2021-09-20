@@ -129,7 +129,7 @@ namespace RCC.Config
 
                 foreach (var lineRaw in lines)
                 {
-                    var line = lineRaw.Split('#')[0].Split("//")[0].Trim();
+                    var line = lineRaw.Split('#')[0]/*Split("//")[0]*/.Trim();
 
                     if (line.Length <= 0) continue;
 
