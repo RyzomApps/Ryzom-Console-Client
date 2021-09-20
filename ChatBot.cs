@@ -13,6 +13,7 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using RCC;
+using RCC.Chat;
 using RCC.Helper;
 using RCC.Network;
 
@@ -123,6 +124,10 @@ namespace MinecraftClient
         public virtual void OnGameTeamContactInit(List<uint> vFriendListName, List<CharConnectionState> vFriendListOnline, List<string> vIgnoreListName) { }
 
         public virtual void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList) { }
+
+        public virtual void OnChat(in uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, in uint dynChatId, string senderName, in uint bubbleTimer) { }
+
+        public virtual void OnTell(string ucstr, string senderName) { }
 
         /// <summary>
         /// Will be called every ~100ms (10fps) if loaded in MinecraftCom

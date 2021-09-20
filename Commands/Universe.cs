@@ -3,22 +3,22 @@ using System.Collections.Generic;
 
 namespace RCC.Commands
 {
-    public class Say : Command
+    public class Universe : Command
     {
-        public override string CmdName => "say";
+        public override string CmdName => "universe";
         public override string CmdUsage => "<text>";
-        public override string CmdDesc => "Messages sent normally in the around channel have a 25m range.";
+        public override string CmdDesc => "This command sends a message to the universe channel, which is visible to everyone online at that moment.";
 
         public override IEnumerable<string> getCMDAliases()
         {
-            return new[] { "s" };
+            return new[] { "u" };
         }
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
             var args = getArgs(command);
 
-            ((RyzomClient)RyzomClient.GetInstance()).Channel = ChatGroupType.Around;
+            ((RyzomClient)RyzomClient.GetInstance()).Channel = ChatGroupType.Universe;
 
             if (args.Length == 0)
                 return "";

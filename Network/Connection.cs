@@ -23,6 +23,7 @@ namespace RCC.Network
         public static List<CharacterSummary> CharacterSummaries = new List<CharacterSummary>();
         public static bool WaitServerAnswer;
 
+        public static string PlayerSelectedHomeShardName = "";
         public static string PlayerSelectedHomeShardNameWithParenthesis = "";
 
         public static bool GameExit = false;

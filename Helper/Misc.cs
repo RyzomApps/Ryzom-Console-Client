@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace RCC.Helper
 {
@@ -53,6 +54,27 @@ namespace RCC.Helper
             index |= c.G > 64 ? 2 : 0; // Green bit
             index |= c.B > 64 ? 1 : 0; // Blue bit
             return (ConsoleColor) index;
+        }
+
+        /// <summary>
+        /// Use input string to calculate MD5 hash
+        /// </summary>
+        public static string CreateMD5(string input)
+        {
+            using var md5 = MD5.Create();
+
+            var inputBytes = Encoding.ASCII.GetBytes(input);
+            var hashBytes = md5.ComputeHash(inputBytes);
+
+            // Convert the byte array to hexadecimal string
+            var sb = new StringBuilder();
+
+            foreach (var t in hashBytes)
+            {
+                sb.Append(t.ToString("X2"));
+            }
+
+            return sb.ToString();
         }
     }
 }

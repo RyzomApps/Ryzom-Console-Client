@@ -202,8 +202,7 @@ namespace RCC.Chat
                 result = msg;
             else
             {
-                //string name = CEntityCL.removeTitleAndShardFromName(sender); TODO
-                string name = sender;
+                string name = Entity.RemoveTitleAndShardFromName(sender);
                 string csr;
 
                 //// special case where there is only a title, very rare case for some NPC
@@ -265,8 +264,7 @@ namespace RCC.Chat
             }
 
             // Format the sentence with the provided sender name
-            //string senderName = CEntityCL.removeTitleAndShardFromName(sender); TODO
-            string senderName = sender;
+            string senderName = Entity.RemoveTitleAndShardFromName(sender); 
 
             string csr = "";
             // Does the char have a CSR title?

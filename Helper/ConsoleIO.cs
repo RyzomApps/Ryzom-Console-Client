@@ -137,7 +137,8 @@ namespace RCC.Helper
 
             lock (IoLock)
             {
-                Console.Write('>');
+                var prefix = ((RyzomClient)RyzomClient.GetInstance()).Channel.ToString()[0];
+                Console.Write(prefix);
                 _reading = true;
                 _buffer = "";
                 _buffer2 = "";
@@ -296,7 +297,7 @@ namespace RCC.Helper
                             {
                                 Console.CursorLeft = Console.BufferWidth - 1;
                                 Console.CursorTop--;
-                                Console.Write(' ');
+                                Console.Write(" ");
                                 Console.CursorLeft = Console.BufferWidth - 1;
                                 Console.CursorTop--;
                             }
@@ -305,7 +306,10 @@ namespace RCC.Helper
                             Console.Write(text);
                             _buffer = buf;
                             _buffer2 = buf2;
-                            Console.Write(">" + _buffer);
+
+                            var prefix = ((RyzomClient) RyzomClient.GetInstance()).Channel.ToString()[0];
+
+                            Console.Write(prefix + _buffer);
                             if (_buffer2.Length > 0)
                             {
                                 Console.Write(_buffer2 + " \b");

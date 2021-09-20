@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading;
 using MinecraftClient;
 using RCC.Chat;
@@ -43,13 +44,25 @@ namespace RCC
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
 
+        public ChatGroupType Channel
+        {
+            get => _channel;
+            set
+            {
+                Log?.Info($"Channel changed to {value}");
+                _channel = value;
+            }
+        }
+
+        private ChatGroupType _channel = ChatGroupType.Around;
+
         static uint _lastGameCycle;
 
         public static ILogger Log;
 
         static RyzomClient _instance;
 
-        private readonly Queue<string> _chatQueue = new Queue<string>();
+        private readonly Queue<KeyValuePair<ChatGroupType, string>> _chatQueue = new Queue<KeyValuePair<ChatGroupType, string>>();
 
         private readonly Queue<Action> _threadTasks = new Queue<Action>();
         private readonly object _threadTasksLock = new object();
@@ -64,6 +77,8 @@ namespace RCC
         {
             _instance = this;
             StartClient();
+
+            Program.Exit(0);
         }
 
         public string Cookie { get; set; }
@@ -116,7 +131,7 @@ namespace RCC
                     break;
             }
 
-            string stringCategory = ChatManager.GetStringCategory(ucstr, out string finalString).ToUpper();
+            var stringCategory = ChatManager.GetStringCategory(ucstr, out var finalString).ToUpper();
 
             // Override color if the string contains the color
             if (stringCategory.Length > 0 && stringCategory != "SYS")
@@ -125,7 +140,7 @@ namespace RCC
                 {
                     var paramString = ClientConfig.SystemInfoColors[stringCategory];
 
-                    while (paramString.Contains("  ")) paramString.Replace("  ", " ");
+                    while (paramString.Contains("  ")) paramString = paramString.Replace("  ", " ");
 
                     var paramStringSplit = paramString.Split(" ");
 
@@ -142,11 +157,15 @@ namespace RCC
 
             Log.Chat(
                 $"[{mode}]{(stringCategory.Length > 0 ? $"[{stringCategory.ToUpper()}]" : "")}{color} {finalString}");
+
+            OnChat(compressedSenderIndex, ucstr, rawMessage, mode, dynChatId, senderName, bubbleTimer);
         }
 
         public void DisplayTell(string ucstr, string senderName)
         {
             Log.Chat(ucstr);
+
+            OnTell(ucstr, senderName);
         }
 
         public void ClearChannel(ChatGroupType mode, uint dynChatDbIndex)
@@ -197,7 +216,7 @@ namespace RCC
             //    BotLoad(bot, false);
             //botsOnHold.Clear();
 
-            _timeoutdetector = new Thread(TimeoutDetector) {Name = "RCC Connection timeout detector"};
+            _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
             _timeoutdetector.Start();
 
             foreach (ChatBot bot in botsOnHold)
@@ -268,12 +287,11 @@ namespace RCC
 
             lock (_chatQueue)
             {
-                if (_chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
-                {
-                    string text = _chatQueue.Dequeue();
-                    //handler.SendChatMessage(text); TODO send text messages
-                    //nextMessageSendTime = DateTime.Now + ClientConfig.messageCooldown;
-                }
+                if (_chatQueue.Count <= 0 || nextMessageSendTime >= DateTime.Now) return;
+
+                var message = _chatQueue.Dequeue();
+                SendChatMessage(message.Value, message.Key);
+                nextMessageSendTime = DateTime.Now + TimeSpan.FromSeconds(2);
             }
 
             //lock (threadTasksLock)
@@ -284,6 +302,60 @@ namespace RCC
             //        taskToRun();
             //    }
             //}
+        }
+
+        /// <summary>
+        /// Send a chat message to the server
+        /// </summary>
+        /// <param name="message">Message</param>
+        /// <param name="channel">Channel (e.g. around, universe, region, ...)</param>
+        /// <returns>True if properly sent</returns>
+        public bool SendChatMessage(string message, ChatGroupType channel = ChatGroupType.Around)
+        {
+            if (string.IsNullOrEmpty(message))
+                return true;
+            try
+            {
+                if (message.Length > 255)
+                    message = message.Substring(0, 255);
+
+                BitMemoryStream bms = new BitMemoryStream();
+                string msgType = "STRING:CHAT_MODE";
+                byte mode = (byte)channel;
+                uint dynamicChannelId = 0;
+                if (GenericMessageHeaderManager.PushNameToStream(msgType, bms))
+                {
+                    bms.Serial(ref mode);
+                    bms.Serial(ref dynamicChannelId);
+                    NetworkManager.Push(bms);
+                    //nlinfo("impulseCallBack : %s %d sent", msgType.c_str(), mode);
+                }
+                else
+                {
+                    Log?.Warn($"Unknown message named '{msgType}'.");
+                    return false;
+                }
+
+                // send str to IOS
+                msgType = "STRING:CHAT";
+
+                var out2 = new BitMemoryStream();
+                if (GenericMessageHeaderManager.PushNameToStream(msgType, out2))
+                {
+                    out2.Serial(ref message);
+                    NetworkManager.Push(out2);
+                }
+                else
+                {
+                    Log?.Warn($"Unknown message named '{msgType}'.");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
         }
 
         /// <summary>
@@ -300,7 +372,7 @@ namespace RCC
 
                     try
                     {
-                        Command cmd = (Command) Activator.CreateInstance(type);
+                        Command cmd = (Command)Activator.CreateInstance(type);
                         Cmds[cmd.CmdName.ToLower()] = cmd;
                         CmdNames.Add(cmd.CmdName.ToLower());
                         foreach (string alias in cmd.getCMDAliases())
@@ -362,14 +434,14 @@ namespace RCC
 
         /// <summary>
         ///     Allows the user to send chat messages, commands, and leave the server.
-        ///     Process text from the RCC command prompt on the main thread.
+        ///     Process message from the RCC command prompt on the main thread.
         /// </summary>
         private void HandleCommandPromptText(string text)
         {
-            //if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
+            //if (ConsoleIO.BasicIO && message.Length > 0 && message[0] == (char)0x00)
             //{
             //    //Process a request from the GUI
-            //    string[] command = text.Substring(1).Split((char)0x00);
+            //    string[] command = message.Substring(1).Split((char)0x00);
             //    switch (command[0].ToLower())
             //    {
             //        case "autocomplete":
@@ -385,8 +457,9 @@ namespace RCC
 
             if (ClientConfig.InternalCmdChar == ' ' || text[0] == ClientConfig.InternalCmdChar)
             {
-                string responseMsg = "";
-                string command = ClientConfig.InternalCmdChar == ' ' ? text : text.Substring(1);
+                var responseMsg = "";
+                var command = ClientConfig.InternalCmdChar == ' ' ? text : text.Substring(1);
+
                 if (!PerformInternalCommand( /*ClientConfig.ExpandVars(*/command /*)*/, ref responseMsg) &&
                     ClientConfig.InternalCmdChar == '/')
                 {
@@ -410,6 +483,10 @@ namespace RCC
         {
             const int maxLength = 255;
 
+            // never send out any commands
+            if (text[0] == '/')
+                return;
+
             lock (_chatQueue)
             {
                 if (string.IsNullOrEmpty(text))
@@ -420,21 +497,21 @@ namespace RCC
                     {
                         //Send the first 100/256 chars of the command
                         text = text.Substring(0, maxLength);
-                        _chatQueue.Enqueue(text);
+                        _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text));
                     }
                     else
                     {
                         //Split the message into several messages
                         while (text.Length > maxLength)
                         {
-                            _chatQueue.Enqueue(text.Substring(0, maxLength));
+                            _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text.Substring(0, maxLength)));
                             text = text.Substring(maxLength, text.Length - maxLength);
                         }
 
-                        _chatQueue.Enqueue(text);
+                        _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text));
                     }
                 }
-                else _chatQueue.Enqueue(text);
+                else _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text));
             }
         }
 
@@ -889,7 +966,7 @@ namespace RCC
                         Network.Connection.WaitServerAnswer = false;
 
                         // check that the pre selected character is available
-                        if (Network.Connection.CharacterSummaries[charSelect].People == (int) PeopleType.Unknown ||
+                        if (Network.Connection.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown ||
                             charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
@@ -954,6 +1031,7 @@ namespace RCC
             //Client.Connection.PlayerSelectedHomeShardNameWithParenthesis = "";
 
             // workaround
+            Network.Connection.PlayerSelectedHomeShardName = playerName;
             Network.Connection.PlayerSelectedHomeShardNameWithParenthesis = '(' + playerName + ')';
 
             //for (uint i = 0; i < CShardNames::getInstance().getSessionNames().size(); i++)
@@ -1066,13 +1144,20 @@ namespace RCC
             botsOnHold.Clear();
             botsOnHold.AddRange(bots);
 
-            if (_cmdprompt != null)
-                _cmdprompt.Abort();
+            try
+            {
+                _cmdprompt?.Abort();
+            }
+            catch { }
 
             if (_timeoutdetector != null)
             {
-                _timeoutdetector.Abort();
-                _timeoutdetector = null;
+                try
+                {
+                    _timeoutdetector.Abort();
+                    _timeoutdetector = null;
+                }
+                catch { }
             }
         }
 
@@ -1224,6 +1309,22 @@ namespace RCC
         internal void OnTeamContactCreate(uint contactId, uint nameId, CharConnectionState online, byte nList)
         {
             DispatchBotEvent(bot => bot.OnTeamContactCreate(contactId, nameId, online, nList));
+        }
+
+        /// <summary>
+        /// Any chat will arrive here 
+        /// </summary>
+        internal void OnChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, uint dynChatId, string senderName, uint bubbleTimer)
+        {
+            DispatchBotEvent(bot => bot.OnChat(compressedSenderIndex, ucstr, rawMessage, mode, dynChatId, senderName, bubbleTimer));
+        }
+
+        /// <summary>
+        /// Any tells will arrive here 
+        /// </summary>
+        internal void OnTell(string ucstr, string senderName)
+        {
+            DispatchBotEvent(bot => bot.OnTell(ucstr, senderName));
         }
 
     }

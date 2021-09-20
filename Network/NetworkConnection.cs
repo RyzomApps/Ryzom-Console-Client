@@ -393,7 +393,7 @@ namespace RCC.Network
                     _mLoginAttempts = 0;
                     Disconnect(); // will send disconnection message
                     RyzomClient.Log?.Warn("CNET: Too many LOGIN attempts, connection problem");
-                    return false; // exit now from loop, don't expect a new state
+                    return true; // exit now from loop, don't expect a new state
                 }
                 else
                 {
@@ -532,6 +532,16 @@ namespace RCC.Network
                             ConnectionState = ConnectionState.Probe;
                             // reset client impulse & vars
                             //Reset();
+
+                            ImpulseDecoder.Reset();
+                            //if (_DataBase)
+                            //    _DataBase->resetData(_CurrentServerTick, true);
+                            _LongAckBitField = new byte[0];
+                            //_PacketStamps.clear();
+                            Actions.Clear();
+                            //_Changes.clear();
+                            GenericMultiPartTemp.Clear();
+
                             //nldebug("CNET[%p]: connected->probe", this);
                             //_Changes.Add(CChange(0, ProbeReceived));
                             ReceiveSystemProbe(msgin);

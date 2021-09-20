@@ -414,12 +414,11 @@ namespace RCC.Client
                             }
 
                             // If the string contains a title, then remove it
-                            int pos = str.IndexOf('$');
+                            var pos = str.IndexOf('$');
 
                             if (str.Length > 0 && pos != -1)
                             {
-                                // todo remove title from name
-                                //str = CEntityCL.removeTitleFromName(str);
+                                str = Entity.RemoveTitleFromName(str);
                             }
 
                             // if the string contains a special rename of creature, remove it

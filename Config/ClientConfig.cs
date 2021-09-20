@@ -57,6 +57,7 @@ namespace RCC.Config
         public static bool LogToFile = false;
         public static string LogFile = "console-log.txt";
         public static bool PrependTimestamp = false;
+        public static string OnlinePlayersApi = "";
 
         //Other Settings
         public static char InternalCmdChar = '/';
@@ -213,6 +214,10 @@ namespace RCC.Config
 
                 case "selectcharacter":
                     SelectCharacter = int.Parse(argValue);
+                    return true;
+
+                case "onlineplayersapi":
+                    OnlinePlayersApi = argValue;
                     return true;
 
                 default:

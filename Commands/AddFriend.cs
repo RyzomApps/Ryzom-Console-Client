@@ -22,8 +22,8 @@ namespace RCC.Commands
             }
 
             // add into server (NB: will be added by the server response later)
-            string msgName = "TEAM:CONTACT_ADD";
-            BitMemoryStream out2 = new BitMemoryStream();
+            const string msgName = "TEAM:CONTACT_ADD";
+            var out2 = new BitMemoryStream();
 
             if (GenericMessageHeaderManager.PushNameToStream(msgName, out2))
             {

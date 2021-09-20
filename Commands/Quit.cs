@@ -35,6 +35,8 @@ namespace RCC.Commands
 
                 NetworkManager.Push(out2);
                 //nlinfo("impulseCallBack : %s sent", msgName.c_str());
+
+                RyzomClient.Log.Info("Initiating quit sequence... Please wait 30s for the logout.");
             }
 
             //Program.Exit();
