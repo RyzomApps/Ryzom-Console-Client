@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RCC.Config;
 
@@ -19,10 +20,19 @@ namespace RCC.Bots
         private readonly Dictionary<uint, CharConnectionState> _friendOnline = new Dictionary<uint, CharConnectionState>();
         private bool _initialized;
 
-        private DateTime _lastUpdateToServer = DateTime.MinValue;
-        private readonly TimeSpan _intervalIntervalUpdateToServer = TimeSpan.FromSeconds(60);
+        private DateTime _lastApiServerUpdate = DateTime.MinValue;
+        private DateTime _lastWhoCommand = DateTime.MinValue;
+
+        private readonly TimeSpan _intervalApiServer = TimeSpan.FromSeconds(60);
+        private readonly TimeSpan _intervalWhoCommand = TimeSpan.FromSeconds(60 * 10);
 
         private readonly Queue<string> _namesToAdd = new Queue<string>();
+
+        private bool _whoChatMode = false;
+        private const string WhoPlayerPattern = @"^\&SYS\&(?<name>[a-zA-Z].*)\(Atys\)\.$";
+        private readonly Regex _whoRegex = new Regex(WhoPlayerPattern);
+
+        private string _playerName;
 
         //private readonly Random _rand = new Random();
 
@@ -36,56 +46,64 @@ namespace RCC.Bots
                 RyzomClient.Log.Info("No server for player online status updates set: Not using this feature.");
         }
 
+        // nach einer aktion jeweils abbrechen, da noch ein problem mit mehreren actions in einem action block beim senden besteht -> disco
         public override void Update()
         {
             if (!_initialized)
                 return;
 
-            //if (_rand.NextDouble() < 0.66) we have limited actionblocks to only send one per cycle so this should not be needed
-            //    return;
-
-            if (_namesToAdd.Count > 0)
+            // Get missing names from server
+            foreach (var id in _friendNames.Keys.Where(id => _friendNames[id] == string.Empty))
             {
-                var name = _namesToAdd.Dequeue();
-
-                if (_friendNames.ContainsValue(name))
-                    return;
-
-                RyzomClient.Log.Info($"Trying to add {name} to the friend list.");
-                new AddFriend().Run((RyzomClient)RyzomClient.GetInstance(), "addfriend " + name, null);
-
-                return;
-            }
-
-            foreach (var id in _friendNames.Keys)
-            {
-                if (_friendNames[id] != string.Empty)
-                    continue;
-
                 if (StringManagerClient.GetString(id, out var name))
                 {
                     _friendNames[id] = Entity.RemoveTitleAndShardFromName(name).ToLower();
                 }
 
-                // nach einem namen müssen wir leider schluss machen, da noch ein problem mit mehreren actions in einem action block beim senden besteht -> disco
-                return; 
+                return;
             }
 
-            if (ClientConfig.OnlinePlayersApi.Trim().Equals(string.Empty))
-                return;
-
-            if (DateTime.Now <= _lastUpdateToServer + _intervalIntervalUpdateToServer)
-                return;
-
-            _lastUpdateToServer = DateTime.Now + _intervalIntervalUpdateToServer;
-
-            Task.Factory.StartNew(() =>
+            // add new names to the friends list
+            if (!_friendNames.ContainsValue(string.Empty) && _namesToAdd.Count > 0)
             {
-                foreach (var id in _friendNames.Keys.Where(id => _friendNames[id] != string.Empty))
+                var name = _namesToAdd.Dequeue();
+
+                if (_playerName == name)
+                    return;
+
+                if (_friendNames.ContainsValue(name))
+                    return;
+
+                RyzomClient.Log.Info($"Trying to add {name} to the friend list. {_namesToAdd.Count} left.");
+                new AddFriend().Run((RyzomClient)RyzomClient.GetInstance(), "addfriend " + name, null);
+
+                return;
+            }
+
+            // do the who
+            if (!_friendNames.ContainsValue(string.Empty) && DateTime.Now > _lastWhoCommand + _intervalWhoCommand)
+            {
+                _lastWhoCommand = DateTime.Now + _intervalWhoCommand;
+
+                new Who().Run((RyzomClient)RyzomClient.GetInstance(), "who ", null);
+            }
+
+            // update the api
+            if (!_friendNames.ContainsValue(string.Empty) && !ClientConfig.OnlinePlayersApi.Trim().Equals(string.Empty))
+            {
+                if (DateTime.Now > _lastApiServerUpdate + _intervalApiServer)
                 {
-                    SendUpdate(_friendNames[id], _friendOnline[id]);
+                    _lastApiServerUpdate = DateTime.Now + _intervalApiServer;
+
+                    Task.Factory.StartNew(() =>
+                    {
+                        foreach (var id in _friendNames.Keys.Where(id => _friendNames[id] != string.Empty))
+                        {
+                            SendUpdate(_friendNames[id], _friendOnline[id]);
+                        }
+                    });
                 }
-            });
+            }
         }
 
         public override void OnGameTeamContactStatus(uint contactId, CharConnectionState online)
@@ -112,6 +130,8 @@ namespace RCC.Bots
 
             RyzomClient.Log.Info($"Initialised friend list with {vFriendListName.Count} contacts.");
 
+            _playerName = Entity.RemoveTitleAndShardFromName(Connection.PlayerSelectedHomeShardName).ToLower();
+
             _initialized = true;
         }
 
@@ -131,6 +151,33 @@ namespace RCC.Bots
         public override void OnChat(in uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, in uint dynChatId,
             string senderName, in uint bubbleTimer)
         {
+            // Try to add player from who command
+            if (mode == ChatGroupType.System)
+            {
+                if (_whoChatMode)
+                {
+                    var match = _whoRegex.Match(ucstr);
+
+                    if (match.Success)
+                    {
+                        var whoName = match.Groups["name"].Value.ToLower();
+
+                        if (!_friendNames.ContainsValue(whoName) && !_namesToAdd.Contains(whoName))
+                            _namesToAdd.Enqueue(whoName);
+                    }
+                    else
+                    {
+                        _whoChatMode = false;
+                    }
+                }
+
+                if (ucstr.StartsWith(@"&SYS&Online characters in region"))
+                {
+                    _whoChatMode = true;
+                }
+            }
+
+            // try to add players from the chat
             var name = Entity.RemoveTitleAndShardFromName(senderName).ToLower();
 
             if (name.Trim().Equals(string.Empty))

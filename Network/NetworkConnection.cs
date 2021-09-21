@@ -1360,8 +1360,7 @@ namespace RCC.Network
 
                     default:
                         // Nothing here !
-                        stateBroke =
-                            false; // will come here if a disconnection action is received inside a method that returns true
+                        stateBroke = false; // will come here if a disconnection action is received inside a method that returns true
                         break;
                 }
             } while (stateBroke); // && _TotalMessages<5);

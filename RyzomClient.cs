@@ -1123,7 +1123,14 @@ namespace RCC
                 ///////////////
                 // <- FAR_TP //
                 ///////////////
-            } // end of main loop
+
+                    if (NetworkConnection.ConnectionState == ConnectionState.Disconnect ||
+                        NetworkConnection.ConnectionState == ConnectionState.Quit)
+                    {
+                        Network.Connection.GameExit = true;
+                    }
+
+                } // end of main loop
 
             // FAR TP STUFF HERE
 
