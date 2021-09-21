@@ -17,7 +17,7 @@ namespace RCC.Network.Action
     /// </summary>
     public static class ActionFactory
     {
-        const byte InvalidSlot = 0xFF;
+        private const byte InvalidSlot = 0xFF;
 
         public static Dictionary<ActionCode, KeyValuePair<Type, Action>> RegisteredAction =
             new Dictionary<ActionCode, KeyValuePair<Type, Action>>();
@@ -120,18 +120,14 @@ namespace RCC.Network.Action
 
         /// <summary>
         ///     Return the size IN BITS, not in bytes
+        ///     If you change this size, please update IMPULSE_ACTION_HEADER_SIZE in the front-end
         /// </summary>
         public static int Size(Action action)
         {
-            // If you change this size, please update IMPULSE_ACTION_HEADER_SIZE in the front-end
-
-            /*
-             * Warning: when calculating bit sizes, don't forget to multiply sizeof by 8
-             */
+            // Warning: when calculating bit sizes, don't forget to multiply sizeof by 8
             int headerBitSize;
 
             // size of the code
-
             if (action.Code < (ActionCode) 4)
                 headerBitSize = 1 + 2;
             else

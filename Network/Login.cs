@@ -8,10 +8,13 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using RCC.Config;
 using RCC.Helper;
+using RCC.Helper.Crypter;
 
 namespace RCC.Network
 {
@@ -38,7 +41,7 @@ namespace RCC.Network
             var request = WebRequest.CreateHttp(urlLogin);
             request.Method = "GET";
 
-            using var response = (HttpWebResponse) request.GetResponse();
+            using var response = (HttpWebResponse)request.GetResponse();
 
             using var reader =
                 new StreamReader(
@@ -82,50 +85,50 @@ namespace RCC.Network
                     // server returns an error
                     throw new InvalidOperationException($"server error: {responseString.Substring(2)}");
                 case '1':
-                {
-                    var lines = responseString.Split('\n');
+                    {
+                        var lines = responseString.Split('\n');
 
-                    if (lines.Length != 2)
-                        throw new InvalidOperationException(
-                            $"Invalid server return, found {lines.Length} lines, want 2");
+                        if (lines.Length != 2)
+                            throw new InvalidOperationException(
+                                $"Invalid server return, found {lines.Length} lines, want 2");
 
-                    var parts = lines[0].Split('#');
+                        var parts = lines[0].Split('#');
 
-                    if (parts.Length < 5)
-                        throw new InvalidOperationException("Invalid server return, missing cookie and/or Ring URLs");
+                        if (parts.Length < 5)
+                            throw new InvalidOperationException("Invalid server return, missing cookie and/or Ring URLs");
 
-                    // server returns ok, we have the cookie
+                        // server returns ok, we have the cookie
 
-                    // store the cookie value and FS address for next page request
-                    var currentCookie = parts[1];
-                    var fsAddr = parts[2];
+                        // store the cookie value and FS address for next page request
+                        var currentCookie = parts[1];
+                        var fsAddr = parts[2];
 
-                    // store the ring startup page
-                    var ringMainURL = parts[3];
-                    var farTpUrlBase = parts[4];
-                    var startStat = parts.Length >= 6 && parts[5] == "1";
+                        // store the ring startup page
+                        var ringMainURL = parts[3];
+                        var farTpUrlBase = parts[4];
+                        var startStat = parts.Length >= 6 && parts[5] == "1";
 
-                    // parse the second line (contains the domain info)
-                    parts = lines[1].Split('#');
+                        // parse the second line (contains the domain info)
+                        parts = lines[1].Split('#');
 
-                    if (parts.Length < 3)
-                        throw new InvalidOperationException("Invalid server return, missing patch URLs");
+                        if (parts.Length < 3)
+                            throw new InvalidOperationException("Invalid server return, missing patch URLs");
 
-                    var r2ServerVersion = parts[0];
-                    var r2BackupPatchURL = parts[1];
+                        var r2ServerVersion = parts[0];
+                        var r2BackupPatchURL = parts[1];
 
-                    var r2PatchUrLs = parts[2].Split(' ');
+                        var r2PatchUrLs = parts[2].Split(' ');
 
-                    client.Cookie = currentCookie;
-                    client.FsAddr = fsAddr;
-                    client.RingMainURL = ringMainURL;
-                    client.FarTpUrlBase = farTpUrlBase;
-                    client.StartStat = startStat;
-                    client.R2ServerVersion = r2ServerVersion;
-                    client.R2BackupPatchURL = r2BackupPatchURL;
-                    client.R2PatchUrLs = r2PatchUrLs;
-                    break;
-                }
+                        client.Cookie = currentCookie;
+                        client.FsAddr = fsAddr;
+                        client.RingMainURL = ringMainURL;
+                        client.FarTpUrlBase = farTpUrlBase;
+                        client.StartStat = startStat;
+                        client.R2ServerVersion = r2ServerVersion;
+                        client.R2BackupPatchURL = r2BackupPatchURL;
+                        client.R2PatchUrLs = r2PatchUrLs;
+                        break;
+                    }
             }
         }
 
@@ -139,7 +142,7 @@ namespace RCC.Network
             var requestSalt = WebRequest.CreateHttp(urlSalt);
             requestSalt.Method = "GET";
 
-            using var responseSalt = (HttpWebResponse) requestSalt.GetResponse();
+            using var responseSalt = (HttpWebResponse)requestSalt.GetResponse();
 
             using var readerSalt =
                 new StreamReader(
@@ -166,12 +169,27 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Return a pointer to static data consisting of the "setting"
-        ///     followed by an encryption produced by the "key" and "setting".
+        ///     Return a pointer to static data consisting of the "salt"
+        ///     followed by an encryption produced by the "key" and "salt".
         /// </summary>
-        protected static string Crypt(string password, string setting)
+        protected static string Crypt(string password, string salt)
         {
-            return CryptSharp.Crypt(setting, password);
+            if (salt.Length < 2 || salt[0] != '$' || salt[1] != '6') return DesCrypter.Crypt(salt, password);
+
+            if (salt.StartsWith("$6$") && !salt.Contains("$rounds="))
+            {
+                salt = "$6$rounds=5000$" + salt.Substring(3);
+            }
+
+            if (salt.EndsWith("$"))
+            {
+                salt = salt[..^1];
+            }
+
+            var sha512Crypter = new Sha512CrypterBase();
+
+            return sha512Crypter.Crypt(password, salt).Replace("$rounds=5000", "");
+
         }
     }
 }

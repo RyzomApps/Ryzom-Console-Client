@@ -8,12 +8,18 @@ namespace RCC.Helper
 {
     public static class Misc
     {
+        /// <summary>
+        /// Conerts a byte array to a hexdecimal string
+        /// </summary>
         public static string ByteArrToString(byte[] arr)
         {
             return BitConverter.ToString(arr).Replace("-", "").ToLowerInvariant();
         }
 
-        public static byte[] GetMD5(string filename)
+        /// <summary>
+        /// Get MD5 hash of a file
+        /// </summary>
+        public static byte[] GetFileMD5(string filename)
         {
             using var md5 = MD5.Create();
             using var stream = File.OpenRead(filename);
@@ -21,6 +27,9 @@ namespace RCC.Helper
             return hash;
         }
 
+        /// <summary>
+        /// usafe conversion from sint32 to single (float) value
+        /// </summary>
         public static unsafe float Int32BitsToSingle(int value)
         {
             return *(float*) &value;
@@ -47,9 +56,12 @@ namespace RCC.Helper
             return ret;
         }
 
+        /// <summary>
+        /// Get the console color from a color specified
+        /// </summary>
         public static ConsoleColor FromColor(Color c)
         {
-            int index = (c.R > 128) | (c.G > 128) | (c.B > 128) ? 8 : 0; // Bright bit
+            var index = (c.R > 128) | (c.G > 128) | (c.B > 128) ? 8 : 0; // Bright bit
             index |= c.R > 64 ? 4 : 0; // Red bit
             index |= c.G > 64 ? 2 : 0; // Green bit
             index |= c.B > 64 ? 1 : 0; // Blue bit
@@ -59,7 +71,7 @@ namespace RCC.Helper
         /// <summary>
         /// Use input string to calculate MD5 hash
         /// </summary>
-        public static string CreateMD5(string input)
+        public static string GetMD5(string input)
         {
             using var md5 = MD5.Create();
 

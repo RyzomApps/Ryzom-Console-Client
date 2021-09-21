@@ -283,8 +283,8 @@ namespace RCC.Network
             //_VisualPropertyTreeRoot->buildTree();
 
             // If the server run on window, those are the one to test
-            _msgXmlMD5 = Misc.GetMD5("data\\msg.xml");
-            _databaseXmlMD5 = Misc.GetMD5("data\\database.xml");
+            _msgXmlMD5 = Misc.GetFileMD5("data\\msg.xml");
+            _databaseXmlMD5 = Misc.GetFileMD5("data\\database.xml");
         }
 
         /// <summary>
@@ -1473,7 +1473,7 @@ namespace RCC.Network
 
                 // Prevent to send a message too big
                 //if (message.getPosInBit() + (*itblock).bitSize() > FrontEndInputBufferSize) // hard version
-                if (message.GetPosInBit() > 480 * 8) // easy version
+                //if (message.GetPosInBit() > 480 * 8) // easy version TODO: GetPosInBit does not return the right size i guess -> so we send only 1 block at a time (but do not get disconnected)
                     break;
             }
 

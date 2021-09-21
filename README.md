@@ -23,5 +23,8 @@ released under GNU Affero General Public License http://www.gnu.org/licenses/
 
 Copyright 2010 Winch Gate Property Limited
 
-### CryptSharp (https://gist.github.com/aannenko/d47c90b0f92177286bb9814850888920)
+### CryptSharp DES (https://gist.github.com/aannenko/d47c90b0f92177286bb9814850888920)
 Copyright 2019 by aannenko
+
+### CryptSharp SHA512 (http://www.zer7.com/software/cryptsharp)
+Copyright (c) 2010, 2013 James F. Bellinger 

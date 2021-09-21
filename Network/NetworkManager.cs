@@ -901,7 +901,7 @@ namespace RCC.Network
             var userEntityInitPos = new Vector3((float)x / 1000.0f, (float)y / 1000.0f, (float)z / 1000.0f);
             var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
 
-            RyzomClient.Log?.Info($"<ImpulseUserChar> pos : {userEntityInitPos}  heading : {heading}");
+            RyzomClient.Log?.Info($"Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
 
             // Update the position for the vision.
             //NetworkManager.setReferencePosition(UserEntityInitPos);
@@ -941,7 +941,7 @@ namespace RCC.Network
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
                 if ((PeopleType)cs.People != PeopleType.Unknown)
-                    RyzomClient.Log?.Info($"Found character {cs.Name} from shard {cs.Mainland} in slot {i}");
+                    RyzomClient.Log?.Info($"Character {cs.Name} from shard {cs.Mainland} in slot {i}");
                 Connection.CharacterSummaries.Add(cs);
             }
             // END WORKAROUND

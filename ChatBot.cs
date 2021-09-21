@@ -8,16 +8,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.IO;
-using System.Text.RegularExpressions;
-using RCC;
 using RCC.Chat;
-using RCC.Helper;
 using RCC.Network;
 
-namespace MinecraftClient
+namespace RCC
 {
     ///
     /// Welcome to the Bot API file !

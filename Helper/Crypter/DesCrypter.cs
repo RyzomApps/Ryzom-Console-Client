@@ -6,7 +6,7 @@
 
 using System;
 
-namespace RCC.Helper
+namespace RCC.Helper.Crypter
 {
     /// <summary>
     ///     A performant .NET implementation of crypt(3) that leverages Span
@@ -15,7 +15,7 @@ namespace RCC.Helper
     ///     T was introduced in .NET Core 2.1).
     ///     by aannenko
     /// </summary>
-    public static class CryptSharp
+    public static class DesCrypter
     {
         private const string MEncryptionSaltCharacters =
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./";
@@ -357,19 +357,6 @@ namespace RCC.Helper
         };
 
         private static readonly Random Random = new Random();
-
-        public static string Crypt(ReadOnlySpan<char> textToEncrypt)
-        {
-            var maxGeneratedNumber = MEncryptionSaltCharacters.Length;
-            Span<char> encryptionSalt = stackalloc char[2];
-            for (var index = 0; index < 2; index++)
-            {
-                var randomIndex = Random.Next(maxGeneratedNumber);
-                encryptionSalt[index] = MEncryptionSaltCharacters[randomIndex];
-            }
-
-            return Crypt(encryptionSalt, textToEncrypt);
-        }
 
         public static string Crypt(ReadOnlySpan<char> encryptionSalt, ReadOnlySpan<char> textToEncrypt)
         {

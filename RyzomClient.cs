@@ -13,7 +13,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
-using MinecraftClient;
 using RCC.Chat;
 using RCC.Client;
 using RCC.Config;
