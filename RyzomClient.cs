@@ -208,22 +208,18 @@ namespace RCC
                 //if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                 //Add your ChatBot here by uncommenting and adapting
-                BotLoad(new Bots.OnlinePlayersLogger());
+                if (ClientConfig.OnlinePlayersLogger_Enabled) { BotLoad(new Bots.OnlinePlayersLogger());
+                }
             }
 
-            //foreach (ChatBot bot in botsOnHold)
-            //    BotLoad(bot, false);
-            //botsOnHold.Clear();
+            foreach (var bot in botsOnHold)
+                BotLoad(bot, false);
+            botsOnHold.Clear();
 
             _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
             _timeoutdetector.Start();
 
-            foreach (ChatBot bot in botsOnHold)
-                BotLoad(bot, false);
-            botsOnHold.Clear();
-
-            _cmdprompt = new Thread(new ThreadStart(CommandPrompt));
-            _cmdprompt.Name = "RCC Command prompt";
+            _cmdprompt = new Thread(CommandPrompt) {Name = "RCC Command prompt"};
             _cmdprompt.Start();
 
             Main();
@@ -278,7 +274,7 @@ namespace RCC
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
+                        Log.Warn($"Update: Got error from {bot}: {e}");
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
@@ -288,8 +284,8 @@ namespace RCC
             {
                 if (_chatQueue.Count <= 0 || nextMessageSendTime >= DateTime.Now) return;
 
-                var message = _chatQueue.Dequeue();
-                SendChatMessage(message.Value, message.Key);
+                var (key, value) = _chatQueue.Dequeue();
+                SendChatMessage(value, key);
                 nextMessageSendTime = DateTime.Now + TimeSpan.FromSeconds(2);
             }
 
@@ -362,29 +358,32 @@ namespace RCC
         /// </summary>
         public void LoadCommands()
         {
-            if (!_commandsLoaded)
-            {
-                Type[] cmdsClasses = Program.GetTypesInNamespace("RCC.Commands");
-                foreach (Type type in cmdsClasses)
-                {
-                    if (!type.IsSubclassOf(typeof(Command))) continue;
+            if (_commandsLoaded) return;
 
-                    try
+            var cmdsClasses = Program.GetTypesInNamespace("RCC.Commands");
+            foreach (var type in cmdsClasses)
+            {
+                if (!type.IsSubclassOf(typeof(Command))) continue;
+
+                try
+                {
+                    var cmd = (Command)Activator.CreateInstance(type);
+
+                    if (cmd != null)
                     {
-                        Command cmd = (Command)Activator.CreateInstance(type);
                         Cmds[cmd.CmdName.ToLower()] = cmd;
                         CmdNames.Add(cmd.CmdName.ToLower());
-                        foreach (string alias in cmd.getCMDAliases())
+                        foreach (var alias in cmd.getCMDAliases())
                             Cmds[alias.ToLower()] = cmd;
                     }
-                    catch (Exception e)
-                    {
-                        Log.Warn(e.Message);
-                    }
                 }
-
-                _commandsLoaded = true;
+                catch (Exception e)
+                {
+                    Log.Warn(e.Message);
+                }
             }
+
+            _commandsLoaded = true;
         }
 
         /// <summary>
@@ -451,6 +450,7 @@ namespace RCC
             //}
             //else
             //{
+
             text = text.Trim();
             if (text.Length <= 0) return;
 
@@ -519,6 +519,7 @@ namespace RCC
         /// </summary>
         /// <param name="cmdName">Name of the command</param>
         /// <param name="cmdDesc">Description/usage of the command</param>
+        /// <param name="cmdUsage">String containing a usage case</param>
         /// <param name="callback">Method for handling the command</param>
         /// <returns>True if successfully registered</returns>
         public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, ChatBot.CommandRunner callback)
@@ -527,13 +528,11 @@ namespace RCC
             {
                 return false;
             }
-            else
-            {
-                Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
-                Cmds.Add(cmdName.ToLower(), cmd);
-                CmdNames.Add(cmdName.ToLower());
-                return true;
-            }
+
+            Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
+            Cmds.Add(cmdName.ToLower(), cmd);
+            CmdNames.Add(cmdName.ToLower());
+            return true;
         }
 
         /// <summary>
@@ -553,7 +552,8 @@ namespace RCC
                 CmdNames.Remove(cmdName.ToLower());
                 return true;
             }
-            else return false;
+
+            return false;
         }
 
         /// <summary>
@@ -566,6 +566,8 @@ namespace RCC
         public bool PerformInternalCommand(string command, ref string responseMsg,
             Dictionary<string, object> localVars = null)
         {
+            if (responseMsg == null) throw new ArgumentNullException(nameof(responseMsg));
+
             /* Process the provided command */
 
             var commandName = command.Split(' ')[0].ToLower();
@@ -691,7 +693,7 @@ namespace RCC
         ///     If you add something in this function, check CFarTP,
         ///     some kind of reinitialization might be useful over there.
         /// </summary>
-        private void InitMainLoop()
+        private static void InitMainLoop()
         {
             // Create the game interface database
 
@@ -759,10 +761,7 @@ namespace RCC
             {
                 try
                 {
-                    // string res = checkLogin(LoginLogin, LoginPassword, ClientApp, LoginCustomParameters);
-                    Network.Login.CheckLogin(this, ClientConfig.Username, ClientConfig.Password,
-                        ClientConfig.ApplicationServer,
-                        "");
+                    Network.Login.CheckLogin(this, ClientConfig.Username, ClientConfig.Password, ClientConfig.ApplicationServer, "");
                     loggedIn = true;
                 }
                 catch (Exception e)
@@ -910,7 +909,7 @@ namespace RCC
         /// </summary>
         public InterfaceState GlobalMenu()
         {
-            uint serverTick = NetworkConnection.GetCurrentServerTick();
+            var serverTick = NetworkConnection.GetCurrentServerTick();
             var playerWantToGoInGame = false;
             var firewallTimeout = false;
 
@@ -1020,7 +1019,7 @@ namespace RCC
             // -> ev_global_menu_exited
 
             //  Init the current Player Name (for interface.cfg and sentence.name save). Make a good File Name.
-            string playerName = Network.Connection.CharacterSummaries[Network.Connection.PlayerSelectedSlot].Name;
+            var playerName = Network.Connection.CharacterSummaries[Network.Connection.PlayerSelectedSlot].Name;
             //Client.Connection.PlayerSelectedFileName = buildPlayerNameForSaveFile(playerName);
 
             // Init the current Player Home shard Id and name
@@ -1055,7 +1054,7 @@ namespace RCC
             // Main loop. If the window is no more Active -> Exit.
             while ( /*!UserEntity->permanentDeath() &&*/ !Network.Connection.GameExit)
             {
-                Thread.Sleep(100);
+                Thread.Sleep(10);
 
                 // If an action handler execute. NB: MUST BE DONE BEFORE ANY THING ELSE PROFILE CRASH!!!!!!!!!!!!!!!!!
 
@@ -1149,16 +1148,21 @@ namespace RCC
             {
                 _cmdprompt?.Abort();
             }
-            catch { }
-
-            if (_timeoutdetector != null)
+            catch
             {
-                try
-                {
-                    _timeoutdetector.Abort();
-                    _timeoutdetector = null;
-                }
-                catch { }
+                // ignored
+            }
+
+            if (_timeoutdetector == null) return;
+
+            try
+            {
+                _timeoutdetector.Abort();
+                _timeoutdetector = null;
+            }
+            catch
+            {
+                // ignored
             }
         }
 

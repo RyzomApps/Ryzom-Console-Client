@@ -24,7 +24,7 @@ namespace RCC.Bots
 
         private readonly Queue<string> _namesToAdd = new Queue<string>();
 
-        private readonly Random _rand = new Random();
+        //private readonly Random _rand = new Random();
 
         public override void Initialize()
         {

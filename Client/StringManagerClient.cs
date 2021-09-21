@@ -21,88 +21,88 @@ namespace RCC.Client
     /// </summary>
     internal static class StringManagerClient
     {
-        static readonly Dictionary<uint, string> ReceivedStrings = new Dictionary<uint, string>();
+        private static readonly Dictionary<uint, string> ReceivedStrings = new Dictionary<uint, string>();
         private static readonly HashSet<uint> WaitingStrings = new HashSet<uint>();
 
-        static readonly Dictionary<uint, DynamicStringInfo> ReceivedDynStrings =
+        private static readonly Dictionary<uint, DynamicStringInfo> ReceivedDynStrings =
             new Dictionary<uint, DynamicStringInfo>();
 
-        static readonly Dictionary<uint, DynamicStringInfo> WaitingDynStrings =
+        private static readonly Dictionary<uint, DynamicStringInfo> WaitingDynStrings =
             new Dictionary<uint, DynamicStringInfo>();
 
         /// <summary>
         ///     String waiting the string value from the server.
         /// </summary>
-        static readonly Dictionary<uint, StringWaiter> StringsWaiters = new Dictionary<uint, StringWaiter>();
+        private static readonly Dictionary<uint, StringWaiter> StringsWaiters = new Dictionary<uint, StringWaiter>();
 
         /// <summary>
         ///     String waiting the dyn string value from the server.
         /// </summary>
-        static readonly Dictionary<uint, StringWaiter> DynStringsWaiters = new Dictionary<uint, StringWaiter>();
+        private static readonly Dictionary<uint, StringWaiter> DynStringsWaiters = new Dictionary<uint, StringWaiter>();
 
         /// <summary>
         ///     Callback for string value from the server
         /// </summary>
-        static readonly Dictionary<uint, StringWaitCallback> StringsCallbacks =
+        private static readonly Dictionary<uint, StringWaitCallback> StringsCallbacks =
             new Dictionary<uint, StringWaitCallback>();
 
         /// <summary>
         ///     Callback for dyn string value from the server
         /// </summary>
-        static readonly Dictionary<uint, StringWaitCallback> DynStringsCallbacks =
+        private static readonly Dictionary<uint, StringWaitCallback> DynStringsCallbacks =
             new Dictionary<uint, StringWaitCallback>();
 
-        static readonly Dictionary<string, string> DynStrings = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> DynStrings = new Dictionary<string, string>();
 
         private static readonly List<CachedString> CacheStringToSave = new List<CachedString>();
 
-        private static string _ShardId;
-        private static string _LanguageCode;
-        private static bool _CacheInited;
-        private static string _CacheFilename;
-        private static uint _Timestamp;
-        private static bool _CacheLoaded;
+        private static string _shardId;
+        private static string _languageCode;
+        private static bool _cacheInited;
+        private static string _cacheFilename;
+        private static uint _timestamp;
+        private static bool _cacheLoaded;
 
         public static void InitCache(string shardId, string languageCode)
         {
-            _ShardId = shardId;
-            _LanguageCode = languageCode;
+            _shardId = shardId;
+            _languageCode = languageCode;
 
             // to be inited, shard id and language code must be filled
-            if (_ShardId != string.Empty && _LanguageCode != string.Empty)
-                _CacheInited = true;
+            if (_shardId != string.Empty && _languageCode != string.Empty)
+                _cacheInited = true;
             else
-                _CacheInited = false;
+                _cacheInited = false;
         }
 
         public static void LoadCache(in int timestamp)
         {
-            if (!_CacheInited) return;
+            if (!_cacheInited) return;
 
             try
             {
-                _CacheFilename = "save/" + _ShardId.Split(":")[0] + ".string_cache";
+                _cacheFilename = "save/" + _shardId.Split(":")[0] + ".string_cache";
 
-                RyzomClient.Log.Info($"SM : Try to open the string cache : {_CacheFilename}");
+                RyzomClient.Log.Info($"SM : Try to open the string cache : {_cacheFilename}");
 
-                if (File.Exists(_CacheFilename))
+                if (File.Exists(_cacheFilename))
                 {
                     // there is a cache file, check date reset it if needed
-                    using (var fileStream = new FileStream(_CacheFilename, FileMode.Open))
+                    using (var fileStream = new FileStream(_cacheFilename, FileMode.Open))
                     {
                         var timeBytes = new byte[4];
 
                         fileStream.Read(timeBytes, 0, 4);
 
-                        _Timestamp = BitConverter.ToUInt32(timeBytes);
+                        _timestamp = BitConverter.ToUInt32(timeBytes);
                     }
 
-                    if (_Timestamp != timestamp)
+                    if (_timestamp != timestamp)
                     {
                         RyzomClient.Log.Info("SM: Clearing string cache : outofdate");
 
                         // the cache is not sync, reset it TODO this is not working correctly
-                        using var fileStream = new FileStream(_CacheFilename, FileMode.Open);
+                        using var fileStream = new FileStream(_cacheFilename, FileMode.Create);
 
                         var timeBytes = BitConverter.GetBytes(timestamp);
 
@@ -118,7 +118,7 @@ namespace RCC.Client
                     RyzomClient.Log.Info("SM: Creating string cache");
 
                     // cache file don't exist, create it with the timestamp
-                    using var fileStream = new FileStream(_CacheFilename, FileMode.OpenOrCreate);
+                    using var fileStream = new FileStream(_cacheFilename, FileMode.Create);
 
                     var timeBytes = BitConverter.GetBytes(timestamp);
 
@@ -134,13 +134,13 @@ namespace RCC.Client
                 ReceivedStrings.Add(0, "");
 
                 // load the cache file
-                using var fileStream2 = new FileStream(_CacheFilename, FileMode.Open);
+                using var fileStream2 = new FileStream(_cacheFilename, FileMode.Open);
 
                 var timeBytes2 = new byte[4];
 
                 fileStream2.Read(timeBytes2, 0, 4);
 
-                _Timestamp = BitConverter.ToUInt32(timeBytes2);
+                _timestamp = BitConverter.ToUInt32(timeBytes2);
                 //Debug.Assert(_Timestamp == timestamp);
 
                 while (fileStream2.Position < fileStream2.Length)
@@ -168,7 +168,7 @@ namespace RCC.Client
                         ReceivedStrings.Add(id, str);
                 }
 
-                _CacheLoaded = true;
+                _cacheLoaded = true;
             }
             catch (Exception e)
             {
@@ -176,7 +176,7 @@ namespace RCC.Client
                 RyzomClient.Log.Warn("SM : cache deactivated");
 
                 // deactivated cache.
-                _CacheFilename = "";
+                _cacheFilename = "";
             }
         }
 
@@ -185,23 +185,27 @@ namespace RCC.Client
         /// </summary>
         public static void FlushStringCache()
         {
-            if (CacheStringToSave.Count > 0)
+            if (CacheStringToSave.Count <= 0) return;
+
+            using var fileStream = new FileStream(_cacheFilename, FileMode.Append);
+
+            foreach (var cacheString in CacheStringToSave)
             {
-                using var fileStream = new FileStream(_CacheFilename, FileMode.Open);
+                var idBytes = BitConverter.GetBytes(cacheString.StringId);
+                var lenBytes = BitConverter.GetBytes(cacheString.String.Length);
+                var strChars = cacheString.String.ToCharArray(); // todo check that
 
-                foreach (var cacheString in CacheStringToSave)
+                fileStream.Write(idBytes);
+                fileStream.Write(lenBytes);
+
+                foreach (var c in strChars)
                 {
-                    var idBytes = BitConverter.GetBytes(cacheString.StringId);
-                    var strBytes = Encoding.UTF8.GetBytes(cacheString.String); // todo check that
-                    var lenBytes = BitConverter.GetBytes(strBytes.Length);
-
-                    fileStream.Write(idBytes);
-                    fileStream.Write(lenBytes);
-                    fileStream.Write(strBytes);
+                    var bytes = BitConverter.GetBytes(c);
+                    fileStream.Write(bytes);
                 }
-
-                CacheStringToSave.Clear();
             }
+
+            CacheStringToSave.Clear();
         }
 
         /// <summary>
@@ -682,7 +686,7 @@ namespace RCC.Client
             if (updateCache)
             {
                 // update the string cache. DON'T SAVE now cause
-                if (_CacheInited && _CacheFilename.Length > 0)
+                if (_cacheInited && _cacheFilename.Length > 0)
                 {
                     var cs = new CachedString
                     {

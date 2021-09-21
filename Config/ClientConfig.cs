@@ -62,6 +62,9 @@ namespace RCC.Config
         //Other Settings
         public static char InternalCmdChar = '/';
 
+        // Bots
+        public static bool OnlinePlayersLogger_Enabled = false;
+
         // Read : "ID", "R G B A MODE [FX]"
         public static Dictionary<string, string> SystemInfoColors = new Dictionary<string, string>()
         {
@@ -218,6 +221,10 @@ namespace RCC.Config
 
                 case "onlineplayersapi":
                     OnlinePlayersApi = argValue;
+                    return true;
+
+                case "onlineplayerslogger":
+                    OnlinePlayersLogger_Enabled = bool.Parse(argValue);
                     return true;
 
                 default:

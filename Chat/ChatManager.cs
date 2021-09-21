@@ -309,6 +309,7 @@ namespace RCC.Chat
                 case ChatGroupType.Shout:
                     result = $"{cat}{csr}{senderName} shouts: {finalMsg}";
                     break;
+
                 default:
                     result = $"{cat}{csr}{senderName} says: {finalMsg}";
                     break;
@@ -319,24 +320,27 @@ namespace RCC.Chat
 
         public static string GetStringCategory(string src, out string dest, bool alwaysAddSysByDefault = false)
         {
-            string str = GetStringCategoryIfAny(src, out dest);
+            var str = GetStringCategoryIfAny(src, out dest);
+
             if (alwaysAddSysByDefault)
                 return str.Length == 0 ? "SYS" : str;
-            else
-                return str;
+
+            return str;
         }
 
         public static string GetStringCategoryIfAny(string src, out string dest)
         {
-            char[] colorCode = new char[0];
+            var colorCode = new char[0];
+
             if (src.Length >= 3)
             {
-                int startPos = 0;
+                var startPos = 0;
 
                 // Skip <NEW> or <CHG> if present at beginning
-                string preTag = "";
+                var preTag = "";
 
                 const string newTag = "<NEW>";
+
                 if (src.Length >= PreTagSize && src.Substring(0, PreTagSize) == newTag)
                 {
                     startPos = PreTagSize;
@@ -344,6 +348,7 @@ namespace RCC.Chat
                 }
 
                 const string chgTag = "<CHG>";
+
                 if (src.Length >= PreTagSize && src.Substring(0, PreTagSize) == chgTag)
                 {
                     startPos = PreTagSize;
@@ -352,21 +357,23 @@ namespace RCC.Chat
 
                 if (src[startPos] == '&')
                 {
-                    int nextPos = src.IndexOf('&', startPos + 1);
+                    var nextPos = src.IndexOf('&', startPos + 1);
 
                     if (nextPos != -1)
                     {
-                        int codeSize = nextPos - startPos - 1;
+                        var codeSize = nextPos - startPos - 1;
                         colorCode = new char[codeSize];
 
-                        for (int k = 0; k < codeSize; ++k)
+                        for (var k = 0; k < codeSize; ++k)
                         {
                             colorCode[k] = char.ToLower(src[k + startPos + 1]);
                         }
 
-                        string destTmp = "";
+                        var destTmp = "";
+
                         if (startPos != 0)
                             destTmp = preTag; // leave <NEW> or <CHG> in the dest string
+
                         destTmp += src.Substring(nextPos + 1);
                         dest = destTmp;
                     }
