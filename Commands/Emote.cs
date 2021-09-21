@@ -5,11 +5,11 @@ using RCC.Network;
 namespace RCC.Commands
 {
     // TODO: em command is not working yet
-    public class Em : Command
+    public class Emote : Command
     {
         public override string CmdName => "em";
-        public override string CmdUsage => "<emote phrase>";
-        public override string CmdDesc => "emote command";
+        public override string CmdUsage => "<custom emote text>";
+        public override string CmdDesc => "Creates an emote without using an animation.";
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -18,7 +18,7 @@ namespace RCC.Commands
             if (args.Length < 1)
                 return "";
 
-            string emotePhrase = "";
+            var emotePhrase = "";
             byte behavToSend = 1; //MBEHAV::IDLE;
 
             if (args.Length != 0)
@@ -28,10 +28,11 @@ namespace RCC.Commands
 
             // Create the message and send.
             const string msgName = "COMMAND:CUSTOM_EMOTE";
-            BitMemoryStream out2 = new BitMemoryStream();
+            var out2 = new BitMemoryStream();
+
             if (GenericMessageHeaderManager.PushNameToStream(msgName, out2))
             {
-                emotePhrase = "&EMT&" + "Ich" + " " + emotePhrase; // TODO: use the real name here xD
+                emotePhrase = "&EMT&" + Connection.PlayerSelectedHomeShardName + " " + emotePhrase;
 
                 out2.Serial(ref behavToSend);
                 out2.Serial(ref emotePhrase);
@@ -45,7 +46,7 @@ namespace RCC.Commands
 
         public override IEnumerable<string> getCMDAliases()
         {
-            return new string[] { };
+            return new string[] { "emote" };
         }
     }
 }

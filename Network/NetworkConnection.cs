@@ -185,7 +185,7 @@ namespace RCC.Network
         /// </summary>
         public static void ReInit()
         {
-            // TODO Reset data 
+            // TODO reinitialisation of the connection -> some methods missing
             ImpulseDecoder.Reset();
             //if (_DataBase)
             //    _DataBase->resetData(_CurrentServerTick, true);
@@ -339,7 +339,7 @@ namespace RCC.Network
                     byte message = 0;
                     msgin.Serial(ref message);
 
-                    switch ((SystemMessageType) message)
+                    switch ((SystemMessageType)message)
                     {
                         case SystemMessageType.SystemSyncCode:
                             // receive sync, decode sync
@@ -395,186 +395,8 @@ namespace RCC.Network
                     RyzomClient.Log?.Warn("CNET: Too many LOGIN attempts, connection problem");
                     return true; // exit now from loop, don't expect a new state
                 }
-                else
-                {
-                    ++_mLoginAttempts;
-                }
-            }
 
-            return false;
-        }
-
-        /// <summary>
-        ///     Connection state machine - Synchronize State
-        ///     if receives System PROBE
-        ///     immediate state Probe
-        ///     else if receives Normal
-        ///     immediate state Connected
-        ///     sends System ACK_SYNC
-        /// </summary>
-        private static bool StateSynchronize()
-        {
-            while (_connection.IsDataAvailable()) // && _TotalMessages<5)
-            {
-                _decodedHeader = false;
-                var msgin = new BitMemoryStream(true);
-
-                if (!BuildStream(msgin) || !DecodeHeader(msgin)) continue;
-
-                if (_systemMode)
-                {
-                    byte message = 0;
-                    msgin.Serial(ref message);
-
-                    switch ((SystemMessageType) message)
-                    {
-                        case SystemMessageType.SystemProbeCode:
-                            // receive probe, decode probe and state probe
-                            ConnectionState = ConnectionState.Probe;
-                            //nldebug("CNET[%p]: synchronize->probe", this);
-                            //_Changes.push_back(CChange(0, ProbeReceived)); TODO
-                            ReceiveSystemProbe(msgin);
-                            return true;
-
-                        case SystemMessageType.SystemStalledCode:
-                            // receive stalled, decode stalled and state stalled
-                            ConnectionState = ConnectionState.Stalled;
-                            //nldebug("CNET[%p]: synchronize->stalled", this);
-                            ReceiveSystemStalled(msgin);
-                            return true;
-
-                        case SystemMessageType.SystemSyncCode:
-                            // receive sync, decode sync
-                            ReceiveSystemSync(msgin);
-                            break;
-
-                        case SystemMessageType.SystemServerDownCode:
-                            Disconnect(); // will send disconnection message
-                            RyzomClient.Log?.Error("BACK-END DOWN");
-                            return false; // exit now from loop, don't expect a new state
-
-                        default:
-                            RyzomClient.Log?.Warn($"CNET: received system {message} in state Synchronize");
-                            break;
-                    }
-                }
-                else
-                {
-                    ConnectionState = ConnectionState.Connected;
-                    //nlwarning("CNET[%p]: synchronize->connected", this);
-                    //_Changes.push_back(CChange(0, ConnectionReady)); TODO
-                    ImpulseDecoder.Reset();
-                    ReceiveNormalMessage(msgin);
-                    return true;
-                }
-            }
-
-            // send ack sync if received sync or last sync timed out
-            if (_updateTime - _latestSyncTime > 300)
-                SendSystemAckSync();
-
-            return false;
-        }
-
-        /// <summary>
-        ///     Connection state machine - Connected State
-        ///     if receives System PROBE
-        ///     immediate state Probe
-        ///     else if receives Normal
-        ///     sends Normal data
-        /// </summary>
-        private static bool StateConnected()
-        {
-            // Prevent to increment the client time when the front-end does not respond
-            var previousTime = RyzomGetLocalTime();
-            var now = RyzomGetLocalTime();
-            var diff = now - previousTime;
-            previousTime = now;
-
-            if (diff > 3000 && !_connection.IsDataAvailable())
-            {
-                return false;
-            }
-
-            // update the current time;
-            while (_currentClientTime < (long) (_updateTime - _msPerTick - _lct) &&
-                   _currentClientTick < _currentServerTick)
-            {
-                _currentClientTime += _msPerTick;
-
-                _currentClientTick++;
-
-                _machineTimeAtTick = _updateTime;
-                _machineTicksAtTick = _updateTicks;
-            }
-
-            if (_currentClientTick >= _currentServerTick && !_connection.IsDataAvailable())
-            {
-                return false;
-            }
-
-            while (_connection.IsDataAvailable()) // && _TotalMessages<5)
-            {
-                _decodedHeader = false;
-                var msgin = new BitMemoryStream(true);
-
-                if (!BuildStream(msgin) || !DecodeHeader(msgin)) continue;
-
-                if (_systemMode)
-                {
-                    byte message = 0;
-                    msgin.Serial(ref message);
-
-                    switch ((SystemMessageType) message)
-                    {
-                        case SystemMessageType.SystemProbeCode:
-                            // receive probe, and goto state probe
-                            ConnectionState = ConnectionState.Probe;
-                            // reset client impulse & vars
-                            //Reset();
-
-                            ImpulseDecoder.Reset();
-                            //if (_DataBase)
-                            //    _DataBase->resetData(_CurrentServerTick, true);
-                            _LongAckBitField = new byte[0];
-                            //_PacketStamps.clear();
-                            Actions.Clear();
-                            //_Changes.clear();
-                            GenericMultiPartTemp.Clear();
-
-                            //nldebug("CNET[%p]: connected->probe", this);
-                            //_Changes.Add(CChange(0, ProbeReceived));
-                            ReceiveSystemProbe(msgin);
-                            return true;
-
-                        case SystemMessageType.SystemSyncCode:
-                            // receive stalled, decode stalled and state stalled
-                            ConnectionState = ConnectionState.Synchronize;
-                            //nldebug("CNET[%p]: connected->synchronize", this);
-                            ReceiveSystemSync(msgin);
-                            return true;
-
-                        case SystemMessageType.SystemStalledCode:
-                            // receive stalled, decode stalled and state stalled
-                            ConnectionState = ConnectionState.Stalled;
-                            //nldebug("CNET[%p]: connected->stalled", this);
-                            ReceiveSystemStalled(msgin);
-                            return true;
-
-                        case SystemMessageType.SystemServerDownCode:
-                            Disconnect(); // will send disconnection message
-                            RyzomClient.Log?.Error("BACK-END DOWN");
-                            return false; // exit now from loop, don't expect a new state
-
-                        default:
-                            RyzomClient.Log?.Warn($"CNET: received system {message} in state Connected");
-                            break;
-                    }
-                }
-                else
-                {
-                    ReceiveNormalMessage(msgin);
-                }
+                ++_mLoginAttempts;
             }
 
             return false;
@@ -590,52 +412,54 @@ namespace RCC.Network
         /// </summary>
         private static bool StateProbe()
         {
-            while (_connection.IsDataAvailable()) // && _TotalMessages<5)
+            while (_connection.IsDataAvailable())
             {
                 _decodedHeader = false;
                 var msgin = new BitMemoryStream(true);
-                if (!BuildStream(msgin) || !DecodeHeader(msgin)) continue;
 
-                if (_systemMode)
+                if (BuildStream(msgin) && DecodeHeader(msgin))
                 {
-                    byte message = 0;
-                    msgin.Serial(ref message);
-
-                    switch ((SystemMessageType) message)
+                    if (_systemMode)
                     {
-                        case SystemMessageType.SystemSyncCode:
-                            // receive sync, decode sync and state synchronize
-                            ConnectionState = ConnectionState.Synchronize;
-                            //nldebug("CNET[%p]: probe->synchronize", this);
-                            ReceiveSystemSync(msgin);
-                            return true;
+                        byte message = 0;
+                        msgin.Serial(ref message);
 
-                        case SystemMessageType.SystemStalledCode:
-                            // receive sync, decode sync and state synchronize
-                            ConnectionState = ConnectionState.Stalled;
-                            //nldebug("CNET[%p]: probe->stalled", this);
-                            ReceiveSystemStalled(msgin);
-                            return true;
+                        switch ((SystemMessageType)message)
+                        {
+                            case SystemMessageType.SystemSyncCode:
+                                // receive sync, decode sync and state synchronize
+                                ConnectionState = ConnectionState.Synchronize;
+                                //nldebug("CNET[%p]: probe->synchronize", this);
+                                ReceiveSystemSync(msgin);
+                                return true;
 
-                        case SystemMessageType.SystemProbeCode:
-                            // receive sync, decode sync
-                            ReceiveSystemProbe(msgin);
-                            break;
+                            case SystemMessageType.SystemStalledCode:
+                                // receive sync, decode sync and state synchronize
+                                ConnectionState = ConnectionState.Stalled;
+                                //nldebug("CNET[%p]: probe->stalled", this);
+                                ReceiveSystemStalled(msgin);
+                                return true;
 
-                        case SystemMessageType.SystemServerDownCode:
-                            Disconnect(); // will send disconnection message
-                            RyzomClient.Log?.Error("BACK-END DOWN");
-                            return false; // exit now from loop, don't expect a new state
+                            case SystemMessageType.SystemProbeCode:
+                                // receive sync, decode sync
+                                ReceiveSystemProbe(msgin);
+                                break;
 
-                        default:
-                            RyzomClient.Log?.Warn($"CNET: received system {message} in state Probe");
-                            break;
+                            case SystemMessageType.SystemServerDownCode:
+                                Disconnect(); // will send disconnection message
+                                RyzomClient.Log?.Error("BACK-END DOWN");
+                                return false; // exit now from loop, don't expect a new state
+
+                            default:
+                                RyzomClient.Log?.Warn($"CNET: received system {message} in state Probe");
+                                break;
+                        }
                     }
-                }
-                else
-                {
-                    RyzomClient.Log?.Warn($"CNET: received normal in state Probe");
-                    _latestProbeTime = _updateTime;
+                    else
+                    {
+                        RyzomClient.Log?.Warn("CNET: received normal in state Probe");
+                        _latestProbeTime = _updateTime;
+                    }
                 }
             }
 
@@ -652,12 +476,193 @@ namespace RCC.Network
         }
 
         /// <summary>
+        ///     Connection state machine - Synchronize State
+        ///     if receives System PROBE
+        ///     immediate state Probe
+        ///     else if receives Normal
+        ///     immediate state Connected
+        ///     sends System ACK_SYNC
+        /// </summary>
+        private static bool StateSynchronize()
+        {
+            while (_connection.IsDataAvailable())
+            {
+                _decodedHeader = false;
+                var msgin = new BitMemoryStream(true);
+
+                if (BuildStream(msgin) && DecodeHeader(msgin))
+                {
+                    if (_systemMode)
+                    {
+                        byte message = 0;
+                        msgin.Serial(ref message);
+
+                        switch ((SystemMessageType) message)
+                        {
+                            case SystemMessageType.SystemProbeCode:
+                                // receive probe, decode probe and state probe
+                                ConnectionState = ConnectionState.Probe;
+                                //nldebug("CNET[%p]: synchronize->probe", this);
+                                //_Changes.push_back(CChange(0, ProbeReceived)); TODO
+                                ReceiveSystemProbe(msgin);
+                                return true;
+
+                            case SystemMessageType.SystemStalledCode:
+                                // receive stalled, decode stalled and state stalled
+                                ConnectionState = ConnectionState.Stalled;
+                                //nldebug("CNET[%p]: synchronize->stalled", this);
+                                ReceiveSystemStalled(msgin);
+                                return true;
+
+                            case SystemMessageType.SystemSyncCode:
+                                // receive sync, decode sync
+                                ReceiveSystemSync(msgin);
+                                break;
+
+                            case SystemMessageType.SystemServerDownCode:
+                                Disconnect(); // will send disconnection message
+                                RyzomClient.Log?.Error("BACK-END DOWN");
+                                return false; // exit now from loop, don't expect a new state
+
+                            default:
+                                RyzomClient.Log?.Warn($"CNET: received system {message} in state Synchronize");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        ConnectionState = ConnectionState.Connected;
+                        //nlwarning("CNET[%p]: synchronize->connected", this);
+                        //_Changes.push_back(CChange(0, ConnectionReady)); TODO _Changes  synchronize->connected
+                        ImpulseDecoder.Reset();
+                        ReceiveNormalMessage(msgin);
+                        return true;
+                    }
+                }
+            }
+
+            // send ack sync if received sync or last sync timed out
+            if (_updateTime - _latestSyncTime > 300)
+                SendSystemAckSync();
+
+            return false;
+        }
+
+        private static long _previousTime = RyzomGetLocalTime();
+
+        /// <summary>
+        ///     Connection state machine - Connected State
+        ///     if receives System PROBE
+        ///     immediate state Probe
+        ///     else if receives Normal
+        ///     sends Normal data
+        /// </summary>
+        private static bool StateConnected()
+        {
+            // Prevent to increment the client time when the front-end does not respond
+            var now = RyzomGetLocalTime();
+            var diff = now - _previousTime;
+            _previousTime = RyzomGetLocalTime();
+
+            if (diff > 3000 && !_connection.IsDataAvailable())
+            {
+                return false;
+            }
+
+            // update the current time;
+            while (_currentClientTime < _updateTime - _msPerTick - _lct &&
+                   _currentClientTick < _currentServerTick)
+            {
+                _currentClientTime += _msPerTick;
+
+                _currentClientTick++;
+
+                _machineTimeAtTick = _updateTime;
+                _machineTicksAtTick = _updateTicks;
+            }
+
+            if (_currentClientTick >= _currentServerTick && !_connection.IsDataAvailable())
+            {
+                return false;
+            }
+
+            while (_connection.IsDataAvailable())
+            {
+                _decodedHeader = false;
+                var msgin = new BitMemoryStream(true);
+
+                if (BuildStream(msgin) && DecodeHeader(msgin))
+                {
+                    if (_systemMode)
+                    {
+                        byte message = 0;
+                        msgin.Serial(ref message);
+
+                        switch ((SystemMessageType)message)
+                        {
+                            case SystemMessageType.SystemProbeCode:
+                                // receive probe, and goto state probe
+                                ConnectionState = ConnectionState.Probe;
+                                // reset client impulse & vars
+
+                                /*
+                                                    _ImpulseDecoder.reset();
+                                                    _PropertyDecoder.clear();
+                                                    _PacketStamps.clear();
+                                                    // clears sent actions
+                                                    while (!_Actions.empty())
+                                                        CActionFactory::getInstance()->remove(_Actions.front().Actions),
+                                                    _Actions.clear();
+                                                    _AckBitMask = 0;
+                                                    _LastReceivedNumber = 0xffffffff;
+                                */
+
+                                //nldebug("CNET[%p]: connected->probe", this);
+                                //_Changes.Add(CChange(0, ProbeReceived));
+                                ReceiveSystemProbe(msgin);
+                                return true;
+
+                            case SystemMessageType.SystemSyncCode:
+                                // receive stalled, decode stalled and state stalled
+                                ConnectionState = ConnectionState.Synchronize;
+                                //nldebug("CNET[%p]: connected->synchronize", this);
+                                ReceiveSystemSync(msgin);
+                                return true;
+
+                            case SystemMessageType.SystemStalledCode:
+                                // receive stalled, decode stalled and state stalled
+                                ConnectionState = ConnectionState.Stalled;
+                                //nldebug("CNET[%p]: connected->stalled", this);
+                                ReceiveSystemStalled(msgin);
+                                return true;
+
+                            case SystemMessageType.SystemServerDownCode:
+                                Disconnect(); // will send disconnection message
+                                RyzomClient.Log?.Error("BACK-END DOWN");
+                                return false; // exit now from loop, don't expect a new state
+
+                            default:
+                                RyzomClient.Log?.Warn($"CNET: received system {message} in state Connected");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        ReceiveNormalMessage(msgin);
+                    }
+                }
+            }
+
+            return false;
+        }
+
+
+        /// <summary>
         ///     Connection state machine - Stalled State
         ///     TODO: Connection state machine - Stalled State
         /// </summary>
         private static bool StateStalled()
         {
-            // TODO StateStalled()
             RyzomClient.Log?.Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
             return false;
         }
@@ -668,7 +673,6 @@ namespace RCC.Network
         /// </summary>
         private static bool StateQuit()
         {
-            // TODO StateQuit()
             RyzomClient.Log?.Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
             return false;
         }
@@ -695,7 +699,7 @@ namespace RCC.Network
             }
 
             Debug.Assert(_currentReceivedNumber * 2 + _synchronize > _currentServerTick);
-            _currentServerTick = (uint) (_currentReceivedNumber * 2 + _synchronize);
+            _currentServerTick = (uint)(_currentReceivedNumber * 2 + _synchronize);
 
             // TODO: receiveNormalMessage PacketStamps stuff
 
@@ -712,11 +716,11 @@ namespace RCC.Network
 
                         break;
                     case ActionCode.ActionGenericCode:
-                        GenericAction((ActionGeneric) action);
+                        GenericAction((ActionGeneric)action);
                         break;
 
                     case ActionCode.ActionGenericMultiPartCode:
-                        GenericAction((ActionGenericMultiPart) action);
+                        GenericAction((ActionGenericMultiPart)action);
                         break;
 
                     case ActionCode.ActionDummyCode:
@@ -994,12 +998,11 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Stalled state - deserialise info from stream
-        ///     TODO
+        ///     TODO Stalled state - deserialise info from stream
         /// </summary>
         private static void ReceiveSystemStalled(BitMemoryStream msgin)
         {
-            RyzomClient.Log?.Debug($"CNET: received STALLED");
+            RyzomClient.Log?.Info("CNET: received STALLED but not implemented");
         }
 
         /// <summary>
@@ -1042,9 +1045,9 @@ namespace RCC.Network
             _msPerTick = 100; // initial values
 
             //#pragma message ("HALF_FREQUENCY_SENDING_TO_CLIENT")
-            _currentServerTick = (uint) (_synchronize + _currentReceivedNumber * 2);
+            _currentServerTick = (uint)(_synchronize + _currentReceivedNumber * 2);
 
-            _currentClientTick = (uint) (_currentServerTick - (_lct + _msPerTick) / _msPerTick);
+            _currentClientTick = (uint)(_currentServerTick - (_lct + _msPerTick) / _msPerTick);
             _currentClientTime = _updateTime - (_lct + _msPerTick);
 
             //nlinfo( "CNET[%p]: received SYNC %" NL_I64 "u %" NL_I64 "u - _CurrentReceivedNumber=%d _CurrentServerTick=%d", this, (uint64)_Synchronize, (uint64)stime, _CurrentReceivedNumber, _CurrentServerTick );
@@ -1133,7 +1136,7 @@ namespace RCC.Network
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            var sync = (byte) SystemMessageType.SystemAckSyncCode;
+            var sync = (byte)SystemMessageType.SystemAckSyncCode;
             message.Serial(ref sync);
             message.Serial(ref LastReceivedNumber);
             message.Serial(ref _lastAckInLongAck);
@@ -1166,7 +1169,7 @@ namespace RCC.Network
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            byte probe = (byte) SystemMessageType.SystemAckProbeCode;
+            byte probe = (byte)SystemMessageType.SystemAckProbeCode;
             int numprobes = LatestProbes.Count;
 
             message.Serial(ref probe);
@@ -1198,7 +1201,7 @@ namespace RCC.Network
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            byte disconnection = (byte) SystemMessageType.SystemDisconnectionCode;
+            byte disconnection = (byte)SystemMessageType.SystemDisconnectionCode;
 
             message.Serial(ref disconnection);
 
@@ -1233,7 +1236,7 @@ namespace RCC.Network
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            byte login = (byte) SystemMessageType.SystemLoginCode;
+            byte login = (byte)SystemMessageType.SystemLoginCode;
             message.Serial(ref login);
 
             //message.serial(Cookie);
@@ -1291,88 +1294,83 @@ namespace RCC.Network
 
             if (!_connection.Connected())
             {
-                //if(!ClientConfig.Local)
-                //	nlwarning("CNET[%p]: update() attempted whereas socket is not connected !", this);
+                RyzomClient.Log.Warn("CNET: update() attempted whereas socket is not connected !");
                 return false;
             }
 
-            //try
-            //{
-            // State automaton
-            bool stateBroke;
-
-            do
+            try
             {
-                switch (ConnectionState)
+                // State automaton
+                bool stateBroke;
+
+                do
                 {
-                    case ConnectionState.Login:
-                        // if receives System SYNC
-                        //    immediate state Synchronize
-                        // else
-                        //    sends System LoginCookie
-                        stateBroke = StateLogin();
-                        break;
+                    switch (ConnectionState)
+                    {
+                        case ConnectionState.Login:
+                            // if receives System SYNC
+                            //    immediate state Synchronize
+                            // else
+                            //    sends System LoginCookie
+                            stateBroke = StateLogin();
+                            break;
 
-                    case ConnectionState.Synchronize:
-                        // if receives System PROBE
-                        //    immediate state Probe
-                        // else if receives Normal
-                        //    immediate state Connected
-                        // else
-                        //    sends System ACK_SYNC
-                        stateBroke = StateSynchronize();
-                        break;
+                        case ConnectionState.Synchronize:
+                            // if receives System PROBE
+                            //    immediate state Probe
+                            // else if receives Normal
+                            //    immediate state Connected
+                            // else
+                            //    sends System ACK_SYNC
+                            stateBroke = StateSynchronize();
+                            break;
 
-                    case ConnectionState.Connected:
-                        // if receives System PROBE
-                        //    immediate state Probe
-                        // else if receives Normal
-                        //	   sends Normal data
-                        stateBroke = StateConnected();
-                        break;
+                        case ConnectionState.Connected:
+                            // if receives System PROBE
+                            //    immediate state Probe
+                            // else if receives Normal
+                            //	   sends Normal data
+                            stateBroke = StateConnected();
+                            break;
 
-                    case ConnectionState.Probe:
-                        // if receives System SYNC
-                        //    immediate state SYNC
-                        // else if receives System PROBE
-                        //    decode PROBE
-                        // sends System ACK_PROBE
-                        stateBroke = StateProbe();
-                        break;
+                        case ConnectionState.Probe:
+                            // if receives System SYNC
+                            //    immediate state SYNC
+                            // else if receives System PROBE
+                            //    decode PROBE
+                            // sends System ACK_PROBE
+                            stateBroke = StateProbe();
+                            break;
 
-                    case ConnectionState.Stalled:
-                        // if receives System SYNC
-                        //    immediate state SYNC
-                        // else if receives System STALLED
-                        //    decode STALLED (nothing to do)
-                        // else if receives System PROBE
-                        //    immediate state PROBE
-                        stateBroke = StateStalled();
-                        break;
+                        case ConnectionState.Stalled:
+                            // if receives System SYNC
+                            //    immediate state SYNC
+                            // else if receives System STALLED
+                            //    decode STALLED (nothing to do)
+                            // else if receives System PROBE
+                            //    immediate state PROBE
+                            stateBroke = StateStalled();
+                            break;
 
-                    case ConnectionState.Quit:
-                        // if receives System SYNC
-                        //    immediate state Synchronize
-                        // else
-                        //    sends System LoginCookie
-                        stateBroke = StateQuit();
-                        break;
+                        case ConnectionState.Quit:
+                            // if receives System SYNC
+                            //    immediate state Synchronize
+                            // else
+                            //    sends System LoginCookie
+                            stateBroke = StateQuit();
+                            break;
 
-                    default:
-                        // Nothing here !
-                        stateBroke = false; // will come here if a disconnection action is received inside a method that returns true
-                        break;
-                }
-            } while (stateBroke); // && _TotalMessages<5);
-            //}
-            //catch (Exception)
-            //{
-            //    _ConnectionState = ConnectionState.Disconnect;
-            //}
-
-            //updateBufferizedPackets (); - unused in Ryzom code
-
-            //PacketLossGraph.addOneValue(getMeanPacketLoss());
+                        default:
+                            // Nothing here !
+                            stateBroke = false; // will come here if a disconnection action is received inside a method that returns true
+                            break;
+                    }
+                } while (stateBroke); // && _TotalMessages<5);
+            }
+            catch (Exception)
+            {
+                _connectionState = ConnectionState.Disconnect;
+            }
 
             _connectionQuality = ConnectionState == ConnectionState.Connected &&
                                  _updateTime - _lastReceivedNormalTime < 2000 &&
@@ -1473,7 +1471,7 @@ namespace RCC.Network
                 // Prevent to send a message too big
                 //if (message.getPosInBit() + (*itblock).bitSize() > FrontEndInputBufferSize) // hard version
                 //if (message.GetPosInBit() > 480 * 8) // easy version TODO: GetPosInBit does not return the right size i guess -> so we send only 1 block at a time (but do not get disconnected)
-                    break;
+                break;
             }
 
             RyzomClient.Log?.Debug($"sendNormalMessage {message}");
@@ -1511,7 +1509,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     TODO updateSmoothServerTick
+        ///     TODO updateSmoothServerTick - not that important
         /// </summary>
         private static void UpdateSmoothServerTick()
         {
@@ -1546,13 +1544,13 @@ namespace RCC.Network
         {
             const int maxImpulseBitSize = 230 * 8;
 
-            var ag = (ActionGeneric) ActionFactory.Create(InvalidSlot, ActionCode.ActionGenericCode);
+            var ag = (ActionGeneric)ActionFactory.Create(InvalidSlot, ActionCode.ActionGenericCode);
 
             if (ag == null) //TODO: see that with oliver...
                 return;
 
             int bytelen = msg.Length;
-            int impulseMinBitSize = (int) ActionFactory.Size(ag);
+            int impulseMinBitSize = (int)ActionFactory.Size(ag);
             int impulseBitSize = impulseMinBitSize + (4 + bytelen) * 8;
 
             if (impulseBitSize < maxImpulseBitSize)

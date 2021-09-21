@@ -116,6 +116,14 @@ namespace RCC
         /// </summary>
         public virtual void OnGameJoined() { }
 
+        /// <summary>
+        /// Called after an internal MCC command has been performed
+        /// </summary>
+        /// <param name="commandName">MCC Command Name</param>
+        /// <param name="commandParams">MCC Command Parameters</param>
+        /// <param name="Result">MCC command result</param>
+        public virtual void OnInternalCommand(string commandName, string commandParams, string Result) { }
+
         public virtual void OnGameTeamContactStatus(uint contactId, CharConnectionState online) { }
 
         public virtual void OnGameTeamContactInit(List<uint> vFriendListName, List<CharConnectionState> vFriendListOnline, List<string> vIgnoreListName) { }

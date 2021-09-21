@@ -3,6 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using RCC.Chat;
 
 namespace RCC.Helper
 {
@@ -87,6 +88,47 @@ namespace RCC.Helper
             }
 
             return sb.ToString();
+        }
+
+        public static string GetMinecraftColorForChatGroupType(ChatGroupType mode)
+        {
+            var color = "§f";
+
+            switch (mode)
+            {
+                case ChatGroupType.DynChat:
+                    color = "§b";
+                    break;
+                case ChatGroupType.Shout:
+                    color = "§c";
+                    break;
+                case ChatGroupType.Team:
+                    color = "§9";
+                    break;
+                case ChatGroupType.Guild:
+                    color = "§a";
+                    break;
+                case ChatGroupType.Civilization:
+                    color = "§d";
+                    break;
+                case ChatGroupType.Territory:
+                    color = "§d";
+                    break;
+                case ChatGroupType.Universe:
+                    color = "§6";
+                    break;
+                case ChatGroupType.Region:
+                    color = "§7";
+                    break;
+                case ChatGroupType.Tell:
+                    color = "§f";
+                    break;
+                default:
+                    /*nlwarning("unknown group type"); return;*/
+                    break;
+            }
+
+            return color;
         }
     }
 }

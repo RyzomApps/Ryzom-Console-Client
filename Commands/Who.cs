@@ -16,14 +16,16 @@ namespace RCC.Commands
             if (getArgs(command).Length > 1)
                 return "";
 
-            BitMemoryStream out2 = new BitMemoryStream();
+            var out2 = new BitMemoryStream();
+
             if (!GenericMessageHeaderManager.PushNameToStream("DEBUG:WHO", out2))
             {
                 RyzomClient.Log?.Warn("Unknown message name DEBUG:WHO");
                 return "";
             }
 
-            string opt = "";
+            var opt = "";
+
             if (getArgs(command).Length == 1)
             {
                 opt = getArgs(command)[0];

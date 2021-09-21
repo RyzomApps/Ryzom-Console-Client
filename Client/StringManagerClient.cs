@@ -193,7 +193,7 @@ namespace RCC.Client
             {
                 var idBytes = BitConverter.GetBytes(cacheString.StringId);
                 var lenBytes = BitConverter.GetBytes(cacheString.String.Length);
-                var strChars = cacheString.String.ToCharArray(); // todo check that
+                var strChars = cacheString.String.ToCharArray();
 
                 fileStream.Write(idBytes);
                 fileStream.Write(lenBytes);
@@ -374,14 +374,12 @@ namespace RCC.Client
             if (dynInfo.Status == TStatus.Serialized)
             {
                 // try to retreive all string parameter to build the string.
-                StringBuilder temp = new StringBuilder();
+                var temp = new StringBuilder();
 
-                int move = 0;
+                var move = 0;
 
-                for (int i = 0; i < dynInfo.Params.Count; i++)
+                foreach (var param in dynInfo.Params)
                 {
-                    var param = dynInfo.Params[i];
-
                     switch (param.Type)
                     {
                         case ParamType.StringID:
@@ -389,7 +387,7 @@ namespace RCC.Client
                             if (!GetString(param.StringId, out string str))
                                 return false;
 
-                            int p1 = str.IndexOf('[');
+                            var p1 = str.IndexOf('[');
 
                             if (p1 != -1)
                             {

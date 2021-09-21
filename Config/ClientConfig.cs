@@ -41,7 +41,7 @@ namespace RCC.Config
 
         public static string Username = "";
         public static string Password = "";
-        public static int SelectCharacter = 0;
+        public static int SelectCharacter = -1;
 
         public static string UserSheet;
 

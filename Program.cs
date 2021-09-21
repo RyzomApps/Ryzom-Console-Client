@@ -47,12 +47,6 @@ namespace RCC
                 BuildInfo = attribute.Configuration;
         }
 
-        // TODO: add parameters: 
-        // login
-        // password
-        // shard_id
-        // slot
-
         private static void Banner()
         {
             ConsoleIO.WriteLineFormatted(" ");
@@ -81,7 +75,7 @@ namespace RCC
             }
 
             // Setup ConsoleIO
-            ConsoleIO.LogPrefix = "§8[RCC] ";
+            ConsoleIO.LogPrefix = "§8[§fR§eC§cC§8] ";
             if (args.Length >= 1 && args[^1] == "BasicIO" || args.Length >= 1 && args[^1] == "BasicIO-NoColor")
             {
                 if (args.Length >= 1 && args[^1] == "BasicIO-NoColor")
@@ -127,6 +121,14 @@ namespace RCC
                 RequestPassword();
             }
 
+            if (ClientConfig.SelectCharacter == -1)
+            {
+                ConsoleIO.WriteLineFormatted("§dPlease enter your character slot [0-4]:");
+                ClientConfig.SelectCharacter = int.Parse(Console.ReadLine() ?? throw new Exception("Invalid slot."));
+            }
+
+            if (ClientConfig.SelectCharacter < 0 || ClientConfig.SelectCharacter > 4) throw new Exception("Invalid slot.");
+
             // Setup exit cleaning code
             ExitCleanUp.Add(delegate
             {
@@ -135,8 +137,6 @@ namespace RCC
 
                 _client.Disconnect();
                 ConsoleIO.Reset();
-                //if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
-                //if (ClientConfig.playerHeadAsIcon) { ConsoleIcon.revertToRCCIcon(); }
             });
 
             Startupargs = args;
@@ -157,7 +157,7 @@ namespace RCC
 
             if (ConsoleIO.BasicIo) return;
 
-            //Hide password length
+            // Hide password length
             Console.CursorTop--;
             Console.Write(@"********");
             for (var i = 9; i < Console.BufferWidth; i++)
@@ -206,8 +206,6 @@ namespace RCC
                     ConsoleIO.Reset();
                 }
 
-                //if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
-                //if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToRCCIcon(); }
                 Environment.Exit(exitcode);
             })).Start();
         }
