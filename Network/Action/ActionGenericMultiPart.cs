@@ -23,7 +23,7 @@ namespace RCC.Network.Action
         /// <summary>
         ///     unpack the action from the stream
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="message">bit stream</param>
         public override void Unpack(BitMemoryStream message)
         {
             message.Serial(ref Number);

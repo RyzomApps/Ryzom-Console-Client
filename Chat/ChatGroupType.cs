@@ -28,6 +28,5 @@ namespace RCC.Chat
         DynChat,
 
         NbChatMode
-        // Following mode are client side only. Thus, after 'nbChatMode'
     };
 }

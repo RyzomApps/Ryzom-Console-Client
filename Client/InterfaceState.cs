@@ -10,9 +10,21 @@ namespace RCC.Client
 {
     public enum InterfaceState
     {
-        AutoLogin, // -> GLOBAL_MENU, QUIT (if connection errors)
-        GlobalMenu, // -> SELECT_CHARACTER, QUIT (if connection errors)
-        GoInTheGame, // -> launch the game
-        QuitTheGame // -> quit the game
+        /// <summary>
+        /// GLOBAL_MENU, QUIT (if connection errors)
+        /// </summary>
+        AutoLogin,
+        /// <summary>
+        /// SELECT_CHARACTER, QUIT (if connection errors)
+        /// </summary>
+        GlobalMenu,
+        /// <summary>
+        /// launch the game
+        /// </summary>
+        GoInTheGame,
+        /// <summary>
+        /// quit the game
+        /// </summary>
+        QuitTheGame
     };
 }

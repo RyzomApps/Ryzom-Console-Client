@@ -22,7 +22,7 @@ namespace RCC.Chat
         public const uint InvalidDatasetIndex = 0x00FFFFFF;
 
         private const int PreTagSize = 5;
-        static readonly List<ChatMsgNode> _ChatBuffer = new List<ChatMsgNode>();
+        private readonly List<ChatMsgNode> _chatBuffer = new List<ChatMsgNode>();
 
         private readonly NetworkManager _networkManager;
         private readonly StringManager _stringManager;
@@ -38,7 +38,7 @@ namespace RCC.Chat
         /// </summary>
         public void ProcessTellString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
         {
-            ChatMsg chatMsg = new ChatMsg();
+            var chatMsg = new ChatMsg();
 
             // Serial. For tell message, there is no chat mode, coz we know we are in tell mode !
             bms.Serial(ref chatMsg.CompressedIndex);
@@ -48,18 +48,18 @@ namespace RCC.Chat
             chatMsg.ChatMode = ChatGroupType.Tell;
 
             // If !complete, wait
-            bool complete = true;
-            complete &= _stringManager.GetString(chatMsg.SenderNameId, out string senderStr, _networkManager);
+            var complete = _stringManager.GetString(chatMsg.SenderNameId, out var senderStr, _networkManager);
+
             if (!complete)
             {
-                _ChatBuffer.Add(new ChatMsgNode(chatMsg, true));
+                _chatBuffer.Add(new ChatMsgNode(chatMsg, true));
                 RyzomClient.GetInstance().GetLogger().Debug("<impulseTell> Received TELL, put in buffer : waiting association");
                 return;
             }
 
             // display
-            BuildTellSentence(senderStr, chatMsg.Content, out string ucstr);
-            chatDisplayer.DisplayTell( /*chatMsg.CompressedIndex, */ucstr, senderStr);
+            BuildTellSentence(senderStr, chatMsg.Content, out var ucstr);
+            chatDisplayer.DisplayTell( ucstr, senderStr);
         }
 
         /// <summary>
@@ -67,24 +67,22 @@ namespace RCC.Chat
         /// </summary>
         public void ProcessChatString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
         {
-            //// before displaying anything, must ensure dynamic channels are up to date
-            //// NB: only processChatString() have to do this. Other methods cannot be in dyn_chat mode
-            //updateDynamicChatChannels(chatDisplayer); TODO
-            //
-            //// serial
-            ChatMsg chatMsg = new ChatMsg();
+            // before displaying anything, must ensure dynamic channels are up to date
+            // NB: only processChatString() have to do this. Other methods cannot be in dyn_chat mode
+            // TODO updateDynamicChatChannels(chatDisplayer); // in ProcessChatString
+
+            // serial
+            var chatMsg = new ChatMsg();
             chatMsg.Serial(bms);
 
-            ChatGroupType type = chatMsg.ChatMode;
-            string senderStr;
+            var type = chatMsg.ChatMode;
 
-            bool complete = true;
-            complete = _stringManager.GetString(chatMsg.SenderNameId, out senderStr, _networkManager);
+            var complete = _stringManager.GetString(chatMsg.SenderNameId, out var senderStr, _networkManager);
 
             if (type == ChatGroupType.DynChat)
             {
-                //// retrieve the DBIndex from the dynamic chat id
-                //sint32 dbIndex = ChatManager.getDynamicChannelDbIndexFromId(chatMsg.DynChatChanID); TODO
+                //// TODO retrieve the DBIndex from the dynamic chat id
+                //sint32 dbIndex = ChatManager.getDynamicChannelDbIndexFromId(chatMsg.DynChatChanID); 
                 //// if the client database is not yet up to date, put the chat message in buffer
                 //if (dbIndex < 0)
                 //    complete = false;
@@ -93,14 +91,12 @@ namespace RCC.Chat
             // if !complete, wait
             if (!complete)
             {
-                _ChatBuffer.Add(new ChatMsgNode(chatMsg, false));
-                //nldebug("<impulseChat> Received CHAT, put in buffer : waiting association");
+                _chatBuffer.Add(new ChatMsgNode(chatMsg, false));
                 return;
             }
 
             // display
-            string ucstr;
-            BuildChatSentence(chatMsg.CompressedIndex, senderStr, chatMsg.Content, type, out ucstr);
+            BuildChatSentence(senderStr, chatMsg.Content, type, out var ucstr);
             chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, chatMsg.DynChatChanID,
                 senderStr);
         }
@@ -113,7 +109,7 @@ namespace RCC.Chat
             var chatMsg = new ChatMsg2();
             uint phraseID = 0;
             bms.Serial(ref phraseID);
-            //if (PermanentlyBanned) return;
+
             chatMsg.CompressedIndex = InvalidDatasetIndex;
             chatMsg.SenderNameId = 0;
             chatMsg.ChatMode = type;
@@ -124,35 +120,31 @@ namespace RCC.Chat
 
             if (!complete)
             {
-                _ChatBuffer.Add(new ChatMsgNode(chatMsg, false));
-                //nldebug("<impulseDynString> Received CHAT, put in buffer : waiting association");
+                _chatBuffer.Add(new ChatMsgNode(chatMsg, false));
                 return;
             }
 
             // diplay
-            string senderName = "";
+            const string senderName = "";
             chatDisplayer.DisplayChat(InvalidDatasetIndex, ucstr, ucstr, type, 0, senderName);
         }
 
         internal void FlushBuffer(IChatDisplayer chatDisplayer)
         {
             // before displaying anything, must ensure dynamic channels are up to date
-            //updateDynamicChatChannels(chatDisplayer); TODO
+            // TODO updateDynamicChatChannels(chatDisplayer); 
 
             // **** Process waiting messages
-
-            //ChatMsgNode itMsg;
-
-            for (var i = 0; i < _ChatBuffer.Count; i++)
-            //for (itMsg = _ChatBuffer.begin(); itMsg != _ChatBuffer.end();)
+            for (var i = 0; i < _chatBuffer.Count; i++)
             {
-                ChatMsgNode itMsg = _ChatBuffer[i];
-                ChatGroupType type = itMsg.ChatMode;
-                string sender = "";
+                var itMsg = _chatBuffer[i];
+                var type = itMsg.ChatMode;
+                var sender = "";
                 string content;
 
                 // all strings received?
-                bool complete = true;
+                var complete = true;
+
                 if (itMsg.SenderNameId != 0)
                     complete &= _stringManager.GetString(itMsg.SenderNameId, out sender, _networkManager);
                 if (itMsg.UsePhraseId)
@@ -162,7 +154,7 @@ namespace RCC.Chat
 
                 if (type == ChatGroupType.DynChat)
                 {
-                    //// retrieve the DBIndex from the dynamic chat id
+                    //// TODO retrieve the DBIndex from the dynamic chat id
                     //int dbIndex = ChatMngr.getDynamicChannelDbIndexFromId(itMsg->DynChatChanID);
                     //// if the client database is not yet up to date, leave the chat message in buffer
                     //if (dbIndex < 0)
@@ -182,7 +174,7 @@ namespace RCC.Chat
                         if (itMsg.DisplayAsTell)
                             BuildTellSentence(sender, content, out ucstr);
                         else
-                            BuildChatSentence(itMsg.CompressedIndex, sender, content, type, out ucstr);
+                            BuildChatSentence(sender, content, type, out ucstr);
                     }
 
                     // display
@@ -193,56 +185,30 @@ namespace RCC.Chat
                             sender);
 
                     //list<ChatMsgNode>::iterator itTmp = itMsg++;
-                    _ChatBuffer.Remove(itMsg);
+                    _chatBuffer.Remove(itMsg);
                 }
-
-                //else
-                //{
-                //    ++itMsg;
-                //}
             }
         }
 
-        // ***************************************************************************
         private static void BuildTellSentence(string sender, string msg, out string result)
         {
             // If no sender name was provided, show only the msg
+            var name = Entity.RemoveTitleAndShardFromName(sender);
+
             if (sender.Length == 0)
                 result = msg;
             else
             {
-                string name = Entity.RemoveTitleAndShardFromName(sender);
-                string csr;
+                // TODO special case where there is only a title, very rare case for some NPC
 
-                //// special case where there is only a title, very rare case for some NPC
-                //if (name.empty())
-                //{
-                //    // we need the gender to display the correct title
-                //    CCharacterCL entity = dynamic_cast<CCharacterCL*>(EntitiesMngr.getEntityByName(sender, true, true));
-                //    bool bWoman = entity && entity->getGender() == GSGENDER.female;
-                //
-                //    name = STRING_MANAGER.CStringManagerClient.getTitleLocalizedName(CEntityCL.getTitleFromName(sender), bWoman);
-                //    {
-                //        // Sometimes translation contains another title
-                //        string.size_type pos = name.find('$');
-                //        if (pos != string.npos)
-                //        {
-                //            name = STRING_MANAGER.CStringManagerClient.getTitleLocalizedName(CEntityCL.getTitleFromName(name), bWoman);
-                //        }
-                //    }
-                //}
-
-                //else
-                //{
-                // Does the char have a CSR title?
-                csr = ""; // CHARACTER_TITLE.isCsrTitle(CEntityCL.getTitleFromName(sender)) ? string("(CSR) ") : string(""); TODO
-                //}
+                // TODO Does the char have a CSR title?
+                const string csr = "";
 
                 result = $"{csr}{name} tells you: {msg}";
             }
         }
 
-        private static void BuildChatSentence(uint compressedSenderIndex, string sender, string msg, ChatGroupType type,
+        private static void BuildChatSentence(string sender, string msg, ChatGroupType type,
             out string result)
         {
             // if its a tell, then use buildTellSentence
@@ -261,8 +227,9 @@ namespace RCC.Chat
 
             // get the category if any. Note, in some case (chat from other player), there is not categories
             // and we do not want getStringCategory to return 'SYS' category.
-            string catStr = GetStringCategory(msg, out string finalMsg, false);
-            string cat = "";
+            var catStr = GetStringCategory(msg, out var finalMsg);
+            var cat = "";
+
             if (catStr.Length > 0)
                 cat = "&" + catStr + "&";
 
@@ -273,58 +240,22 @@ namespace RCC.Chat
             }
 
             // Format the sentence with the provided sender name
-            string senderName = Entity.RemoveTitleAndShardFromName(sender);
+            var senderName = Entity.RemoveTitleAndShardFromName(sender);
 
-            string csr = "";
-            // Does the char have a CSR title?
-            //csr = CHARACTER_TITLE.isCsrTitle(CEntityCL.getTitleFromName(sender)) ? string("(CSR) ") : string("");
+            // TODO Does the char have a CSR title?
+            const string csr = "";
 
-            //if (/*UserEntity &&*/ senderName == UserEntity->getDisplayName())
-            //{
-            //    // The player talks
-            //    switch (type)
-            //    {
-            //        case ChatGroupType.Shout:
-            //            result = cat + csr + CI18N.get("youShout") + string(": ") + finalMsg;
-            //            break;
-            //        default:
-            //            result = cat + csr + CI18N.get("youSay") + string(": ") + finalMsg;
-            //            break;
-            //    }
-            //}
-            //else
-            //{
-            // Special case where there is only a title, very rare case for some NPC
-            //if (senderName.Length == 0)
-            //{
-            //    CCharacterCL* entity = dynamic_cast<CCharacterCL*>(EntitiesMngr.getEntityByName(sender, true, true));
-            //    // We need the gender to display the correct title
-            //    bool bWoman = entity && entity->getGender() == GSGENDER.female;
-            //
-            //    //senderName = STRING_MANAGER.CStringManagerClient.getTitleLocalizedName(CEntityCL.getTitleFromName(sender), bWoman); todo
-            //    {
-            //        // Sometimes translation contains another title
-            //        string.size_type pos = senderName.find('$');
-            //        if (pos != string.npos)
-            //        {
-            //            senderName = StringManager.getTitleLocalizedName(CEntityCL.getTitleFromName(senderName), bWoman);
-            //        }
-            //    }
-            //}
+            // TODO: The player talks
 
-            //senderName = STRING_MANAGER.CStringManagerClient.getLocalizedName(senderName); TODO
-            switch (type)
+            // TODO: Special case where there is only a title, very rare case for some NPC
+
+            // TODO senderName = STRING_MANAGER.CStringManagerClient.getLocalizedName(senderName); 
+
+            result = type switch
             {
-                case ChatGroupType.Shout:
-                    result = $"{cat}{csr}{senderName} shouts: {finalMsg}";
-                    break;
-
-                default:
-                    result = $"{cat}{csr}{senderName} says: {finalMsg}";
-                    break;
-            }
-
-            //}
+                ChatGroupType.Shout => $"{cat}{csr}{senderName} shouts: {finalMsg}",
+                _ => $"{cat}{csr}{senderName} says: {finalMsg}"
+            };
         }
 
         public static string GetStringCategory(string src, out string dest, bool alwaysAddSysByDefault = false)
@@ -381,7 +312,8 @@ namespace RCC.Chat
                         var destTmp = "";
 
                         if (startPos != 0)
-                            destTmp = preTag; // leave <NEW> or <CHG> in the dest string
+                            // leave <NEW> or <CHG> in the dest string
+                            destTmp = preTag; 
 
                         destTmp += src.Substring(nextPos + 1);
                         dest = destTmp;

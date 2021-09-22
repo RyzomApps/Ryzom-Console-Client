@@ -75,19 +75,19 @@ namespace RCC.Network
         /// <summary>
         ///     receives available data
         /// </summary>
-        public bool Receive(ref byte[] _ReceiveBuffer, int len, bool throw_exception)
+        public bool Receive(ref byte[] receiveBuffer, bool throwException)
         {
             var remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
             try
             {
-                byte[] bytes = _udpMain.Receive(ref remoteIpEndPoint);
+                var bytes = _udpMain.Receive(ref remoteIpEndPoint);
                 Array.Reverse(bytes, 0, bytes.Length);
-                _ReceiveBuffer = bytes;
+                receiveBuffer = bytes;
             }
             catch
             {
-                if (throw_exception)
+                if (throwException)
                     throw;
 
                 return false;
@@ -96,6 +96,9 @@ namespace RCC.Network
             return true;
         }
 
+        /// <summary>
+        /// Closes the UDP connection
+        /// </summary>
         public void Close()
         {
             _udpMain.Close();

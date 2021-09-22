@@ -186,7 +186,6 @@ namespace RCC.Network
             var sha512Crypter = new Sha512CrypterBase();
 
             return sha512Crypter.Crypt(password, salt).Replace("$rounds=5000", "");
-
         }
     }
 }

@@ -16,7 +16,7 @@ namespace RCC.Network.Action
     /// </summary>
     internal class ActionBlock
     {
-        public List<Action> Actions = new List<Action>();
+        public List<ActionBase> Actions = new List<ActionBase>();
         public uint Cycle;
         public int FirstPacket;
         public bool Success;
@@ -52,15 +52,15 @@ namespace RCC.Network.Action
                 //sprintf(buff, "Unpack[%d]:", Cycle);
                 for (i = 0; i < num; ++i)
                 {
-                    Action action;
+                    ActionBase action;
 
                     try
                     {
-                        action = ActionFactory.Unpack(msg, false);
+                        action = ActionFactory.Unpack(msg);
                     }
                     catch (Exception e)
                     {
-                        RyzomClient.GetInstance().GetLogger()?.Warn($"Action block upacking failed: {e.Message}");
+                        RyzomClient.GetInstance().GetLogger()?.Warn($"ActionBase block upacking failed: {e.Message}");
                         action = null;
                     }
 
@@ -89,22 +89,13 @@ namespace RCC.Network.Action
 
                     if (actionSize < msgPosAfter - msgPosBefore)
                         RyzomClient.GetInstance().GetLogger()?.Warn(
-                            $"Action {Actions[i].Code} declares a lower size ({actionSize} bits) from what it actually serialises ({msgPosAfter - msgPosBefore} bits)");
+                            $"ActionBase {Actions[i].Code} declares a lower size ({actionSize} bits) from what it actually serialises ({msgPosAfter - msgPosBefore} bits)");
                     //sprintf(cat, " %d(%d bits)", Actions[i]->Code, Actions[i]->size());
                     //strcat(buff, cat);
                 }
             }
 
             //nlinfo("Block: %s", buff);
-        }
-
-        /// <summary>
-        ///     calculate the size of the message header in bits
-        /// </summary>
-        /// <returns></returns>
-        private static uint GetHeaderSizeInBits()
-        {
-            return (sizeof(int) + sizeof(byte)) * 8;
         }
     }
 }

@@ -40,7 +40,7 @@ namespace RCC.Commands.Internal
         /// <returns>Translated command description</returns>
         public string GetCmdDescTranslated()
         {
-            string s = string.IsNullOrEmpty(CmdUsage) || string.IsNullOrEmpty(CmdDesc)
+            var s = string.IsNullOrEmpty(CmdUsage) || string.IsNullOrEmpty(CmdDesc)
                 ? ""
                 : ": "; // If either one is empty, no colon :
             return CmdUsage + s + CmdDesc;
@@ -49,6 +49,7 @@ namespace RCC.Commands.Internal
         /// <summary>
         ///     Perform the command
         /// </summary>
+        /// <param name="handler">Client</param>
         /// <param name="command">The full command, eg: 'mycommand arg1 arg2'</param>
         /// <param name="localVars">Local variables passed along with the command (may be null)</param>
         /// <returns>A confirmation/error message, or "" if no message</returns>
@@ -58,7 +59,7 @@ namespace RCC.Commands.Internal
         ///     Return a list of aliases for this command.
         ///     Override this method if you wish to put aliases to the command
         /// </summary>
-        public virtual IEnumerable<string> getCMDAliases()
+        public virtual IEnumerable<string> GetCmdAliases()
         {
             return new string[0];
         }
@@ -66,40 +67,29 @@ namespace RCC.Commands.Internal
         /// <summary>
         ///     Check if at least one argument has been passed to the command
         /// </summary>
-        public static bool hasArg(string command)
+        public static bool HasArg(string command)
         {
-            int first_space = command.IndexOf(' ');
-            return first_space > 0 && first_space < command.Length - 1;
+            var firstSpace = command.IndexOf(' ');
+            return firstSpace > 0 && firstSpace < command.Length - 1;
         }
 
         /// <summary>
         ///     Extract the argument string from the command
         /// </summary>
         /// <returns>Argument or "" if no argument</returns>
-        public static string getArg(string command)
+        public static string GetArg(string command)
         {
-            if (hasArg(command))
-            {
-                return command.Substring(command.IndexOf(' ') + 1);
-            }
-            else return "";
+            return HasArg(command) ? command.Substring(command.IndexOf(' ') + 1) : "";
         }
 
         /// <summary>
         ///     Extract the arguments as a string array from the command
         /// </summary>
         /// <returns>Argument array or empty array if no arguments</returns>
-        public static string[] getArgs(string command)
+        public static string[] GetArgs(string command)
         {
-            string[] args = getArg(command).Split(' ');
-            if (args.Length == 1 && args[0] == "")
-            {
-                return new string[] { };
-            }
-            else
-            {
-                return args;
-            }
+            var args = GetArg(command).Split(' ');
+            return args.Length == 1 && args[0] == "" ? new string[] { } : args;
         }
     }
 }

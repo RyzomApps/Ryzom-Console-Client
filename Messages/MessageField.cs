@@ -13,8 +13,8 @@ namespace RCC.Messages
     /// </summary>
     public class MessageField
     {
-        byte _bitSize;
-        MessageFieldType _type;
+        private readonly byte _bitSize;
+        private readonly MessageFieldType _type;
 
         public MessageField(MessageFieldType type, byte bitSize = 0)
         {

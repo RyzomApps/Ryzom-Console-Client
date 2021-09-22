@@ -13,7 +13,7 @@ namespace RCC.Commands
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
             // Check parameters.
-            if (getArgs(command).Length > 1)
+            if (GetArgs(command).Length > 1)
                 return "";
 
             var out2 = new BitMemoryStream();
@@ -26,9 +26,9 @@ namespace RCC.Commands
 
             var opt = "";
 
-            if (getArgs(command).Length == 1)
+            if (GetArgs(command).Length == 1)
             {
-                opt = getArgs(command)[0];
+                opt = GetArgs(command)[0];
             }
 
             out2.Serial(ref opt);
@@ -36,7 +36,7 @@ namespace RCC.Commands
             return "";
         }
 
-        public override IEnumerable<string> getCMDAliases()
+        public override IEnumerable<string> GetCmdAliases()
         {
             return new[] {""};
         }

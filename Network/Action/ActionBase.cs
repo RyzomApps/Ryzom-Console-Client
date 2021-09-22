@@ -11,7 +11,7 @@ namespace RCC.Network.Action
     /// <summary>
     ///     Abstract base for other actions
     /// </summary>
-    public abstract class Action
+    public abstract class ActionBase
     {
         /// <summary>
         ///     code that specifies the type of the action

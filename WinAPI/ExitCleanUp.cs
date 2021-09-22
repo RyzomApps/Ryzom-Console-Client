@@ -46,7 +46,7 @@ namespace RCC.WinAPI
         /// <summary>
         ///     Add a new action to be performed before application exit
         /// </summary>
-        /// <param name="cleanUpCode">Action to run</param>
+        /// <param name="cleanUpCode">ActionBase to run</param>
         public static void Add(Action cleanUpCode)
         {
             Actions.Add(cleanUpCode);

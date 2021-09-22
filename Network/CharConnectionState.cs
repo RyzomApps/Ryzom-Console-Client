@@ -13,11 +13,17 @@ namespace RCC.Network
     /// </summary>
     public enum CharConnectionState : byte
     {
+        /// <summary>
         /// the character is offline
+        /// </summary>
         CcsOffline = 0,
+        /// <summary>
         /// the character is online on the same shard
+        /// </summary>
         CcsOnline = 1,
+        /// <summary>
         /// the character is online, but on another shard in the domain.
+        /// </summary>
         CcsOnlineAbroad = 2
     };
 }

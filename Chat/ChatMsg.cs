@@ -31,9 +31,9 @@ namespace RCC.Chat
         {
             f.Serial(ref CompressedIndex);
             f.Serial(ref SenderNameId);
-            byte ChatModeByte = 0;
-            f.Serial(ref ChatModeByte);
-            ChatMode = (ChatGroupType) ChatModeByte;
+            byte chatModeByte = 0;
+            f.Serial(ref chatModeByte);
+            ChatMode = (ChatGroupType) chatModeByte;
             if (ChatMode == ChatGroupType.DynChat)
                 f.Serial(ref DynChatChanID);
             f.Serial(ref Content);

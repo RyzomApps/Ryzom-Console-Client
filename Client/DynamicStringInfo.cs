@@ -19,16 +19,16 @@ namespace RCC.Client
         public BitMemoryStream Message;
         public List<ParamValue> Params = new List<ParamValue>();
 
-        public TStatus Status;
+        public StringStatus Status;
         public string String;
         public uint StringId;
 
-        internal enum TStatus : byte
+        internal enum StringStatus : byte
         {
             Received,
             Serialized,
             Complete
-        };
+        }
 
         internal enum ParamType : byte
         {
@@ -38,7 +38,7 @@ namespace RCC.Client
             Money,
             DynStringID,
             SheetID
-        };
+        }
 
         internal struct ParamValue
         {
@@ -50,6 +50,6 @@ namespace RCC.Client
             public uint Time;
             public ulong Money;
             public uint DynStringId;
-        };
+        }
     }
 }

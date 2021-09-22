@@ -137,7 +137,7 @@ namespace RCC.Helper
 
             lock (IoLock)
             {
-                var prefix = ((RyzomClient)RyzomClient.GetInstance()).Channel.ToString()[0];
+                var prefix = RyzomClient.GetInstance().Channel.ToString()[0];
                 Console.Write(prefix);
                 _reading = true;
                 _buffer = "";
@@ -175,7 +175,7 @@ namespace RCC.Helper
                                 GoRight();
                                 break;
                             case ConsoleKey.Home:
-                                while (_buffer.Length > 0)
+                                while (!IsNullOrEmpty(_buffer))
                                 {
                                     GoLeft();
                                 }
@@ -200,7 +200,7 @@ namespace RCC.Helper
                                 if (Previous.Count > 0)
                                 {
                                     ClearLineAndBuffer();
-                                    _buffer = Previous.First.Value;
+                                    _buffer = Previous.First?.Value;
                                     Previous.AddLast(_buffer);
                                     Previous.RemoveFirst();
                                     Console.Write(_buffer);
@@ -211,7 +211,7 @@ namespace RCC.Helper
                                 if (Previous.Count > 0)
                                 {
                                     ClearLineAndBuffer();
-                                    _buffer = Previous.Last.Value;
+                                    _buffer = Previous.Last?.Value;
                                     Previous.AddFirst(_buffer);
                                     Previous.RemoveLast();
                                     Console.Write(_buffer);
@@ -219,20 +219,20 @@ namespace RCC.Helper
 
                                 break;
                             case ConsoleKey.Tab:
-                                if (AutocompleteWords.Count == 0 && _autocompleteEngine != null && _buffer.Length > 0)
-                                    foreach (string result in _autocompleteEngine.AutoComplete(_buffer))
+                                if (_buffer != null && AutocompleteWords.Count == 0 && _autocompleteEngine != null && _buffer.Length > 0)
+                                    foreach (var result in _autocompleteEngine.AutoComplete(_buffer))
                                         AutocompleteWords.AddLast(result);
                                 string wordAutocomplete = null;
                                 if (AutocompleteWords.Count > 0)
                                 {
-                                    wordAutocomplete = AutocompleteWords.First.Value;
+                                    wordAutocomplete = AutocompleteWords.First?.Value;
                                     AutocompleteWords.RemoveFirst();
                                     AutocompleteWords.AddLast(wordAutocomplete);
                                 }
 
                                 if (!IsNullOrEmpty(wordAutocomplete) && wordAutocomplete != _buffer)
                                 {
-                                    while (_buffer.Length > 0 && _buffer[^1] != ' ')
+                                    while (!IsNullOrEmpty(_buffer) && _buffer[^1] != ' ')
                                     {
                                         RemoveOneChar();
                                     }
@@ -269,11 +269,10 @@ namespace RCC.Helper
         /// </summary>
         public static void DebugReadInput()
         {
-            ConsoleKeyInfo k;
             while (true)
             {
-                k = Console.ReadKey(true);
-                Console.WriteLine("Key: {0}\tChar: {1}\tModifiers: {2}", k.Key, k.KeyChar, k.Modifiers);
+                var k = Console.ReadKey(true);
+                Console.WriteLine(@"Key: {0}	Char: {1}	Modifiers: {2}", k.Key, k.KeyChar, k.Modifiers);
             }
         }
 
@@ -297,7 +296,7 @@ namespace RCC.Helper
                             {
                                 Console.CursorLeft = Console.BufferWidth - 1;
                                 Console.CursorTop--;
-                                Console.Write(" ");
+                                Console.Write(@" ");
                                 Console.CursorLeft = Console.BufferWidth - 1;
                                 Console.CursorTop--;
                             }
@@ -307,12 +306,12 @@ namespace RCC.Helper
                             _buffer = buf;
                             _buffer2 = buf2;
 
-                            var prefix = ((RyzomClient) RyzomClient.GetInstance()).Channel.ToString()[0];
+                            var prefix = RyzomClient.GetInstance().Channel.ToString()[0];
 
                             Console.Write(prefix + _buffer);
                             if (_buffer2.Length > 0)
                             {
-                                Console.Write(_buffer2 + " \b");
+                                Console.Write($"{_buffer2} \b");
                                 for (var i = 0; i < _buffer2.Length; i++)
                                 {
                                     GoBack();
@@ -368,10 +367,7 @@ namespace RCC.Helper
                     str = str.Replace('\n', ' ');
                 }
 
-                if (displayTimestamp == null)
-                {
-                    displayTimestamp = EnableTimestamps;
-                }
+                displayTimestamp ??= EnableTimestamps;
 
                 if (displayTimestamp.Value)
                 {
@@ -391,7 +387,8 @@ namespace RCC.Helper
                     return;
                 }
 
-                var parts = str.Split(new char[] {'§'});
+                var parts = str.Split(new[] { '§' });
+
                 if (parts[0].Length > 0)
                 {
                     Write(parts[0]);
@@ -493,14 +490,8 @@ namespace RCC.Helper
             var staThread = new Thread(new ThreadStart(
                 delegate
                 {
-                    try
-                    {
-                        // TODO Clipboard
-                        //clipdata = Clipboard.GetText();
-                    }
-                    catch
-                    {
-                    }
+                    // TODO Clipboard
+                    //clipdata = Clipboard.GetText();
                 }
             ));
             staThread.SetApartmentState(ApartmentState.STA);
@@ -547,7 +538,7 @@ namespace RCC.Helper
                     /* Console was resized!? */
                 }
 
-                _buffer = _buffer.Substring(0, _buffer.Length - 1);
+                _buffer = _buffer[0..^1];
 
                 if (_buffer2.Length > 0)
                 {
@@ -577,7 +568,7 @@ namespace RCC.Helper
                 }
                 else
                 {
-                    Console.CursorLeft = Console.CursorLeft - 1;
+                    Console.CursorLeft -= 1;
                 }
             }
             catch (ArgumentOutOfRangeException)
@@ -593,8 +584,8 @@ namespace RCC.Helper
         {
             if (_buffer.Length <= 0) return;
 
-            _buffer2 = "" + _buffer[_buffer.Length - 1] + _buffer2;
-            _buffer = _buffer.Substring(0, _buffer.Length - 1);
+            _buffer2 = "" + _buffer[^1] + _buffer2;
+            _buffer = _buffer[..^1];
             GoBack();
         }
 
@@ -605,7 +596,7 @@ namespace RCC.Helper
         {
             if (_buffer2.Length <= 0) return;
 
-            _buffer = _buffer + _buffer2[0];
+            _buffer += _buffer2[0];
             Console.Write(_buffer2[0]);
             _buffer2 = _buffer2.Substring(1);
         }

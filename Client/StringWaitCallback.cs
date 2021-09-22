@@ -11,11 +11,5 @@
 
         /// Overide this method to receive callback for dynamic string.
         public abstract void OnDynStringAvailable(uint stringId, string value);
-
-        //~StringWaitCallback()
-        //{
-        //    // signal the string manager that this waiter is destroyed
-        //    StringManager.RemoveStringWaiter(this);
-        //}
     };
 }

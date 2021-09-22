@@ -58,6 +58,7 @@ namespace RCC.Config
         public static string LogFile = "console-log.txt";
         public static bool PrependTimestamp = false;
         public static string OnlinePlayersApi = "";
+        public static bool AutoJoinTeam = false;
 
         //Other Settings
         public static char InternalCmdChar = '/';
@@ -227,6 +228,10 @@ namespace RCC.Config
                     OnlinePlayersLogger_Enabled = bool.Parse(argValue);
                     return true;
 
+                case "autojointeam":
+                    AutoJoinTeam = bool.Parse(argValue);
+                    return true;
+
                 default:
                     RyzomClient.GetInstance().GetLogger().Warn($"Could not parse setting {argName} with value '{argValue}'.");
                     return false;
@@ -237,18 +242,18 @@ namespace RCC.Config
         {
             if (argValue.EndsWith(";"))
             {
-                argValue = argValue.Substring(0, argValue.Length - 1).Trim();
+                argValue = argValue[..^1].Trim();
             }
 
             if (cleanEndComma && argValue.EndsWith(","))
             {
-                argValue = argValue.Substring(0, argValue.Length - 1).Trim();
+                argValue = argValue[..^1].Trim();
             }
 
             if (argValue.StartsWith("\"") && argValue.EndsWith("\"") ||
                 argValue.StartsWith("'") && argValue.EndsWith("'"))
             {
-                argValue = argValue.Substring(1, argValue.Length - 2);
+                argValue = argValue[1..^1];
             }
 
             return argValue;

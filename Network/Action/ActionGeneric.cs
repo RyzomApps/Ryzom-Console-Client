@@ -15,7 +15,6 @@ namespace RCC.Network.Action
     /// </summary>
     public class ActionGeneric : ActionImpulsion
     {
-        private const bool ServerSide = false;
         private BitMemoryStream _message;
 
         /// <summary>
@@ -29,11 +28,6 @@ namespace RCC.Network.Action
             // Read size from message, and check to	avoid hacking!
             var size = 0;
             message.Serial(ref size);
-
-            if (size > 512 && ServerSide)
-            {
-                throw new InvalidDataException();
-            }
 
             // Write the data from message to _Message
             message.SerialBuffer(_message, size);
@@ -83,10 +77,7 @@ namespace RCC.Network.Action
         /// </summary>
         public override void Pack(BitMemoryStream message)
         {
-            //byte[] obj = _Message.Buffer();
-            //message.serial(ref obj);
             message.SerialBufferWithSize(_message.Buffer(), _message.Buffer().Length);
-            //throw new System.NotImplementedException();
         }
     }
 }

@@ -13,7 +13,7 @@ namespace RCC.Commands
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
             // Check parameters.
-            if (!hasArg(command))
+            if (!HasArg(command))
             {
                 // Create the message and send.
                 const string msgName = "COMMAND:WHERE";
@@ -30,7 +30,7 @@ namespace RCC.Commands
             return "";
         }
 
-        public override IEnumerable<string> getCMDAliases()
+        public override IEnumerable<string> GetCmdAliases()
         {
             return new string[] { };
         }

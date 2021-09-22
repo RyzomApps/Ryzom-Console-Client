@@ -33,39 +33,21 @@ namespace RCC.Network
 
         private const byte InvalidSlot = 0xFF;
 
-        private UdpSocket _connection = new UdpSocket();
+        private readonly UdpSocket _connection = new UdpSocket();
 
         private ConnectionState _connectionState = ConnectionState.NotInitialised;
 
         private int _userAddr;
         private int _userKey;
         private int _userId;
-        private int _valid;
 
         private int _currentSendNumber;
-        private long _lastReceivedTime;
-        private long _lastReceivedNormalTime;
         private int _ackBitMask;
-        private int _lastAckBit;
         private uint _synchronize;
-        private int _instantPing;
-        private int _bestPing;
         private int _lct;
-        private int _lastSentSync;
         private int _latestSync;
-        private int _dummySend;
         private int _lastAckInLongAck;
 
-        private int _totalReceivedBytes;
-        private int _partialReceivedBytes;
-        private int _totalSentBytes;
-
-        private int _partialSentBytes;
-        private int _lastReceivedPacketInBothModes;
-        private int _totalLostPackets;
-        private bool _connectionQuality;
-        private int _currentSmoothServerTick;
-        private int _sstLastLocalTime;
         private string _frontendAddress;
 
         private long _latestLoginTime;
@@ -76,9 +58,6 @@ namespace RCC.Network
 
         private int _mLoginAttempts;
 
-        private long _updateTicks;
-        private bool _receivedSync;
-        private int _normalPacketsReceived;
         private int _totalMessages;
 
         private uint _currentClientTick;
@@ -93,10 +72,7 @@ namespace RCC.Network
         private int _msPerTick;
         private long _currentClientTime;
 
-        private object _dataBase;
         private bool _registered;
-        private long _machineTimeAtTick;
-        private long _machineTicksAtTick;
         private readonly List<int> _latestProbes = new List<int>();
         private int _latestProbe;
 
@@ -106,13 +82,16 @@ namespace RCC.Network
         private byte[] _databaseXmlMD5;
 
         private bool _alreadyWarned;
-        private byte _impulseMultiPartNumber = 0;
+
+        private long _previousTime;
 
         private readonly RyzomClient _client;
 
         public NetworkConnection(RyzomClient client)
         {
             _client = client;
+
+            Reset();
         }
 
         /// <summary>
@@ -137,84 +116,17 @@ namespace RCC.Network
         {
             _currentSendNumber = 0;
             LastReceivedNumber = 0;
-            _lastReceivedTime = 0;
-            _lastReceivedNormalTime = 0;
             _ackBitMask = 0;
-            _lastAckBit = 0;
 
             _synchronize = 0;
-            _instantPing = 10000;
-            _bestPing = 10000;
             _lct = 100;
-            _machineTimeAtTick = RyzomGetLocalTime();
-            _machineTicksAtTick = RyzomGetPerformanceTime();
 
-            _lastSentSync = 0;
             _latestSync = 0;
 
-            //_PropertyDecoder.init(256);
-
-            _dummySend = 0;
-            //_LongAckBitField.resize(1024);
             LongAckBitField = new byte[1024 / 8];
 
             _lastAckInLongAck = 0;
             LastSentCycle = 0;
-
-            _totalReceivedBytes = 0;
-            _partialReceivedBytes = 0;
-            _totalSentBytes = 0;
-            _partialSentBytes = 0;
-            //_MeanPackets.MeanPeriod = 5000;
-            //_MeanLoss.MeanPeriod = 5000;
-
-            _lastReceivedPacketInBothModes = 0;
-            _totalLostPackets = 0;
-            _connectionQuality = false;
-
-            _currentSmoothServerTick = 0;
-            _sstLastLocalTime = 0;
-        }
-
-        /// <summary>
-        ///     reset the client and server ticks
-        /// </summary>
-        void InitTicks()
-        {
-            _currentClientTick = 0;
-            _currentServerTick = 0;
-            _msPerTick = 100;
-            //_LCT = LCT;
-        }
-
-        /// <summary>
-        ///     reinitialisation of the connection
-        /// </summary>
-        public void ReInit()
-        {
-            // TODO reinitialisation of the connection -> some methods missing
-            ImpulseDecoder.Reset();
-            //if (_DataBase)
-            //    _DataBase->resetData(_CurrentServerTick, true);
-            LongAckBitField = new byte[0];
-            //_PacketStamps.clear();
-            _actions.Clear();
-            //_Changes.clear();
-            _genericMultiPartTemp.Clear();
-            //_IdMap.clear();
-            Reset();
-            InitTicks();
-
-            // Reuse the udp socket
-            _connection = new UdpSocket();
-        }
-
-        /// <summary>
-        ///     datetime ticks
-        /// </summary>
-        public long RyzomGetPerformanceTime()
-        {
-            return DateTime.Now.Ticks;
         }
 
         /// <summary>
@@ -267,29 +179,15 @@ namespace RCC.Network
 
             if (!_registered)
             {
-                //CActionFactory.registerAction(TActionCode.ACTION_POSITION_CODE, CActionPosition);
-                //CActionFactory.registerAction(TActionCode.ACTION_SYNC_CODE, CActionSync);
-                //CActionFactory.registerAction(TActionCode.ACTION_DISCONNECTION_CODE, CActionDisconnection);
-                //CActionFactory.registerAction(TActionCode.ACTION_ASSOCIATION_CODE, CActionAssociation);
-                //CActionFactory.registerAction(TActionCode.ACTION_DUMMY_CODE, CActionDummy);
-                //CActionFactory.registerAction(TActionCode.ACTION_LOGIN_CODE, CActionLogin);
-                //CActionFactory.registerAction(TActionCode.ACTION_TARGET_SLOT_CODE, CActionTargetSlot);
                 ActionFactory.RegisterAction(ActionCode.ActionGenericCode, typeof(ActionGeneric));
                 ActionFactory.RegisterAction(ActionCode.ActionGenericMultiPartCode, typeof(ActionGenericMultiPart));
-                //CActionFactory.registerAction(TActionCode.ACTION_SINT64, CActionSint64);
+
                 _registered = true;
             }
 
             InitCookie(cookie, addr);
 
-            // Register property nbbits
-            // CActionSint64::registerNumericPropertiesRyzom();
-
-            // Init visual property tree
-            //_VisualPropertyTreeRoot = new TVPNodeClient();
-            //_VisualPropertyTreeRoot->buildTree();
-
-            // If the server run on window, those are the one to test
+            // get md5 hashes
             _msgXmlMD5 = Misc.GetFileMD5("data\\msg.xml");
             _databaseXmlMD5 = Misc.GetFileMD5("data\\database.xml");
         }
@@ -315,14 +213,6 @@ namespace RCC.Network
         {
             ImpulseCallback = impulseCallBack;
             ImpulseArg = null;
-        }
-
-        /// <summary>
-        ///     set the client database manager - TODO: client database manager
-        /// </summary>
-        public void SetDataBase(object database)
-        {
-            _dataBase = database;
         }
 
         /// <summary>
@@ -365,7 +255,7 @@ namespace RCC.Network
                         case SystemMessageType.SystemProbeCode:
                             // receive probe, decode probe and state probe
                             ConnectionState = ConnectionState.Probe;
-                            //_Changes.push_back(CChange(0, ProbeReceived));
+                            // TODO _Changes.push_back(CChange(0, ProbeReceived));
                             _client.GetLogger().Debug("CNET: login->probe");
                             ReceiveSystemProbe(msgin);
                             return true;
@@ -376,15 +266,13 @@ namespace RCC.Network
                             return false; // exit now from loop, don't expect a new state
 
                         default:
-                            //msgin.displayStream("DBG:BEN:stateLogin:msgin");
                             _client.GetLogger().Warn($"CNET: received system {message} in state Login");
                             break;
                     }
                 }
                 else
                 {
-                    //msgin.displayStream("DBG:BEN:stateLogin:msgin");
-                    _client.GetLogger().Warn($"CNET: received normal in state Login");
+                    _client.GetLogger().Warn("CNET: received normal in state Login");
                 }
             }
 
@@ -398,9 +286,11 @@ namespace RCC.Network
                 if (_mLoginAttempts > 24)
                 {
                     _mLoginAttempts = 0;
-                    Disconnect(); // will send disconnection message
+                    // will send disconnection message
+                    Disconnect(); 
                     _client.GetLogger().Warn("CNET: Too many LOGIN attempts, connection problem");
-                    return true; // exit now from loop, don't expect a new state
+                    // exit now from loop, don't expect a new state
+                    return true; 
                 }
 
                 ++_mLoginAttempts;
@@ -436,14 +326,12 @@ namespace RCC.Network
                             case SystemMessageType.SystemSyncCode:
                                 // receive sync, decode sync and state synchronize
                                 ConnectionState = ConnectionState.Synchronize;
-                                //nldebug("CNET[%p]: probe->synchronize", this);
                                 ReceiveSystemSync(msgin);
                                 return true;
 
                             case SystemMessageType.SystemStalledCode:
                                 // receive sync, decode sync and state synchronize
                                 ConnectionState = ConnectionState.Stalled;
-                                //nldebug("CNET[%p]: probe->stalled", this);
                                 ReceiveSystemStalled(msgin);
                                 return true;
 
@@ -453,9 +341,11 @@ namespace RCC.Network
                                 break;
 
                             case SystemMessageType.SystemServerDownCode:
-                                Disconnect(); // will send disconnection message
+                                // will send disconnection message
+                                Disconnect(); 
                                 _client.GetLogger().Error("BACK-END DOWN");
-                                return false; // exit now from loop, don't expect a new state
+                                // exit now from loop, don't expect a new state
+                                return false; 
 
                             default:
                                 _client.GetLogger().Warn($"CNET: received system {message} in state Probe");
@@ -509,15 +399,13 @@ namespace RCC.Network
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, decode probe and state probe
                                 ConnectionState = ConnectionState.Probe;
-                                //nldebug("CNET[%p]: synchronize->probe", this);
-                                //_Changes.push_back(CChange(0, ProbeReceived)); TODO
+                                // TODO _Changes.push_back(CChange(0, ProbeReceived)); 
                                 ReceiveSystemProbe(msgin);
                                 return true;
 
                             case SystemMessageType.SystemStalledCode:
                                 // receive stalled, decode stalled and state stalled
                                 ConnectionState = ConnectionState.Stalled;
-                                //nldebug("CNET[%p]: synchronize->stalled", this);
                                 ReceiveSystemStalled(msgin);
                                 return true;
 
@@ -527,9 +415,11 @@ namespace RCC.Network
                                 break;
 
                             case SystemMessageType.SystemServerDownCode:
-                                Disconnect(); // will send disconnection message
+                                // will send disconnection message
+                                Disconnect(); 
                                 _client.GetLogger().Error("BACK-END DOWN");
-                                return false; // exit now from loop, don't expect a new state
+                                // exit now from loop, don't expect a new state
+                                return false; 
 
                             default:
                                 _client.GetLogger().Warn($"CNET: received system {message} in state Synchronize");
@@ -539,8 +429,7 @@ namespace RCC.Network
                     else
                     {
                         ConnectionState = ConnectionState.Connected;
-                        //nlwarning("CNET[%p]: synchronize->connected", this);
-                        //_Changes.push_back(CChange(0, ConnectionReady)); TODO _Changes  synchronize->connected
+                        // TODO _Changes.push_back(CChange(0, ConnectionReady));
                         ImpulseDecoder.Reset();
                         ReceiveNormalMessage(msgin);
                         return true;
@@ -554,8 +443,6 @@ namespace RCC.Network
 
             return false;
         }
-
-        private long _previousTime = 0;
 
         /// <summary>
         ///     Connection state machine - Connected State
@@ -583,9 +470,6 @@ namespace RCC.Network
                 _currentClientTime += _msPerTick;
 
                 _currentClientTick++;
-
-                _machineTimeAtTick = _updateTime;
-                _machineTicksAtTick = _updateTicks;
             }
 
             if (_currentClientTick >= _currentServerTick && !_connection.IsDataAvailable())
@@ -610,43 +494,28 @@ namespace RCC.Network
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, and goto state probe
                                 ConnectionState = ConnectionState.Probe;
-                                // reset client impulse & vars
-
-                                /*
-                                                    _ImpulseDecoder.reset();
-                                                    _PropertyDecoder.clear();
-                                                    _PacketStamps.clear();
-                                                    // clears sent actions
-                                                    while (!_Actions.empty())
-                                                        CActionFactory::getInstance()->remove(_Actions.front().Actions),
-                                                    _Actions.clear();
-                                                    _AckBitMask = 0;
-                                                    _LastReceivedNumber = 0xffffffff;
-                                */
-
-                                //nldebug("CNET[%p]: connected->probe", this);
-                                //_Changes.Add(CChange(0, ProbeReceived));
+                                // TODO _Changes.Add(CChange(0, ProbeReceived));
                                 ReceiveSystemProbe(msgin);
                                 return true;
 
                             case SystemMessageType.SystemSyncCode:
                                 // receive stalled, decode stalled and state stalled
                                 ConnectionState = ConnectionState.Synchronize;
-                                //nldebug("CNET[%p]: connected->synchronize", this);
                                 ReceiveSystemSync(msgin);
                                 return true;
 
                             case SystemMessageType.SystemStalledCode:
                                 // receive stalled, decode stalled and state stalled
                                 ConnectionState = ConnectionState.Stalled;
-                                //nldebug("CNET[%p]: connected->stalled", this);
                                 ReceiveSystemStalled(msgin);
                                 return true;
 
                             case SystemMessageType.SystemServerDownCode:
-                                Disconnect(); // will send disconnection message
+                                // will send disconnection message
+                                Disconnect(); 
                                 _client.GetLogger().Error("BACK-END DOWN");
-                                return false; // exit now from loop, don't expect a new state
+                                // exit now from loop, don't expect a new state
+                                return false; 
 
                             default:
                                 _client.GetLogger().Warn($"CNET: received system {message} in state Connected");
@@ -691,10 +560,8 @@ namespace RCC.Network
         {
             _client.GetLogger().Debug($"CNET: received normal message Packet={LastReceivedNumber} Ack={_lastReceivedAck}");
 
-            var actions = new List<Action.Action>();
+            var actions = new List<Action.ActionBase>();
             ImpulseDecoder.Decode(msgin, _currentReceivedNumber, _lastReceivedAck, _currentSendNumber, actions);
-
-            ++_normalPacketsReceived;
 
             // we can now remove all old action that are acked
             while (_actions.Count != 0 && _actions[0].FirstPacket != 0 && _actions[0].FirstPacket <= _lastReceivedAck)
@@ -708,7 +575,7 @@ namespace RCC.Network
             Debug.Assert(_currentReceivedNumber * 2 + _synchronize > _currentServerTick);
             _currentServerTick = (uint)(_currentReceivedNumber * 2 + _synchronize);
 
-            // TODO: receiveNormalMessage PacketStamps stuff
+            // TODO: receiveNormalMessage PacketStamps implementation
 
             // Decode the actions received in the impulsions
             foreach (var action in actions)
@@ -718,7 +585,8 @@ namespace RCC.Network
                     case ActionCode.ActionDisconnectionCode:
                         // Self disconnection
                         _client.GetLogger().Info("You were disconnected by the server");
-                        Disconnect(); // will send disconnection message
+                        // will send disconnection message
+                        Disconnect(); 
                         // TODO LoginSM.pushEvent(CLoginStateMachine::ev_conn_dropped);
 
                         break;
@@ -731,8 +599,7 @@ namespace RCC.Network
                         break;
 
                     case ActionCode.ActionDummyCode:
-                        //CActionDummy* dummy = ((CActionDummy*)actions[i]);
-                        _client.GetLogger().Debug($"CNET Received Dummy{action}");
+                        _client.GetLogger().Debug($"CNET Received Dummy {action}");
                         // Nothing to do
                         break;
                 }
@@ -742,238 +609,22 @@ namespace RCC.Network
 
             // Decode the visual properties
             DecodeVisualProperties(msgin);
-
-            _lastReceivedNormalTime = _updateTime;
         }
 
         /// <summary>
         ///     extract properties (database, sheets, ...) from a stream
-        ///     TODO decodeVisualProperties -> adding _Changes
         /// </summary>
-        void DecodeVisualProperties(BitMemoryStream msgin)
+        private static void DecodeVisualProperties(BitMemoryStream _)
         {
-            try
-            {
-                //nldebug( "pos: %d  len: %u", msgin.getPos(), msgin.length() );
-                //while (false)
-                //{
-                ////nlinfo( "Reading pass %u, BEFORE HEADER: pos: %d  len: %u", ++i, msgin.getPosInBit(), msgin.length() * 8 );
-                //
-                //// Check if there is a new block to read
-                if (msgin.GetPosInBit() + sizeof(byte) * 8 > msgin.Length * 8)
-                    return;
-                //
-                //
-                //
-                //// Header
-                //TCLEntityId slot;
-                //msgin.serialAndLog1(slot);
-                //
-                //uint associationBits;
-                //msgin.serialAndLog2(associationBits, 2);
-                ////nlinfo( "slot %hu AB: %u", (uint16)slot, associationBits );
-                //if (associationBitsHaveChanged(slot, associationBits) && (!IgnoreEntityDbUpdates || slot == 0))
-                //{
-                //    //displayBitStream( msgin, beginbitpos, msgin.getPosInBit() );
-                //    //			   nlinfo ("Disassociating S%hu (AB %u)", (uint16)slot, associationBits );
-                //    if (_PropertyDecoder.isUsed(slot))
-                //    {
-                //        TSheetId sheet = _PropertyDecoder.sheet(slot);
-                //        TIdMap::iterator it = _IdMap.find(sheet);
-                //        if (it != _IdMap.end())
-                //            _IdMap.erase(it);
-                //        _PropertyDecoder.removeEntity(slot);
-                //
-                //        CChange theChange(slot, RemoveOldEntity );
-                //        _Changes.push_back(theChange);
-                //    }
-                //    else
-                //    {
-                //        //					nlinfo( "Cannot disassociate slot %hu: sheet not received yet", (uint16)slot );
-                //    }
-                //}
-                //
-                //// Read the timestamp delta if there's one (otherwise take _CurrentServerTick)
-                //TGameCycle timestamp;
-                //bool timestampIsThere;
-                //msgin.serialBitAndLog(timestampIsThere);
-                //if (timestampIsThere)
-                //{
-                //    uint timestampDelta;
-                //    msgin.serialAndLog2(timestampDelta, 4);
-                //    timestamp = _CurrentServerTick - timestampDelta;
-                //    //nldebug( "TD: %u (S%hu)", timestampDelta, (uint16)slot );
-                //}
-                //else
-                //{
-                //    timestamp = _CurrentServerTick;
-                //}
-                //
-                //// Tree
-                ////nlinfo( "AFTER HEADER: posBit: %d pos: %d  len: %u", msgin.getPosInBit(), msgin.getPos(), msgin.length() );
-                //
-                //TVPNodeClient* currentNode = _VisualPropertyTreeRoot;
-                //msgin.serialBitAndLog(currentNode->a()->BranchHasPayload);
-                //if (currentNode->a()->BranchHasPayload)
-                //{
-                //    CActionPosition* ap = (CActionPosition*)CActionFactory::getInstance()->create(slot, ACTION_POSITION_CODE);
-                //    ap->unpack(msgin);
-                //    _PropertyDecoder.receive(_CurrentReceivedNumber, ap);
-                //
-                //    /*
-                //     * Set into property database
-                //     */
-                //
-                //    // TEMP
-                //    if (ap->Position[0] == 0 || ap->Position[1] == 0)
-                //        nlwarning("S%hu: Receiving an invalid position", (uint16)slot);
-                //
-                //    if (_DataBase != NULL && (!IgnoreEntityDbUpdates || slot == 0))
-                //    {
-                //        CCDBNodeBranch* nodeRoot;
-                //        nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->getNode((uint16)0));
-                //        if (nodeRoot)
-                //        {
-                //            CCDBNodeLeaf* node;
-                //            node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(0));
-                //            nlassert(node != NULL);
-                //            node->setValue64(ap->Position[0]);
-                //            node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(1));
-                //            nlassert(node != NULL);
-                //            node->setValue64(ap->Position[1]);
-                //            node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(2));
-                //            nlassert(node != NULL);
-                //            node->setValue64(ap->Position[2]);
-                //
-                //            if (LoggingMode)
-                //            {
-                //                nlinfo("recvd position (%d,%d) for slot %hu, date %u", (sint32)(ap->Position[0]), (sint32)(ap->Position[1]), (uint16)slot, timestamp);
-                //            }
-                //        }
-                //    }
-                //
-                //    bool interior = ap->Interior;
-                //
-                //    CActionFactory::getInstance()->remove((Action * &)ap);
-                //
-                //
-                //    /*
-                //     * Statistical prediction of time before next position update: set PredictedInterval
-                //     */
-                //
-                //    //nlassert( MAX_POSUPDATETICKQUEUE_SIZE > 1 );
-                //    deque<TGameCycle> & puTicks = _PosUpdateTicks[slot];
-                //    multiset<TGameCycle> & puIntervals = _PosUpdateIntervals[slot];
-                //
-                //    // Flush the old element of tick queue and of the interval sorted set
-                //    if (puTicks.size() == MAX_POSUPDATETICKQUEUE_SIZE)
-                //    {
-                //        puIntervals.erase(puIntervals.find(puTicks[1] - puTicks[0])); // erase only one element, not all corresponding to the value
-                //        puTicks.pop_front();
-                //    }
-                //
-                //    // Add a new element to the tick queue and possibly to the interval sorted set
-                //    // Still to choose: _CurrentServerTick or timestamp ?
-                //    TGameCycle latestInterval = 0;
-                //    if (!puTicks.empty())
-                //    {
-                //        latestInterval = timestamp - puTicks.back();
-                //        puIntervals.insert(latestInterval);
-                //
-                //        if (PosUpdateIntervalGraph)
-                //            PosUpdateIntervalGraph->addOneValue(slot, (float)latestInterval);
-                //    }
-                //    puTicks.push_back(timestamp);
-                //
-                //    nlassert(puTicks.size() == puIntervals.size() + 1);
-                //
-                //    // Prediction function : Percentile(25 last, 0.8) + 1
-                //    TGameCycle predictedInterval;
-                //    if (puIntervals.empty())
-                //    {
-                //        predictedInterval = 0;
-                //    }
-                //    else
-                //    {
-                //        predictedInterval = (TGameCycle)(percentileRev(puIntervals, PREDICTION_REV_PERCENTILE) + 1);
-                //
-                //        //if ( predictedInterval > 100 )
-                //        //	nlwarning( "Slot %hu: Predicted interval %u exceeds 100 ticks", (uint16)slot, predictedInterval );
-                //
-                //        if (PosUpdatePredictionGraph)
-                //            PosUpdatePredictionGraph->addOneValue(slot, (float)predictedInterval);
-                //    }
-                //
-                //    //nlinfo( "Slot %hu: Interval=%u Predicted=%u", (uint16)slot, latestInterval, predictedInterval );
-                //
-                //    /*
-                //     * Add into the changes vector
-                //     */
-                //    CChange thechange(slot, PROPERTY_POSITION, timestamp );
-                //    thechange.PositionInfo.PredictedInterval = predictedInterval;
-                //    thechange.PositionInfo.IsInterior = interior;
-                //    _Changes.push_back(thechange);
-                //}
-                //
-                //currentNode = currentNode->b();
-                //msgin.serialBitAndLog(currentNode->BranchHasPayload);
-                //if (currentNode->BranchHasPayload)
-                //{
-                //    msgin.serialBitAndLog(currentNode->a()->BranchHasPayload);
-                //    if (currentNode->a()->BranchHasPayload)
-                //    {
-                //        CActionSint64* ac = (CActionSint64*)CActionFactory::getInstance()->createByPropIndex(slot, PROPERTY_ORIENTATION);
-                //        ac->unpack(msgin);
-                //
-                //        // Process orientation
-                //        CChange thechange(slot, PROPERTY_ORIENTATION, timestamp);
-                //        _Changes.push_back(thechange);
-                //
-                //        if (_DataBase != NULL && (!IgnoreEntityDbUpdates || slot == 0))
-                //        {
-                //            CCDBNodeBranch* nodeRoot;
-                //            nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->getNode(0));
-                //            if (nodeRoot)
-                //            {
-                //                CCDBNodeLeaf* node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(PROPERTY_ORIENTATION));
-                //                nlassert(node != NULL);
-                //                node->setValue64(ac->getValue());
-                //                if (LoggingMode)
-                //                {
-                //                    nlinfo("CLIENT: recvd property %hu (%s) for slot %hu, date %u", (uint16)PROPERTY_ORIENTATION, getPropText(PROPERTY_ORIENTATION), (uint16)slot, timestamp);
-                //                }
-                //                //nldebug("CLPROPNET[%p]: received property %d for entity %d: %" NL_I64 "u", this, action->PropIndex, action->CLEntityId, action->getValue());
-                //            }
-                //        }
-                //
-                //        CActionFactory::getInstance()->remove((Action * &)ac);
-                //    }
-                //
-                //    TVPNodeClient::SlotContext.NetworkConnection = this;
-                //    TVPNodeClient::SlotContext.Slot = slot;
-                //    TVPNodeClient::SlotContext.Timestamp = timestamp;
-                //
-                //    // Discreet properties
-                //    currentNode->b()->decodeDiscreetProperties(msgin);
-                //}
-                //}
-            }
-            catch
-            {
-                // End of stream (saves useless bits)
-            }
+            // TODO decodeVisualProperties -> adding _Changes
         }
 
         /// <summary>
         ///     manage a generic action - invoke the impulse callback for the action
-        ///     TODO: get memory stream -> CImpulseDecoder.decode to action?
         /// </summary>
         private void GenericAction(ActionGeneric ag)
         {
             var bms = ag.Get();
-
-            //nldebug("CNET: Calling impulsion callback (size %u) :'%s'", this, bms.length(), toHexaString(bms.bufferAsVector()).c_str());
-            //nldebug("CNET[%p]: Calling impulsion callback (size %u)", this, bms.length());
 
             ImpulseCallback?.Invoke(bms);
         }
@@ -1000,8 +651,6 @@ namespace RCC.Network
             _latestProbeTime = _updateTime;
             msgin.Serial(ref _latestProbe);
             _latestProbes.Add(_latestProbe);
-
-            //nldebug("CNET[%p]: received PROBE %d", this, _LatestProbe);
         }
 
         /// <summary>
@@ -1009,7 +658,7 @@ namespace RCC.Network
         /// </summary>
         private void ReceiveSystemStalled(BitMemoryStream msgin)
         {
-            _client.GetLogger().Info("CNET: received STALLED but not implemented");
+            _client.GetLogger().Info("CNET: received STALLED but not implemented " + msgin);
         }
 
         /// <summary>
@@ -1025,9 +674,8 @@ namespace RCC.Network
 
             _client.GetLogger().Debug($"receiveSystemSync {msgin}");
 
-            //return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-            byte[] checkMsgXml = new byte[16];
-            byte[] checkDatabaseXml = new byte[16];
+            var checkMsgXml = new byte[16];
+            var checkDatabaseXml = new byte[16];
 
             msgin.Serial(ref checkMsgXml);
             msgin.Serial(ref checkDatabaseXml);
@@ -1038,26 +686,18 @@ namespace RCC.Network
             if (xmlInvalid && !_alreadyWarned)
             {
                 _alreadyWarned = true;
-                _client.GetLogger().Warn(
-                    $"XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
+                _client.GetLogger().Warn("XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
 
-                _client.GetLogger().Warn(
-                    $"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
-                _client.GetLogger().Warn(
-                    $"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
+                _client.GetLogger().Debug($"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
+                _client.GetLogger().Debug($"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
             }
 
-            _receivedSync = true;
+            _msPerTick = 100;
 
-            _msPerTick = 100; // initial values
-
-            //#pragma message ("HALF_FREQUENCY_SENDING_TO_CLIENT")
             _currentServerTick = (uint)(_synchronize + _currentReceivedNumber * 2);
 
             _currentClientTick = (uint)(_currentServerTick - (_lct + _msPerTick) / _msPerTick);
             _currentClientTime = _updateTime - (_lct + _msPerTick);
-
-            //nlinfo( "CNET[%p]: received SYNC %" NL_I64 "u %" NL_I64 "u - _CurrentReceivedNumber=%d _CurrentServerTick=%d", this, (uint64)_Synchronize, (uint64)stime, _CurrentReceivedNumber, _CurrentServerTick );
 
             SendSystemAckSync();
         }
@@ -1067,24 +707,20 @@ namespace RCC.Network
         /// </summary>
         private bool BuildStream(BitMemoryStream msgin)
         {
-            const int len = 65536;
-
-            if (_connection.Receive(ref _receiveBuffer, len, false))
+            if (_connection.Receive(ref _receiveBuffer, false))
             {
-                // Fill the message
-                //msgin.clear();
                 msgin.MemCpy(_receiveBuffer);
 
                 return true;
             }
-            else
-            {
-                // A receiving error means the front-end is down
-                ConnectionState = ConnectionState.Disconnect;
-                Disconnect(); // won't send a disconnection msg because state is already Disconnect
-                _client.GetLogger().Warn($"DISCONNECTION");
-                return false;
-            }
+
+            // A receiving error means the front-end is down
+            ConnectionState = ConnectionState.Disconnect;
+
+            // won't send a disconnection msg because state is already Disconnect
+            Disconnect();
+            _client.GetLogger().Warn("DISCONNECTION");
+            return false;
         }
 
         /// <summary>
@@ -1096,8 +732,6 @@ namespace RCC.Network
                 return true;
 
             ++_totalMessages;
-
-            _lastReceivedTime = _updateTime;
 
             msgin.Serial(ref _currentReceivedNumber);
             msgin.Serial(ref _systemMode);
@@ -1147,7 +781,6 @@ namespace RCC.Network
             message.Serial(ref sync);
             message.Serial(ref LastReceivedNumber);
             message.Serial(ref _lastAckInLongAck);
-            // message.serial(_LongAckBitField); todo
 
             foreach (var ack in LongAckBitField)
             {
@@ -1161,8 +794,6 @@ namespace RCC.Network
 
             var length = message.Length;
             _connection.Send(message.Buffer(), length);
-            //sendUDP (&(_Connection), message.buffer(), length);
-            //statsSend(length); todo stats
 
             _latestSyncTime = _updateTime;
         }
@@ -1170,20 +801,19 @@ namespace RCC.Network
         /// <summary>
         ///     sends system Probe acknowledge
         /// </summary>
-        void SendSystemAckProbe()
+        private void SendSystemAckProbe()
         {
             var message = new BitMemoryStream();
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            byte probe = (byte)SystemMessageType.SystemAckProbeCode;
-            int numprobes = _latestProbes.Count;
+            var probe = (byte)SystemMessageType.SystemAckProbeCode;
+            var numprobes = _latestProbes.Count;
 
             message.Serial(ref probe);
             message.Serial(ref numprobes);
 
-            int i;
-            for (i = 0; i < numprobes; ++i)
+            for (var i = 0; i < numprobes; ++i)
             {
                 var val = _latestProbes[i];
                 message.Serial(ref val);
@@ -1193,10 +823,6 @@ namespace RCC.Network
 
             var length = message.Length;
             _connection.Send(message.Buffer(), length);
-            //sendUDP (&(_Connection), message.buffer(), length);
-            //statsSend(length);
-
-            //nlinfo("CNET[%p]: sent ACK_PROBE (%d probes)", this, numprobes);
         }
 
         /// <summary>
@@ -1223,15 +849,9 @@ namespace RCC.Network
                 }
                 catch (Exception e)
                 {
-                    _client.GetLogger().Error($"Socket exception: " + e.Message);
+                    _client.GetLogger().Error($"Socket exception: {e.Message}");
                 }
             }
-
-            //sendUDP (&(_Connection), message.buffer(), length);
-            //statsSend(length); TODO stats
-
-            //updateBufferizedPackets(); TODO updateBufferizedPackets
-            //nlinfo("CNET[%p]: sent DISCONNECTION", this);
         }
 
         /// <summary>
@@ -1246,7 +866,7 @@ namespace RCC.Network
             byte login = (byte)SystemMessageType.SystemLoginCode;
             message.Serial(ref login);
 
-            //message.serial(Cookie);
+            // Cookie
             message.Serial(ref _userAddr);
             message.Serial(ref _userKey);
             message.Serial(ref _userId);
@@ -1271,11 +891,6 @@ namespace RCC.Network
             _userAddr = int.Parse(parts[0], NumberStyles.HexNumber);
             _userKey = int.Parse(parts[1], NumberStyles.HexNumber);
             _userId = int.Parse(parts[2], NumberStyles.HexNumber);
-
-            if (_userAddr == 0 && _userKey == 0 && _userId == 0)
-                _valid = 0;
-            else
-                _valid = 1;
         }
 
         /// <summary>
@@ -1284,15 +899,11 @@ namespace RCC.Network
         public bool Update()
         {
             _updateTime = RyzomGetLocalTime();
-            _updateTicks = RyzomGetPerformanceTime();
-            _receivedSync = false;
-            _normalPacketsReceived = 0;
             _totalMessages = 0;
 
             // If we are disconnected, bypass the real network update
             if (ConnectionState == ConnectionState.Disconnect)
             {
-                _connectionQuality = false; // to block the user entity
                 return false;
             }
 
@@ -1312,76 +923,57 @@ namespace RCC.Network
 
                 do
                 {
-                    switch (ConnectionState)
+                    stateBroke = ConnectionState switch
                     {
-                        case ConnectionState.Login:
+                        ConnectionState.Login =>
                             // if receives System SYNC
                             //    immediate state Synchronize
                             // else
                             //    sends System LoginCookie
-                            stateBroke = StateLogin();
-                            break;
-
-                        case ConnectionState.Synchronize:
+                            StateLogin(),
+                        ConnectionState.Synchronize =>
                             // if receives System PROBE
                             //    immediate state Probe
                             // else if receives Normal
                             //    immediate state Connected
                             // else
                             //    sends System ACK_SYNC
-                            stateBroke = StateSynchronize();
-                            break;
-
-                        case ConnectionState.Connected:
+                            StateSynchronize(),
+                        ConnectionState.Connected =>
                             // if receives System PROBE
                             //    immediate state Probe
                             // else if receives Normal
                             //	   sends Normal data
-                            stateBroke = StateConnected();
-                            break;
-
-                        case ConnectionState.Probe:
+                            StateConnected(),
+                        ConnectionState.Probe =>
                             // if receives System SYNC
                             //    immediate state SYNC
                             // else if receives System PROBE
                             //    decode PROBE
                             // sends System ACK_PROBE
-                            stateBroke = StateProbe();
-                            break;
-
-                        case ConnectionState.Stalled:
+                            StateProbe(),
+                        ConnectionState.Stalled =>
                             // if receives System SYNC
                             //    immediate state SYNC
                             // else if receives System STALLED
                             //    decode STALLED (nothing to do)
                             // else if receives System PROBE
                             //    immediate state PROBE
-                            stateBroke = StateStalled();
-                            break;
-
-                        case ConnectionState.Quit:
+                            StateStalled(),
+                        ConnectionState.Quit =>
                             // if receives System SYNC
                             //    immediate state Synchronize
                             // else
                             //    sends System LoginCookie
-                            stateBroke = StateQuit();
-                            break;
-
-                        default:
-                            // Nothing here !
-                            stateBroke = false; // will come here if a disconnection action is received inside a method that returns true
-                            break;
-                    }
+                            StateQuit(),
+                        _ => false
+                    };
                 } while (stateBroke); // && _TotalMessages<5);
             }
             catch (Exception)
             {
                 _connectionState = ConnectionState.Disconnect;
             }
-
-            _connectionQuality = ConnectionState == ConnectionState.Connected &&
-                                 _updateTime - _lastReceivedNormalTime < 2000 &&
-                                 _currentClientTick < _currentServerTick;
 
             return _totalMessages != 0;
         }
@@ -1404,21 +996,20 @@ namespace RCC.Network
 
                     // check last block isn't bigger than maximum allowed
                     int i;
-                    int bitSize = 32 + 8; // block size is 32 (cycle) + 8 (number of actions
+                    var bitSize = 32 + 8; // block size is 32 (cycle) + 8 (number of actions
 
                     for (i = 0; i < block.Actions.Count; ++i)
                     {
                         bitSize += ActionFactory.Size(block.Actions[i]);
+
                         if (bitSize >= 480 * 8)
                             break;
                     }
 
                     if (i < block.Actions.Count)
                     {
-                        throw new NotImplementedException();
+                        throw new NotImplementedException("Send: ActionBlock size is bigger than 480 bit. Thats not implemented yet.");
                     }
-
-                    //nlinfo("-BEEN- setcycle [size=%d, cycle=%d]", _Actions.size(), _Actions.empty() ? 0 : _Actions.back().Cycle);
                 }
 
                 if (ConnectionState == ConnectionState.Connected)
@@ -1447,37 +1038,21 @@ namespace RCC.Network
             message.Serial(ref LastReceivedNumber);
             message.Serial(ref _ackBitMask);
 
-            uint numPacked = 0;
-
             foreach (var block in _actions)
             {
-                //for (var itblock = _Actions.Begin(); itblock != _Actions.end(); ++itblock)
-                //{
-                //    CActionBlock & block = *itblock;
-
                 // if block contains action that are not already stamped, don't send it now
                 if (block.Cycle == 0)
                     break;
 
-                // Prevent to send a message too big
-                //if (message.getPosInBit() + (*itblock).bitSize() > FrontEndInputBufferSize) // hard version
-                //	break;
-
                 if (block.FirstPacket == 0)
                     block.FirstPacket = _currentSendNumber;
 
-                //nlassertex((*itblock).Cycle > lastPackedCycle, ("(*itblock).Cycle=%d lastPackedCycle=%d", (*itblock).Cycle, lastPackedCycle));
-
-                //		lastPackedCycle = block.Cycle;
-
                 block.Serial(message);
-                ++numPacked;
-
-                //nldebug("CNET[%p]: packed block %d, message is currently %d bits long", this, block.Cycle, message.getPosInBit());
 
                 // Prevent to send a message too big
-                //if (message.getPosInBit() + (*itblock).bitSize() > FrontEndInputBufferSize) // hard version
-                //if (message.GetPosInBit() > 480 * 8) // easy version TODO: GetPosInBit does not return the right size i guess -> so we send only 1 block at a time (but do not get disconnected)
+                //if (message.GetPosInBit() > 480 * 8) // easy version TODO: GetPosInBit does not return the right size i guess
+
+                // TODO fix workaround: send only 1 block at a time (to not get disconnected)
                 break;
             }
 
@@ -1486,7 +1061,7 @@ namespace RCC.Network
 
             _lastSendTime = RyzomGetLocalTime();
 
-            //_PacketStamps.push_back(make_pair(_CurrentSendNumber, _UpdateTime));
+            // TODO _PacketStamps.push_back(make_pair(_CurrentSendNumber, _UpdateTime));
 
             _currentSendNumber++;
         }
@@ -1527,17 +1102,16 @@ namespace RCC.Network
         /// </summary>
         public void FlushSendBuffer()
         {
-            //_Actions.clear();
+            _actions.Clear();
         }
 
         /// <summary>
         ///     pushes an action to be sent by the client to the send queue
         /// </summary>
-        void Push(Action.Action action)
+        private void Push(Action.ActionBase action)
         {
             if (_actions.Count == 0 || _actions[^1].Cycle != 0)
             {
-                //nlinfo("-BEEN- push back 2 [size=%d, cycle=%d]", _Actions.size(), _Actions.empty() ? 0 : _Actions.back().Cycle);
                 _actions.Add(new ActionBlock());
             }
 
@@ -1556,9 +1130,9 @@ namespace RCC.Network
             if (ag == null) //TODO: see that with oliver...
                 return;
 
-            int bytelen = msg.Length;
-            int impulseMinBitSize = (int)ActionFactory.Size(ag);
-            int impulseBitSize = impulseMinBitSize + (4 + bytelen) * 8;
+            var bytelen = msg.Length;
+            var impulseMinBitSize = ActionFactory.Size(ag);
+            var impulseBitSize = impulseMinBitSize + (4 + bytelen) * 8;
 
             if (impulseBitSize < maxImpulseBitSize)
             {
@@ -1567,7 +1141,7 @@ namespace RCC.Network
             }
             else
             {
-                throw new NotImplementedException();
+                throw new NotImplementedException("Generic ActionBase is too big to get pushed to the stream.");
             }
         }
     }

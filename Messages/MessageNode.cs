@@ -93,20 +93,11 @@ namespace RCC.Messages
                     UseCycle = xmlNode.GetAttribute("usecycle") == "yes";
                 }
 
-                //
-                //// setup node format
-                //CXMLAutoPtr format(xmlGetProp (xmlNode, (xmlChar*)"format"));
-                char[] buf = new char[256];
-
+                // setup node format
                 if (xmlNode.GetAttribute("format") != "")
                 {
-                    //    char* scan = &buf[0];
-                    //    nlassert(strlen((const char*)format) < 256 );
-                    //    strcpy(scan, (const char*)format );
-
                     var formats = xmlNode.GetAttribute("format").Split(" ");
 
-                    //    while (*scan != '\0')
                     foreach (var scan in formats)
                     {
                         switch (scan.ToLower()[0])
@@ -118,7 +109,7 @@ namespace RCC.Messages
                                 else
                                 {
                                     // here consider s as sint
-                                    byte numBits = (byte) int.Parse(scan.Substring(1));
+                                    var numBits = (byte) int.Parse(scan.Substring(1));
 
                                     if (numBits == 8)
                                         Format.Add(new MessageField(MessageFieldType.Sint8, numBits));

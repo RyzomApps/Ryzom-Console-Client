@@ -176,5 +176,5 @@ namespace RCC.Client
         ___TPeople_useSize = 142,
         Unknown = 142,
         EndPeople = 142
-    };
+    }
 }

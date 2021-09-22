@@ -67,9 +67,7 @@ namespace RCC.Network.Action
             if (_nbCurrentBlock != _nbBlock) return;
 
             // reform the total action
-            //nldebug("CLMPNET[%p]: Received a TOTAL generic action MP size: number %d nbblock %d", this,  agmp.Number, NbBlock);
-
-            var bms = new BitMemoryStream(false);
+            var bms = new BitMemoryStream();
 
             foreach (var t in _temp)
             {
@@ -80,8 +78,6 @@ namespace RCC.Network.Action
             bms.Invert();
 
             _nbBlock = int.MaxValue; //0xFFFFFFFF;
-
-            //nldebug("CLMPNET[%p]: Received a generic action size %d", this, bms.length());
 
             networkConnection.ImpulseCallback?.Invoke(bms);
         }

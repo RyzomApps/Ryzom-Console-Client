@@ -43,7 +43,7 @@ namespace RCC.Network
         ///     unpacking actions from a stream and calling the corresponding impusions
         /// </summary>
         public static void Decode(BitMemoryStream inbox, int receivedPacket, int receivedAck, int nextSentPacket,
-            List<Action.Action> actions)
+            List<Action.ActionBase> actions)
         {
             uint level;
 
@@ -91,7 +91,7 @@ namespace RCC.Network
                     }
 
                     ++num;
-                    var action = ActionFactory.Unpack(inbox, false);
+                    var action = ActionFactory.Unpack(inbox);
 
                     if (action == null)
                     {

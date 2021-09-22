@@ -15,36 +15,36 @@ namespace RCC.Client
     /// </summary>
     public class CharacterSummary
     {
-        byte _characterSlot;
-        bool _hasEditSession;
-        bool _inNewbieland;
+        private byte _characterSlot;
+        private bool _hasEditSession;
+        private bool _inNewbieland;
 
-        bool _inRingSession;
+        private bool _inRingSession;
 
+        /// <summary>
         /// Localisation
-        uint _location;
+        /// </summary>
+        private uint _location;
 
-        int _title;
+        private int _title;
 
         /// <summary>
         ///     visual property for appearance A
         /// </summary>
-        long _visualPropA;
+        private long _visualPropA;
 
         /// <summary>
         ///     visual property for appearance B
         /// </summary>
-        long _visualPropB;
+        private long _visualPropB;
 
         /// <summary>
         ///     visual property for appearance C
         /// </summary>
-        long _visualPropC;
+        private long _visualPropC;
 
-        /// mainland
         public uint Mainland;
 
-        /// name
         public string Name;
 
         public int People;
@@ -62,7 +62,7 @@ namespace RCC.Client
             _visualPropA = 0;
             _visualPropB = 0;
             _visualPropC = 0;
-            People = (int) PeopleType.Unknown; // 142;
+            People = (int)PeopleType.Unknown; // 142;
             _title = 238;
             _characterSlot = 255;
             _inRingSession = false;

@@ -43,7 +43,7 @@ namespace RCC.Commands
             return "";
         }
 
-        public override IEnumerable<string> getCMDAliases()
+        public override IEnumerable<string> GetCmdAliases()
         {
             return new[] {"exit", "disconnect"};
         }

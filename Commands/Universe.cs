@@ -10,14 +10,14 @@ namespace RCC.Commands
         public override string CmdUsage => "<text>";
         public override string CmdDesc => "This command sends a message to the universe channel, which is visible to everyone online at that moment.";
 
-        public override IEnumerable<string> getCMDAliases()
+        public override IEnumerable<string> GetCmdAliases()
         {
             return new[] { "u" };
         }
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
-            var args = getArgs(command);
+            var args = GetArgs(command);
 
             ((RyzomClient)RyzomClient.GetInstance()).Channel = ChatGroupType.Universe;
 

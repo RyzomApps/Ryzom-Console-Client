@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////
 
 using RCC.Config;
-using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Client
@@ -15,7 +14,7 @@ namespace RCC.Client
     /// <summary>
     ///     Launch the game given a slot (slot is reference to the character summaries)
     /// </summary>
-    public static class ActionHandlerLaunchGame //: IActionHandler
+    public static class ActionHandlerLaunchGame
     {
         /// <summary>
         ///     Gets the player selected slot and sends it to the server

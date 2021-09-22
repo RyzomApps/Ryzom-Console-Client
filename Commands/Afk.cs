@@ -13,7 +13,7 @@ namespace RCC.Commands
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
             bool b = true; // afk state
-            var args = getArgs(command);
+            var args = GetArgs(command);
 
             string customText = "";
             if (args.Length != 0)
@@ -48,7 +48,7 @@ namespace RCC.Commands
             return "";
         }
 
-        public override IEnumerable<string> getCMDAliases()
+        public override IEnumerable<string> GetCmdAliases()
         {
             return new string[] { };
         }

@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Threading;
 using RCC.Chat;
 using RCC.Client;
+using RCC.Config;
 using RCC.Helper;
 using RCC.Messages;
 
@@ -35,7 +36,7 @@ namespace RCC.Network
         public string PlayerSelectedHomeShardName = "";
         public string PlayerSelectedHomeShardNameWithParenthesis = "";
 
-        public bool GameExit = false;
+        public bool GameExit;
 
         public bool UserChar;
         public bool NoUserChar;
@@ -43,9 +44,8 @@ namespace RCC.Network
         public bool CreateInterf;
         public bool CharacterInterf;
 
-
         // non ryzom variables (for workarounds)
-        public bool AutoSendCharSelection = false;
+        public bool CanSendCharSelection;
 
         private readonly NetworkConnection _networkConnection;
         private readonly StringManager _stringManager;
@@ -56,6 +56,11 @@ namespace RCC.Network
 
         private readonly ChatManager _chatManager;
 
+        public GenericMessageHeaderManager GetMessageHeaderManager() => _messageHeaderManager;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager)
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
@@ -66,12 +71,6 @@ namespace RCC.Network
             _client = client;
         }
 
-        public GenericMessageHeaderManager GetMessageHeaderManager()
-        {
-            return _messageHeaderManager;
-        }
-
-
         /// <summary>
         ///     Send - updates when packets were received
         /// </summary>
@@ -80,7 +79,6 @@ namespace RCC.Network
             // wait till next server is received
             if (_networkConnection.LastSentCycle >= gameCycle)
             {
-                //nlinfo ("Try to CNetManager::send(%d) _LastSentCycle=%d more than one time with the same game cycle, so we wait new game cycle to send", gameCycle, _LastSentCycle);
                 while (_networkConnection.LastSentCycle >= gameCycle)
                 {
                     // Update network.
@@ -105,21 +103,8 @@ namespace RCC.Network
         /// </summary>
         public void Push(BitMemoryStream msg)
         {
-            //if (PermanentlyBanned) return; LOL
-
             _networkConnection.Push(msg);
         }
-
-
-        /// <summary>
-        ///     Reset data and init the socket
-        /// </summary>
-        public void ReInit()
-        {
-            //IngameDbMngr.resetInitState();
-            _networkConnection.ReInit();
-        }
-
 
         /// <summary>
         ///     Updates the whole connection with the frontend.
@@ -131,14 +116,12 @@ namespace RCC.Network
             // Update the base class.
             _networkConnection.Update();
 
-            // TODO:  Get changes with the update.
+            // TODO:  Get and manage changes with the netmgr update
             // 	const vector<CChange> &changes = NetMngr.getChanges();
-
-            // TODO:  Manage changes
 
             _chatManager.FlushBuffer(_client);
 
-            // TODO: update everyting
+            // TODO: update everyting with the netmgr update
 
             return true;
         }
@@ -172,6 +155,7 @@ namespace RCC.Network
             _messageHeaderManager.SetCallback("DB_GROUP:UPDATE_BANK", ImpulseDatabaseUpdateBank);
             _messageHeaderManager.SetCallback("DB_GROUP:INIT_BANK", ImpulseDatabaseInitBank);
             _messageHeaderManager.SetCallback("DB_GROUP:RESET_BANK", ImpulseDatabaseResetBank);
+
             _messageHeaderManager.SetCallback("CONNECTION:NO_USER_CHAR", ImpulseNoUserChar);
             _messageHeaderManager.SetCallback("CONNECTION:USER_CHARS", ImpulseUserChars);
             _messageHeaderManager.SetCallback("CONNECTION:USER_CHAR", ImpulseUserChar);
@@ -193,15 +177,18 @@ namespace RCC.Network
             _messageHeaderManager.SetCallback("STRING:DYN_STRING", ImpulseDynString);
             _messageHeaderManager.SetCallback("STRING:DYN_STRING_GROUP", ImpulseDynStringInChatGroup);
             _messageHeaderManager.SetCallback("STRING:TELL2", ImpulseTell2);
-            //	GenericMsgHeaderMngr.setCallback("STRING:ADD_DYN_STR",		ImpulseAddDynStr);
+
             _messageHeaderManager.SetCallback("TP:DEST", ImpulseTp);
             _messageHeaderManager.SetCallback("TP:DEST_WITH_SEASON", ImpulseTpWithSeason);
             _messageHeaderManager.SetCallback("TP:CORRECT", ImpulseCorrectPos);
+
             _messageHeaderManager.SetCallback("COMBAT:ENGAGE_FAILED", ImpulseCombatEngageFailed);
+
             _messageHeaderManager.SetCallback("BOTCHAT:DYNCHAT_OPEN", ImpulseDynChatOpen);
             _messageHeaderManager.SetCallback("BOTCHAT:DYNCHAT_CLOSE", ImpulseDynChatClose);
 
             _messageHeaderManager.SetCallback("CASTING:BEGIN", ImpulseBeginCast);
+
             _messageHeaderManager.SetCallback("TEAM:INVITATION", ImpulseTeamInvitation);
             _messageHeaderManager.SetCallback("TEAM:SHARE_OPEN", ImpulseTeamShareOpen);
             _messageHeaderManager.SetCallback("TEAM:SHARE_INVALID", ImpulseTeamShareInvalid);
@@ -213,44 +200,32 @@ namespace RCC.Network
 
             _messageHeaderManager.SetCallback("EXCHANGE:INVITATION", ImpulseExchangeInvitation);
             _messageHeaderManager.SetCallback("EXCHANGE:CLOSE_INVITATION", ImpulseExchangeCloseInvitation);
+
             _messageHeaderManager.SetCallback("ANIMALS:MOUNT_ABORT", ImpulseMountAbort);
 
             _messageHeaderManager.SetCallback("DEBUG:REPLY_WHERE", ImpulseWhere);
             _messageHeaderManager.SetCallback("DEBUG:COUNTER", ImpulseCounter);
 
-            //
             _messageHeaderManager.SetCallback("STRING_MANAGER:PHRASE_SEND", ImpulsePhraseSend);
             _messageHeaderManager.SetCallback("STRING_MANAGER:STRING_RESP", ImpulseStringResp);
             _messageHeaderManager.SetCallback("STRING_MANAGER:RELOAD_CACHE", ImpulseReloadCache);
-            //
+
             _messageHeaderManager.SetCallback("BOTCHAT:FORCE_END", ImpulseBotChatForceEnd);
 
-            _messageHeaderManager.SetCallback("JOURNAL:INIT_COMPLETED_MISSIONS",
-                ImpulseJournalInitCompletedMissions);
-            _messageHeaderManager.SetCallback("JOURNAL:UPDATE_COMPLETED_MISSIONS",
-                ImpulseJournalUpdateCompletedMissions);
-            //	GenericMsgHeaderMngr.setCallback("JOURNAL:CANT_ABANDON",				ImpulseJournalCantAbandon);
-
+            _messageHeaderManager.SetCallback("JOURNAL:INIT_COMPLETED_MISSIONS", ImpulseJournalInitCompletedMissions);
+            _messageHeaderManager.SetCallback("JOURNAL:UPDATE_COMPLETED_MISSIONS", ImpulseJournalUpdateCompletedMissions);
             _messageHeaderManager.SetCallback("JOURNAL:ADD_COMPASS", ImpulseJournalAddCompass);
             _messageHeaderManager.SetCallback("JOURNAL:REMOVE_COMPASS", ImpulseJournalRemoveCompass);
 
-
-            //GenericMsgHeaderMngr.setCallback("GUILD:SET_MEMBER_INFO",	ImpulseGuildSetMemberInfo);
-            //GenericMsgHeaderMngr.setCallback("GUILD:INIT_MEMBER_INFO",	ImpulseGuildInitMemberInfo);
-
             _messageHeaderManager.SetCallback("GUILD:JOIN_PROPOSAL", ImpulseGuildJoinProposal);
-
             _messageHeaderManager.SetCallback("GUILD:ASCENSOR", ImpulseGuildAscensor);
             _messageHeaderManager.SetCallback("GUILD:LEAVE_ASCENSOR", ImpulseGuildLeaveAscensor);
             _messageHeaderManager.SetCallback("GUILD:ABORT_CREATION", ImpulseGuildAbortCreation);
             _messageHeaderManager.SetCallback("GUILD:OPEN_GUILD_WINDOW", ImpulseGuildOpenGuildWindow);
-
             _messageHeaderManager.SetCallback("GUILD:OPEN_INVENTORY", ImpulseGuildOpenInventory);
             _messageHeaderManager.SetCallback("GUILD:CLOSE_INVENTORY", ImpulseGuildCloseInventory);
-
             _messageHeaderManager.SetCallback("GUILD:UPDATE_PLAYER_TITLE", ImpulseGuildUpdatePlayerTitle);
             _messageHeaderManager.SetCallback("GUILD:USE_FEMALE_TITLES", ImpulseGuildUseFemaleTitles);
-            //GenericMsgHeaderMngr.setCallback("GUILD:INVITATION", ImpulseGuildInvitation);
 
             _messageHeaderManager.SetCallback("HARVEST:CLOSE_TEMP_INVENTORY", ImpulseCloseTempInv);
 
@@ -263,9 +238,10 @@ namespace RCC.Network
 
             _messageHeaderManager.SetCallback("ITEM_INFO:SET", ImpulseItemInfoSet);
             _messageHeaderManager.SetCallback("ITEM_INFO:REFRESH_VERSION", ImpulseItemInfoRefreshVersion);
-            _messageHeaderManager.SetCallback("MISSION_PREREQ:SET", ImpulsePrereqInfoSet);
             _messageHeaderManager.SetCallback("ITEM:OPEN_ROOM_INVENTORY", ImpulseItemOpenRoomInventory);
             _messageHeaderManager.SetCallback("ITEM:CLOSE_ROOM_INVENTORY", ImpulseItemCloseRoomInventory);
+
+            _messageHeaderManager.SetCallback("MISSION_PREREQ:SET", ImpulsePrereqInfoSet);
 
             _messageHeaderManager.SetCallback("DEATH:RESPAWN_POINT", ImpulseDeathRespawnPoint);
             _messageHeaderManager.SetCallback("DEATH:RESPAWN", ImpulseDeathRespawn);
@@ -274,22 +250,17 @@ namespace RCC.Network
             _messageHeaderManager.SetCallback("DUEL:CANCEL_INVITATION", ImpulseDuelCancelInvitation);
 
             _messageHeaderManager.SetCallback("PVP_CHALLENGE:INVITATION", ImpulsePvpChallengeInvitation);
-            _messageHeaderManager.SetCallback("PVP_CHALLENGE:CANCEL_INVITATION",
-                ImpulsePvpChallengeCancelInvitation);
+            _messageHeaderManager.SetCallback("PVP_CHALLENGE:CANCEL_INVITATION", ImpulsePvpChallengeCancelInvitation);
 
             _messageHeaderManager.SetCallback("PVP_FACTION:PUSH_FACTION_WAR", ImpulsePvpFactionPushFactionWar);
             _messageHeaderManager.SetCallback("PVP_FACTION:POP_FACTION_WAR", ImpulsePvpFactionPopFactionWar);
             _messageHeaderManager.SetCallback("PVP_FACTION:FACTION_WARS", ImpulsePvpFactionFactionWars);
-
-
-            //	GenericMsgHeaderMngr.setCallback("PVP_VERSUS:CHOOSE_CLAN",	ImpulsePVPChooseClan);
 
             _messageHeaderManager.SetCallback("ENCYCLOPEDIA:UPDATE", ImpulseEncyclopediaUpdate);
             _messageHeaderManager.SetCallback("ENCYCLOPEDIA:INIT", ImpulseEncyclopediaInit);
 
             _messageHeaderManager.SetCallback("USER:BARS", ImpulseUserBars);
             _messageHeaderManager.SetCallback("USER:POPUP", ImpulseUserPopup);
-
 
             _messageHeaderManager.SetCallback("MISSION:ASK_ENTER_CRITICAL", ImpulseEnterCrZoneProposal);
             _messageHeaderManager.SetCallback("MISSION:CLOSE_ENTER_CRITICAL", ImpulseCloseEnterCrZoneProposal);
@@ -303,16 +274,15 @@ namespace RCC.Network
             _messageHeaderManager.SetCallback("OUTPOST:DECLARE_WAR_ACK", ImpulseOutpostDeclareWarAck);
 
             _messageHeaderManager.SetCallback("COMBAT:FLYING_HP_DELTA", ImpulseCombatFlyingHpDelta);
-            _messageHeaderManager.SetCallback("COMBAT:FLYING_TEXT_ISE",
-                ImpulseCombatFlyingTextItemSpecialEffectProc);
+            _messageHeaderManager.SetCallback("COMBAT:FLYING_TEXT_ISE", ImpulseCombatFlyingTextItemSpecialEffectProc);
             _messageHeaderManager.SetCallback("COMBAT:FLYING_TEXT", ImpulseCombatFlyingText);
 
             _messageHeaderManager.SetCallback("SEASON:SET", ImpulseSetSeason);
+
             _messageHeaderManager.SetCallback("RING_MISSION:DSS_DOWN", ImpulseDssDown);
 
             _messageHeaderManager.SetCallback("NPC_ICON:SET_DESC", ImpulseSetNpcIconDesc);
-            _messageHeaderManager.SetCallback("NPC_ICON:SVR_EVENT_MIS_AVL",
-                ImpulseServerEventForMissionAvailability);
+            _messageHeaderManager.SetCallback("NPC_ICON:SVR_EVENT_MIS_AVL", ImpulseServerEventForMissionAvailability);
             _messageHeaderManager.SetCallback("NPC_ICON:SET_TIMER", ImpulseSetNpcIconTimer);
         }
 
@@ -603,8 +573,6 @@ namespace RCC.Network
             string strUtf8 = "";
             impulse.Serial(ref stringId);
             impulse.Serial(ref strUtf8, false);
-            //string str;
-            //str.fromUtf8(strUtf8);
 
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
 
@@ -723,10 +691,6 @@ namespace RCC.Network
             //	impulse.serialCont(vFriendListOnline);
             //impulse.SerialCont(vIgnoreListName); TODO: do we need them?
 
-            //nlinfo("impulseCallback : Received TEAM:CONTACT_INIT nbfriend:%d nbignore:%d", vFriendListName.size(), vIgnoreListName.size());
-
-            //PeopleInterraction.initContactLists(vFriendListName, vFriendListOnline, vIgnoreListName);
-
             _client.Automata.OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
         }
 
@@ -749,7 +713,8 @@ namespace RCC.Network
         {
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} -> AutoJoin");
 
-            SendMsgToServer("TEAM:JOIN");
+            if(ClientConfig.AutoJoinTeam)
+                SendMsgToServer("TEAM:JOIN");
         }
 
         private void ImpulseBeginCast(BitMemoryStream impulse)
@@ -799,7 +764,6 @@ namespace RCC.Network
 
         private void ImpulseDynString(BitMemoryStream impulse)
         {
-            //_client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
             _chatManager.ProcessChatStringWithNoSender(impulse, ChatGroupType.System, _client);
         }
 
@@ -873,8 +837,6 @@ namespace RCC.Network
             CheckHandshake(impulse);
 
             _client.Automata.OnGameJoined();
-
-            //LoginSM.pushEvent(CLoginStateMachine::ev_ready_received);
         }
 
         private void ImpulseFarTp(BitMemoryStream impulse)
@@ -912,11 +874,11 @@ namespace RCC.Network
 
             short v = 0;
             s.Serial(ref v, 3);
-            var season = v;
+            //var season = v;
             v = 0;
             s.Serial(ref v, 3);
-            var userRole = v & 0x3; // bits 0-1
-            var isInRingSession = (v & 0x4) != 0; // bit 2
+            //var userRole = v & 0x3; // bits 0-1
+            //var isInRingSession = (v & 0x4) != 0; // bit 2
 
             int highestMainlandSessionId = 0;
             int firstConnectedTime = 0;
@@ -942,7 +904,7 @@ namespace RCC.Network
             //}
             //else
             //{
-            var userEntityInitPos = new Vector3((float)x / 1000.0f, (float)y / 1000.0f, (float)z / 1000.0f);
+            var userEntityInitPos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
             var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
 
             _client.GetLogger().Info($"Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
@@ -976,7 +938,7 @@ namespace RCC.Network
             // read characters summary
             CharacterSummaries.Clear();
 
-            // START WORKAROUND workaround for serialVector(T &cont) in stream.h TODO
+            // START WORKAROUND workaround for serialVector(T &cont) in stream.h
             int len = 0;
             impulse.Serial(ref len);
 
@@ -990,30 +952,9 @@ namespace RCC.Network
             }
             // END WORKAROUND
 
-
             //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
             _client.GetLogger().Debug("st_ingame->st_select_char");
-            AutoSendCharSelection = true;
-
-            //// Create the message for the server to select the first character.
-            //var outP = new CBitMemStream(false);
-            //
-            //if (GenericMsgHeaderMngr.pushNameToStream("CONNECTION:SELECT_CHAR", outP))
-            //{
-            //    byte c = 0;
-            //    outP.serial(ref c);
-            //
-            //    push(outP);
-            //    send(_networkConnection.getCurrentServerTick());
-            //    // send CONNECTION:USER_CHARS
-            //    ConsoleIO.WriteLineFormatted("ImpulseCallBack : CONNECTION:SELECT_CHAR sent");
-            //}
-            //else
-            //{
-            //    ConsoleIO.WriteLineFormatted("§cImpulseCallBack : unknown message name : 'CONNECTION:SELECT_CHAR'.");
-            //}
-
-            // (FarTP) noUserChar = true; TODO ???
+            CanSendCharSelection = true;
 
             //if (!NewKeysCharNameValidated.empty())
             //{
@@ -1074,12 +1015,14 @@ namespace RCC.Network
             // TODO: IngameDbMngr.readDelta + setInitPacketReceived
             //IngameDbMngr.readDelta(serverTick, Impulse, TCDBBank.CDBPlayer);
             //IngameDbMngr.setInitPacketReceived();
+
             _client.GetLogger().Info($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
         }
 
         private void ImpulseDatabaseUpdatePlayer(BitMemoryStream impulse)
         {
-            //ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
+            // Debug since too much messages arrive
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         /// <summary>
@@ -1111,7 +1054,6 @@ namespace RCC.Network
 
             if (_messageHeaderManager.PushNameToStream(sMsg, out2))
             {
-                //nlinfo("ImpulseCallBack : %s sent", sMsg.c_str());
                 Push(out2);
             }
             else

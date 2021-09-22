@@ -14,20 +14,28 @@ namespace RCC.Chat
 
         public uint CompressedIndex;
 
-        // For Chat and Tell messages
+        /// <summary>
+        /// For Chat and Tell messages
+        /// </summary>
         public string Content;
 
-        // displayTell() or displayChat()
+        /// <summary>
+        /// displayTell() or displayChat()
+        /// </summary>
         public bool DisplayAsTell;
 
         public uint DynChatChanID;
 
-        // For Chat2 and Tell2 messages
+        /// <summary>
+        /// For Chat2 and Tell2 messages
+        /// </summary>
         public uint PhraseId;
 
         public uint SenderNameId;
 
-        // Use PhraseId or Content?
+        /// <summary>
+        /// Use PhraseId or Content?
+        /// </summary>
         public bool UsePhraseId;
 
         public ChatMsgNode(ChatMsg chatMsg, bool displayAsTell)

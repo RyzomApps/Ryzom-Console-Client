@@ -82,7 +82,7 @@ namespace RCC.Automata.Internal
         /// Example for calling SomeEvent() on all automata at once:
         /// DispatchAutomatonEvent(automaton => automaton.SomeEvent());
         /// </example>
-        /// <param name="action">Action to execute on each automaton</param>
+        /// <param name="action">ActionBase to execute on each automaton</param>
         /// <param name="automataList">Only fire the event for the specified automaton list (default: all automata)</param>
         private void DispatchAutomatonEvent(Action<AutomatonBase> action, IEnumerable<AutomatonBase> automataList = null)
         {
@@ -134,7 +134,7 @@ namespace RCC.Automata.Internal
             {
                 try
                 {
-                    automaton.OnInternalCommand(commandName, string.Join(" ", CommandBase.getArgs(command)), responseMsg);
+                    automaton.OnInternalCommand(commandName, string.Join(" ", CommandBase.GetArgs(command)), responseMsg);
                 }
                 catch (Exception e)
                 {

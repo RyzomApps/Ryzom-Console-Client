@@ -24,7 +24,7 @@ namespace RCC.Automata.Internal
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
-            return Runner(command, getArgs(command));
+            return Runner(command, GetArgs(command));
         }
 
         /// <summary>

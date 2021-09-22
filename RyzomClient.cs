@@ -88,8 +88,6 @@ namespace RCC
 
         public bool IsInGame() => _networkConnection.ConnectionState == ConnectionState.Connected;
 
-        public NetworkConnection GetNetworkConnection() { return _networkConnection; }
-
         public NetworkManager GetNetworkManager() { return _networkManager; }
 
         public StringManager GetStringManager() { return _stringManager; }
@@ -104,9 +102,9 @@ namespace RCC
             _instance = this;
             _clientThread = Thread.CurrentThread;
             _networkConnection = new NetworkConnection(this);
-            _stringManager = new StringManager(this); 
+            _stringManager = new StringManager(this);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager);
-            
+
 
             Automata = new Automata.Internal.Automata(this);
 
@@ -193,10 +191,6 @@ namespace RCC
             Automata.OnTell(ucstr, senderName);
         }
 
-        public void ClearChannel(ChatGroupType mode, uint dynChatDbIndex)
-        {
-            _chatQueue.Clear();
-        }
         #endregion IChatDisplayer
 
         #region Ryzom Game Loop
@@ -352,20 +346,14 @@ namespace RCC
             while (interfaceState != InterfaceState.GoInTheGame &&
                    interfaceState != InterfaceState.QuitTheGame)
             {
-                switch (interfaceState)
+                interfaceState = interfaceState switch
                 {
-                    case InterfaceState.AutoLogin:
-                        interfaceState = AutoLogin(cookie, fsaddr, _firstConnection);
-                        break;
-
-                    case InterfaceState.GlobalMenu:
+                    InterfaceState.AutoLogin => AutoLogin(cookie, fsaddr, _firstConnection),
+                    InterfaceState.GlobalMenu =>
                         // Interface to choose a char
-                        interfaceState = GlobalMenu();
-                        break;
-
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                        GlobalMenu(),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
             }
 
             _firstConnection = false;
@@ -459,30 +447,27 @@ namespace RCC
                 // SERVER INTERACTIONS WITH INTERFACE
                 if (_networkManager.WaitServerAnswer)
                 {
-                    // Should we send the char selection without any user interaction?
-                    if (_networkManager.AutoSendCharSelection)
+                    if (_networkManager.CanSendCharSelection)
                     {
-                        var charSelect = -1;
-
-                        if (ClientConfig.SelectCharacter != -1)
-                            charSelect = ClientConfig.SelectCharacter;
+                        var charSelect = ClientConfig.SelectCharacter;
 
                         _networkManager.WaitServerAnswer = false;
 
                         // check that the pre selected character is available
-                        if (_networkManager.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown || charSelect > 4)
+                        if (_networkManager.CharacterSummaries[charSelect].People == (int) PeopleType.Unknown ||
+                            charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
                             throw new InvalidOperationException("preselected char does not exist");
                         }
 
+                        // Clear sending buffer that may contain prevous QUIT_GAME when getting back to the char selection screen
+                        _networkConnection.FlushSendBuffer();
+
                         // Auto-selection for fast launching (dev only)
-                        _networkManager.AutoSendCharSelection = false;
+                        _networkManager.CanSendCharSelection = false;
                         ActionHandlerLaunchGame.Execute(charSelect.ToString(), _networkManager);
                     }
-
-                    // Clear sending buffer that may contain prevous QUIT_GAME when getting back to the char selection screen
-                    _networkConnection.FlushSendBuffer();
                 }
 
                 if (_networkManager.ServerReceivedReady)
@@ -719,7 +704,7 @@ namespace RCC
                     {
                         _cmds[cmd.CmdName.ToLower()] = cmd;
                         _cmdNames.Add(cmd.CmdName.ToLower());
-                        foreach (var alias in cmd.getCMDAliases())
+                        foreach (var alias in cmd.GetCmdAliases())
                             _cmds[alias.ToLower()] = cmd;
                     }
                 }
@@ -789,7 +774,7 @@ namespace RCC
                         while (text.Length > maxLength)
                         {
                             _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text.Substring(0, maxLength)));
-                            text = text.Substring(maxLength, text.Length - maxLength);
+                            text = text[maxLength..];
                         }
 
                         _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text));
@@ -855,9 +840,9 @@ namespace RCC
 
             if (commandName == "help")
             {
-                if (CommandBase.hasArg(command))
+                if (CommandBase.HasArg(command))
                 {
-                    var helpCmdname = CommandBase.getArgs(command)[0].ToLower();
+                    var helpCmdname = CommandBase.GetArgs(command)[0].ToLower();
 
                     if (helpCmdname == "help")
                     {
