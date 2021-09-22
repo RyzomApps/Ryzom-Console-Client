@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using RCC.Commands.Internal;
 using RCC.Messages;
 
 namespace RCC.Commands
 {
-    public class Dodge : Command
+    public class Dodge : CommandBase
     {
         public override string CmdName => "dodge";
         public override string CmdUsage => "";

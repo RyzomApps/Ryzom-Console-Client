@@ -1,20 +1,21 @@
-﻿using RCC.Chat;
-using RCC.Client;
-using RCC.Commands;
-using RCC.Helper;
-using RCC.Network;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using RCC.Automata.Internal;
+using RCC.Chat;
+using RCC.Client;
+using RCC.Commands;
 using RCC.Config;
+using RCC.Helper;
+using RCC.Network;
 
-namespace RCC.Bots
+namespace RCC.Automata
 {
-    public class OnlinePlayersLogger : ChatBot
+    public class OnlinePlayersLogger : AutomatonBase
     {
         private readonly Dictionary<uint, string> _friendNames = new Dictionary<uint, string>();
         private readonly Dictionary<uint, CharConnectionState> _friendOnline = new Dictionary<uint, CharConnectionState>();
@@ -28,7 +29,7 @@ namespace RCC.Bots
 
         private readonly Queue<string> _namesToAdd = new Queue<string>();
 
-        private bool _whoChatMode = false;
+        private bool _whoChatMode;
         private const string WhoPlayerPattern = @"^\&SYS\&(?<name>[a-zA-Z].*)\(Atys\)\.$";
         private readonly Regex _whoRegex = new Regex(WhoPlayerPattern);
 
@@ -39,9 +40,9 @@ namespace RCC.Bots
         public override void Initialize()
         {
             RyzomClient.Log.Info("Bot 'OnlinePlayersLogger' initialized.");
-            RegisterChatBotCommand("list", "Lists all online players in the friend list.", "", Command);
-            RegisterChatBotCommand("importfriends", "Imports a newline separated text file of player names to the friends list.", "<filename>", Command);
-            RegisterChatBotCommand("exportfriends", "Exports a newline separated text file of player names from the friends list.", "<filename>", Command);
+            RegisterAutomatonCommand("list", "Lists all online players in the friend list.", "", Command);
+            RegisterAutomatonCommand("importfriends", "Imports a newline separated text file of player names to the friends list.", "<filename>", Command);
+            RegisterAutomatonCommand("exportfriends", "Exports a newline separated text file of player names from the friends list.", "<filename>", Command);
             if (ClientConfig.OnlinePlayersApi.Trim().Equals(string.Empty))
                 RyzomClient.Log.Info("No server for player online status updates set: Not using this feature.");
         }
@@ -267,7 +268,7 @@ namespace RCC.Bots
 
 
                 default:
-                    RyzomClient.Log?.Warn("Command unknown: " + cmd);
+                    RyzomClient.Log?.Warn("CommandBase unknown: " + cmd);
                     return "";
             }
         }

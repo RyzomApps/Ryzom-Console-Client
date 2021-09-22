@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using RCC.Commands.Internal;
 using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
 {
-    public class Where : Command
+    public class Where : CommandBase
     {
         public override string CmdName => "where";
         public override string CmdUsage => "";

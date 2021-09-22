@@ -6,13 +6,7 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
-using System.Threading;
+using RCC.Automata.Internal;
 using RCC.Chat;
 using RCC.Client;
 using RCC.Config;
@@ -20,6 +14,14 @@ using RCC.Helper;
 using RCC.Logger;
 using RCC.Messages;
 using RCC.Network;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Net.Sockets;
+using System.Threading;
+using RCC.Commands.Internal;
+using RCC.Helper.Tasks;
 
 namespace RCC
 {
@@ -28,36 +30,33 @@ namespace RCC
     /// </summary>
     public class RyzomClient : IChatDisplayer
     {
-        private static bool _firstConnection = true;
-
-        private static readonly List<string> CmdNames = new List<string>();
-        private static readonly Dictionary<string, Command> Cmds = new Dictionary<string, Command>();
-
-        private static bool _commandsLoaded;
-
-        private static DateTime _nextMessageSendTime = DateTime.MinValue;
-
-        private readonly List<ChatBot> _bots = new List<ChatBot>();
-        private static readonly List<ChatBot> BotsOnHold = new List<ChatBot>();
+        private static RyzomClient _instance;
 
         private static Thread _clientThread;
+        private Thread _cmdprompt;
+        private Thread _timeoutdetector;
 
-        private ChatGroupType _channel = ChatGroupType.Around;
-
-        private static uint _lastGameCycle;
-
-        private static RyzomClient _instance;
+        private static readonly List<string> CmdNames = new List<string>();
+        private static readonly Dictionary<string, CommandBase> Cmds = new Dictionary<string, CommandBase>();
+        private static bool _commandsLoaded;
 
         private readonly Queue<KeyValuePair<ChatGroupType, string>> _chatQueue = new Queue<KeyValuePair<ChatGroupType, string>>();
 
         private readonly Queue<Action> _threadTasks = new Queue<Action>();
         private readonly object _threadTasksLock = new object();
 
-        private Thread _cmdprompt;
-        private Thread _timeoutdetector;
+        private static bool _firstConnection = true;
+        private static DateTime _nextMessageSendTime = DateTime.MinValue;
+        private ChatGroupType _channel = ChatGroupType.Around;
+        private static uint _lastGameCycle;
+        public static bool UserCharPosReceived = false;
 
         public static ILogger Log;
-        public static bool UserCharPosReceived = false;
+
+        /// <summary>
+        /// Automata class that holds the loaded automatons from the Automata directory
+        /// </summary>
+        public Automata.Internal.Automata Automata;
 
         public ChatGroupType Channel
         {
@@ -78,6 +77,8 @@ namespace RCC
         public string R2BackupPatchURL { get; set; }
         public string[] R2PatchUrLs { get; set; }
 
+        public ILogger GetLogger() { return Log; }
+
         #region Initialisation
 
         /// <summary>
@@ -87,6 +88,8 @@ namespace RCC
         {
             _instance = this;
             _clientThread = Thread.CurrentThread;
+
+            Automata = new Automata.Internal.Automata(this);
 
             StartClient();
 
@@ -105,21 +108,13 @@ namespace RCC
             /* Load commands from Commands namespace */
             LoadCommands();
 
-            if (BotsOnHold.Count == 0)
-            {
-                //Add your ChatBot here by uncommenting and adapting
-                if (ClientConfig.OnlinePlayersLogger_Enabled) { BotLoad(new Bots.OnlinePlayersLogger()); }
-            }
-
-            foreach (var bot in BotsOnHold)
-                BotLoad(bot, false);
-
-            BotsOnHold.Clear();
+            /* Load commands from Commands namespace */
+            Automata.LoadAutomata();
 
             _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
             _timeoutdetector.Start();
 
-            _cmdprompt = new Thread(CommandPrompt) { Name = "RCC Command prompt" };
+            _cmdprompt = new Thread(CommandPrompt) { Name = "RCC CommandBase prompt" };
             _cmdprompt.Start();
 
             Main();
@@ -169,14 +164,14 @@ namespace RCC
             Log.Chat(
                 $"[{mode}]{(stringCategory.Length > 0 ? $"[{stringCategory.ToUpper()}]" : "")}{color} {finalString}");
 
-            OnChat(compressedSenderIndex, ucstr, rawMessage, mode, dynChatId, senderName, bubbleTimer);
+            Automata.OnChat(compressedSenderIndex, ucstr, rawMessage, mode, dynChatId, senderName, bubbleTimer);
         }
 
         public void DisplayTell(string ucstr, string senderName)
         {
             Log.Chat(ucstr);
 
-            OnTell(ucstr, senderName);
+            Automata.OnTell(ucstr, senderName);
         }
 
         public void ClearChannel(ChatGroupType mode, uint dynChatDbIndex)
@@ -516,7 +511,7 @@ namespace RCC
                 // Do not eat up all the processor
                 Thread.Sleep(10);
 
-                // Update Ryzom Client stuff -> Execute Tasks (like commands and bot stuff)
+                // Update Ryzom Client stuff -> Execute Tasks (like commands and automaton stuff)
                 OnUpdate();
 
                 // NetWork Update.
@@ -565,7 +560,7 @@ namespace RCC
             //    {
             //        if (lastKeepAlive.AddSeconds(30) < DateTime.Now)
             //        {
-            //            OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.Get("error.timeout"));
+            //            OnConnectionLost(AutomatonBase.DisconnectReason.ConnectionLost, Translations.Get("error.timeout"));
             //            return;
             //        }
             //    }
@@ -596,60 +591,11 @@ namespace RCC
         #region Console Client Methods 
 
         /// <summary>
-        /// Load a new bot
-        /// </summary>
-        public void BotLoad(ChatBot b, bool init = true)
-        {
-            if (InvokeRequired)
-            {
-                InvokeOnMainThread(() => BotLoad(b, init));
-                return;
-            }
-
-            b.SetHandler(this);
-            _bots.Add(b);
-
-            if (init)
-                DispatchBotEvent(bot => bot.Initialize(), new[] { b });
-            if (NetworkConnection.ConnectionState == ConnectionState.Connected)
-                DispatchBotEvent(bot => bot.OnGameJoined(), new[] { b });
-        }
-
-        /// <summary>
-        /// Unload a bot
-        /// </summary>
-        public void BotUnLoad(ChatBot b)
-        {
-            if (InvokeRequired)
-            {
-                InvokeOnMainThread(() => BotUnLoad(b));
-                return;
-            }
-
-            _bots.RemoveAll(item => ReferenceEquals(item, b));
-        }
-
-        /// <summary>
         /// Called ~10 times per second by the protocol handler
         /// </summary>
         public void OnUpdate()
         {
-            foreach (var bot in _bots.ToArray())
-            {
-                try
-                {
-                    bot.Update();
-                    bot.UpdateInternal();
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        Log.Warn($"Update: Got error from {bot}: {e}");
-                    }
-                    else throw; //ThreadAbortException should not be caught
-                }
-            }
+            Automata.OnUpdate();
 
             lock (_chatQueue)
             {
@@ -736,11 +682,11 @@ namespace RCC
             var cmdsClasses = Program.GetTypesInNamespace("RCC.Commands");
             foreach (var type in cmdsClasses)
             {
-                if (!type.IsSubclassOf(typeof(Command))) continue;
+                if (!type.IsSubclassOf(typeof(CommandBase))) continue;
 
                 try
                 {
-                    var cmd = (Command)Activator.CreateInstance(type);
+                    var cmd = (CommandBase)Activator.CreateInstance(type);
 
                     if (cmd != null)
                     {
@@ -836,14 +782,14 @@ namespace RCC
         /// <param name="cmdUsage">String containing a usage case</param>
         /// <param name="callback">Method for handling the command</param>
         /// <returns>True if successfully registered</returns>
-        public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, ChatBot.CommandRunner callback)
+        public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, AutomatonBase.CommandRunner callback)
         {
             if (Cmds.ContainsKey(cmdName.ToLower()))
             {
                 return false;
             }
 
-            Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
+            CommandBase cmd = new AutomatonCommand(cmdName, cmdDesc, cmdUsage, callback);
             Cmds.Add(cmdName.ToLower(), cmd);
             CmdNames.Add(cmdName.ToLower());
             return true;
@@ -885,9 +831,9 @@ namespace RCC
 
             if (commandName == "help")
             {
-                if (Command.hasArg(command))
+                if (CommandBase.hasArg(command))
                 {
-                    var helpCmdname = Command.getArgs(command)[0].ToLower();
+                    var helpCmdname = CommandBase.getArgs(command)[0].ToLower();
 
                     if (helpCmdname == "help")
                     {
@@ -907,22 +853,7 @@ namespace RCC
             {
                 responseMsg = Cmds[commandName].Run(this, command, localVars);
 
-                foreach (var bot in _bots.ToArray())
-                {
-                    try
-                    {
-                        bot.OnInternalCommand(commandName, string.Join(" ", Command.getArgs(command)), responseMsg);
-                    }
-                    catch (Exception e)
-                    {
-                        //ThreadAbortException should not be caught
-                        if (!(e is ThreadAbortException))
-                        {
-                            Log.Warn("icmd.error " + bot + " " + e);
-                        }
-                        else throw;
-                    }
-                }
+                Automata.OnInternalCommand(commandName, command, responseMsg);
             }
             else
             {
@@ -938,10 +869,7 @@ namespace RCC
         /// </summary>
         public void Disconnect()
         {
-            DispatchBotEvent(bot => bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, ""));
-
-            BotsOnHold.Clear();
-            BotsOnHold.AddRange(_bots);
+            Automata.OnDisconnect();
 
             try
             {
@@ -962,42 +890,6 @@ namespace RCC
             catch
             {
                 // ignored
-            }
-        }
-
-        /// <summary>
-        /// Dispatch a ChatBot event with automatic exception handling
-        /// </summary>
-        /// <example>
-        /// Example for calling SomeEvent() on all bots at once:
-        /// DispatchBotEvent(bot => bot.SomeEvent());
-        /// </example>
-        /// <param name="action">Action to execute on each bot</param>
-        /// <param name="botList">Only fire the event for the specified bot list (default: all bots)</param>
-        private void DispatchBotEvent(Action<ChatBot> action, IEnumerable<ChatBot> botList = null)
-        {
-            var selectedBots = botList != null ? botList.ToArray() : _bots.ToArray();
-
-            foreach (var bot in selectedBots)
-            {
-                try
-                {
-                    action(bot);
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        //Retrieve parent method name to determine which event caused the exception
-                        var frame = new System.Diagnostics.StackFrame(1);
-                        var method = frame.GetMethod();
-                        var parentMethodName = method?.Name;
-
-                        //Display a meaningful error message to help debugging the ChatBot
-                        Log.Error($"{parentMethodName}: Got error from {bot}: {e}");
-                    }
-                    else throw; //ThreadAbortException should not be caught here as in can happen when disconnecting from server
-                }
             }
         }
 
@@ -1060,60 +952,6 @@ namespace RCC
         public int GetNetReadThreadId()
         {
             return _clientThread?.ManagedThreadId ?? -1;
-        }
-
-        #endregion
-
-        #region Event API
-
-        /// <summary>
-        /// Called when a server was successfully joined
-        /// </summary>
-        public void OnGameJoined()
-        {
-            DispatchBotEvent(bot => bot.OnGameJoined());
-        }
-
-        /// <summary>
-        /// Called when one of the characters from the friend list updates
-        /// </summary>
-        /// <param name="contactId">id</param>
-        /// <param name="online">new status</param>
-        public void OnGameTeamContactStatus(uint contactId, CharConnectionState online)
-        {
-            DispatchBotEvent(bot => bot.OnGameTeamContactStatus(contactId, online));
-        }
-
-        /// <summary>
-        /// Called when friend list and ignore list from the contact list are initialized
-        /// </summary>
-        internal void OnGameTeamContactInit(List<uint> vFriendListName, List<CharConnectionState> vFriendListOnline, List<string> vIgnoreListName)
-        {
-            DispatchBotEvent(bot => bot.OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName));
-        }
-
-        /// <summary>
-        /// Called when one character from the friend or ignore list is created
-        /// </summary>
-        internal void OnTeamContactCreate(uint contactId, uint nameId, CharConnectionState online, byte nList)
-        {
-            DispatchBotEvent(bot => bot.OnTeamContactCreate(contactId, nameId, online, nList));
-        }
-
-        /// <summary>
-        /// Any chat will arrive here 
-        /// </summary>
-        internal void OnChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, uint dynChatId, string senderName, uint bubbleTimer)
-        {
-            DispatchBotEvent(bot => bot.OnChat(compressedSenderIndex, ucstr, rawMessage, mode, dynChatId, senderName, bubbleTimer));
-        }
-
-        /// <summary>
-        /// Any tells will arrive here 
-        /// </summary>
-        internal void OnTell(string ucstr, string senderName)
-        {
-            DispatchBotEvent(bot => bot.OnTell(ucstr, senderName));
         }
 
         #endregion

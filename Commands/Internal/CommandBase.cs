@@ -8,15 +8,15 @@
 
 using System.Collections.Generic;
 
-namespace RCC
+namespace RCC.Commands.Internal
 {
     /// <summary>
-    ///     Represents an internal RCC command: Command name, source code and usage message
+    ///     Represents an internal RCC command: CommandBase name, source code and usage message
     ///     To add a new command, inherit from this class while adding the command class to the folder "Commands".
-    ///     If inheriting from the 'Command' class and placed in the 'Commands' namespace, the command will be
+    ///     If inheriting from the 'CommandBase' class and placed in the 'Commands' namespace, the command will be
     ///     automatically loaded and available in main chat prompt, scripts, remote control and command help.
     /// </summary>
-    public abstract class Command
+    public abstract class CommandBase
     {
         /// <summary>
         ///     The command name
@@ -24,7 +24,7 @@ namespace RCC
         public abstract string CmdName { get; }
 
         /// <summary>
-        ///     Command description with translation support. Please add your message in Translations.cs file and return mapping
+        ///     CommandBase description with translation support. Please add your message in Translations.cs file and return mapping
         ///     key in this property
         /// </summary>
         public abstract string CmdDesc { get; }

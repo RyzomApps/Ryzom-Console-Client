@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
 using System.Threading;
-using RCC.Bots;
 using RCC.Chat;
 using RCC.Client;
 using RCC.Helper;
@@ -616,7 +615,7 @@ namespace RCC.Network
 
             var online = (CharConnectionState)state;
 
-            ((RyzomClient)RyzomClient.GetInstance()).OnGameTeamContactStatus(contactId, online);
+            ((RyzomClient)RyzomClient.GetInstance()).Automata.OnGameTeamContactStatus(contactId, online);
         }
 
         private static void ImpulseTeamContactCreate(BitMemoryStream impulse)
@@ -640,7 +639,7 @@ namespace RCC.Network
                 if (nameId == 0) return;
             }
 
-            ((RyzomClient)RyzomClient.GetInstance()).OnTeamContactCreate(contactId, nameId, online, nList);
+            ((RyzomClient)RyzomClient.GetInstance()).Automata.OnTeamContactCreate(contactId, nameId, online, nList);
         }
 
         /// <summary>
@@ -683,7 +682,7 @@ namespace RCC.Network
 
             //PeopleInterraction.initContactLists(vFriendListName, vFriendListOnline, vIgnoreListName);
 
-            ((RyzomClient)RyzomClient.GetInstance()).OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
+            ((RyzomClient)RyzomClient.GetInstance()).Automata.OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
         }
 
         private static void ImpulseTeamShareClose(BitMemoryStream impulse)
@@ -828,7 +827,7 @@ namespace RCC.Network
 
             CheckHandshake(impulse);
 
-            ((RyzomClient)RyzomClient.GetInstance()).OnGameJoined();
+            ((RyzomClient)RyzomClient.GetInstance()).Automata.OnGameJoined();
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_ready_received);
         }

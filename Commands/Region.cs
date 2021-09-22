@@ -1,9 +1,10 @@
 ﻿using RCC.Chat;
 using System.Collections.Generic;
+using RCC.Commands.Internal;
 
 namespace RCC.Commands
 {
-    public class Region : Command
+    public class Region : CommandBase
     {
         public override string CmdName => "region";
         public override string CmdUsage => "<text>";

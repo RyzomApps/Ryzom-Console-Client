@@ -1,9 +1,10 @@
 ﻿using RCC.Chat;
 using System.Collections.Generic;
+using RCC.Commands.Internal;
 
 namespace RCC.Commands
 {
-    public class Shout : Command
+    public class Shout : CommandBase
     {
         public override string CmdName => "shout";
         public override string CmdUsage => "<text>";

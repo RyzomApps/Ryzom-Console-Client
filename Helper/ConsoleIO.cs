@@ -384,7 +384,7 @@ namespace RCC.Helper
                     if (BasicIoNoColor)
                     {
                         // TODO: Verbatim
-                        //str = ChatBot.GetVerbatim(str);
+                        //str = AutomatonBase.GetVerbatim(str);
                     }
 
                     Console.WriteLine(str);

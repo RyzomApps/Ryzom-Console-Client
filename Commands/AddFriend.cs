@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using RCC.Commands.Internal;
 using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
 {
-    public class AddFriend : Command
+    public class AddFriend : CommandBase
     {
         public override string CmdName => "AddFriend";
         public override string CmdUsage => "<contactName>";

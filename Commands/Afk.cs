@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using RCC.Commands.Internal;
 using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
 {
-    public class Afk : Command
+    public class Afk : CommandBase
     {
         public override string CmdName => "afk";
         public override string CmdUsage => "[<custom text>]";

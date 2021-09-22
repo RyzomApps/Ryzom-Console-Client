@@ -1,9 +1,10 @@
 ﻿using RCC.Chat;
 using System.Collections.Generic;
+using RCC.Commands.Internal;
 
 namespace RCC.Commands
 {
-    public class Guild : Command
+    public class Guild : CommandBase
     {
         public override string CmdName => "guild";
         public override string CmdUsage => "<text>";

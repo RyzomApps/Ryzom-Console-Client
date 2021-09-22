@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using RCC.Commands.Internal;
 using RCC.Messages;
 
 namespace RCC.Commands
 {
-    public class Parry : Command
+    public class Parry : CommandBase
     {
         public override string CmdName => "parry";
         public override string CmdUsage => "";

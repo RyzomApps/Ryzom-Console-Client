@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using RCC.Commands.Internal;
 using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
 {
-    public class Quit : Command
+    public class Quit : CommandBase
     {
         public override string CmdName => "quit";
         public override string CmdUsage => "";

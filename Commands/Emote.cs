@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using RCC.Commands.Internal;
 using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
 {
     // TODO: em command is not working yet
-    public class Emote : Command
+    public class Emote : CommandBase
     {
         public override string CmdName => "em";
         public override string CmdUsage => "<custom emote text>";

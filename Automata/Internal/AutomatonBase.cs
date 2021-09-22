@@ -12,52 +12,50 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using RCC.Chat;
+using RCC.Helper.Tasks;
 using RCC.Network;
 
-namespace RCC
+namespace RCC.Automata.Internal
 {
     ///
-    /// Welcome to the Bot API file !
-    /// The virtual class "ChatBot" contains anything you need for creating chat bots
-    /// Inherit from this class while adding your bot class to the "ChatBots" folder.
+    /// Welcome to the automaton API file !
+    /// The virtual class "AutomatonBase" contains anything you need for creating chat automatons
+    /// Inherit from this class while adding your automaton class to the "automatons" folder.
     /// Override the methods you want for handling events: Initialize, Update, GetText.
     ///
-    /// For testing your bot you can add it in McClient.cs (see comment at line ~199).
-    /// Your bot will be loaded everytime MCC is started so that you can test/debug.
+    /// For testing your automaton you can add it in McClient.cs (see comment at line ~199).
+    /// Your automaton will be loaded everytime MCC is started so that you can test/debug.
     ///
-    /// Once your bot is fully written and tested, you can export it a standalone script.
+    /// Once your automaton is fully written and tested, you can export it a standalone script.
     /// This way it can be loaded in newer MCC builds, without modifying MCC itself.
-    /// See config/sample-script-with-chatbot.cs for a ChatBot script example.
+    /// See config/sample-script-with-automaton.cs for a AutomatonBase script example.
     ///
 
     /// <summary>
-    /// The virtual class containing anything you need for creating chat bots.
+    /// The virtual class containing anything you need for creating chat automatons.
     /// </summary>
-    public abstract class ChatBot
+    public abstract class AutomatonBase
     {
         public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost, UserLogout };
 
-        //Handler will be automatically set on bot loading, don't worry about this
-        public void SetHandler(RyzomClient handler) { this._handler = handler; }
-        protected void SetMaster(ChatBot master) { this.master = master; }
-        //protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); }
-        //protected List<ChatBot> GetLoadedChatBots() { return Handler.GetLoadedChatBots(); }
-        //protected void UnLoadBot(ChatBot bot) { Handler.BotUnLoad(bot); }
-        private RyzomClient _handler = null;
-        private ChatBot master = null;
-        private List<string> registeredPluginChannels = new List<String>();
-        private List<string> registeredCommands = new List<string>();
-        private object delayTasksLock = new object();
-        private List<TaskWithDelay> delayedTasks = new List<TaskWithDelay>();
+        private RyzomClient _handler;
+
+        private readonly List<string> _registeredCommands = new List<string>();
+        private readonly object _delayTasksLock = new object();
+        private readonly List<TaskWithDelay> _delayedTasks = new List<TaskWithDelay>();
+
+        /// <summary>
+        /// Handler will be automatically set on automaton loading, don't worry about this
+        /// </summary>
+        public void SetHandler(RyzomClient handler) { _handler = handler; }
+
         private RyzomClient Handler
         {
             get
             {
-                if (master != null)
-                    return master.Handler;
                 if (_handler != null)
                     return _handler;
-                throw new InvalidOperationException("exception.chatbot.init");
+                throw new InvalidOperationException("exception.automaton.init");
             }
         }
 
@@ -69,16 +67,16 @@ namespace RCC
         /// </remarks>
         public void UpdateInternal()
         {
-            lock (delayTasksLock)
+            lock (_delayTasksLock)
             {
-                if (delayedTasks.Count > 0)
+                if (_delayedTasks.Count > 0)
                 {
                     List<int> tasksToRemove = new List<int>();
-                    for (int i = 0; i < delayedTasks.Count; i++)
+                    for (int i = 0; i < _delayedTasks.Count; i++)
                     {
-                        if (delayedTasks[i].Tick())
+                        if (_delayedTasks[i].Tick())
                         {
-                            delayedTasks[i].Task();
+                            _delayedTasks[i].Task();
                             tasksToRemove.Add(i);
                         }
                     }
@@ -87,7 +85,7 @@ namespace RCC
                         tasksToRemove.Sort((a, b) => b.CompareTo(a)); // descending sort
                         foreach (int index in tasksToRemove)
                         {
-                            delayedTasks.RemoveAt(index);
+                            _delayedTasks.RemoveAt(index);
                         }
                     }
                 }
@@ -95,15 +93,15 @@ namespace RCC
         }
 
         /* ================================================== */
-        /*   Main methods to override for creating your bot   */
+        /*   Main methods to override for creating your automaton   */
         /* ================================================== */
 
         /// <summary>
-        /// Anything you want to initialize your bot, will be called on load by MinecraftCom
+        /// Anything you want to initialize your automaton, will be called on load by MinecraftCom
         /// This method is called only once, whereas OnGameJoined() is called once per server join.
         ///
         /// NOTE: Chat messages cannot be sent at this point in the login process.
-        /// If you want to send a message when the bot is loaded, use OnGameJoined.
+        /// If you want to send a message when the automaton is loaded, use OnGameJoined.
         /// </summary>
         public virtual void Initialize() { }
 
@@ -111,7 +109,7 @@ namespace RCC
         /// Called after the server has been joined successfully and chat messages are able to be sent.
         /// This method is called again after reconnecting to the server, whereas Initialize() is called only once.
         ///
-        /// NOTE: This is not always right after joining the server - if the bot was loaded after logging
+        /// NOTE: This is not always right after joining the server - if the automaton was loaded after logging
         /// in this is still called.
         /// </summary>
         public virtual void OnGameJoined() { }
@@ -119,10 +117,10 @@ namespace RCC
         /// <summary>
         /// Called after an internal MCC command has been performed
         /// </summary>
-        /// <param name="commandName">MCC Command Name</param>
-        /// <param name="commandParams">MCC Command Parameters</param>
-        /// <param name="Result">MCC command result</param>
-        public virtual void OnInternalCommand(string commandName, string commandParams, string Result) { }
+        /// <param name="commandName">MCC CommandBase Name</param>
+        /// <param name="commandParams">MCC CommandBase Parameters</param>
+        /// <param name="result">MCC command result</param>
+        public virtual void OnInternalCommand(string commandName, string commandParams, string result) { }
 
         public virtual void OnGameTeamContactStatus(uint contactId, CharConnectionState online) { }
 
@@ -147,11 +145,11 @@ namespace RCC
         /// <returns>Return TRUE if the client is about to restart</returns>
         public virtual bool OnDisconnect(DisconnectReason reason, string message) { return false; }
 
-        /* =================================================================== */
-        /*  ToolBox - Methods below might be useful while creating your bot.   */
-        /*  You should not need to interact with other classes of the program. */
-        /*  All the methods in this ChatBot class should do the job for you.   */
-        /* =================================================================== */
+        /* ======================================================================= */
+        /*  ToolBox - Methods below might be useful while creating your automaton. */
+        /*  You should not need to interact with other classes of the program.     */
+        /*  All the methods in this AutomatonBase class should do the job for you. */
+        /* ======================================================================= */
 
         /// <summary>
         /// Send text to the server. Can be anything such as chat messages or commands
@@ -182,12 +180,12 @@ namespace RCC
         /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
         /// <param name="command">The command to process</param>
-        /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <param name="responseMsg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        protected bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
+        protected bool PerformInternalCommand(string command, ref string responseMsg, Dictionary<string, object> localVars = null)
         {
-            return Handler.PerformInternalCommand(command, ref response_msg, localVars);
+            return Handler.PerformInternalCommand(command, ref responseMsg, localVars);
         }
 
         /// <summary>
@@ -219,39 +217,34 @@ namespace RCC
         }
 
         /// <summary>
-        /// Unload the chatbot, and release associated memory.
+        /// Unload the automaton, and release associated memory.
         /// </summary>
-        protected void UnloadBot()
+        protected void UnloadAutomaton()
         {
-            foreach (string cmdName in registeredCommands)
+            foreach (var cmdName in _registeredCommands)
             {
                 Handler.UnregisterCommand(cmdName);
             }
-            Handler.BotUnLoad(this);
+            Handler.Automata.UnloadAutomaton(this);
         }
 
         /// <summary>
-        /// Load an additional ChatBot
+        /// Load an additional AutomatonBase
         /// </summary>
-        /// <param name="chatBot">ChatBot to load</param>
-        protected void BotLoad(ChatBot chatBot)
-        {
-            Handler.BotLoad(chatBot);
+        /// <param name="automaton">AutomatonBase to load</param>
+        protected void LoadAutomaton(AutomatonBase automaton) { 
+            Handler.Automata.UnloadAutomaton(automaton); 
+            Handler.Automata.LoadAutomaton(automaton);
         }
+
 
         /// <summary>
         /// Get a Y-M-D h:m:s timestamp representing the current system date and time
         /// </summary>
         protected static string GetTimestamp()
         {
-            DateTime time = DateTime.Now;
-            return String.Format("{0}-{1}-{2} {3}:{4}:{5}",
-                time.Year.ToString("0000"),
-                time.Month.ToString("00"),
-                time.Day.ToString("00"),
-                time.Hour.ToString("00"),
-                time.Minute.ToString("00"),
-                time.Second.ToString("00"));
+            var time = DateTime.Now;
+            return $"{time.Year:0000}-{time.Month:00}-{time.Day:00} {time.Hour:00}:{time.Minute:00}:{time.Second:00}";
         }
 
         /// <summary>
@@ -315,24 +308,25 @@ namespace RCC
         /// </example>
         protected void ScheduleOnMainThread(Action task, int delayTicks = 0)
         {
-            lock (delayTasksLock)
+            lock (_delayTasksLock)
             {
-                delayedTasks.Add(new TaskWithDelay(task, delayTicks));
+                _delayedTasks.Add(new TaskWithDelay(task, delayTicks));
             }
         }
 
         /// <summary>
-        /// Register a command in command prompt. Command will be automatically unregistered when unloading ChatBot
+        /// Register a command in command prompt. CommandBase will be automatically unregistered when unloading AutomatonBase
         /// </summary>
         /// <param name="cmdName">Name of the command</param>
         /// <param name="cmdDesc">Description/usage of the command</param>
+        /// <param name="cmdUsage">Usage example</param>
         /// <param name="callback">Method for handling the command</param>
         /// <returns>True if successfully registered</returns>
-        protected bool RegisterChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
+        protected bool RegisterAutomatonCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
         {
             bool result = Handler.RegisterCommand(cmdName, cmdDesc, cmdUsage, callback);
             if (result)
-                registeredCommands.Add(cmdName.ToLower());
+                _registeredCommands.Add(cmdName.ToLower());
             return result;
         }
 
@@ -343,55 +337,19 @@ namespace RCC
         /// <param name="delay">Run the task after the specified delay</param>
         protected void ScheduleOnMainThread(Action task, TimeSpan delay)
         {
-            lock (delayTasksLock)
+            lock (_delayTasksLock)
             {
-                delayedTasks.Add(new TaskWithDelay(task, delay));
+                _delayedTasks.Add(new TaskWithDelay(task, delay));
             }
         }
 
         /// <summary>
-        /// Command runner definition.
+        /// CommandBase runner definition.
         /// Returned string will be the output of the command
         /// </summary>
         /// <param name="command">Full command</param>
         /// <param name="args">Arguments in the command</param>
-        /// <returns>Command result to display to the user</returns>
+        /// <returns>CommandBase result to display to the user</returns>
         public delegate string CommandRunner(string command, string[] args);
-
-        /// <summary>
-        /// Command class with constructor for creating command for ChatBots.
-        /// </summary>
-        public class ChatBotCommand : Command
-        {
-            public CommandRunner Runner;
-
-            private readonly string _cmdName;
-            private readonly string _cmdDesc;
-            private readonly string _cmdUsage;
-
-            public override string CmdName { get { return _cmdName; } }
-            public override string CmdUsage { get { return _cmdUsage; } }
-            public override string CmdDesc { get { return _cmdDesc; } }
-
-            public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
-            {
-                return this.Runner(command, getArgs(command));
-            }
-
-            /// <summary>
-            /// ChatBotCommand Constructor
-            /// </summary>
-            /// <param name="cmdName">Name of the command</param>
-            /// <param name="cmdDesc">Description of the command. Support tranlation.</param>
-            /// <param name="cmdUsage">Usage of the command</param>
-            /// <param name="callback">Method for handling the command</param>
-            public ChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
-            {
-                this._cmdName = cmdName;
-                this._cmdDesc = cmdDesc;
-                this._cmdUsage = cmdUsage;
-                this.Runner = callback;
-            }
-        }
     }
 }

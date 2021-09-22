@@ -35,7 +35,7 @@ namespace RCC.Logger
             try
             {
                 // TODO: Verbatim
-                //msg = ChatBot.GetVerbatim(msg);
+                //msg = AutomatonBase.GetVerbatim(msg);
                 if (_prependTimestamp)
                     msg = GetTimestamp() + ' ' + msg;
 

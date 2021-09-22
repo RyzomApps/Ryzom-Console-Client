@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using RCC.Commands.Internal;
 using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
 {
-    public class Who : Command
+    public class Who : CommandBase
     {
         public override string CmdName => "who";
         public override string CmdUsage => "[<options (GM, channel name)>]";

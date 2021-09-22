@@ -1,9 +1,10 @@
 ﻿using RCC.Chat;
 using System.Collections.Generic;
+using RCC.Commands.Internal;
 
 namespace RCC.Commands
 {
-    public class Universe : Command
+    public class Universe : CommandBase
     {
         public override string CmdName => "universe";
         public override string CmdUsage => "<text>";

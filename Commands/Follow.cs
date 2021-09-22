@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using RCC.Commands.Internal;
 using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
 {
-    public class Follow : Command
+    public class Follow : CommandBase
     {
         public override string CmdName => "follow";
         public override string CmdUsage => "";

@@ -9,7 +9,7 @@
 using System;
 using System.Threading;
 
-namespace RCC
+namespace RCC.Helper.Tasks
 {
     /// <summary>
     ///     Holds an asynchronous task with return value
