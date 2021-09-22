@@ -17,7 +17,7 @@ namespace RCC.Commands
 
             if (args.Length != 1)
             {
-                RyzomClient.GetInstance().GetLogger().Warn($"Please specify a player name to add.");
+                handler.GetLogger().Warn($"Please specify a player name to add.");
                 return "";
             }
 
@@ -38,7 +38,7 @@ namespace RCC.Commands
                 handler.GetNetworkManager().Push(out2);
             }
             else
-                RyzomClient.GetInstance().GetLogger().Warn($"Unknown message named '{msgName}'.");
+                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
 
             return "";
         }

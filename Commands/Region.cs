@@ -19,14 +19,14 @@ namespace RCC.Commands
         {
             var args = GetArgs(command);
 
-            ((RyzomClient)RyzomClient.GetInstance()).Channel = ChatGroupType.Region;
+            handler.Channel = ChatGroupType.Region;
 
             if (args.Length == 0)
                 return "";
 
             var text = string.Join(" ", args);
 
-            ((RyzomClient)RyzomClient.GetInstance()).SendText(text);
+            handler.SendText(text);
 
             return "";
         }

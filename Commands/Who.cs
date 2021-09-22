@@ -20,7 +20,7 @@ namespace RCC.Commands
 
             if (!handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream("DEBUG:WHO", out2))
             {
-                RyzomClient.GetInstance().GetLogger().Warn("Unknown message name DEBUG:WHO");
+                handler.GetLogger().Warn("Unknown message name DEBUG:WHO");
                 return "";
             }
 

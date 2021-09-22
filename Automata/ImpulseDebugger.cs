@@ -8,7 +8,7 @@ namespace RCC.Automata
     {
         public override void OnInitialize()
         {
-            RyzomClient.GetInstance().GetLogger().Info("Automaton 'ImpulseDebugger' initialized.");
+            Handler.GetLogger().Info("Automaton 'ImpulseDebugger' initialized.");
         }
 
         public override void OnGameJoined()

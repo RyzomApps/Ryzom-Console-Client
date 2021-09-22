@@ -16,7 +16,7 @@ namespace RCC.Commands
             if (!handler.IsInGame())
             {
                 handler.GetNetworkManager().GameExit = true;
-                RyzomClient.GetInstance().GetLogger().Info("User Request to Quit ryzom");
+                handler.GetLogger().Info("User Request to Quit ryzom");
             }
             else
             {
@@ -36,7 +36,7 @@ namespace RCC.Commands
                 handler.GetNetworkManager().Push(out2);
                 //nlinfo("impulseCallBack : %s sent", msgName.c_str());
 
-                RyzomClient.GetInstance().GetLogger().Info("Initiating quit sequence... Please wait 30s for the logout.");
+                handler.GetLogger().Info("Initiating quit sequence... Please wait 30s for the logout.");
             }
 
             //Program.Exit();

@@ -7,7 +7,7 @@ namespace RCC.Automata
     {
         public override void OnInitialize()
         {
-            RyzomClient.GetInstance().GetLogger().Info("Automaton 'AutoTeamJoiner' initialized.");
+            Handler.GetLogger().Info("Automaton 'AutoTeamJoiner' initialized.");
         }
 
         public override void OnTeamInvitation(in uint textID)

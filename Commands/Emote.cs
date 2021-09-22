@@ -41,7 +41,7 @@ namespace RCC.Commands
                 handler.GetNetworkManager().Push(out2);
             }
             else
-                RyzomClient.GetInstance().GetLogger().Warn($"Unknown message named '{msgName}'.");
+                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
 
             return "";
         }
