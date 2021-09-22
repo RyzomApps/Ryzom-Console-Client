@@ -32,6 +32,7 @@ namespace RCC
         private static RyzomClient _instance;
         private readonly NetworkConnection _networkConnection;
         private readonly NetworkManager _networkManager;
+        private readonly StringManager _stringManager;
 
         private static Thread _clientThread;
         private Thread _cmdprompt;
@@ -91,6 +92,8 @@ namespace RCC
 
         public NetworkManager GetNetworkManager() { return _networkManager; }
 
+        public StringManager GetStringManager() { return _stringManager; }
+
         #region Initialisation
 
         /// <summary>
@@ -101,7 +104,9 @@ namespace RCC
             _instance = this;
             _clientThread = Thread.CurrentThread;
             _networkConnection = new NetworkConnection(this);
-            _networkManager = new NetworkManager(this, _networkConnection);
+            _stringManager = new StringManager(this); 
+            _networkManager = new NetworkManager(this, _networkConnection, _stringManager);
+            
 
             Automata = new Automata.Internal.Automata(this);
 
@@ -230,7 +235,7 @@ namespace RCC
                 ok = !MainLoop();
 
                 // save the string cache
-                StringManagerClient.FlushStringCache();
+                _stringManager.FlushStringCache();
             }
 
             Log?.Info("EXIT of the Application.");
@@ -397,7 +402,7 @@ namespace RCC
                 //TODO _networkConnection.setDataBase(IngameDbMngr.getNodePtr());
 
                 // init the string manager cache.
-                StringManagerClient.InitCache(fsaddr, ClientConfig.LanguageCode);
+                _stringManager.InitCache(fsaddr, ClientConfig.LanguageCode);
             }
 
             _networkManager.WaitServerAnswer = true;

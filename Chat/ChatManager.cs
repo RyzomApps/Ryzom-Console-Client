@@ -25,10 +25,12 @@ namespace RCC.Chat
         static readonly List<ChatMsgNode> _ChatBuffer = new List<ChatMsgNode>();
 
         private readonly NetworkManager _networkManager;
+        private readonly StringManager _stringManager;
 
-        public ChatManager(NetworkManager networkManager)
+        public ChatManager(NetworkManager networkManager, StringManager stringManager)
         {
             _networkManager = networkManager;
+            _stringManager = stringManager;
         }
 
         /// <summary>
@@ -47,7 +49,7 @@ namespace RCC.Chat
 
             // If !complete, wait
             bool complete = true;
-            complete &= StringManagerClient.GetString(chatMsg.SenderNameId, out string senderStr, _networkManager);
+            complete &= _stringManager.GetString(chatMsg.SenderNameId, out string senderStr, _networkManager);
             if (!complete)
             {
                 _ChatBuffer.Add(new ChatMsgNode(chatMsg, true));
@@ -77,7 +79,7 @@ namespace RCC.Chat
             string senderStr;
 
             bool complete = true;
-            complete = StringManagerClient.GetString(chatMsg.SenderNameId, out senderStr, _networkManager);
+            complete = _stringManager.GetString(chatMsg.SenderNameId, out senderStr, _networkManager);
 
             if (type == ChatGroupType.DynChat)
             {
@@ -118,7 +120,7 @@ namespace RCC.Chat
             chatMsg.PhraseId = phraseID;
 
             // if !complete, wait
-            var complete = StringManagerClient.GetDynString(chatMsg.PhraseId, out string ucstr, _networkManager);
+            var complete = _stringManager.GetDynString(chatMsg.PhraseId, out string ucstr, _networkManager);
 
             if (!complete)
             {
@@ -152,9 +154,9 @@ namespace RCC.Chat
                 // all strings received?
                 bool complete = true;
                 if (itMsg.SenderNameId != 0)
-                    complete &= StringManagerClient.GetString(itMsg.SenderNameId, out sender, _networkManager);
+                    complete &= _stringManager.GetString(itMsg.SenderNameId, out sender, _networkManager);
                 if (itMsg.UsePhraseId)
-                    complete &= StringManagerClient.GetDynString(itMsg.PhraseId, out content, _networkManager);
+                    complete &= _stringManager.GetDynString(itMsg.PhraseId, out content, _networkManager);
                 else
                     content = itMsg.Content;
 
@@ -305,7 +307,7 @@ namespace RCC.Chat
             //        string.size_type pos = senderName.find('$');
             //        if (pos != string.npos)
             //        {
-            //            senderName = StringManagerClient.getTitleLocalizedName(CEntityCL.getTitleFromName(senderName), bWoman);
+            //            senderName = StringManager.getTitleLocalizedName(CEntityCL.getTitleFromName(senderName), bWoman);
             //        }
             //    }
             //}

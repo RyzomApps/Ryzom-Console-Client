@@ -48,6 +48,7 @@ namespace RCC.Network
         public bool AutoSendCharSelection = false;
 
         private readonly NetworkConnection _networkConnection;
+        private readonly StringManager _stringManager;
 
         private readonly RyzomClient _client;
 
@@ -55,12 +56,13 @@ namespace RCC.Network
 
         private readonly ChatManager _chatManager;
 
-        public NetworkManager(RyzomClient client, NetworkConnection networkConnection)
+        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager)
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
-            _chatManager = new ChatManager(this);
+            _chatManager = new ChatManager(this, stringManager);
 
             _networkConnection = networkConnection;
+            _stringManager = stringManager;
             _client = client;
         }
 
@@ -587,7 +589,7 @@ namespace RCC.Network
             var timestamp = 0;
             impulse.Serial(ref timestamp);
 
-            StringManagerClient.LoadCache(timestamp);
+            _stringManager.LoadCache(timestamp);
 
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
         }
@@ -606,7 +608,7 @@ namespace RCC.Network
 
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
 
-            StringManagerClient.ReceiveString(stringId, strUtf8, this);
+            _stringManager.ReceiveString(stringId, strUtf8, this);
         }
 
         /// <summary>
@@ -614,7 +616,7 @@ namespace RCC.Network
         /// </summary>
         private void ImpulsePhraseSend(BitMemoryStream impulse)
         {
-            StringManagerClient.ReceiveDynString(impulse, this);
+            _stringManager.ReceiveDynString(impulse, this);
         }
 
         private void ImpulseCounter(BitMemoryStream impulse)
