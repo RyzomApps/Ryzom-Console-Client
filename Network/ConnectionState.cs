@@ -11,7 +11,7 @@ namespace RCC.Network
     /// <summary>
     ///     The states of the connection to the server (if you change them, change ConnectionStateCStr)
     /// </summary>
-    internal enum ConnectionState
+    public enum ConnectionState
     {
         /// <summary>
         ///     nothing happened yet

@@ -57,7 +57,7 @@ namespace RCC.Automata.Internal
 
             if (init)
                 DispatchAutomatonEvent(automaton => automaton.Initialize(), new[] { b });
-            if (NetworkConnection.ConnectionState == ConnectionState.Connected)
+            if (_handler.IsInGame())
                 DispatchAutomatonEvent(automaton => automaton.OnGameJoined(), new[] { b });
         }
 

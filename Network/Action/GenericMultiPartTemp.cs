@@ -32,7 +32,7 @@ namespace RCC.Network.Action
         /// <summary>
         ///     add a part to the temp action - and call an action if message is complete
         /// </summary>
-        public void Set(ActionGenericMultiPart agmp)
+        public void Set(ActionGenericMultiPart agmp, NetworkConnection networkConnection)
         {
             if (_nbBlock == int.MaxValue)
             {
@@ -83,7 +83,7 @@ namespace RCC.Network.Action
 
             //nldebug("CLMPNET[%p]: Received a generic action size %d", this, bms.length());
 
-            NetworkConnection._ImpulseCallback?.Invoke(bms);
+            networkConnection.ImpulseCallback?.Invoke(bms);
         }
     }
 }

@@ -25,16 +25,23 @@ namespace RCC.Network
     {
         public static bool ServerReceivedReady;
 
+        private static NetworkConnection _networkConnection;
+
+        public static void SetNetworkConnection(NetworkConnection networkConnection)
+        {
+            _networkConnection = networkConnection;
+        }
+
         /// <summary>
         ///     Send - updates when packets were received
         /// </summary>
         public static void Send(uint gameCycle)
         {
             // wait till next server is received
-            if (NetworkConnection.LastSentCycle >= gameCycle)
+            if (_networkConnection.LastSentCycle >= gameCycle)
             {
                 //nlinfo ("Try to CNetManager::send(%d) _LastSentCycle=%d more than one time with the same game cycle, so we wait new game cycle to send", gameCycle, _LastSentCycle);
-                while (NetworkConnection.LastSentCycle >= gameCycle)
+                while (_networkConnection.LastSentCycle >= gameCycle)
                 {
                     // Update network.
                     Update();
@@ -45,11 +52,11 @@ namespace RCC.Network
                     // Do not take all the CPU.
                     Thread.Sleep(100);
 
-                    gameCycle = NetworkConnection.GetCurrentServerTick();
+                    gameCycle = _networkConnection.GetCurrentServerTick();
                 }
             }
 
-            NetworkConnection.Send(gameCycle);
+            _networkConnection.Send(gameCycle);
         }
 
         /// <summary>
@@ -60,7 +67,7 @@ namespace RCC.Network
         {
             //if (PermanentlyBanned) return; LOL
 
-            NetworkConnection.Push(msg);
+            _networkConnection.Push(msg);
         }
 
 
@@ -70,7 +77,7 @@ namespace RCC.Network
         public static void ReInit()
         {
             //IngameDbMngr.resetInitState();
-            NetworkConnection.ReInit();
+            _networkConnection.ReInit();
         }
 
 
@@ -82,7 +89,7 @@ namespace RCC.Network
         public static bool Update()
         {
             // Update the base class.
-            NetworkConnection.Update();
+            _networkConnection.Update();
 
             // TODO:  Get changes with the update.
             // 	const vector<CChange> &changes = NetMngr.getChanges();
@@ -101,7 +108,7 @@ namespace RCC.Network
         /// </summary>
         public static void Send()
         {
-            NetworkConnection.Send();
+            _networkConnection.Send();
         }
 
         /// <summary>
@@ -959,7 +966,7 @@ namespace RCC.Network
             //    outP.serial(ref c);
             //
             //    push(outP);
-            //    send(NetworkConnection.getCurrentServerTick());
+            //    send(_networkConnection.getCurrentServerTick());
             //    // send CONNECTION:USER_CHARS
             //    ConsoleIO.WriteLineFormatted("ImpulseCallBack : CONNECTION:SELECT_CHAR sent");
             //}

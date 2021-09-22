@@ -22,111 +22,118 @@ namespace RCC.Network
     /// <summary>
     ///     handles incoming and outgoing messages from the game server and keeps track of the current state of the connection
     /// </summary>
-    internal class NetworkConnection
+    public class NetworkConnection
     {
+        public uint LastSentCycle;
+        public int LastReceivedNumber;
+        public Action<BitMemoryStream> ImpulseCallback;
+        public object ImpulseArg;
+
+        internal byte[] LongAckBitField = new byte[1024 / 8];
+
         private const byte InvalidSlot = 0xFF;
 
-        static UdpSocket _connection = new UdpSocket();
+        private UdpSocket _connection = new UdpSocket();
 
-        private static ConnectionState _connectionState = ConnectionState.NotInitialised;
+        private ConnectionState _connectionState = ConnectionState.NotInitialised;
 
-        public static uint LastSentCycle;
-        public static int LastReceivedNumber;
-        public static Action<BitMemoryStream> _ImpulseCallback;
-        public static object _ImpulseArg;
+        private int _userAddr;
+        private int _userKey;
+        private int _userId;
+        private int _valid;
 
-        internal static byte[] _LongAckBitField = new byte[1024 / 8];
+        private int _currentSendNumber;
+        private long _lastReceivedTime;
+        private long _lastReceivedNormalTime;
+        private int _ackBitMask;
+        private int _lastAckBit;
+        private uint _synchronize;
+        private int _instantPing;
+        private int _bestPing;
+        private int _lct;
+        private int _lastSentSync;
+        private int _latestSync;
+        private int _dummySend;
+        private int _lastAckInLongAck;
 
-        private static int _userAddr;
-        private static int _userKey;
-        private static int _userId;
-        private static int _valid;
+        private int _totalReceivedBytes;
+        private int _partialReceivedBytes;
+        private int _totalSentBytes;
 
-        private static int _currentSendNumber;
-        private static long _lastReceivedTime;
-        private static long _lastReceivedNormalTime;
-        private static int _ackBitMask;
-        private static int _lastAckBit;
-        private static uint _synchronize;
-        private static int _instantPing;
-        private static int _bestPing;
-        private static int _lct;
-        private static int _lastSentSync;
-        private static int _latestSync;
-        private static int _dummySend;
-        private static int _lastAckInLongAck;
+        private int _partialSentBytes;
+        private int _lastReceivedPacketInBothModes;
+        private int _totalLostPackets;
+        private bool _connectionQuality;
+        private int _currentSmoothServerTick;
+        private int _sstLastLocalTime;
+        private string _frontendAddress;
 
-        private static int _totalReceivedBytes;
-        private static int _partialReceivedBytes;
-        private static int _totalSentBytes;
+        private long _latestLoginTime;
+        private long _latestSyncTime;
+        private long _latestProbeTime;
+        private long _updateTime;
+        private long _lastSendTime;
 
-        private static int _partialSentBytes;
-        private static int _lastReceivedPacketInBothModes;
-        private static int _totalLostPackets;
-        private static bool _connectionQuality;
-        private static int _currentSmoothServerTick;
-        private static int _sstLastLocalTime;
-        private static string _frontendAddress;
+        private int _mLoginAttempts;
 
-        private static long _latestLoginTime;
-        private static long _latestSyncTime;
-        private static long _latestProbeTime;
-        private static long _updateTime;
-        private static long _lastSendTime;
+        private long _updateTicks;
+        private bool _receivedSync;
+        private int _normalPacketsReceived;
+        private int _totalMessages;
 
-        private static int _mLoginAttempts;
+        private uint _currentClientTick;
+        private uint _currentServerTick;
 
-        private static long _updateTicks;
-        private static bool _receivedSync;
-        private static int _normalPacketsReceived;
-        private static int _totalMessages;
+        private byte[] _receiveBuffer;
+        private bool _decodedHeader;
 
-        private static uint _currentClientTick;
-        private static uint _currentServerTick;
+        private bool _systemMode;
+        private int _currentReceivedNumber;
+        private int _lastReceivedAck;
+        private int _msPerTick;
+        private long _currentClientTime;
 
-        private static byte[] _receiveBuffer;
-        private static bool _decodedHeader;
+        private object _dataBase;
+        private bool _registered;
+        private long _machineTimeAtTick;
+        private long _machineTicksAtTick;
+        private readonly List<int> _latestProbes = new List<int>();
+        private int _latestProbe;
 
-        private static bool _systemMode;
-        private static int _currentReceivedNumber;
-        private static int _lastReceivedAck;
-        private static int _msPerTick;
-        private static long _currentClientTime;
+        private readonly List<GenericMultiPartTemp> _genericMultiPartTemp = new List<GenericMultiPartTemp>();
+        private readonly List<ActionBlock> _actions = new List<ActionBlock>();
+        private byte[] _msgXmlMD5;
+        private byte[] _databaseXmlMD5;
 
-        private static object _dataBase;
-        private static bool _registered;
-        private static long _machineTimeAtTick;
-        private static long _machineTicksAtTick;
-        private static readonly List<int> LatestProbes = new List<int>();
-        private static int _latestProbe;
+        private bool _alreadyWarned;
+        private byte _impulseMultiPartNumber = 0;
 
-        private static readonly List<GenericMultiPartTemp> GenericMultiPartTemp = new List<GenericMultiPartTemp>();
-        private static readonly List<ActionBlock> Actions = new List<ActionBlock>();
-        private static byte[] _msgXmlMD5;
-        private static byte[] _databaseXmlMD5;
+        private readonly RyzomClient _handler;
 
-        static bool _alreadyWarned = false;
-        private static byte _impulseMultiPartNumber = 0;
+        public NetworkConnection(RyzomClient handler)
+        {
+            _handler = handler;
+        }
 
         /// <summary>
         ///     state of the connection
         /// </summary>
-        public static ConnectionState ConnectionState
+        public ConnectionState ConnectionState
         {
             get => _connectionState;
             set
             {
-                RyzomClient.Log?.Info($"Connection state changed to {value}");
+                _handler.GetLogger().Info($"Connection state changed to {value}");
                 _connectionState = value;
             }
         }
 
-        public static uint GetCurrentServerTick() => _currentServerTick;
+        public uint GetCurrentServerTick() => _currentServerTick;
 
         /// <summary>
         ///     Reset of the packet data counters and times
         /// </summary>
-        public static void Reset()
+        public void Reset()
         {
             _currentSendNumber = 0;
             LastReceivedNumber = 0;
@@ -145,11 +152,11 @@ namespace RCC.Network
             _lastSentSync = 0;
             _latestSync = 0;
 
-            _PropertyDecoder.init(256);
+            //_PropertyDecoder.init(256);
 
             _dummySend = 0;
             //_LongAckBitField.resize(1024);
-            _LongAckBitField = new byte[1024 / 8];
+            LongAckBitField = new byte[1024 / 8];
 
             _lastAckInLongAck = 0;
             LastSentCycle = 0;
@@ -158,8 +165,8 @@ namespace RCC.Network
             _partialReceivedBytes = 0;
             _totalSentBytes = 0;
             _partialSentBytes = 0;
-            _MeanPackets.MeanPeriod = 5000;
-            _MeanLoss.MeanPeriod = 5000;
+            //_MeanPackets.MeanPeriod = 5000;
+            //_MeanLoss.MeanPeriod = 5000;
 
             _lastReceivedPacketInBothModes = 0;
             _totalLostPackets = 0;
@@ -172,7 +179,7 @@ namespace RCC.Network
         /// <summary>
         ///     reset the client and server ticks
         /// </summary>
-        static void InitTicks()
+        void InitTicks()
         {
             _currentClientTick = 0;
             _currentServerTick = 0;
@@ -183,17 +190,17 @@ namespace RCC.Network
         /// <summary>
         ///     reinitialisation of the connection
         /// </summary>
-        public static void ReInit()
+        public void ReInit()
         {
             // TODO reinitialisation of the connection -> some methods missing
             ImpulseDecoder.Reset();
             //if (_DataBase)
             //    _DataBase->resetData(_CurrentServerTick, true);
-            _LongAckBitField = new byte[0];
+            LongAckBitField = new byte[0];
             //_PacketStamps.clear();
-            Actions.Clear();
+            _actions.Clear();
             //_Changes.clear();
-            GenericMultiPartTemp.Clear();
+            _genericMultiPartTemp.Clear();
             //_IdMap.clear();
             Reset();
             InitTicks();
@@ -205,7 +212,7 @@ namespace RCC.Network
         /// <summary>
         ///     datetime ticks
         /// </summary>
-        public static long RyzomGetPerformanceTime()
+        public long RyzomGetPerformanceTime()
         {
             return DateTime.Now.Ticks;
         }
@@ -213,7 +220,7 @@ namespace RCC.Network
         /// <summary>
         ///     datetime milliseconds
         /// </summary>
-        public static long RyzomGetLocalTime()
+        public long RyzomGetLocalTime()
         {
             return DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
         }
@@ -221,7 +228,7 @@ namespace RCC.Network
         /// <summary>
         ///     Start the connection state machine - Udp socket will connect at this point
         /// </summary>
-        internal static void Connect()
+        internal void Connect()
         {
             if (ConnectionState != ConnectionState.NotConnected)
             {
@@ -250,7 +257,7 @@ namespace RCC.Network
         /// <summary>
         ///     Init the connection with the cookie from the login server and game server address - registers all action codes
         /// </summary>
-        public static void Init(string cookie, string addr)
+        public void Init(string cookie, string addr)
         {
             if (ConnectionState != ConnectionState.NotInitialised &&
                 ConnectionState != ConnectionState.Disconnect)
@@ -290,13 +297,13 @@ namespace RCC.Network
         /// <summary>
         ///     Sets the cookie and front-end address, resets the connection state.
         /// </summary>
-        public static void InitCookie(string cookie, string addr)
+        public void InitCookie(string cookie, string addr)
         {
             _frontendAddress = addr;
 
             SetLoginCookieFromString(cookie);
 
-            RyzomClient.Log?.Info($"Network initialisation with front end '{_frontendAddress}' and cookie {cookie}");
+            _handler.GetLogger().Info($"Network initialisation with front end '{_frontendAddress}' and cookie {cookie}");
 
             ConnectionState = ConnectionState.NotConnected;
         }
@@ -304,16 +311,16 @@ namespace RCC.Network
         /// <summary>
         ///     set the impulse callback method for all stream actions
         /// </summary>
-        public static void SetImpulseCallback(Action<BitMemoryStream> impulseCallBack)
+        public void SetImpulseCallback(Action<BitMemoryStream> impulseCallBack)
         {
-            _ImpulseCallback = impulseCallBack;
-            _ImpulseArg = null;
+            ImpulseCallback = impulseCallBack;
+            ImpulseArg = null;
         }
 
         /// <summary>
         ///     set the client database manager - TODO: client database manager
         /// </summary>
-        public static void SetDataBase(object database)
+        public void SetDataBase(object database)
         {
             _dataBase = database;
         }
@@ -325,7 +332,7 @@ namespace RCC.Network
         ///     else
         ///     sends System LoginCookie
         /// </summary>
-        private static bool StateLogin()
+        private bool StateLogin()
         {
             while (_connection.IsDataAvailable())
             {
@@ -344,14 +351,14 @@ namespace RCC.Network
                         case SystemMessageType.SystemSyncCode:
                             // receive sync, decode sync
                             ConnectionState = ConnectionState.Synchronize;
-                            RyzomClient.Log?.Debug("CNET: login->synchronize");
+                            _handler.GetLogger().Debug("CNET: login->synchronize");
                             ReceiveSystemSync(msgin);
                             return true;
 
                         case SystemMessageType.SystemStalledCode:
                             // receive stalled, decode stalled and state stalled
                             ConnectionState = ConnectionState.Stalled;
-                            RyzomClient.Log?.Debug("CNET: login->stalled");
+                            _handler.GetLogger().Debug("CNET: login->stalled");
                             ReceiveSystemStalled(msgin);
                             return true;
 
@@ -359,25 +366,25 @@ namespace RCC.Network
                             // receive probe, decode probe and state probe
                             ConnectionState = ConnectionState.Probe;
                             //_Changes.push_back(CChange(0, ProbeReceived));
-                            RyzomClient.Log?.Debug("CNET: login->probe");
+                            _handler.GetLogger().Debug("CNET: login->probe");
                             ReceiveSystemProbe(msgin);
                             return true;
 
                         case SystemMessageType.SystemServerDownCode:
                             Disconnect(); // will send disconnection message
-                            RyzomClient.Log?.Error("BACK-END DOWN");
+                            _handler.GetLogger().Error("BACK-END DOWN");
                             return false; // exit now from loop, don't expect a new state
 
                         default:
                             //msgin.displayStream("DBG:BEN:stateLogin:msgin");
-                            RyzomClient.Log?.Warn($"CNET: received system {message} in state Login");
+                            _handler.GetLogger().Warn($"CNET: received system {message} in state Login");
                             break;
                     }
                 }
                 else
                 {
                     //msgin.displayStream("DBG:BEN:stateLogin:msgin");
-                    RyzomClient.Log?.Warn($"CNET: received normal in state Login");
+                    _handler.GetLogger().Warn($"CNET: received normal in state Login");
                 }
             }
 
@@ -392,7 +399,7 @@ namespace RCC.Network
                 {
                     _mLoginAttempts = 0;
                     Disconnect(); // will send disconnection message
-                    RyzomClient.Log?.Warn("CNET: Too many LOGIN attempts, connection problem");
+                    _handler.GetLogger().Warn("CNET: Too many LOGIN attempts, connection problem");
                     return true; // exit now from loop, don't expect a new state
                 }
 
@@ -410,7 +417,7 @@ namespace RCC.Network
         ///     decode PROBE
         ///     sends System ACK_PROBE
         /// </summary>
-        private static bool StateProbe()
+        private bool StateProbe()
         {
             while (_connection.IsDataAvailable())
             {
@@ -447,24 +454,24 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemServerDownCode:
                                 Disconnect(); // will send disconnection message
-                                RyzomClient.Log?.Error("BACK-END DOWN");
+                                _handler.GetLogger().Error("BACK-END DOWN");
                                 return false; // exit now from loop, don't expect a new state
 
                             default:
-                                RyzomClient.Log?.Warn($"CNET: received system {message} in state Probe");
+                                _handler.GetLogger().Warn($"CNET: received system {message} in state Probe");
                                 break;
                         }
                     }
                     else
                     {
-                        RyzomClient.Log?.Warn("CNET: received normal in state Probe");
+                        _handler.GetLogger().Warn("CNET: received normal in state Probe");
                         _latestProbeTime = _updateTime;
                     }
                 }
             }
 
             // send ack sync if received sync or last sync timed out
-            if (LatestProbes.Count != 0 || _updateTime - _latestProbeTime > 300)
+            if (_latestProbes.Count != 0 || _updateTime - _latestProbeTime > 300)
             {
                 SendSystemAckProbe();
                 _latestProbeTime = _updateTime;
@@ -483,7 +490,7 @@ namespace RCC.Network
         ///     immediate state Connected
         ///     sends System ACK_SYNC
         /// </summary>
-        private static bool StateSynchronize()
+        private bool StateSynchronize()
         {
             while (_connection.IsDataAvailable())
             {
@@ -497,7 +504,7 @@ namespace RCC.Network
                         byte message = 0;
                         msgin.Serial(ref message);
 
-                        switch ((SystemMessageType) message)
+                        switch ((SystemMessageType)message)
                         {
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, decode probe and state probe
@@ -521,11 +528,11 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemServerDownCode:
                                 Disconnect(); // will send disconnection message
-                                RyzomClient.Log?.Error("BACK-END DOWN");
+                                _handler.GetLogger().Error("BACK-END DOWN");
                                 return false; // exit now from loop, don't expect a new state
 
                             default:
-                                RyzomClient.Log?.Warn($"CNET: received system {message} in state Synchronize");
+                                _handler.GetLogger().Warn($"CNET: received system {message} in state Synchronize");
                                 break;
                         }
                     }
@@ -548,7 +555,7 @@ namespace RCC.Network
             return false;
         }
 
-        private static long _previousTime = RyzomGetLocalTime();
+        private long _previousTime = 0;
 
         /// <summary>
         ///     Connection state machine - Connected State
@@ -557,7 +564,7 @@ namespace RCC.Network
         ///     else if receives Normal
         ///     sends Normal data
         /// </summary>
-        private static bool StateConnected()
+        private bool StateConnected()
         {
             // Prevent to increment the client time when the front-end does not respond
             var now = RyzomGetLocalTime();
@@ -638,11 +645,11 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemServerDownCode:
                                 Disconnect(); // will send disconnection message
-                                RyzomClient.Log?.Error("BACK-END DOWN");
+                                _handler.GetLogger().Error("BACK-END DOWN");
                                 return false; // exit now from loop, don't expect a new state
 
                             default:
-                                RyzomClient.Log?.Warn($"CNET: received system {message} in state Connected");
+                                _handler.GetLogger().Warn($"CNET: received system {message} in state Connected");
                                 break;
                         }
                     }
@@ -661,9 +668,9 @@ namespace RCC.Network
         ///     Connection state machine - Stalled State
         ///     TODO: Connection state machine - Stalled State
         /// </summary>
-        private static bool StateStalled()
+        private bool StateStalled()
         {
-            RyzomClient.Log?.Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
+            _handler.GetLogger().Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
             return false;
         }
 
@@ -671,18 +678,18 @@ namespace RCC.Network
         ///     Connection state machine - Quit State
         ///     TODO: Connection state machine - Quit State
         /// </summary>
-        private static bool StateQuit()
+        private bool StateQuit()
         {
-            RyzomClient.Log?.Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
+            _handler.GetLogger().Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
             return false;
         }
 
         /// <summary>
         ///     Receive and extract a normal (non system) message from a stream
         /// </summary>
-        private static void ReceiveNormalMessage(BitMemoryStream msgin)
+        private void ReceiveNormalMessage(BitMemoryStream msgin)
         {
-            RyzomClient.Log?.Debug($"CNET: received normal message Packet={LastReceivedNumber} Ack={_lastReceivedAck}");
+            _handler.GetLogger().Debug($"CNET: received normal message Packet={LastReceivedNumber} Ack={_lastReceivedAck}");
 
             var actions = new List<Action.Action>();
             ImpulseDecoder.Decode(msgin, _currentReceivedNumber, _lastReceivedAck, _currentSendNumber, actions);
@@ -690,12 +697,12 @@ namespace RCC.Network
             ++_normalPacketsReceived;
 
             // we can now remove all old action that are acked
-            while (Actions.Count != 0 && Actions[0].FirstPacket != 0 && Actions[0].FirstPacket <= _lastReceivedAck)
+            while (_actions.Count != 0 && _actions[0].FirstPacket != 0 && _actions[0].FirstPacket <= _lastReceivedAck)
             {
                 // CActionBlock automatically remove() actions when deleted
 
-                RyzomClient.Log?.Debug($"removed action {Actions[0]}");
-                Actions.RemoveAt(0);
+                _handler.GetLogger().Debug($"removed action {_actions[0]}");
+                _actions.RemoveAt(0);
             }
 
             Debug.Assert(_currentReceivedNumber * 2 + _synchronize > _currentServerTick);
@@ -710,7 +717,7 @@ namespace RCC.Network
                 {
                     case ActionCode.ActionDisconnectionCode:
                         // Self disconnection
-                        RyzomClient.Log?.Info("You were disconnected by the server");
+                        _handler.GetLogger().Info("You were disconnected by the server");
                         Disconnect(); // will send disconnection message
                         // TODO LoginSM.pushEvent(CLoginStateMachine::ev_conn_dropped);
 
@@ -725,7 +732,7 @@ namespace RCC.Network
 
                     case ActionCode.ActionDummyCode:
                         //CActionDummy* dummy = ((CActionDummy*)actions[i]);
-                        RyzomClient.Log?.Debug($"CNET Received Dummy{action}");
+                        _handler.GetLogger().Debug($"CNET Received Dummy{action}");
                         // Nothing to do
                         break;
                 }
@@ -743,7 +750,7 @@ namespace RCC.Network
         ///     extract properties (database, sheets, ...) from a stream
         ///     TODO decodeVisualProperties -> adding _Changes
         /// </summary>
-        static void DecodeVisualProperties(BitMemoryStream msgin)
+        void DecodeVisualProperties(BitMemoryStream msgin)
         {
             try
             {
@@ -961,38 +968,38 @@ namespace RCC.Network
         ///     manage a generic action - invoke the impulse callback for the action
         ///     TODO: get memory stream -> CImpulseDecoder.decode to action?
         /// </summary>
-        private static void GenericAction(ActionGeneric ag)
+        private void GenericAction(ActionGeneric ag)
         {
             var bms = ag.Get();
 
             //nldebug("CNET: Calling impulsion callback (size %u) :'%s'", this, bms.length(), toHexaString(bms.bufferAsVector()).c_str());
             //nldebug("CNET[%p]: Calling impulsion callback (size %u)", this, bms.length());
 
-            _ImpulseCallback?.Invoke(bms);
+            ImpulseCallback?.Invoke(bms);
         }
 
         /// <summary>
         ///     manage a generic multi part action - generate temporary multipart holder until the action is complete
         /// </summary>
         /// <param name="agmp"></param>
-        private static void GenericAction(ActionGenericMultiPart agmp)
+        private void GenericAction(ActionGenericMultiPart agmp)
         {
-            while (GenericMultiPartTemp.Count <= agmp.Number)
+            while (_genericMultiPartTemp.Count <= agmp.Number)
             {
-                GenericMultiPartTemp.Add(new GenericMultiPartTemp());
+                _genericMultiPartTemp.Add(new GenericMultiPartTemp());
             }
 
-            GenericMultiPartTemp[agmp.Number].Set(agmp);
+            _genericMultiPartTemp[agmp.Number].Set(agmp, this);
         }
 
         /// <summary>
         ///     Probe state - deserialise info from stream
         /// </summary>
-        private static void ReceiveSystemProbe(BitMemoryStream msgin)
+        private void ReceiveSystemProbe(BitMemoryStream msgin)
         {
             _latestProbeTime = _updateTime;
             msgin.Serial(ref _latestProbe);
-            LatestProbes.Add(_latestProbe);
+            _latestProbes.Add(_latestProbe);
 
             //nldebug("CNET[%p]: received PROBE %d", this, _LatestProbe);
         }
@@ -1000,15 +1007,15 @@ namespace RCC.Network
         /// <summary>
         ///     TODO Stalled state - deserialise info from stream
         /// </summary>
-        private static void ReceiveSystemStalled(BitMemoryStream msgin)
+        private void ReceiveSystemStalled(BitMemoryStream msgin)
         {
-            RyzomClient.Log?.Info("CNET: received STALLED but not implemented");
+            _handler.GetLogger().Info("CNET: received STALLED but not implemented");
         }
 
         /// <summary>
         ///     Sync state - deserialise info from stream - send ack
         /// </summary>
-        private static void ReceiveSystemSync(BitMemoryStream msgin)
+        private void ReceiveSystemSync(BitMemoryStream msgin)
         {
             _latestSyncTime = _updateTime;
             long stime = 0;
@@ -1016,7 +1023,7 @@ namespace RCC.Network
             msgin.Serial(ref stime);
             msgin.Serial(ref _latestSync);
 
-            RyzomClient.Log?.Debug($"receiveSystemSync {msgin}");
+            _handler.GetLogger().Debug($"receiveSystemSync {msgin}");
 
             //return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
             byte[] checkMsgXml = new byte[16];
@@ -1031,12 +1038,12 @@ namespace RCC.Network
             if (xmlInvalid && !_alreadyWarned)
             {
                 _alreadyWarned = true;
-                RyzomClient.Log?.Warn(
+                _handler.GetLogger().Warn(
                     $"XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
 
-                RyzomClient.Log?.Warn(
+                _handler.GetLogger().Warn(
                     $"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
-                RyzomClient.Log?.Warn(
+                _handler.GetLogger().Warn(
                     $"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
             }
 
@@ -1058,7 +1065,7 @@ namespace RCC.Network
         /// <summary>
         ///     Receive available data and convert it to a bitmemstream
         /// </summary>
-        private static bool BuildStream(BitMemoryStream msgin)
+        private bool BuildStream(BitMemoryStream msgin)
         {
             const int len = 65536;
 
@@ -1075,7 +1082,7 @@ namespace RCC.Network
                 // A receiving error means the front-end is down
                 ConnectionState = ConnectionState.Disconnect;
                 Disconnect(); // won't send a disconnection msg because state is already Disconnect
-                RyzomClient.Log?.Warn($"DISCONNECTION");
+                _handler.GetLogger().Warn($"DISCONNECTION");
                 return false;
             }
         }
@@ -1083,7 +1090,7 @@ namespace RCC.Network
         /// <summary>
         ///     decode the message header from the stream
         /// </summary>
-        private static bool DecodeHeader(BitMemoryStream msgin)
+        private bool DecodeHeader(BitMemoryStream msgin)
         {
             if (_decodedHeader)
                 return true;
@@ -1111,14 +1118,14 @@ namespace RCC.Network
         /// <summary>
         ///     Disconnects the Client from the server sending a disconnection packet
         /// </summary>
-        private static void Disconnect()
+        private void Disconnect()
         {
             if (ConnectionState == ConnectionState.NotInitialised ||
                 ConnectionState == ConnectionState.NotConnected ||
                 ConnectionState == ConnectionState.Authenticate ||
                 ConnectionState == ConnectionState.Disconnect)
             {
-                RyzomClient.Log?.Warn("Unable to disconnect(): not connected yet, or already disconnected.");
+                _handler.GetLogger().Warn("Unable to disconnect(): not connected yet, or already disconnected.");
                 return;
             }
 
@@ -1130,7 +1137,7 @@ namespace RCC.Network
         /// <summary>
         ///     sends system sync acknowledge
         /// </summary>
-        private static void SendSystemAckSync()
+        private void SendSystemAckSync()
         {
             var message = new BitMemoryStream();
 
@@ -1142,7 +1149,7 @@ namespace RCC.Network
             message.Serial(ref _lastAckInLongAck);
             // message.serial(_LongAckBitField); todo
 
-            foreach (var ack in _LongAckBitField)
+            foreach (var ack in LongAckBitField)
             {
                 var b = ack;
                 message.Serial(ref b);
@@ -1150,7 +1157,7 @@ namespace RCC.Network
 
             message.Serial(ref _latestSync);
 
-            RyzomClient.Log?.Debug($"sendSystemAckSync {message}");
+            _handler.GetLogger().Debug($"sendSystemAckSync {message}");
 
             var length = message.Length;
             _connection.Send(message.Buffer(), length);
@@ -1163,14 +1170,14 @@ namespace RCC.Network
         /// <summary>
         ///     sends system Probe acknowledge
         /// </summary>
-        static void SendSystemAckProbe()
+        void SendSystemAckProbe()
         {
             var message = new BitMemoryStream();
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
             byte probe = (byte)SystemMessageType.SystemAckProbeCode;
-            int numprobes = LatestProbes.Count;
+            int numprobes = _latestProbes.Count;
 
             message.Serial(ref probe);
             message.Serial(ref numprobes);
@@ -1178,11 +1185,11 @@ namespace RCC.Network
             int i;
             for (i = 0; i < numprobes; ++i)
             {
-                var val = LatestProbes[i];
+                var val = _latestProbes[i];
                 message.Serial(ref val);
             }
 
-            LatestProbes.Clear();
+            _latestProbes.Clear();
 
             var length = message.Length;
             _connection.Send(message.Buffer(), length);
@@ -1195,7 +1202,7 @@ namespace RCC.Network
         /// <summary>
         ///     sends system Disconnection acknowledge
         /// </summary>
-        private static void SendSystemDisconnection()
+        private void SendSystemDisconnection()
         {
             var message = new BitMemoryStream();
 
@@ -1211,12 +1218,12 @@ namespace RCC.Network
             {
                 try
                 {
-                    RyzomClient.Log?.Debug($"sendSystemDisconnection {message}");
+                    _handler.GetLogger().Debug($"sendSystemDisconnection {message}");
                     _connection.Send(message.Buffer(), length);
                 }
                 catch (Exception e)
                 {
-                    RyzomClient.Log?.Error($"Socket exception: " + e.Message);
+                    _handler.GetLogger().Error($"Socket exception: " + e.Message);
                 }
             }
 
@@ -1230,7 +1237,7 @@ namespace RCC.Network
         /// <summary>
         ///     sends system login cookie
         /// </summary>
-        public static void SendSystemLogin()
+        public void SendSystemLogin()
         {
             var message = new BitMemoryStream();
 
@@ -1250,14 +1257,14 @@ namespace RCC.Network
 
             message.Serial(ref ClientConfig.LanguageCode);
 
-            RyzomClient.Log?.Debug($"sendSystemLogin {message}");
+            _handler.GetLogger().Debug($"sendSystemLogin {message}");
             _connection.Send(message.Buffer(), message.Length);
         }
 
         /// <summary>
         ///     Sets the cookie for the connection
         /// </summary>
-        private static void SetLoginCookieFromString(string str)
+        private void SetLoginCookieFromString(string str)
         {
             var parts = str.Split('|');
 
@@ -1274,7 +1281,7 @@ namespace RCC.Network
         /// <summary>
         ///     update connection info - tests the connection state and inits the state machine
         /// </summary>
-        public static bool Update()
+        public bool Update()
         {
             _updateTime = RyzomGetLocalTime();
             _updateTicks = RyzomGetPerformanceTime();
@@ -1294,7 +1301,7 @@ namespace RCC.Network
 
             if (!_connection.Connected())
             {
-                RyzomClient.Log.Warn("CNET: update() attempted whereas socket is not connected !");
+                _handler.GetLogger().Warn("CNET: update() attempted whereas socket is not connected !");
                 return false;
             }
 
@@ -1382,16 +1389,16 @@ namespace RCC.Network
         /// <summary>
         ///     sends normal messages to the server including action blocks with actions if there are any to send
         /// </summary>
-        public static void Send(in uint cycle)
+        public void Send(in uint cycle)
         {
             try
             {
                 LastSentCycle = cycle;
 
                 // if no actions were sent at this cyle, create a new block
-                if (Actions.Count != 0 && Actions[^1].Cycle == 0)
+                if (_actions.Count != 0 && _actions[^1].Cycle == 0)
                 {
-                    var block = Actions[^1];
+                    var block = _actions[^1];
 
                     block.Cycle = cycle;
 
@@ -1429,7 +1436,7 @@ namespace RCC.Network
         /// <summary>
         ///     Create the message to send to the server
         /// </summary>
-        private static void SendNormalMessage()
+        private void SendNormalMessage()
         {
             var message = new BitMemoryStream();
 
@@ -1442,7 +1449,7 @@ namespace RCC.Network
 
             uint numPacked = 0;
 
-            foreach (var block in Actions)
+            foreach (var block in _actions)
             {
                 //for (var itblock = _Actions.Begin(); itblock != _Actions.end(); ++itblock)
                 //{
@@ -1474,7 +1481,7 @@ namespace RCC.Network
                 break;
             }
 
-            RyzomClient.Log?.Debug($"sendNormalMessage {message}");
+            _handler.GetLogger().Debug($"sendNormalMessage {message}");
             _connection.Send(message.Buffer(), message.Length);
 
             _lastSendTime = RyzomGetLocalTime();
@@ -1493,7 +1500,7 @@ namespace RCC.Network
         ///     This way, we can say that at most 15 packets will be delivered each second
         ///     (5 send(tick), and 10 send() -- if you take getLocalTime() inaccuracy into account)
         /// </summary>
-        internal static void Send()
+        internal void Send()
         {
             try
             {
@@ -1511,14 +1518,14 @@ namespace RCC.Network
         /// <summary>
         ///     TODO updateSmoothServerTick - not that important
         /// </summary>
-        private static void UpdateSmoothServerTick()
+        private void UpdateSmoothServerTick()
         {
         }
 
         /// <summary>
         ///     Clear not acknownledged actions in sending buffer
         /// </summary>
-        public static void FlushSendBuffer()
+        public void FlushSendBuffer()
         {
             //_Actions.clear();
         }
@@ -1526,21 +1533,21 @@ namespace RCC.Network
         /// <summary>
         ///     pushes an action to be sent by the client to the send queue
         /// </summary>
-        static void Push(Action.Action action)
+        void Push(Action.Action action)
         {
-            if (Actions.Count == 0 || Actions[^1].Cycle != 0)
+            if (_actions.Count == 0 || _actions[^1].Cycle != 0)
             {
                 //nlinfo("-BEEN- push back 2 [size=%d, cycle=%d]", _Actions.size(), _Actions.empty() ? 0 : _Actions.back().Cycle);
-                Actions.Add(new ActionBlock());
+                _actions.Add(new ActionBlock());
             }
 
-            Actions[^1].Actions.Add(action);
+            _actions[^1].Actions.Add(action);
         }
 
         /// <summary>
         ///     pushes a stream (message) to be sent by the client to the send queue
         /// </summary>
-        public static void Push(BitMemoryStream msg)
+        public void Push(BitMemoryStream msg)
         {
             const int maxImpulseBitSize = 230 * 8;
 
@@ -1561,23 +1568,6 @@ namespace RCC.Network
             else
             {
                 throw new NotImplementedException();
-            }
-        }
-
-        internal class _MeanLoss
-        {
-            public static int MeanPeriod { get; set; }
-        }
-
-        internal class _MeanPackets
-        {
-            public static int MeanPeriod { get; set; }
-        }
-
-        internal static class _PropertyDecoder
-        {
-            public static void init(int i)
-            {
             }
         }
     }

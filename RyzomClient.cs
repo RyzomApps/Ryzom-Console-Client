@@ -31,6 +31,7 @@ namespace RCC
     public class RyzomClient : IChatDisplayer
     {
         private static RyzomClient _instance;
+        private readonly NetworkConnection _networkConnection;
 
         private static Thread _clientThread;
         private Thread _cmdprompt;
@@ -84,6 +85,10 @@ namespace RCC
 
         public ILogger GetLogger() { return Log; }
 
+        public bool IsInGame() => _networkConnection.ConnectionState == ConnectionState.Connected;
+
+        public NetworkConnection GetNetworkConnection() { return _networkConnection; }
+
         #region Initialisation
 
         /// <summary>
@@ -93,6 +98,8 @@ namespace RCC
         {
             _instance = this;
             _clientThread = Thread.CurrentThread;
+            _networkConnection = new NetworkConnection(this);
+            NetworkManager.SetNetworkConnection(_networkConnection);
 
             Automata = new Automata.Internal.Automata(this);
 
@@ -232,12 +239,12 @@ namespace RCC
         ///     If you add something in this function, check CFarTP,
         ///     some kind of reinitialization might be useful over there.
         /// </summary>
-        private static void InitMainLoop()
+        private void InitMainLoop()
         {
             // Update Network till current tick increase.
-            _lastGameCycle = NetworkConnection.GetCurrentServerTick();
+            _lastGameCycle = _networkConnection.GetCurrentServerTick();
 
-            while (_lastGameCycle == NetworkConnection.GetCurrentServerTick())
+            while (_lastGameCycle == _networkConnection.GetCurrentServerTick())
             {
                 // Update Network.
                 NetworkManager.Update();
@@ -250,7 +257,7 @@ namespace RCC
             {
                 out2.Serial(ref ClientConfig.LanguageCode);
                 NetworkManager.Push(out2);
-                NetworkManager.Send(NetworkConnection.GetCurrentServerTick());
+                NetworkManager.Send(_networkConnection.GetCurrentServerTick());
             }
             else
             {
@@ -363,16 +370,16 @@ namespace RCC
         /// <summary>
         /// Establish network connection, set callbacks for server messages and init the string manager
         /// </summary>
-        private static InterfaceState AutoLogin(string cookie, string fsaddr, in bool firstConnection)
+        private InterfaceState AutoLogin(string cookie, string fsaddr, in bool firstConnection)
         {
             if (firstConnection)
-                NetworkConnection.Init(cookie, fsaddr);
+                _networkConnection.Init(cookie, fsaddr);
 
             if (firstConnection)
             {
                 try
                 {
-                    NetworkConnection.Connect();
+                    _networkConnection.Connect();
                 }
                 catch (Exception e)
                 {
@@ -382,10 +389,10 @@ namespace RCC
 
                 // Ok the client is connected
                 // Set the impulse callback.
-                NetworkConnection.SetImpulseCallback(NetworkManager.ImpulseCallBack);
+                _networkConnection.SetImpulseCallback(NetworkManager.ImpulseCallBack);
 
                 // Set the database.
-                //TODO NetworkConnection.setDataBase(IngameDbMngr.getNodePtr());
+                //TODO _networkConnection.setDataBase(IngameDbMngr.getNodePtr());
 
                 // init the string manager cache.
                 StringManagerClient.InitCache(fsaddr, ClientConfig.LanguageCode);
@@ -401,7 +408,7 @@ namespace RCC
         /// </summary>
         public InterfaceState GlobalMenu()
         {
-            var serverTick = NetworkConnection.GetCurrentServerTick();
+            var serverTick = _networkConnection.GetCurrentServerTick();
             var playerWantToGoInGame = false;
             var firewallTimeout = false;
 
@@ -415,7 +422,7 @@ namespace RCC
                 }
                 catch
                 {
-                    if (NetworkConnection.ConnectionState == ConnectionState.Disconnect)
+                    if (_networkConnection.ConnectionState == ConnectionState.Disconnect)
                     {
                         firewallTimeout = true;
                     }
@@ -428,15 +435,15 @@ namespace RCC
                 // TODO: IngameDbMngr.flushObserverCalls();
 
                 // check if we can send another dated block
-                if (NetworkConnection.GetCurrentServerTick() != serverTick)
+                if (_networkConnection.GetCurrentServerTick() != serverTick)
                 {
-                    serverTick = NetworkConnection.GetCurrentServerTick();
-                    NetworkConnection.Send(serverTick);
+                    serverTick = _networkConnection.GetCurrentServerTick();
+                    _networkConnection.Send(serverTick);
                 }
                 else
                 {
                     // Send dummy info
-                    NetworkConnection.Send();
+                    _networkConnection.Send();
                 }
 
                 // TODO: updateClientTime();
@@ -468,7 +475,7 @@ namespace RCC
                     }
 
                     // Clear sending buffer that may contain prevous QUIT_GAME when getting back to the char selection screen
-                    NetworkConnection.FlushSendBuffer();
+                    _networkConnection.FlushSendBuffer();
                 }
 
                 if (NetworkManager.ServerReceivedReady)
@@ -479,7 +486,7 @@ namespace RCC
                     playerWantToGoInGame = true;
                 }
 
-                if (NetworkConnection.ConnectionState == ConnectionState.Disconnect)
+                if (_networkConnection.ConnectionState == ConnectionState.Disconnect)
                 {
                     // Display the connection failure screen
                     if (firewallTimeout)
@@ -527,17 +534,17 @@ namespace RCC
                 NetworkManager.Update();
 
                 // Send new data Only when server tick changed.
-                if (NetworkConnection.GetCurrentServerTick() > _lastGameCycle)
+                if (_networkConnection.GetCurrentServerTick() > _lastGameCycle)
                 {
                     // Send the Packet.
-                    NetworkManager.Send(NetworkConnection.GetCurrentServerTick());
+                    NetworkManager.Send(_networkConnection.GetCurrentServerTick());
 
                     // Update the Last tick received from the server.
-                    _lastGameCycle = NetworkConnection.GetCurrentServerTick();
+                    _lastGameCycle = _networkConnection.GetCurrentServerTick();
                 }
 
                 // Get the Connection State.
-                var connectionState = NetworkConnection.ConnectionState;
+                var connectionState = _networkConnection.ConnectionState;
 
                 if (connectionState == ConnectionState.Disconnect || connectionState == ConnectionState.Quit)
                 {
@@ -585,7 +592,7 @@ namespace RCC
             try
             {
                 Thread.Sleep(500);
-                while (true /*NetworkConnection._ConnectionState == ConnectionState.Connected*/)
+                while (true /*_networkConnection._ConnectionState == ConnectionState.Connected*/)
                 {
                     var text = ConsoleIO.ReadLine();
                     InvokeOnMainThread(() => HandleCommandPromptText(text));
