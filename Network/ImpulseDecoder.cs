@@ -101,12 +101,12 @@ namespace RCC.Network
                     if (keep)
                     {
                         actions.Add(action);
-                        RyzomClient.Log?.Debug(
+                        RyzomClient.GetInstance().GetLogger()?.Debug(
                             $"CLIMPD: received new impulsion {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                     }
                     else
                     {
-                        RyzomClient.Log?.Warn(
+                        RyzomClient.GetInstance().GetLogger()?.Warn(
                             $"CLIMPD: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                         ActionFactory.Remove(action);
                     }
@@ -114,7 +114,7 @@ namespace RCC.Network
 
                 if (checkOnce)
                 {
-                    RyzomClient.Log?.Debug(
+                    RyzomClient.GetInstance().GetLogger()?.Debug(
                         $"CLIMPD: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
                 }
             }

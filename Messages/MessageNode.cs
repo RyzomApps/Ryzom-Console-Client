@@ -129,7 +129,7 @@ namespace RCC.Messages
                                     else if (numBits == 64)
                                         Format.Add(new MessageField(MessageFieldType.Sint64, numBits));
                                     else
-                                        RyzomClient.Log?.Warn(
+                                        RyzomClient.GetInstance().GetLogger()?.Warn(
                                             "Can't use sint in format with other size than 8, 16, 32 or 64");
                                 }
 
@@ -204,7 +204,7 @@ namespace RCC.Messages
                     }
                     else
                     {
-                        RyzomClient.Log?.Debug(
+                        RyzomClient.GetInstance().GetLogger()?.Debug(
                             $"Child '{child.Name}' in node '{Name}' already exists, unable to add it");
                         // delete child;
                     }
@@ -230,7 +230,7 @@ namespace RCC.Messages
 
                 if (!node.NodesByName.ContainsKey(sub))
                 {
-                    RyzomClient.Log?.Warn($"Couldn't select node '{sub}', not found in parent '{node.Name}'");
+                    RyzomClient.GetInstance().GetLogger()?.Warn($"Couldn't select node '{sub}', not found in parent '{node.Name}'");
                     return null;
                 }
 
@@ -259,13 +259,13 @@ namespace RCC.Messages
 
                 if (node.NbBits == 0)
                 {
-                    RyzomClient.Log?.Warn($"Couldn't select node '{sub}', parent '{node.Name}' has no bit per child");
+                    RyzomClient.GetInstance().GetLogger()?.Warn($"Couldn't select node '{sub}', parent '{node.Name}' has no bit per child");
                     return null;
                 }
 
                 if (!node.NodesByName.ContainsKey(sub))
                 {
-                    RyzomClient.Log?.Warn($"Couldn't select node '{sub}', not found in parent '{node.Name}'");
+                    RyzomClient.GetInstance().GetLogger()?.Warn($"Couldn't select node '{sub}', not found in parent '{node.Name}'");
                     return null;
                 }
 
@@ -297,7 +297,7 @@ namespace RCC.Messages
 
                 if (index >= node.Nodes.Count)
                 {
-                    RyzomClient.Log?.Debug(
+                    RyzomClient.GetInstance().GetLogger()?.Debug(
                         $"Couldn't select node from stream, invalid index {index} in parent '{node.Name}'");
                     return null;
                 }

@@ -33,14 +33,14 @@ namespace RCC.Commands
 
             if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                emotePhrase = "&EMT&" + Connection.PlayerSelectedHomeShardName + " " + emotePhrase;
+                emotePhrase = "&EMT&" + handler.GetNetworkManager().PlayerSelectedHomeShardName + " " + emotePhrase;
 
                 out2.Serial(ref behavToSend);
                 out2.Serial(ref emotePhrase);
                 handler.GetNetworkManager().Push(out2);
             }
             else
-                RyzomClient.Log?.Warn($"Unknown message named '{msgName}'.");
+                RyzomClient.GetInstance().GetLogger().Warn($"Unknown message named '{msgName}'.");
 
             return "";
         }

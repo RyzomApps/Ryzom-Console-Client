@@ -25,7 +25,29 @@ namespace RCC.Network
     {
         public bool ServerReceivedReady;
 
-        private NetworkConnection _networkConnection;
+        public byte PlayerSelectedSlot = 0;
+        public byte ServerPeopleActive = 255;
+        public byte ServerCareerActive = 255;
+
+        public List<CharacterSummary> CharacterSummaries = new List<CharacterSummary>();
+        public bool WaitServerAnswer;
+
+        public string PlayerSelectedHomeShardName = "";
+        public string PlayerSelectedHomeShardNameWithParenthesis = "";
+
+        public bool GameExit = false;
+
+        public bool UserChar;
+        public bool NoUserChar;
+        public bool ConnectInterf;
+        public bool CreateInterf;
+        public bool CharacterInterf;
+
+
+        // non ryzom variables (for workarounds)
+        public bool AutoSendCharSelection = false;
+
+        private readonly NetworkConnection _networkConnection;
 
         private readonly RyzomClient _handler;
 
@@ -108,7 +130,7 @@ namespace RCC.Network
 
             // TODO:  Manage changes
 
-            ChatManager.FlushBuffer(_handler);
+            ChatManager.FlushBuffer(_handler, this);
 
             // TODO: update everyting
 
@@ -580,7 +602,7 @@ namespace RCC.Network
 
             _handler.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
 
-            StringManagerClient.ReceiveString(stringId, strUtf8);
+            StringManagerClient.ReceiveString(stringId, strUtf8, this);
         }
 
         /// <summary>
@@ -588,7 +610,7 @@ namespace RCC.Network
         /// </summary>
         private void ImpulsePhraseSend(BitMemoryStream impulse)
         {
-            StringManagerClient.ReceiveDynString(impulse);
+            StringManagerClient.ReceiveDynString(impulse, this);
         }
 
         private void ImpulseCounter(BitMemoryStream impulse)
@@ -666,14 +688,12 @@ namespace RCC.Network
         /// </summary>
         private void ImpulseTeamContactInit(BitMemoryStream impulse)
         {
-            List<uint> vFriendListName;
-            List<CharConnectionState> vFriendListOnline;
-            List<string> vIgnoreListName = new List<string>();
+            var vIgnoreListName = new List<string>();
 
             var len = 0;
             impulse.Serial(ref len);
 
-            vFriendListName = new List<uint>(len);
+            var vFriendListName = new List<uint>(len);
 
             for (var i = 0; i < len; i++)
             {
@@ -685,7 +705,7 @@ namespace RCC.Network
             uint nbState = 0;
             impulse.Serial(ref nbState);
 
-            vFriendListOnline = new List<CharConnectionState>((int)nbState);
+            var vFriendListOnline = new List<CharConnectionState>((int)nbState);
 
             for (var i = 0; i < nbState; ++i)
             {
@@ -774,7 +794,7 @@ namespace RCC.Network
         private void ImpulseDynString(BitMemoryStream impulse)
         {
             //_handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
-            ChatManager.ProcessChatStringWithNoSender(impulse, ChatGroupType.System, _handler);
+            ChatManager.ProcessChatStringWithNoSender(impulse, ChatGroupType.System, _handler, this);
         }
 
         private void ImpulseChat2(BitMemoryStream impulse)
@@ -825,7 +845,7 @@ namespace RCC.Network
         private void ImpulseServerQuitOk(BitMemoryStream impulse)
         {
             _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
-            Connection.GameExit = true;
+            GameExit = true;
         }
 
         private void ImpulseShardId(BitMemoryStream impulse)
@@ -912,7 +932,7 @@ namespace RCC.Network
             //    //nldebug("<ImpulseUserChar> pos : %f %f %f  heading : %f",UserEntity->pos().x,UserEntity->pos().y,UserEntity->pos().z,posState.Heading);
             //
             //    // Update the position for the vision.
-            //    NetMngr.setReferencePosition(UserEntity->pos());
+            //    TODO NetMngr.setReferencePosition(UserEntity->pos());
             //}
             //else
             //{
@@ -945,10 +965,10 @@ namespace RCC.Network
             // received USER_CHARS
             _handler.GetLogger().Info("Received user characters");
 
-            impulse.Serial(ref Connection.ServerPeopleActive);
-            impulse.Serial(ref Connection.ServerCareerActive);
+            impulse.Serial(ref ServerPeopleActive);
+            impulse.Serial(ref ServerCareerActive);
             // read characters summary
-            Connection.CharacterSummaries.Clear();
+            CharacterSummaries.Clear();
 
             // START WORKAROUND workaround for serialVector(T &cont) in stream.h TODO
             int len = 0;
@@ -960,14 +980,14 @@ namespace RCC.Network
                 cs.Serial(impulse);
                 if ((PeopleType)cs.People != PeopleType.Unknown)
                     _handler.GetLogger().Info($"Character {cs.Name} from shard {cs.Mainland} in slot {i}");
-                Connection.CharacterSummaries.Add(cs);
+                CharacterSummaries.Add(cs);
             }
             // END WORKAROUND
 
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
             _handler.GetLogger().Debug("st_ingame->st_select_char");
-            Connection.AutoSendCharSelection = true;
+            AutoSendCharSelection = true;
 
             //// Create the message for the server to select the first character.
             //var outP = new CBitMemStream(false);

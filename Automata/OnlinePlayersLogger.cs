@@ -37,12 +37,12 @@ namespace RCC.Automata
 
         public override void Initialize()
         {
-            RyzomClient.Log.Info("Bot 'OnlinePlayersLogger' initialized.");
+            RyzomClient.GetInstance().GetLogger().Info("Bot 'OnlinePlayersLogger' initialized.");
             RegisterAutomatonCommand("list", "Lists all online players in the friend list.", "", Command);
             RegisterAutomatonCommand("importfriends", "Imports a newline separated text file of player names to the friends list.", "<filename>", Command);
             RegisterAutomatonCommand("exportfriends", "Exports a newline separated text file of player names from the friends list.", "<filename>", Command);
             if (ClientConfig.OnlinePlayersApi.Trim().Equals(string.Empty))
-                RyzomClient.Log.Info("No server for player online status updates set: Not using this feature.");
+                RyzomClient.GetInstance().GetLogger().Info("No server for player online status updates set: Not using this feature.");
         }
 
         /// <remarks>nach einer aktion jeweils abbrechen, da noch ein problem mit mehreren actions in einem action block beim senden besteht -> disco</remarks>
@@ -73,7 +73,7 @@ namespace RCC.Automata
                 if (_friendNames.ContainsValue(name))
                     return;
 
-                RyzomClient.Log.Info($"Trying to add {name} to the friend list. {_namesToAdd.Count} left.");
+                RyzomClient.GetInstance().GetLogger().Info($"Trying to add {name} to the friend list. {_namesToAdd.Count} left.");
                 new AddFriend().Run((RyzomClient)RyzomClient.GetInstance(), "addfriend " + name, null);
 
                 return;
@@ -112,7 +112,7 @@ namespace RCC.Automata
             _friendOnline[key] = online;
             var name = _friendNames[key] != string.Empty ? _friendNames[key] : $"{contactId}";
 
-            RyzomClient.Log.Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
+            RyzomClient.GetInstance().GetLogger().Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
         }
 
         public override void OnGameTeamContactInit(List<uint> vFriendListName, List<CharConnectionState> vFriendListOnline, List<string> vIgnoreListName)
@@ -127,9 +127,9 @@ namespace RCC.Automata
                 _friendNames.Add(id, /*StringManagerClient.GetString(id, out string name) ? name :*/ string.Empty);
             }
 
-            RyzomClient.Log.Info($"Initialised friend list with {vFriendListName.Count} contacts.");
+            RyzomClient.GetInstance().GetLogger().Info($"Initialised friend list with {vFriendListName.Count} contacts.");
 
-            _playerName = Entity.RemoveTitleAndShardFromName(Connection.PlayerSelectedHomeShardName).ToLower();
+            _playerName = Entity.RemoveTitleAndShardFromName(Handler.GetNetworkManager().PlayerSelectedHomeShardName).ToLower();
 
             _initialized = true;
         }
@@ -139,7 +139,7 @@ namespace RCC.Automata
             _friendOnline.Add(nameId, online);
             _friendNames.Add(nameId, StringManagerClient.GetString(nameId, out var name, Handler.GetNetworkManager()) ? Entity.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
 
-            RyzomClient.Log.Info($"Added {(_friendNames[nameId] != string.Empty ? _friendNames[nameId] : $"{nameId}")} to the friend list.");
+            RyzomClient.GetInstance().GetLogger().Info($"Added {(_friendNames[nameId] != string.Empty ? _friendNames[nameId] : $"{nameId}")} to the friend list.");
         }
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
@@ -182,7 +182,7 @@ namespace RCC.Automata
             if (name.Trim().Equals(string.Empty))
                 return;
 
-            if (name.ToLower().Equals(Entity.RemoveTitleAndShardFromName(Connection.PlayerSelectedHomeShardName).ToLower()))
+            if (name.ToLower().Equals(Entity.RemoveTitleAndShardFromName(Handler.GetNetworkManager().PlayerSelectedHomeShardName).ToLower()))
                 return;
 
             if (_friendNames.ContainsValue(name)) return;
@@ -190,7 +190,7 @@ namespace RCC.Automata
             if (name.StartsWith("~"))
                 name = name[1..];
 
-            RyzomClient.Log.Info($"{name} will be added to the friends list.");
+            RyzomClient.GetInstance().GetLogger().Info($"{name} will be added to the friends list.");
             new AddFriend().Run((RyzomClient)RyzomClient.GetInstance(), "addfriend " + name, null);
         }
 
@@ -222,7 +222,7 @@ namespace RCC.Automata
                     return ret;
 
                 case "importfriends" when args.Length != 1:
-                    RyzomClient.Log?.Error("Please specify a file for the players to import.");
+                    RyzomClient.GetInstance().GetLogger()?.Error("Please specify a file for the players to import.");
                     return "";
 
                 case "importfriends":
@@ -230,7 +230,7 @@ namespace RCC.Automata
 
                     if (!File.Exists(pathR))
                     {
-                        RyzomClient.Log?.Error("File does not exist.");
+                        RyzomClient.GetInstance().GetLogger()?.Error("File does not exist.");
                         return "";
                     }
 
@@ -245,7 +245,7 @@ namespace RCC.Automata
                     return "";
 
                 case "exportfriends" when args.Length != 1:
-                    RyzomClient.Log?.Error("Please specify a file for the players to export.");
+                    RyzomClient.GetInstance().GetLogger()?.Error("Please specify a file for the players to export.");
                     return "";
 
                 case "exportfriends":
@@ -253,7 +253,7 @@ namespace RCC.Automata
 
                     if (_friendNames.ContainsValue(string.Empty))
                     {
-                        RyzomClient.Log?.Error("There are unloaded playernames. Please wait before all names are known by the client.");
+                        RyzomClient.GetInstance().GetLogger()?.Error("There are unloaded playernames. Please wait before all names are known by the client.");
                         return "";
                     }
 
@@ -266,7 +266,7 @@ namespace RCC.Automata
 
 
                 default:
-                    RyzomClient.Log?.Warn("CommandBase unknown: " + cmd);
+                    RyzomClient.GetInstance().GetLogger()?.Warn("CommandBase unknown: " + cmd);
                     return "";
             }
         }
@@ -298,7 +298,7 @@ namespace RCC.Automata
             }
             catch (Exception e)
             {
-                RyzomClient.Log.Error("Error while posting to the players API: " + e.Message);
+                RyzomClient.GetInstance().GetLogger().Error("Error while posting to the players API: " + e.Message);
             }
         }
     }

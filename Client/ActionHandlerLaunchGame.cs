@@ -25,28 +25,28 @@ namespace RCC.Client
             // Get the player selected slot
             if (sSlot != "ingame_auto")
             {
-                Connection.PlayerSelectedSlot = (byte)int.Parse(sSlot); //result.getInteger());
-                if (Connection.PlayerSelectedSlot >= Connection.CharacterSummaries.Count)
+                networkManager.PlayerSelectedSlot = (byte)int.Parse(sSlot); //result.getInteger());
+                if (networkManager.PlayerSelectedSlot >= networkManager.CharacterSummaries.Count)
                     return;
 
-                ClientConfig.SelectCharacter = Connection.PlayerSelectedSlot;
+                ClientConfig.SelectCharacter = networkManager.PlayerSelectedSlot;
             }
 
             // Select the right sheet to create the user character.
-            ClientConfig.UserSheet = Connection.CharacterSummaries[Connection.PlayerSelectedSlot].SheetId.ToString();
+            ClientConfig.UserSheet = networkManager.CharacterSummaries[networkManager.PlayerSelectedSlot].SheetId.ToString();
 
             // Send CONNECTION:SELECT_CHAR
             var out2 = new BitMemoryStream(false, 2);
             networkManager.GetMessageHeaderManager().PushNameToStream("CONNECTION:SELECT_CHAR", out2);
 
-            var c = Connection.PlayerSelectedSlot;
+            var c = networkManager.PlayerSelectedSlot;
             out2.Serial(ref c);
             networkManager.Push(out2);
 
-            RyzomClient.Log?.Info("impulseCallBack : CONNECTION:SELECT_CHAR '" + Connection.PlayerSelectedSlot +
+            RyzomClient.GetInstance().GetLogger().Info("impulseCallBack : CONNECTION:SELECT_CHAR '" + networkManager.PlayerSelectedSlot +
                                   "' sent.");
 
-            Connection.WaitServerAnswer = true;
+            networkManager.WaitServerAnswer = true;
         }
     }
 }

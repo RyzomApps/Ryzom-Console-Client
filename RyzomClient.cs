@@ -12,7 +12,6 @@ using RCC.Client;
 using RCC.Config;
 using RCC.Helper;
 using RCC.Logger;
-using RCC.Messages;
 using RCC.Network;
 using System;
 using System.Collections.Generic;
@@ -32,15 +31,15 @@ namespace RCC
     {
         private static RyzomClient _instance;
         private readonly NetworkConnection _networkConnection;
-        private NetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
 
         private static Thread _clientThread;
         private Thread _cmdprompt;
         private Thread _timeoutdetector;
 
-        private static readonly List<string> CmdNames = new List<string>();
-        private static readonly Dictionary<string, CommandBase> Cmds = new Dictionary<string, CommandBase>();
-        private static bool _commandsLoaded;
+        private readonly List<string> _cmdNames = new List<string>();
+        private readonly Dictionary<string, CommandBase> _cmds = new Dictionary<string, CommandBase>();
+        private bool _commandsLoaded;
 
         private readonly Queue<KeyValuePair<ChatGroupType, string>> _chatQueue = new Queue<KeyValuePair<ChatGroupType, string>>();
 
@@ -52,13 +51,13 @@ namespace RCC
         /// </summary>
         private long _lastClientUpdate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
-        private static bool _firstConnection = true;
-        private static DateTime _nextMessageSendTime = DateTime.MinValue;
+        private bool _firstConnection = true;
+        private DateTime _nextMessageSendTime = DateTime.MinValue;
         private ChatGroupType _channel = ChatGroupType.Around;
-        private static uint _lastGameCycle;
+        private uint _lastGameCycle;
         public bool UserCharPosReceived = false;
 
-        public static ILogger Log;
+        public ILogger Log;
 
         /// <summary>
         /// Automata class that holds the loaded automatons from the Automata directory
@@ -89,6 +88,7 @@ namespace RCC
         public bool IsInGame() => _networkConnection.ConnectionState == ConnectionState.Connected;
 
         public NetworkConnection GetNetworkConnection() { return _networkConnection; }
+
         public NetworkManager GetNetworkManager() { return _networkManager; }
 
         #region Initialisation
@@ -138,10 +138,10 @@ namespace RCC
 
         #region IChatDisplayer
         /// <summary>
-        /// Returns the client as chat displayer instance (singleton pattern)
+        /// Returns the client instance (singleton pattern)
         /// </summary>
         /// <returns></returns>
-        internal static IChatDisplayer GetInstance()
+        internal static RyzomClient GetInstance()
         {
             return _instance;
         }
@@ -331,15 +331,15 @@ namespace RCC
         /// </summary>
         private bool Connection(string cookie, string fsaddr)
         {
-            Network.Connection.GameExit = false;
+            _networkManager.GameExit = false;
 
             // Init global variables
-            Network.Connection.UserChar = false;
-            Network.Connection.NoUserChar = false;
-            Network.Connection.ConnectInterf = true;
-            Network.Connection.CreateInterf = true;
-            Network.Connection.CharacterInterf = true;
-            Network.Connection.WaitServerAnswer = false;
+            _networkManager.UserChar = false;
+            _networkManager.NoUserChar = false;
+            _networkManager.ConnectInterf = true;
+            _networkManager.CreateInterf = true;
+            _networkManager.CharacterInterf = true;
+            _networkManager.WaitServerAnswer = false;
 
             // Start the finite state machine
             var interfaceState = InterfaceState.AutoLogin;
@@ -400,7 +400,7 @@ namespace RCC
                 StringManagerClient.InitCache(fsaddr, ClientConfig.LanguageCode);
             }
 
-            Network.Connection.WaitServerAnswer = true;
+            _networkManager.WaitServerAnswer = true;
 
             return InterfaceState.GlobalMenu;
         }
@@ -452,27 +452,27 @@ namespace RCC
                 // TODO: IngameDbMngr.flushObserverCalls();
 
                 // SERVER INTERACTIONS WITH INTERFACE
-                if (Network.Connection.WaitServerAnswer)
+                if (_networkManager.WaitServerAnswer)
                 {
                     // Should we send the char selection without any user interaction?
-                    if (Network.Connection.AutoSendCharSelection)
+                    if (_networkManager.AutoSendCharSelection)
                     {
                         var charSelect = -1;
 
                         if (ClientConfig.SelectCharacter != -1)
                             charSelect = ClientConfig.SelectCharacter;
 
-                        Network.Connection.WaitServerAnswer = false;
+                        _networkManager.WaitServerAnswer = false;
 
                         // check that the pre selected character is available
-                        if (Network.Connection.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown || charSelect > 4)
+                        if (_networkManager.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown || charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
                             throw new InvalidOperationException("preselected char does not exist");
                         }
 
                         // Auto-selection for fast launching (dev only)
-                        Network.Connection.AutoSendCharSelection = false;
+                        _networkManager.AutoSendCharSelection = false;
                         ActionHandlerLaunchGame.Execute(charSelect.ToString(), _networkManager);
                     }
 
@@ -484,7 +484,7 @@ namespace RCC
                 {
                     //nlinfo("impulseCallBack : received serverReceivedReady");
                     _networkManager.ServerReceivedReady = false;
-                    Network.Connection.WaitServerAnswer = false;
+                    _networkManager.WaitServerAnswer = false;
                     playerWantToGoInGame = true;
                 }
 
@@ -498,16 +498,16 @@ namespace RCC
                     }
                 }
 
-                if (Network.Connection.GameExit)
+                if (_networkManager.GameExit)
                     return InterfaceState.QuitTheGame;
             }
 
             //  Init the current Player Name
-            var playerName = Network.Connection.CharacterSummaries[Network.Connection.PlayerSelectedSlot].Name;
+            var playerName = _networkManager.CharacterSummaries[_networkManager.PlayerSelectedSlot].Name;
 
             // Init the current Player name
-            Network.Connection.PlayerSelectedHomeShardName = playerName;
-            Network.Connection.PlayerSelectedHomeShardNameWithParenthesis = '(' + playerName + ')';
+            _networkManager.PlayerSelectedHomeShardName = playerName;
+            _networkManager.PlayerSelectedHomeShardNameWithParenthesis = '(' + playerName + ')';
 
             return InterfaceState.GoInTheGame;
         }
@@ -520,7 +520,7 @@ namespace RCC
             Log?.Debug("mainLoop");
 
             // Main loop. If the window is no more Active -> Exit.
-            while (!Network.Connection.GameExit)
+            while (!_networkManager.GameExit)
             {
                 // Do not eat up all the processor
                 Thread.Sleep(10);
@@ -550,7 +550,7 @@ namespace RCC
 
                 if (connectionState == ConnectionState.Disconnect || connectionState == ConnectionState.Quit)
                 {
-                    Network.Connection.GameExit = true;
+                    _networkManager.GameExit = true;
                     break;
                 }
 
@@ -712,10 +712,10 @@ namespace RCC
 
                     if (cmd != null)
                     {
-                        Cmds[cmd.CmdName.ToLower()] = cmd;
-                        CmdNames.Add(cmd.CmdName.ToLower());
+                        _cmds[cmd.CmdName.ToLower()] = cmd;
+                        _cmdNames.Add(cmd.CmdName.ToLower());
                         foreach (var alias in cmd.getCMDAliases())
-                            Cmds[alias.ToLower()] = cmd;
+                            _cmds[alias.ToLower()] = cmd;
                     }
                 }
                 catch (Exception e)
@@ -804,14 +804,14 @@ namespace RCC
         /// <returns>True if successfully registered</returns>
         public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, AutomatonBase.CommandRunner callback)
         {
-            if (Cmds.ContainsKey(cmdName.ToLower()))
+            if (_cmds.ContainsKey(cmdName.ToLower()))
             {
                 return false;
             }
 
             CommandBase cmd = new AutomatonCommand(cmdName, cmdDesc, cmdUsage, callback);
-            Cmds.Add(cmdName.ToLower(), cmd);
-            CmdNames.Add(cmdName.ToLower());
+            _cmds.Add(cmdName.ToLower(), cmd);
+            _cmdNames.Add(cmdName.ToLower());
             return true;
         }
 
@@ -826,10 +826,10 @@ namespace RCC
         /// <returns></returns>
         public bool UnregisterCommand(string cmdName)
         {
-            if (!Cmds.ContainsKey(cmdName.ToLower())) return false;
+            if (!_cmds.ContainsKey(cmdName.ToLower())) return false;
 
-            Cmds.Remove(cmdName.ToLower());
-            CmdNames.Remove(cmdName.ToLower());
+            _cmds.Remove(cmdName.ToLower());
+            _cmdNames.Remove(cmdName.ToLower());
             return true;
         }
 
@@ -858,19 +858,19 @@ namespace RCC
                     {
                         responseMsg = "help <cmdname>: show brief help about a command.";
                     }
-                    else if (Cmds.ContainsKey(helpCmdname))
+                    else if (_cmds.ContainsKey(helpCmdname))
                     {
-                        responseMsg = Cmds[helpCmdname].GetCmdDescTranslated();
+                        responseMsg = _cmds[helpCmdname].GetCmdDescTranslated();
                     }
                     else responseMsg = $"Unknown command '{commandName}'. Use 'help' for command list.";
                 }
                 else
                     responseMsg =
-                        $"help <cmdname>. Available commands: {string.Join(", ", CmdNames.ToArray())}. For server help, use '{ClientConfig.InternalCmdChar}send /help' instead.";
+                        $"help <cmdname>. Available commands: {string.Join(", ", _cmdNames.ToArray())}. For server help, use '{ClientConfig.InternalCmdChar}send /help' instead.";
             }
-            else if (Cmds.ContainsKey(commandName))
+            else if (_cmds.ContainsKey(commandName))
             {
-                responseMsg = Cmds[commandName].Run(this, command, localVars);
+                responseMsg = _cmds[commandName].Run(this, command, localVars);
 
                 Automata.OnInternalCommand(commandName, command, responseMsg);
             }

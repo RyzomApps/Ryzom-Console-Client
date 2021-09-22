@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using RCC.Messages;
 using RCC.Network;
 using static RCC.Client.DynamicStringInfo;
 
@@ -83,7 +82,7 @@ namespace RCC.Client
             {
                 _cacheFilename = "save/" + _shardId.Split(":")[0] + ".string_cache";
 
-                RyzomClient.Log.Info($"SM : Try to open the string cache : {_cacheFilename}");
+                RyzomClient.GetInstance().GetLogger().Info($"SM : Try to open the string cache : {_cacheFilename}");
 
                 if (File.Exists(_cacheFilename))
                 {
@@ -99,7 +98,7 @@ namespace RCC.Client
 
                     if (_timestamp != timestamp)
                     {
-                        RyzomClient.Log.Info("SM: Clearing string cache : outofdate");
+                        RyzomClient.GetInstance().GetLogger().Info("SM: Clearing string cache : outofdate");
 
                         // the cache is not sync, reset it TODO this is not working correctly
                         using var fileStream = new FileStream(_cacheFilename, FileMode.Create);
@@ -110,12 +109,12 @@ namespace RCC.Client
                     }
                     else
                     {
-                        RyzomClient.Log.Info("SM : string cache in sync. cool");
+                        RyzomClient.GetInstance().GetLogger().Info("SM : string cache in sync. cool");
                     }
                 }
                 else
                 {
-                    RyzomClient.Log.Info("SM: Creating string cache");
+                    RyzomClient.GetInstance().GetLogger().Info("SM: Creating string cache");
 
                     // cache file don't exist, create it with the timestamp
                     using var fileStream = new FileStream(_cacheFilename, FileMode.Create);
@@ -162,7 +161,7 @@ namespace RCC.Client
                     var id = BitConverter.ToUInt32(idBytes);
                     var str = Encoding.UTF8.GetString(strBytes).Replace("\0", "");
 
-                    //RyzomClient.Log.Debug($"SM : loading string [{id}] as [{str}] in cache");
+                    //RyzomClient.GetInstance().GetLogger().Debug($"SM : loading string [{id}] as [{str}] in cache");
 
                     if (!ReceivedStrings.ContainsKey(id))
                         ReceivedStrings.Add(id, str);
@@ -172,8 +171,8 @@ namespace RCC.Client
             }
             catch (Exception e)
             {
-                RyzomClient.Log.Warn($"SM : loadCache failed, exception : {e.GetType().Name} {e.Message}");
-                RyzomClient.Log.Warn("SM : cache deactivated");
+                RyzomClient.GetInstance().GetLogger().Warn($"SM : loadCache failed, exception : {e.GetType().Name} {e.Message}");
+                RyzomClient.GetInstance().GetLogger().Warn("SM : cache deactivated");
 
                 // deactivated cache.
                 _cacheFilename = "";
@@ -211,7 +210,7 @@ namespace RCC.Client
         /// <summary>
         ///     extract the dynamic string from the stream and check if it is complete
         /// </summary>
-        public static void ReceiveDynString(BitMemoryStream bms)
+        public static void ReceiveDynString(BitMemoryStream bms, NetworkManager _networkManager)
         {
             var dynInfo = new DynamicStringInfo {Status = TStatus.Received};
 
@@ -226,11 +225,11 @@ namespace RCC.Client
 
             // try to build the string
             dynInfo.Message = bms;
-            BuildDynString(dynInfo);
+            BuildDynString(dynInfo, _networkManager);
 
             if (dynInfo.Status == TStatus.Complete)
             {
-                RyzomClient.Log?.Debug($"DynString {dynId} available : [{dynInfo.String}]");
+                RyzomClient.GetInstance().GetLogger()?.Debug($"DynString {dynId} available : [{dynInfo.String}]");
 
                 if (ReceivedDynStrings.ContainsKey(dynId))
                     ReceivedDynStrings[dynId] = dynInfo;
@@ -261,7 +260,7 @@ namespace RCC.Client
         /// <summary>
         ///     assemble the dynamic string from DynamicStringInfo
         /// </summary>
-        private static bool BuildDynString(DynamicStringInfo dynInfo)
+        private static bool BuildDynString(DynamicStringInfo dynInfo, NetworkManager _networkManager)
         {
             if (dynInfo.Status == TStatus.Received)
             {
@@ -359,7 +358,7 @@ namespace RCC.Client
                                     break;
 
                                 default:
-                                    RyzomClient.Log.Warn("Error: unknown replacement tag %%%c", (char) character);
+                                    RyzomClient.GetInstance().GetLogger().Warn("Error: unknown replacement tag %%%c", (char) character);
                                     return false;
                             }
 
@@ -396,20 +395,20 @@ namespace RCC.Client
                             }
 
                             // If the string is a player name, we may have to remove the shard name (if the string looks like a player name)
-                            if (str.Length != 0 && Connection.PlayerSelectedHomeShardNameWithParenthesis.Length > 0)
+                            if (str.Length != 0 && _networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length > 0)
                             {
                                 // fast pre-test
                                 if (str[^1] == ')')
                                 {
                                     // the player name must be at least bigger than the string with ()
-                                    if (str.Length > Connection.PlayerSelectedHomeShardNameWithParenthesis.Length)
+                                    if (str.Length > _networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length)
                                     {
                                         // If the shard name is the same as the player home shard name, remove it
-                                        uint len = (uint) Connection.PlayerSelectedHomeShardNameWithParenthesis.Length;
+                                        uint len = (uint) _networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length;
                                         uint start = (uint) str.Length - len;
 
                                         // TODO remove the shard from player name
-                                        //if (ucstrnicmp(str, start, len, Connection.PlayerSelectedHomeShardNameWithParenthesis) == 0)
+                                        //if (ucstrnicmp(str, start, len, _networkManager.PlayerSelectedHomeShardNameWithParenthesis) == 0)
                                         //	str.resize(start);
                                     }
                                 }
@@ -502,7 +501,7 @@ namespace RCC.Client
 
                         case ParamType.DynStringID:
                         {
-                            if (!GetDynString(param.DynStringId, out string dynStr))
+                            if (!GetDynString(param.DynStringId, out string dynStr, _networkManager))
                                 return false;
                             //temp.append(move, src + param.ReplacementPoint);
                             //temp += dynStr;
@@ -516,7 +515,7 @@ namespace RCC.Client
                             break;
 
                         default:
-                            RyzomClient.Log.Warn("Unknown parameter type.");
+                            RyzomClient.GetInstance().GetLogger().Warn("Unknown parameter type.");
                             break;
                     }
                 }
@@ -552,11 +551,11 @@ namespace RCC.Client
             if (dynInfo.Status == TStatus.Complete)
                 return true;
 
-            RyzomClient.Log?.Warn($"Inconsistent dyn string status : {dynInfo.Status}");
+            RyzomClient.GetInstance().GetLogger()?.Warn($"Inconsistent dyn string status : {dynInfo.Status}");
             return false;
         }
 
-        public static bool GetDynString(uint dynStringId, out string result)
+        public static bool GetDynString(uint dynStringId, out string result, NetworkManager _networkManager)
         {
             result = "";
 
@@ -571,7 +570,7 @@ namespace RCC.Client
                 // security/antiloop checking
                 if (WaitingDynStrings.ContainsKey(dynStringId))
                 {
-                    RyzomClient.Log?.Warn(
+                    RyzomClient.GetInstance().GetLogger()?.Warn(
                         $"CStringManager::getDynString : the string {dynStringId} is received but still in _WaintingDynStrings !");
                     WaitingDynStrings.Remove(dynStringId);
                 }
@@ -587,7 +586,7 @@ namespace RCC.Client
                     return false;
                 }
 
-                if (BuildDynString(WaitingDynStrings[dynStringId]))
+                if (BuildDynString(WaitingDynStrings[dynStringId], _networkManager))
                 {
                     result = WaitingDynStrings[dynStringId].String;
                     ReceivedDynStrings.Add(dynStringId, WaitingDynStrings[dynStringId]);
@@ -627,12 +626,12 @@ namespace RCC.Client
                     {
                         bms.Serial(ref stringId);
                         networkManager.Push(bms);
-                        RyzomClient.Log?.Debug(
+                        RyzomClient.GetInstance().GetLogger()?.Debug(
                             $"<CStringManagerClient.getString> sending 'STRING_MANAGER:STRING_RQ' message to server for stringId {stringId}");
                     }
                     else
                     {
-                        RyzomClient.Log?.Warn(
+                        RyzomClient.GetInstance().GetLogger()?.Warn(
                             "<CStringManagerClient.getString> unknown message name 'STRING_MANAGER:STRING_RQ'");
                     }
                 }
@@ -655,7 +654,7 @@ namespace RCC.Client
             return true;
         }
 
-        internal static void ReceiveString(uint stringId, string str)
+        internal static void ReceiveString(uint stringId, string str, NetworkManager _networkManager)
         {
             //H_AUTO(CStringManagerClient_receiveString)
 
@@ -668,7 +667,7 @@ namespace RCC.Client
 
             if (ReceivedStrings.ContainsKey(stringId))
             {
-                RyzomClient.Log.Warn(
+                RyzomClient.GetInstance().GetLogger().Warn(
                     $"Receiving stringID {stringId} ({str}), already in received string ({ReceivedStrings[stringId]}), replacing with new value.");
 
                 if (ReceivedStrings[stringId] != str)
@@ -717,11 +716,11 @@ namespace RCC.Client
                 foreach (var dynString in WaitingDynStrings)
                 {
                     /// Warning: if getDynString() return true, 'first' is erased => don't use it after in this loop
-                    if (GetDynString(dynString.Key, out string value))
+                    if (GetDynString(dynString.Key, out string value, _networkManager))
                     {
                         var number = dynString.Key;
 
-                        RyzomClient.Log.Info($"DynString {number} available : [{value}]");
+                        RyzomClient.GetInstance().GetLogger().Info($"DynString {number} available : [{value}]");
 
                         // this dyn string is now complete !
                         // update the waiting dyn strings

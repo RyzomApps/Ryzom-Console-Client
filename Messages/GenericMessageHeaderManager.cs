@@ -31,14 +31,14 @@ namespace RCC.Messages
             }
             catch
             {
-                RyzomClient.Log?.Warn($"Cannot open xml file '{filename}', unable to initialize generic messages");
+                RyzomClient.GetInstance().GetLogger()?.Warn($"Cannot open xml file '{filename}', unable to initialize generic messages");
                 return;
             }
 
             // create root node from root xml node
             Root = new MessageNode(file.DocumentElement, 0);
 
-            RyzomClient.Log?.Info($"Loaded {Root.Nodes.Count} server messages nodes.");
+            RyzomClient.GetInstance().GetLogger()?.Info($"Loaded {Root.Nodes.Count} server messages nodes.");
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace RCC.Messages
             // check root
             if (Root == null)
             {
-                RyzomClient.Log?.Warn($"Can't set callback for message '{msgName}', Root not properly initialized.");
+                RyzomClient.GetInstance().GetLogger()?.Warn($"Can't set callback for message '{msgName}', Root not properly initialized.");
                 return false;
             }
 
@@ -59,7 +59,7 @@ namespace RCC.Messages
             // check node
             if (node == null)
             {
-                RyzomClient.Log?.Warn($"Can't set callback for message '{msgName}', message not found.");
+                RyzomClient.GetInstance().GetLogger()?.Warn($"Can't set callback for message '{msgName}', message not found.");
                 return false;
             }
 
@@ -77,7 +77,7 @@ namespace RCC.Messages
             // check root
             if (Root == null)
             {
-                RyzomClient.Log?.Warn("Can't execute message , Root not properly initialized.");
+                RyzomClient.GetInstance().GetLogger()?.Warn("Can't execute message , Root not properly initialized.");
                 return;
             }
 
@@ -86,12 +86,12 @@ namespace RCC.Messages
             // check node
             if (node == null)
             {
-                RyzomClient.Log?.Warn("Can't execute stream, no valid sequence found");
+                RyzomClient.GetInstance().GetLogger()?.Warn("Can't execute stream, no valid sequence found");
             }
             // check callback
             else if (node.Callback == null)
             {
-                RyzomClient.Log?.Warn($"Can't execute msg '{node.Name}', no callback set");
+                RyzomClient.GetInstance().GetLogger()?.Warn($"Can't execute msg '{node.Name}', no callback set");
             }
             // execute callback
             else
@@ -109,7 +109,7 @@ namespace RCC.Messages
 
             if (!res)
             {
-                RyzomClient.Log?.Warn($"pushNameToStream failed: Unknown message name '{msgName}'");
+                RyzomClient.GetInstance().GetLogger()?.Warn($"pushNameToStream failed: Unknown message name '{msgName}'");
             }
 
             return res;

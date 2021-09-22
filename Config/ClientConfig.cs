@@ -228,7 +228,7 @@ namespace RCC.Config
                     return true;
 
                 default:
-                    RyzomClient.Log?.Warn($"Could not parse setting {argName} with value '{argValue}'.");
+                    RyzomClient.GetInstance().GetLogger().Warn($"Could not parse setting {argName} with value '{argValue}'.");
                     return false;
             }
         }

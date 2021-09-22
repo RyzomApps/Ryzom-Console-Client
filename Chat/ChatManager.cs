@@ -43,7 +43,7 @@ namespace RCC.Chat
             if (!complete)
             {
                 _ChatBuffer.Add(new ChatMsgNode(chatMsg, true));
-                RyzomClient.Log.Debug("<impulseTell> Received TELL, put in buffer : waiting association");
+                RyzomClient.GetInstance().GetLogger().Debug("<impulseTell> Received TELL, put in buffer : waiting association");
                 return;
             }
 
@@ -96,7 +96,7 @@ namespace RCC.Chat
         }
 
         internal static void ProcessChatStringWithNoSender(BitMemoryStream bms, ChatGroupType type,
-            IChatDisplayer chatDisplayer)
+            IChatDisplayer chatDisplayer, NetworkManager _networkManager)
         {
             Debug.Assert(type != ChatGroupType.DynChat);
 
@@ -111,7 +111,7 @@ namespace RCC.Chat
             chatMsg.PhraseId = phraseID;
 
             // if !complete, wait
-            bool complete = StringManagerClient.GetDynString(chatMsg.PhraseId, out string ucstr);
+            bool complete = StringManagerClient.GetDynString(chatMsg.PhraseId, out string ucstr, _networkManager);
 
             if (!complete)
             {
@@ -125,7 +125,7 @@ namespace RCC.Chat
             chatDisplayer.DisplayChat(InvalidDatasetIndex, ucstr, ucstr, type, 0, senderName);
         }
 
-        internal static void FlushBuffer(IChatDisplayer chatDisplayer)
+        internal static void FlushBuffer(IChatDisplayer chatDisplayer, NetworkManager _networkManager)
         {
             // before displaying anything, must ensure dynamic channels are up to date
             //updateDynamicChatChannels(chatDisplayer); TODO
@@ -147,7 +147,7 @@ namespace RCC.Chat
                 if (itMsg.SenderNameId != 0)
                     complete &= StringManagerClient.GetString(itMsg.SenderNameId, out sender, ((RyzomClient)RyzomClient.GetInstance()).GetNetworkManager());
                 if (itMsg.UsePhraseId)
-                    complete &= StringManagerClient.GetDynString(itMsg.PhraseId, out content);
+                    complete &= StringManagerClient.GetDynString(itMsg.PhraseId, out content, _networkManager);
                 else
                     content = itMsg.Content;
 

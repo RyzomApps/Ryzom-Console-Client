@@ -55,7 +55,7 @@ namespace RCC.Network.Action
 
                 if (action == null)
                 {
-                    RyzomClient.Log?.Warn($"Unpacking an action with unknown code, skip it ({code})");
+                    RyzomClient.GetInstance().GetLogger().Warn($"Unpacking an action with unknown code, skip it ({code})");
                 }
                 else
                 {
@@ -73,7 +73,7 @@ namespace RCC.Network.Action
         {
             if (!RegisteredAction.ContainsKey(code))
             {
-                RyzomClient.Log?.Warn($"CActionFactory::create() try to create an unknown action ({code})");
+                RyzomClient.GetInstance().GetLogger().Warn($"CActionFactory::create() try to create an unknown action ({code})");
                 return null;
             }
 
@@ -132,7 +132,7 @@ namespace RCC.Network.Action
                 headerBitSize = 1 + 2;
             else
             {
-                RyzomClient.Log?.Warn($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
+                RyzomClient.GetInstance().GetLogger().Warn($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
                 // TODO: fix that (sizeof(()action.Code) * 8) <- bdh: whats that about?
                 headerBitSize = 1 + /*(sizeof(()action.Code) * 8)*/ 8;
             }
@@ -147,19 +147,19 @@ namespace RCC.Network.Action
         {
             if (!typeof(Action).IsAssignableFrom(creator))
             {
-                RyzomClient.Log?.Warn($"Action is not assignable from creator {creator}");
+                RyzomClient.GetInstance().GetLogger().Warn($"Action is not assignable from creator {creator}");
                 return;
             }
 
             if ((int) code >= 256)
             {
-                RyzomClient.Log?.Warn($"Cannot register action code {code} because it exceeds 255");
+                RyzomClient.GetInstance().GetLogger().Warn($"Cannot register action code {code} because it exceeds 255");
                 return;
             }
 
             if (RegisteredAction.ContainsKey(code))
             {
-                RyzomClient.Log?.Warn($"The code {code} already registered in the CActionFactory");
+                RyzomClient.GetInstance().GetLogger().Warn($"The code {code} already registered in the CActionFactory");
             }
             else
             {
