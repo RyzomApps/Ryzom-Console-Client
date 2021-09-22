@@ -49,7 +49,7 @@ namespace RCC.Network
             get
             {
                 if (IsReading())
-                    return (int) (_contentBits.Length / 8d);
+                    return (int) (_contentBits.Length / 8d); // (_contentBits.Length - 1) / 8 + 1;
 
                 return (int) ((_bitPos - 1) / 8d) + 1;
             }
@@ -233,6 +233,9 @@ namespace RCC.Network
             }
             else
             {
+                if (_bitPos >= _contentBits.Length)
+                    Array.Resize(ref _contentBits, _contentBits.Length + 8); // we need a whole byte
+
                 // direct write
                 _contentBits[_bitPos] = obj;
                 _bitPos++;
@@ -360,7 +363,7 @@ namespace RCC.Network
             {
                 if (_bitPos >= _contentBits.Length)
                 {
-                    Array.Resize<bool>(ref _contentBits, _contentBits.Length + 8);
+                    Array.Resize(ref _contentBits, _contentBits.Length + 8);
                 }
 
                 _contentBits[_bitPos] = newBits[newBits.Count - index - 1];

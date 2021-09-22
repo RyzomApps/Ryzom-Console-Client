@@ -257,7 +257,7 @@ namespace RCC.Client
                 }
             }
             else
-                WaitingDynStrings.Add(dynId, dynInfo);
+                if(!WaitingDynStrings.ContainsKey(dynId)) WaitingDynStrings.Add(dynId, dynInfo);
 
             // Fire an Event
             _client.Automata.OnPhraseSend(dynInfo);

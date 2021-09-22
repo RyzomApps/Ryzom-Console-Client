@@ -142,6 +142,10 @@ namespace RCC
 
             Startupargs = args;
             InitializeClient();
+
+#if DEBUG
+            Console.ReadKey();
+#endif
         }
 
         /// <summary>
