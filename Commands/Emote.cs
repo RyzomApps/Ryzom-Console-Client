@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RCC.Client;
 using RCC.Commands.Internal;
 using RCC.Messages;
 using RCC.Network;
@@ -33,7 +34,7 @@ namespace RCC.Commands
 
             if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                emotePhrase = "&EMT&" + handler.GetNetworkManager().PlayerSelectedHomeShardName + " " + emotePhrase;
+                emotePhrase = $"&EMT&{Entity.RemoveTitleAndShardFromName(handler.GetNetworkManager().PlayerSelectedHomeShardName)} {emotePhrase}";
 
                 out2.Serial(ref behavToSend);
                 out2.Serial(ref emotePhrase);
@@ -47,7 +48,7 @@ namespace RCC.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new string[] { "emote" };
+            return new[] { "emote" };
         }
     }
 }

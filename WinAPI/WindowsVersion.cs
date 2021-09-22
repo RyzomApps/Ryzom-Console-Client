@@ -29,24 +29,21 @@ namespace RCC.WinAPI
         {
             get
             {
-                dynamic major;
                 // The 'CurrentMajorVersionNumber' string value in the CurrentVersion key is new for Windows 10, 
                 // and will most likely (hopefully) be there for some time before MS decides to change this - again...
                 if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMajorVersionNumber",
-                    out major))
+                    out var major))
                 {
                     return (uint) major;
                 }
 
                 // When the 'CurrentMajorVersionNumber' value is not present we fallback to reading the previous key used for this: 'CurrentVersion'
-                dynamic version;
-                if (!TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentVersion", out version))
+                if (!TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentVersion", out var version))
                     return 0;
 
                 var versionParts = ((string) version).Split('.');
                 if (versionParts.Length != 2) return 0;
-                uint majorAsUInt;
-                return uint.TryParse(versionParts[0], out majorAsUInt) ? majorAsUInt : 0;
+                return uint.TryParse(versionParts[0], out var majorAsUInt) ? majorAsUInt : 0;
             }
         }
 
@@ -57,24 +54,21 @@ namespace RCC.WinAPI
         {
             get
             {
-                dynamic minor;
                 // The 'CurrentMinorVersionNumber' string value in the CurrentVersion key is new for Windows 10, 
                 // and will most likely (hopefully) be there for some time before MS decides to change this - again...
                 if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMinorVersionNumber",
-                    out minor))
+                    out var minor))
                 {
                     return (uint) minor;
                 }
 
                 // When the 'CurrentMinorVersionNumber' value is not present we fallback to reading the previous key used for this: 'CurrentVersion'
-                dynamic version;
-                if (!TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentVersion", out version))
+                if (!TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentVersion", out var version))
                     return 0;
 
                 var versionParts = ((string) version).Split('.');
                 if (versionParts.Length != 2) return 0;
-                uint minorAsUInt;
-                return uint.TryParse(versionParts[1], out minorAsUInt) ? minorAsUInt : 0;
+                return uint.TryParse(versionParts[1], out var minorAsUInt) ? minorAsUInt : 0;
             }
         }
 

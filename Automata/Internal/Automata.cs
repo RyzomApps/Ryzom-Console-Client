@@ -60,7 +60,7 @@ namespace RCC.Automata.Internal
             _automata.Add(b);
 
             if (init)
-                DispatchAutomatonEvent(automaton => automaton.Initialize(), new[] { b });
+                DispatchAutomatonEvent(automaton => automaton.OnInitialize(), new[] { b });
             if (_handler.IsInGame())
                 DispatchAutomatonEvent(automaton => automaton.OnGameJoined(), new[] { b });
         }
@@ -161,14 +161,14 @@ namespace RCC.Automata.Internal
             {
                 try
                 {
-                    automaton.Update();
+                    automaton.OnUpdate();
                     automaton.UpdateInternal();
                 }
                 catch (Exception e)
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        _handler.GetLogger().Warn($"Update: Got error from {automaton}: {e}");
+                        _handler.GetLogger().Warn($"OnUpdate: Got error from {automaton}: {e}");
                     }
                     else throw; //ThreadAbortException should not be caught
                 }

@@ -83,7 +83,7 @@ namespace RCC.Network
             {
                 while (_networkConnection.LastSentCycle >= gameCycle)
                 {
-                    // Update network.
+                    // OnUpdate network.
                     Update();
 
                     // Send dummy info
@@ -115,7 +115,7 @@ namespace RCC.Network
         /// <returns>'true' if data were sent/received.</returns>
         public bool Update()
         {
-            // Update the base class.
+            // OnUpdate the base class.
             _networkConnection.Update();
 
             // TODO:  Get and manage changes with the netmgr update
@@ -449,11 +449,11 @@ namespace RCC.Network
         {
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            int x = 0;
-            int y = 0;
+            short x = 0;
+            short y = 0;
 
-            //impulse.Serial(ref x);
-            //impulse.Serial(ref y);
+            impulse.Serial(ref x);
+            impulse.Serial(ref y);
 
             _client.Automata.OnDeathRespawnPoint(x, y);
         }
@@ -632,7 +632,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Update the local string set
+        ///     OnUpdate the local string set
         /// </summary>
         private void ImpulseStringResp(BitMemoryStream impulse)
         {
@@ -780,7 +780,7 @@ namespace RCC.Network
 
         private void ImpulseTeamInvitation(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} -> AutoJoin");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             uint textID = uint.MinValue;
             impulse.Serial(ref textID);
@@ -835,6 +835,8 @@ namespace RCC.Network
 
         private void ImpulseDynString(BitMemoryStream impulse)
         {
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
             _chatManager.ProcessChatStringWithNoSender(impulse, ChatGroupType.System, _client);
         }
 
@@ -871,7 +873,9 @@ namespace RCC.Network
 
         private void ImpulsePermanentBan(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"§cImpulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            // WHAAAAAAAAAAAAAAAAAAAAAAAAAAA!!!
         }
 
         private void ImpulseForumNotification(BitMemoryStream impulse)
@@ -993,7 +997,7 @@ namespace RCC.Network
             //    UserControls.resetCameraDeltaYaw();
             //    //nldebug("<ImpulseUserChar> pos : %f %f %f  heading : %f",UserEntity->pos().x,UserEntity->pos().y,UserEntity->pos().z,posState.Heading);
             //
-            //    // Update the position for the vision.
+            //    // OnUpdate the position for the vision.
             //    TODO NetMngr.setReferencePosition(UserEntity->pos());
             //}
             //else
@@ -1003,7 +1007,7 @@ namespace RCC.Network
 
             _client.GetLogger().Info($"Received Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
 
-            // Update the position for the vision.
+            // OnUpdate the position for the vision.
             //NetworkManager.setReferencePosition(UserEntityInitPos);
             //}
 
@@ -1088,17 +1092,24 @@ namespace RCC.Network
         {
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            // get the egs tick of this change
             uint serverTick = 0;
-            impulse.Serial(ref serverTick);
-
-            // decode bank
             uint bank = 0;
-            const int nbits = FillNbitsWithNbBitsForCdbbank;
 
-            impulse.Serial(ref bank, nbits);
+            try
+            {
+                // get the egs tick of this change
+                impulse.Serial(ref serverTick);
 
-            _client.Automata.OnDatabaseInitBank(serverTick, bank);
+                // decode bank
+                const int nbits = FillNbitsWithNbBitsForCdbbank;
+                impulse.Serial(ref bank, nbits);
+
+                _client.Automata.OnDatabaseInitBank(serverTick, bank);
+            }
+            catch (Exception e)
+            {
+                _client.GetLogger().Error($"Problem while decoding a DB_GROUP:INIT_BANK {bank} msg, skipped: {e.Message}");
+            }
         }
 
         private void ImpulseDatabaseUpdateBank(BitMemoryStream impulse)
@@ -1130,30 +1141,45 @@ namespace RCC.Network
         /// </summary>
         private void ImpulseDatabaseInitPlayer(BitMemoryStream impulse)
         {
-            var p = impulse.Pos;
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            // get the egs tick of this change
-            uint serverTick = 0;
-            impulse.Serial(ref serverTick);
+            try
+            {
+                var p = impulse.Pos;
 
-            _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
+                // get the egs tick of this change
+                uint serverTick = 0;
+                impulse.Serial(ref serverTick);
 
-            _client.Automata.OnDatabaseInitPlayer(serverTick);
+                _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
+
+                _client.Automata.OnDatabaseInitPlayer(serverTick);
+            }
+            catch (Exception e)
+            {
+                _client.GetLogger().Error($"Problem while decoding a DB_INIT:PLR msg, skipped: {e.Message}");
+            }
         }
 
         /// <summary>
-        /// todo: player database update
+        /// TODO: player database update
         /// </summary>
         private void ImpulseDatabaseUpdatePlayer(BitMemoryStream impulse)
         {
-            // Debug since too much messages arrive
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            // get the egs tick of this change
-            uint serverTick = 0;
-            impulse.Serial(ref serverTick);
+            try
+            {
+                // get the egs tick of this change
+                uint serverTick = 0;
+                impulse.Serial(ref serverTick);
 
-            _client.Automata.OnDatabaseUpdatePlayer(serverTick);
+                _client.Automata.OnDatabaseUpdatePlayer(serverTick);
+            }
+            catch (Exception e)
+            {
+                _client.GetLogger().Error($"Problem while decoding a DB_UPDATE_PLR msg, skipped: {e.Message}");
+            }
         }
 
         /// <summary>

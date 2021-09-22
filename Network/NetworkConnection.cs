@@ -874,10 +874,7 @@ namespace RCC.Network
             message.Serial(ref _userKey);
             message.Serial(ref _userId);
 
-            // todo: find out why 2 xD - string terminator?
-            var unf = 2;
-            message.Serial(ref unf);
-
+            // Language
             message.Serial(ref ClientConfig.LanguageCode);
 
             _client.GetLogger().Debug($"sendSystemLogin {message}");
@@ -910,7 +907,7 @@ namespace RCC.Network
                 return false;
             }
 
-            // Yoyo. Update the Smooth ServerTick.
+            // Yoyo. OnUpdate the Smooth ServerTick.
             UpdateSmoothServerTick();
 
             if (!_connection.Connected())

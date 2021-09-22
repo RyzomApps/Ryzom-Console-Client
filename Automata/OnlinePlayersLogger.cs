@@ -35,7 +35,7 @@ namespace RCC.Automata
 
         private string _playerName;
 
-        public override void Initialize()
+        public override void OnInitialize()
         {
             RyzomClient.GetInstance().GetLogger().Info("Automaton 'OnlinePlayersLogger' initialized.");
             RegisterAutomatonCommand("list", "Lists all online players in the friend list.", "", Command);
@@ -46,7 +46,7 @@ namespace RCC.Automata
         }
 
         /// <remarks>nach einer aktion jeweils abbrechen, da noch ein problem mit mehreren actions in einem action block beim senden besteht -> disco</remarks>
-        public override void Update()
+        public override void OnUpdate()
         {
             if (!_initialized)
                 return;

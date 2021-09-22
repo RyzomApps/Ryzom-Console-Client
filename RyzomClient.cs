@@ -197,7 +197,7 @@ namespace RCC
         #region Ryzom Game Loop
 
         /// <summary>
-        ///     Initialize the application. Login to the server. Main loop.
+        ///     OnInitialize the application. Login to the server. Main loop.
         /// </summary>
         private void Main()
         {
@@ -237,18 +237,18 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Initialize the main loop.
+        ///     OnInitialize the main loop.
         ///     If you add something in this function, check CFarTP,
         ///     some kind of reinitialization might be useful over there.
         /// </summary>
         private void InitMainLoop()
         {
-            // Update Network till current tick increase.
+            // OnUpdate Network till current tick increase.
             _lastGameCycle = _networkConnection.GetCurrentServerTick();
 
             while (_lastGameCycle == _networkConnection.GetCurrentServerTick())
             {
-                // Update Network.
+                // OnUpdate Network.
                 _networkManager.Update();
             }
 
@@ -308,7 +308,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Initialize the application after login
+        ///     OnInitialize the application after login
         ///     if the init fails, call nlerror
         /// </summary>
         private void PostlogInit()
@@ -317,10 +317,10 @@ namespace RCC
             const string msgXmlPath = "./data/msg.xml";
             _networkManager.GetMessageHeaderManager().Init(msgXmlPath);
 
-            // Initialize the Generic Message Header Manager.
+            // OnInitialize the Generic Message Header Manager.
             _networkManager.InitializeNetwork();
 
-            // todo: init the chat manager
+            // TODO: init the chat manager
             // ChatManager.init(CPath::lookup("chat_static.cdb"));
         }
 
@@ -410,7 +410,7 @@ namespace RCC
 
             while (!playerWantToGoInGame)
             {
-                // Update network.
+                // OnUpdate network.
                 try
                 {
                     if (!firewallTimeout)
@@ -516,14 +516,14 @@ namespace RCC
                 // Do not eat up all the processor
                 Thread.Sleep(10);
 
-                // Update Ryzom Client stuff -> Execute Tasks (like commands and automaton stuff)
+                // OnUpdate Ryzom Client stuff -> Execute Tasks (like commands and automaton stuff)
                 if (Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - _lastClientUpdate) > 100)
                 {
                     _lastClientUpdate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                     OnUpdate();
                 }
 
-                // NetWork Update.
+                // NetWork OnUpdate.
                 _networkManager.Update();
 
                 // Send new data Only when server tick changed.
@@ -532,7 +532,7 @@ namespace RCC
                     // Send the Packet.
                     _networkManager.Send(_networkConnection.GetCurrentServerTick());
 
-                    // Update the Last tick received from the server.
+                    // OnUpdate the Last tick received from the server.
                     _lastGameCycle = _networkConnection.GetCurrentServerTick();
                 }
 

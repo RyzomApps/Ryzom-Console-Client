@@ -29,12 +29,9 @@ namespace RCC.Helper.Crypter.Utility
     /// </summary>
     public class BaseEncoding : Encoding
     {
-        int _bitCount;
-        int _bitMask;
-        string _characters;
-        bool _msbComesFirst;
-        Dictionary<char, int> _values;
-        BaseEncodingDecodeFilterCallback _decodeFilterCallback;
+        private readonly string _characters;
+        private readonly Dictionary<char, int> _values;
+        private readonly BaseEncodingDecodeFilterCallback _decodeFilterCallback;
 
         /// <summary>
         /// Defines a binary-to-text encoding.
@@ -84,10 +81,10 @@ namespace RCC.Helper.Crypter.Utility
                                           "Character sets with over 256 characters are not supported.");
             }
 
-            _bitCount = 31 - BitMath.CountLeadingZeros(characterSet.Length);
-            _bitMask = (1 << _bitCount) - 1;
+            BitsPerCharacter = 31 - BitMath.CountLeadingZeros(characterSet.Length);
+            BitMask = (1 << BitsPerCharacter) - 1;
             _characters = characterSet;
-            _msbComesFirst = msbComesFirst;
+            MsbComesFirst = msbComesFirst;
             _decodeFilterCallback = decodeFilterCallback;
 
             _values = additionalDecodeCharacters != null
@@ -117,8 +114,7 @@ namespace RCC.Helper.Crypter.Utility
                 character = _decodeFilterCallback(character);
             }
 
-            int value;
-            return _values.TryGetValue(character, out value) ? value : -1;
+            return _values.TryGetValue(character, out var value) ? value : -1;
         }
 
         /// <summary>
@@ -134,27 +130,18 @@ namespace RCC.Helper.Crypter.Utility
         /// <summary>
         /// The bit mask for a single character in the current encoding.
         /// </summary>
-        public int BitMask
-        {
-            get { return _bitMask; }
-        }
+        public int BitMask { get; }
 
         /// <summary>
         /// The number of bits per character in the current encoding.
         /// </summary>
-        public int BitsPerCharacter
-        {
-            get { return _bitCount; }
-        }
+        public int BitsPerCharacter { get; }
 
         /// <summary>
         /// <c>true</c> if the encoding begins with the most-significant bit of each byte.
         /// Otherwise, the encoding begins with the least-significant bit.
         /// </summary>
-        public bool MsbComesFirst
-        {
-            get { return _msbComesFirst; }
-        }
+        public bool MsbComesFirst { get; }
 
         #region Decoding
 

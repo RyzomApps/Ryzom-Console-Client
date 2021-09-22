@@ -245,7 +245,7 @@ namespace RCC.Chat
             // TODO Does the char have a CSR title?
             const string csr = "";
 
-            // TODO: The player talks
+            // TODO: The player talks -> show as you say:
 
             // TODO: Special case where there is only a title, very rare case for some NPC
 

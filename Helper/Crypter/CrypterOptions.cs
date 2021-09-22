@@ -72,7 +72,7 @@ namespace RCC.Helper.Crypter
         /// <returns>The option's value.</returns>
         public T GetValue<T>(CrypterOptionKey key)
         {
-            return GetValue<T>(key, default(T));
+            return GetValue<T>(key, default);
         }
 
         /// <summary>

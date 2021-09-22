@@ -489,7 +489,7 @@ namespace RCC.Network
         /// <summary>
         ///     TODO stream version - serializes the current steam version info (which seems to be always 0)
         /// </summary>
-        public int SerialVersion(uint currentVersion)
+        public int SerialVersion(/*uint currentVersion*/)
         {
             byte b = 0;
             int v = 0;

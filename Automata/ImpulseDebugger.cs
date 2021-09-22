@@ -6,7 +6,7 @@ namespace RCC.Automata
 {
     internal class ImpulseDebugger : AutomatonBase
     {
-        public override void Initialize()
+        public override void OnInitialize()
         {
             RyzomClient.GetInstance().GetLogger().Info("Automaton 'ImpulseDebugger' initialized.");
         }

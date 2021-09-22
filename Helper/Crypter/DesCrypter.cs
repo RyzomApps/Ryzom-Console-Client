@@ -504,7 +504,7 @@ namespace RCC.Helper.Crypter
         {
             uint thirdInt = right ^ (right >> 16);
             uint secondInt = thirdInt & firstSaltTranslator;
-            thirdInt = thirdInt & secondSaltTranslator;
+            thirdInt &= secondSaltTranslator;
             secondInt = secondInt ^ (secondInt << 16) ^ right ^ schedule[scheduleIndex];
             uint firstInt = thirdInt ^ (thirdInt << 16) ^ right ^ schedule[scheduleIndex + 1];
             firstInt = (firstInt >> 4) | (firstInt << 28);

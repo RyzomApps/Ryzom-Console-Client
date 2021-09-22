@@ -23,7 +23,7 @@ namespace RCC.Automata.Internal
     /// Welcome to the automaton API file !
     /// The virtual class "AutomatonBase" contains anything you need for creating chat automata
     /// Inherit from this class while adding your automaton class to the "automata" folder.
-    /// Override the methods you want for handling events: Initialize, Update, GetText.
+    /// Override the methods you want for handling events: OnInitialize, OnUpdate, GetText.
     ///
     /// For testing your automaton you can add it in RyzomClient.
     /// Your automaton will be loaded everytime RCC is started so that you can test/debug.
@@ -51,6 +51,9 @@ namespace RCC.Automata.Internal
         /// </summary>
         public void SetHandler(RyzomClient handler) { _handler = handler; }
 
+        /// <summary>
+        /// main client instance
+        /// </summary>
         protected RyzomClient Handler
         {
             get
@@ -65,7 +68,7 @@ namespace RCC.Automata.Internal
         /// Will be called every ~100ms.
         /// </summary>
         /// <remarks>
-        /// <see cref="Update"/> method can be overridden by child class so need an extra update method
+        /// <see cref="OnUpdate"/> method can be overridden by child class so need an extra update method
         /// </remarks>
         public void UpdateInternal()
         {
@@ -94,31 +97,7 @@ namespace RCC.Automata.Internal
             }
         }
 
-        /* ================================================== */
-        /*   Main methods to override for creating your automaton   */
-        /* ================================================== */
-
-        /// <summary>
-        /// Anything you want to initialize your automaton, will be called on load
-        /// This method is called only once, whereas OnGameJoined() is called once per server join.
-        ///
-        /// NOTE: Chat messages cannot be sent at this point in the login process.
-        /// If you want to send a message when the automaton is loaded, use OnGameJoined.
-        /// </summary>
-        public virtual void Initialize() { }
-
-        /// <summary>
-        /// Will be called every ~100ms (10fps)
-        /// </summary>
-        public virtual void Update() { }
-
-        /// <summary>
-        /// Is called when the client has been disconnected fom the server
-        /// </summary>
-        /// <param name="reason">Disconnect Reason</param>
-        /// <param name="message">Kick message, if any</param>
-        /// <returns>Return TRUE if the client is about to restart</returns>
-        public virtual bool OnDisconnect(DisconnectReason reason, string message) { return false; }
+        #region Toolbox
 
         /* ======================================================================= */
         /*  ToolBox - Methods below might be useful while creating your automaton. */
@@ -133,7 +112,6 @@ namespace RCC.Automata.Internal
         /// <returns>TRUE if successfully sent (Deprectated, always returns TRUE for compatibility purposes with existing scripts)</returns>
         protected bool SendText(string text)
         {
-            //LogToConsole("Sending '" + text + "'");
             Handler.SendText(text);
             return true;
         }
@@ -146,7 +124,7 @@ namespace RCC.Automata.Internal
         /// <returns>TRUE if the command was indeed an internal RCC command</returns>
         protected bool PerformInternalCommand(string command, Dictionary<string, object> localVars = null)
         {
-            string temp = "";
+            var temp = "";
             return Handler.PerformInternalCommand(command, ref temp, localVars);
         }
 
@@ -167,13 +145,13 @@ namespace RCC.Automata.Internal
         /// </summary>
         public static string GetVerbatim(string text)
         {
-            if (String.IsNullOrEmpty(text))
-                return String.Empty;
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
 
-            int idx = 0;
+            var idx = 0;
             var data = new char[text.Length];
 
-            for (int i = 0; i < text.Length; i++)
+            for (var i = 0; i < text.Length; i++)
                 if (text[i] != '§')
                     data[idx++] = text[i];
                 else
@@ -211,7 +189,6 @@ namespace RCC.Automata.Internal
             Handler.Automata.UnloadAutomaton(automaton);
             Handler.Automata.LoadAutomaton(automaton);
         }
-
 
         /// <summary>
         /// Get a Y-M-D h:m:s timestamp representing the current system date and time
@@ -299,7 +276,7 @@ namespace RCC.Automata.Internal
         /// <returns>True if successfully registered</returns>
         protected bool RegisterAutomatonCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
         {
-            bool result = Handler.RegisterCommand(cmdName, cmdDesc, cmdUsage, callback);
+            var result = Handler.RegisterCommand(cmdName, cmdDesc, cmdUsage, callback);
             if (result)
                 _registeredCommands.Add(cmdName.ToLower());
             return result;
@@ -327,9 +304,39 @@ namespace RCC.Automata.Internal
         /// <returns>CommandBase result to display to the user</returns>
         public delegate string CommandRunner(string command, string[] args);
 
+        #endregion
+
+        #region Events
+
+        /* ======================================================== */
+        /*   Main methods to override for creating your automaton   */
+        /* ======================================================== */
+
+        /// <summary>
+        /// Anything you want to initialize your automaton, will be called on load
+        /// This method is called only once, whereas OnGameJoined() is called once per server join.
+        ///
+        /// NOTE: Chat messages cannot be sent at this point in the login process.
+        /// If you want to send a message when the automaton is loaded, use OnGameJoined.
+        /// </summary>
+        public virtual void OnInitialize() { }
+
+        /// <summary>
+        /// Will be called every ~100ms (10fps)
+        /// </summary>
+        public virtual void OnUpdate() { }
+
+        /// <summary>
+        /// Is called when the client has been disconnected fom the server
+        /// </summary>
+        /// <param name="reason">Disconnect Reason</param>
+        /// <param name="message">Kick message, if any</param>
+        /// <returns>Return TRUE if the client is about to restart</returns>
+        public virtual bool OnDisconnect(DisconnectReason reason, string message) { return false; }
+
         /// <summary>
         /// Called after the server has been joined successfully and chat messages are able to be sent.
-        /// This method is called again after reconnecting to the server, whereas Initialize() is called only once.
+        /// This method is called again after reconnecting to the server, whereas OnInitialize() is called only once.
         ///
         /// NOTE: This is not always right after joining the server - if the automaton was loaded after logging
         /// in this is still called.
@@ -344,6 +351,9 @@ namespace RCC.Automata.Internal
         /// <param name="result">RCC command result</param>
         public virtual void OnInternalCommand(string commandName, string commandParams, string result) { }
 
+        /// <summary>
+        /// called when the friend list contact changes its online status
+        /// </summary>
         public virtual void OnTeamContactStatus(uint contactId, CharConnectionState online) { }
 
         /// <summary>
@@ -453,5 +463,7 @@ namespace RCC.Automata.Internal
         /// called when the client receives the shard id and the webhost from the server
         /// </summary>
         public virtual void OnShardID(in uint shardId, string webHost) { }
+
+        #endregion
     }
 }

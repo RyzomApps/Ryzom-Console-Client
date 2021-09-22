@@ -5,7 +5,7 @@ namespace RCC.Automata
 {
     internal class AutoTeamJoiner : AutomatonBase
     {
-        public override void Initialize()
+        public override void OnInitialize()
         {
             RyzomClient.GetInstance().GetLogger().Info("Automaton 'AutoTeamJoiner' initialized.");
         }
