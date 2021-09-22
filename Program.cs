@@ -65,6 +65,7 @@ namespace RCC
         {
             Banner();
 
+            Console.Title = $"[RCC] {Version}";
             ConsoleIO.WriteLineFormatted($"§bConsole Client for Ryzom §av{Version}§b - By bierdosenhalter & Contributors");
 
             // Debug input ?

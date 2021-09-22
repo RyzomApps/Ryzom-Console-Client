@@ -38,7 +38,7 @@ namespace RCC.Messages
             // create root node from root xml node
             Root = new MessageNode(file.DocumentElement, 0);
 
-            RyzomClient.GetInstance().GetLogger()?.Info($"Loaded {Root.Nodes.Count} server messages nodes.");
+            RyzomClient.GetInstance().GetLogger()?.Debug($"Loaded {Root.Nodes.Count} server messages nodes.");
         }
 
         /// <summary>

@@ -69,7 +69,7 @@ namespace RCC.Network
         /// </summary>
         public bool IsDataAvailable()
         {
-            return _udpMain.Client.Available > 0;
+            return _udpMain.Client?.Available > 0;
         }
 
         /// <summary>

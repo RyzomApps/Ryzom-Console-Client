@@ -49,6 +49,8 @@ namespace RCC.Config
 
         // === NON RYZOM STUFF
 
+        public static bool DebugEnabled = false;
+
         // Custom app variables 
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         public static Regex ChatFilter = null;
@@ -58,13 +60,14 @@ namespace RCC.Config
         public static string LogFile = "console-log.txt";
         public static bool PrependTimestamp = false;
         public static string OnlinePlayersApi = "";
-        public static bool AutoJoinTeam = false;
 
         //Other Settings
         public static char InternalCmdChar = '/';
 
-        // Bots
-        public static bool OnlinePlayersLogger_Enabled = false;
+        // Automata
+        public static bool OnlinePlayersLoggerEnabled = false;
+        public static bool AutoJoinTeamEnabled = false;
+        public static bool ImpulseDebuggerEnabled = false;
 
         // Read : "ID", "R G B A MODE [FX]"
         public static Dictionary<string, string> SystemInfoColors = new Dictionary<string, string>()
@@ -124,7 +127,7 @@ namespace RCC.Config
         /// <param name="file">File to load</param>
         public static void LoadFile(string file)
         {
-            ConsoleIO.WriteLogLine($"[Settings] Loading Settings from {Path.GetFullPath(file)}");
+            ConsoleIO.WriteLogLine($"Loading settings from {Path.GetFullPath(file)}");
             if (!File.Exists(file)) return;
 
             try
@@ -164,7 +167,7 @@ namespace RCC.Config
         {
             // Load embedded default config and adjust line break for the current operating system
             string settingsContents = string.Join(Environment.NewLine,
-                Resources.client.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None));
+                Resources.client.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None));
 
             // Write configuration file with current version number
             File.WriteAllText(settingsfile,
@@ -225,11 +228,19 @@ namespace RCC.Config
                     return true;
 
                 case "onlineplayerslogger":
-                    OnlinePlayersLogger_Enabled = bool.Parse(argValue);
+                    OnlinePlayersLoggerEnabled = bool.Parse(argValue);
                     return true;
 
                 case "autojointeam":
-                    AutoJoinTeam = bool.Parse(argValue);
+                    AutoJoinTeamEnabled = bool.Parse(argValue);
+                    return true;
+
+                case "impulsedebugger":
+                    ImpulseDebuggerEnabled = bool.Parse(argValue);
+                    return true;
+
+                case "debug":
+                    DebugEnabled = bool.Parse(argValue);
                     return true;
 
                 default:

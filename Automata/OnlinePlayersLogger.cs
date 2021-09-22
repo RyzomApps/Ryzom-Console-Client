@@ -37,7 +37,7 @@ namespace RCC.Automata
 
         public override void Initialize()
         {
-            RyzomClient.GetInstance().GetLogger().Info("Bot 'OnlinePlayersLogger' initialized.");
+            RyzomClient.GetInstance().GetLogger().Info("Automaton 'OnlinePlayersLogger' initialized.");
             RegisterAutomatonCommand("list", "Lists all online players in the friend list.", "", Command);
             RegisterAutomatonCommand("importfriends", "Imports a newline separated text file of player names to the friends list.", "<filename>", Command);
             RegisterAutomatonCommand("exportfriends", "Exports a newline separated text file of player names from the friends list.", "<filename>", Command);
@@ -105,7 +105,7 @@ namespace RCC.Automata
             }
         }
 
-        public override void OnGameTeamContactStatus(uint contactId, CharConnectionState online)
+        public override void OnTeamContactStatus(uint contactId, CharConnectionState online)
         {
             var (key, _) = _friendOnline.ElementAt((int)contactId);
 
@@ -115,19 +115,19 @@ namespace RCC.Automata
             RyzomClient.GetInstance().GetLogger().Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
         }
 
-        public override void OnGameTeamContactInit(List<uint> vFriendListName, List<CharConnectionState> vFriendListOnline, List<string> vIgnoreListName)
+        public override void OnTeamContactInit(List<uint> friendListNames, List<CharConnectionState> friendListOnline, List<string> ignoreListNames)
         {
-            for (var i = 0; i < vFriendListName.Count; i++)
+            for (var i = 0; i < friendListNames.Count; i++)
             {
-                var id = vFriendListName[i];
-                var state = vFriendListOnline[i];
+                var id = friendListNames[i];
+                var state = friendListOnline[i];
 
                 _friendOnline.Add(id, state);
 
                 _friendNames.Add(id, /*StringManager.GetString(id, out string name) ? name :*/ string.Empty);
             }
 
-            RyzomClient.GetInstance().GetLogger().Info($"Initialised friend list with {vFriendListName.Count} contacts.");
+            RyzomClient.GetInstance().GetLogger().Info($"Initialised friend list with {friendListNames.Count} contacts.");
 
             _playerName = Entity.RemoveTitleAndShardFromName(Handler.GetNetworkManager().PlayerSelectedHomeShardName).ToLower();
 

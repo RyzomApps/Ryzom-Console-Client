@@ -13,26 +13,25 @@ namespace RCC.Helper.Tasks
     /// <summary>
     /// Holds a task with delay
     /// </summary>
-    class TaskWithDelay
+    internal class TaskWithDelay
     {
-        private Action _task;
-        private int tickCounter;
-        private DateTime dateToLaunch;
+        private int _tickCounter;
+        private readonly DateTime _dateToLaunch;
 
-        public Action Task { get { return _task; } }
+        public Action Task { get; }
 
         public TaskWithDelay(Action task, int delayTicks)
         {
-            _task = task;
-            tickCounter = delayTicks;
-            dateToLaunch = DateTime.MaxValue;
+            Task = task;
+            _tickCounter = delayTicks;
+            _dateToLaunch = DateTime.MaxValue;
         }
 
         public TaskWithDelay(Action task, TimeSpan delay)
         {
-            _task = task;
-            tickCounter = int.MaxValue;
-            dateToLaunch = DateTime.Now + delay;
+            Task = task;
+            _tickCounter = int.MaxValue;
+            _dateToLaunch = DateTime.Now + delay;
         }
 
         /// <summary>
@@ -41,10 +40,8 @@ namespace RCC.Helper.Tasks
         /// <returns>Return true if the task should run now</returns>
         public bool Tick()
         {
-            tickCounter--;
-            if (tickCounter <= 0 || dateToLaunch < DateTime.Now)
-                return true;
-            return false;
+            _tickCounter--;
+            return _tickCounter <= 0 || _dateToLaunch < DateTime.Now;
         }
     }
 }

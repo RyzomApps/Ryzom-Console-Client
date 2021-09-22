@@ -14,7 +14,7 @@ namespace RCC.Client
     /// <summary>
     ///     Info about a dynamically generated string from the server
     /// </summary>
-    internal class DynamicStringInfo
+    public class DynamicStringInfo
     {
         public BitMemoryStream Message;
         public List<ParamValue> Params = new List<ParamValue>();
@@ -23,14 +23,14 @@ namespace RCC.Client
         public string String;
         public uint StringId;
 
-        internal enum StringStatus : byte
+        public enum StringStatus : byte
         {
             Received,
             Serialized,
             Complete
         }
 
-        internal enum ParamType : byte
+        public enum ParamType : byte
         {
             StringID,
             Integer,
@@ -40,7 +40,7 @@ namespace RCC.Client
             SheetID
         }
 
-        internal struct ParamValue
+        public struct ParamValue
         {
             public ParamType Type;
             public int ReplacementPoint;

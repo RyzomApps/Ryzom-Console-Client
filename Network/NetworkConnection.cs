@@ -102,7 +102,8 @@ namespace RCC.Network
             get => _connectionState;
             set
             {
-                _client.GetLogger().Info($"Connection state changed to {value}");
+                Console.Title = $"[RCC] {Program.Version} - {value}";
+                _client.GetLogger().Debug($"Connection state changed to {value}");
                 _connectionState = value;
             }
         }
@@ -201,7 +202,8 @@ namespace RCC.Network
 
             SetLoginCookieFromString(cookie);
 
-            _client.GetLogger().Info($"Network initialisation with front end '{_frontendAddress}' and cookie {cookie}");
+            _client.GetLogger().Info($"Network initialisation with front end '{_frontendAddress}'");
+            _client.GetLogger().Debug($"cookie {cookie}");
 
             ConnectionState = ConnectionState.NotConnected;
         }
@@ -287,10 +289,10 @@ namespace RCC.Network
                 {
                     _mLoginAttempts = 0;
                     // will send disconnection message
-                    Disconnect(); 
+                    Disconnect();
                     _client.GetLogger().Warn("CNET: Too many LOGIN attempts, connection problem");
                     // exit now from loop, don't expect a new state
-                    return true; 
+                    return true;
                 }
 
                 ++_mLoginAttempts;
@@ -342,10 +344,10 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemServerDownCode:
                                 // will send disconnection message
-                                Disconnect(); 
+                                Disconnect();
                                 _client.GetLogger().Error("BACK-END DOWN");
                                 // exit now from loop, don't expect a new state
-                                return false; 
+                                return false;
 
                             default:
                                 _client.GetLogger().Warn($"CNET: received system {message} in state Probe");
@@ -416,10 +418,10 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemServerDownCode:
                                 // will send disconnection message
-                                Disconnect(); 
+                                Disconnect();
                                 _client.GetLogger().Error("BACK-END DOWN");
                                 // exit now from loop, don't expect a new state
-                                return false; 
+                                return false;
 
                             default:
                                 _client.GetLogger().Warn($"CNET: received system {message} in state Synchronize");
@@ -512,10 +514,10 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemServerDownCode:
                                 // will send disconnection message
-                                Disconnect(); 
+                                Disconnect();
                                 _client.GetLogger().Error("BACK-END DOWN");
                                 // exit now from loop, don't expect a new state
-                                return false; 
+                                return false;
 
                             default:
                                 _client.GetLogger().Warn($"CNET: received system {message} in state Connected");
@@ -559,6 +561,7 @@ namespace RCC.Network
         private void ReceiveNormalMessage(BitMemoryStream msgin)
         {
             _client.GetLogger().Debug($"CNET: received normal message Packet={LastReceivedNumber} Ack={_lastReceivedAck}");
+            _client.GetLogger().Debug($"{msgin}");
 
             var actions = new List<Action.ActionBase>();
             ImpulseDecoder.Decode(msgin, _currentReceivedNumber, _lastReceivedAck, _currentSendNumber, actions);
@@ -586,7 +589,7 @@ namespace RCC.Network
                         // Self disconnection
                         _client.GetLogger().Info("You were disconnected by the server");
                         // will send disconnection message
-                        Disconnect(); 
+                        Disconnect();
                         // TODO LoginSM.pushEvent(CLoginStateMachine::ev_conn_dropped);
 
                         break;
@@ -752,7 +755,7 @@ namespace RCC.Network
         /// <summary>
         ///     Disconnects the Client from the server sending a disconnection packet
         /// </summary>
-        private void Disconnect()
+        public void Disconnect()
         {
             if (ConnectionState == ConnectionState.NotInitialised ||
                 ConnectionState == ConnectionState.NotConnected ||
@@ -1056,7 +1059,9 @@ namespace RCC.Network
                 break;
             }
 
-            _client.GetLogger().Debug($"sendNormalMessage {message}");
+            _client.GetLogger().Debug($"CNET: send normal message Packet={_currentSendNumber} Ack={_lastReceivedAck}");
+            _client.GetLogger().Debug($"{message}");
+
             _connection.Send(message.Buffer(), message.Length);
 
             _lastSendTime = RyzomGetLocalTime();

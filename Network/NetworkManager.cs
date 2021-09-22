@@ -13,7 +13,6 @@ using System.Reflection;
 using System.Threading;
 using RCC.Chat;
 using RCC.Client;
-using RCC.Config;
 using RCC.Helper;
 using RCC.Messages;
 
@@ -43,6 +42,9 @@ namespace RCC.Network
         public bool ConnectInterf;
         public bool CreateInterf;
         public bool CharacterInterf;
+
+        // This must be changed when cdbank bits in the client change
+        private const int FillNbitsWithNbBitsForCdbbank = 3;
 
         // non ryzom variables (for workarounds)
         public bool CanSendCharSelection;
@@ -366,14 +368,33 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// update user bars (stats)
+        /// </summary>
         private void ImpulseUserBars(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            byte msgNumber = 0;
+            var hp = 0;
+            var sap = 0;
+            var sta = 0;
+            var focus = 0;
+
+            impulse.Serial(ref msgNumber);
+            impulse.Serial(ref hp);
+            impulse.Serial(ref sap);
+            impulse.Serial(ref sta);
+            impulse.Serial(ref focus);
+
+            _client.Automata.OnUserBars(msgNumber, hp, sap, sta, focus);
         }
 
         private void ImpulseEncyclopediaInit(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            _client.Automata.OnEncyclopediaInit();
         }
 
         private void ImpulseEncyclopediaUpdate(BitMemoryStream impulse)
@@ -421,9 +442,20 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// TODO: Respawn point set
+        /// </summary>
         private void ImpulseDeathRespawnPoint(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            int x = 0;
+            int y = 0;
+
+            //impulse.Serial(ref x);
+            //impulse.Serial(ref y);
+
+            _client.Automata.OnDeathRespawnPoint(x, y);
         }
 
         private void ImpulseItemCloseRoomInventory(BitMemoryStream impulse)
@@ -466,9 +498,14 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// TODO server upload the phrases
+        /// </summary>
         private void ImpulsePhraseDownLoad(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            _client.Automata.OnPhraseDownLoad();
         }
 
         private void ImpulseRemoteAdmin(BitMemoryStream impulse)
@@ -481,14 +518,42 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// server activates/deactivates use of female titles
+        /// </summary>
         private void ImpulseGuildUseFemaleTitles(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            bool useFemaleTitles = false;
+            impulse.Serial(ref useFemaleTitles);
+
+            _client.Automata.OnGuildUseFemaleTitles(useFemaleTitles);
         }
 
+        /// <summary>
+        /// server block/unblock some reserved titles
+        /// </summary>
         private void ImpulseGuildUpdatePlayerTitle(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            bool bUnblock = false;
+            impulse.Serial(ref bUnblock);
+
+            int len = 0;
+            impulse.Serial(ref len);
+
+            var vTitles = new List<ushort>(len);
+
+            for (var i = 0; i < len; i++)
+            {
+                byte value = 0;
+                impulse.Serial(ref value);
+                vTitles.Add(value);
+            }
+
+            _client.Automata.OnGuildUpdatePlayerTitle(bUnblock, len, vTitles);
         }
 
         private void ImpulseGuildCloseInventory(BitMemoryStream impulse)
@@ -559,9 +624,11 @@ namespace RCC.Network
             var timestamp = 0;
             impulse.Serial(ref timestamp);
 
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
+
             _stringManager.LoadCache(timestamp);
 
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
+            _client.Automata.OnReloadCache(timestamp);
         }
 
         /// <summary>
@@ -577,11 +644,14 @@ namespace RCC.Network
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
 
             _stringManager.ReceiveString(stringId, strUtf8, this);
+
+            _client.Automata.OnStringResp(stringId, strUtf8);
         }
 
         /// <summary>
         ///     A dyn string (or phrase) is send (so, we receive it)
         /// </summary>
+        /// <remarks>Automaton Event is fired inside the string manager</remarks>
         private void ImpulsePhraseSend(BitMemoryStream impulse)
         {
             _stringManager.ReceiveDynString(impulse, this);
@@ -630,7 +700,7 @@ namespace RCC.Network
 
             var online = (CharConnectionState)state;
 
-            _client.Automata.OnGameTeamContactStatus(contactId, online);
+            _client.Automata.OnTeamContactStatus(contactId, online);
         }
 
         private void ImpulseTeamContactCreate(BitMemoryStream impulse)
@@ -688,10 +758,9 @@ namespace RCC.Network
                 vFriendListOnline.Add((CharConnectionState)state);
             }
 
-            //	impulse.serialCont(vFriendListOnline);
-            //impulse.SerialCont(vIgnoreListName); TODO: do we need them?
+            //impulse.SerialCont(vIgnoreListName); TODO: ignore list - do we need them?
 
-            _client.Automata.OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
+            _client.Automata.OnTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
         }
 
         private void ImpulseTeamShareClose(BitMemoryStream impulse)
@@ -713,8 +782,10 @@ namespace RCC.Network
         {
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} -> AutoJoin");
 
-            if(ClientConfig.AutoJoinTeam)
-                SendMsgToServer("TEAM:JOIN");
+            uint textID = uint.MinValue;
+            impulse.Serial(ref textID);
+
+            _client.Automata.OnTeamInvitation(textID);
         }
 
         private void ImpulseBeginCast(BitMemoryStream impulse)
@@ -777,11 +848,17 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// a tell arrives
+        /// </summary>
         private void ImpulseTell(BitMemoryStream impulse)
         {
             _chatManager.ProcessTellString(impulse, _client);
         }
 
+        /// <summary>
+        /// a chat message arrives
+        /// </summary>
         private void ImpulseChat(BitMemoryStream impulse)
         {
             _chatManager.ProcessChatString(impulse, _client);
@@ -814,13 +891,28 @@ namespace RCC.Network
 
         private void ImpulseServerQuitOk(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
             GameExit = true;
+            _networkConnection.Disconnect();
+
+            _client.Automata.OnDisconnect();
         }
 
+        /// <summary>
+        /// received SHARD_ID
+        /// </summary>
+        /// <param name="impulse"></param>
         private void ImpulseShardId(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            uint shardId = 0;
+            impulse.Serial(ref shardId);
+
+            var webHost = "";
+            impulse.Serial(ref webHost, false);
+
+            _client.Automata.OnShardID(shardId, webHost);
         }
 
         private void ImpulseCharNameValid(BitMemoryStream impulse)
@@ -830,7 +922,7 @@ namespace RCC.Network
 
         private void ImpulseServerReady(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info("Server is ready! Joining game...");
 
             ServerReceivedReady = true;
 
@@ -844,11 +936,13 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-
+        /// <summary>
+        /// todo received USER_CHAR impulse
+        /// </summary>
         private void ImpulseUserChar(BitMemoryStream impulse)
         {
             //// received USER_CHAR
-            _client.GetLogger().Info("ImpulseCallBack : Received CONNECTION:USER_CHAR");
+            _client.GetLogger().Debug("ImpulseCallBack : Received CONNECTION:USER_CHAR");
             //
             //// Serialize the message
             //COfflineEntityState posState;
@@ -874,11 +968,11 @@ namespace RCC.Network
 
             short v = 0;
             s.Serial(ref v, 3);
-            //var season = v;
+            var season = v;
             v = 0;
             s.Serial(ref v, 3);
-            //var userRole = v & 0x3; // bits 0-1
-            //var isInRingSession = (v & 0x4) != 0; // bit 2
+            var userRole = v & 0x3; // bits 0-1
+            var isInRingSession = (v & 0x4) != 0; // bit 2
 
             int highestMainlandSessionId = 0;
             int firstConnectedTime = 0;
@@ -907,7 +1001,7 @@ namespace RCC.Network
             var userEntityInitPos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
             var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
 
-            _client.GetLogger().Info($"Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
+            _client.GetLogger().Info($"Received Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
 
             // Update the position for the vision.
             //NetworkManager.setReferencePosition(UserEntityInitPos);
@@ -926,12 +1020,14 @@ namespace RCC.Network
             //nldebug("EnableR2Ed = %u, IsInRingSession = %u, UserRoleInSession = %u", (uint)ClientConfig.R2EDEnabled, (uint)IsInRingSession, userRole);
 
             // updatePatcherPriorityBasedOnCharacters();
+
+            _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, userEntityInitPos, userEntityInitFront, season, userRole, isInRingSession);
         }
 
         private void ImpulseUserChars(BitMemoryStream impulse)
         {
             // received USER_CHARS
-            _client.GetLogger().Info("Received user characters");
+            _client.GetLogger().Info("Received user characters from the server:");
 
             impulse.Serial(ref ServerPeopleActive);
             impulse.Serial(ref ServerCareerActive);
@@ -971,6 +1067,8 @@ namespace RCC.Network
             //    }
             //}
             //updatePatcherPriorityBasedOnCharacters();
+
+            _client.Automata.OnUserChars();
         }
 
         private void ImpulseNoUserChar(BitMemoryStream impulse)
@@ -983,9 +1081,24 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// TODO: impulseDatabaseInitBank
+        /// </summary>
         private void ImpulseDatabaseInitBank(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            // get the egs tick of this change
+            uint serverTick = 0;
+            impulse.Serial(ref serverTick);
+
+            // decode bank
+            uint bank = 0;
+            const int nbits = FillNbitsWithNbBitsForCdbbank;
+
+            impulse.Serial(ref bank, nbits);
+
+            _client.Automata.OnDatabaseInitBank(serverTick, bank);
         }
 
         private void ImpulseDatabaseUpdateBank(BitMemoryStream impulse)
@@ -993,9 +1106,18 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// TODO: impulseInitInventory
+        /// </summary>
         private void ImpulseInitInventory(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            // get the egs tick of this change
+            uint serverTick = 0;
+            impulse.Serial(ref serverTick);
+
+            _client.Automata.OnInitInventory(serverTick);
         }
 
         private void ImpulseUpdateInventory(BitMemoryStream impulse)
@@ -1003,32 +1125,40 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// TODO: ImpulseDatabaseInitPlayer
+        /// </summary>
         private void ImpulseDatabaseInitPlayer(BitMemoryStream impulse)
         {
             var p = impulse.Pos;
 
             // get the egs tick of this change
-            int serverTick = 0;
+            uint serverTick = 0;
             impulse.Serial(ref serverTick);
 
-            // read delta
-            // TODO: IngameDbMngr.readDelta + setInitPacketReceived
-            //IngameDbMngr.readDelta(serverTick, Impulse, TCDBBank.CDBPlayer);
-            //IngameDbMngr.setInitPacketReceived();
+            _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
 
-            _client.GetLogger().Info($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
+            _client.Automata.OnDatabaseInitPlayer(serverTick);
         }
 
+        /// <summary>
+        /// todo: player database update
+        /// </summary>
         private void ImpulseDatabaseUpdatePlayer(BitMemoryStream impulse)
         {
             // Debug since too much messages arrive
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            // get the egs tick of this change
+            uint serverTick = 0;
+            impulse.Serial(ref serverTick);
+
+            _client.Automata.OnDatabaseUpdatePlayer(serverTick);
         }
 
         /// <summary>
         ///     Decode handshake to check versions
         /// </summary>
-        /// <param name="impulse"></param>
         private void CheckHandshake(BitMemoryStream impulse)
         {
             uint handshakeVersion = 0;
@@ -1038,7 +1168,7 @@ namespace RCC.Network
 
             uint itemSlotVersion = 0;
             impulse.Serial(ref itemSlotVersion, 2);
-            _client.GetLogger().Info($"Item slot version: {itemSlotVersion}");
+            _client.GetLogger().Debug($"Item slot version: {itemSlotVersion}");
             //if (itemSlotVersion != INVENTORIES::CItemSlot::getVersion())
             //    nlerror("Handshake: itemSlotVersion mismatch (S:%hu C:%hu)", itemSlotVersion, INVENTORIES::CItemSlot::getVersion());
         }

@@ -12,7 +12,7 @@ using RCC.Commands.Internal;
 namespace RCC.Automata.Internal
 {
     /// <summary>
-    /// CommandBase class with constructor for creating command for automatons.
+    /// CommandBase class with constructor for creating command for automata.
     /// </summary>
     public class AutomatonCommand : CommandBase
     {

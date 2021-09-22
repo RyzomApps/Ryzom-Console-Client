@@ -10,8 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using RCC.Chat;
+using RCC.Client;
 using RCC.Helper.Tasks;
 using RCC.Network;
 
@@ -19,20 +21,20 @@ namespace RCC.Automata.Internal
 {
     ///
     /// Welcome to the automaton API file !
-    /// The virtual class "AutomatonBase" contains anything you need for creating chat automatons
-    /// Inherit from this class while adding your automaton class to the "automatons" folder.
+    /// The virtual class "AutomatonBase" contains anything you need for creating chat automata
+    /// Inherit from this class while adding your automaton class to the "automata" folder.
     /// Override the methods you want for handling events: Initialize, Update, GetText.
     ///
-    /// For testing your automaton you can add it in McClient.cs (see comment at line ~199).
-    /// Your automaton will be loaded everytime MCC is started so that you can test/debug.
+    /// For testing your automaton you can add it in RyzomClient.
+    /// Your automaton will be loaded everytime RCC is started so that you can test/debug.
     ///
     /// Once your automaton is fully written and tested, you can export it a standalone script.
-    /// This way it can be loaded in newer MCC builds, without modifying MCC itself.
+    /// This way it can be loaded in newer RCC builds, without modifying RCC itself.
     /// See config/sample-script-with-automaton.cs for a AutomatonBase script example.
     ///
 
     /// <summary>
-    /// The virtual class containing anything you need for creating chat automatons.
+    /// The virtual class containing anything you need for creating chat automata.
     /// </summary>
     public abstract class AutomatonBase
     {
@@ -97,7 +99,7 @@ namespace RCC.Automata.Internal
         /* ================================================== */
 
         /// <summary>
-        /// Anything you want to initialize your automaton, will be called on load by MinecraftCom
+        /// Anything you want to initialize your automaton, will be called on load
         /// This method is called only once, whereas OnGameJoined() is called once per server join.
         ///
         /// NOTE: Chat messages cannot be sent at this point in the login process.
@@ -106,34 +108,7 @@ namespace RCC.Automata.Internal
         public virtual void Initialize() { }
 
         /// <summary>
-        /// Called after the server has been joined successfully and chat messages are able to be sent.
-        /// This method is called again after reconnecting to the server, whereas Initialize() is called only once.
-        ///
-        /// NOTE: This is not always right after joining the server - if the automaton was loaded after logging
-        /// in this is still called.
-        /// </summary>
-        public virtual void OnGameJoined() { }
-
-        /// <summary>
-        /// Called after an internal MCC command has been performed
-        /// </summary>
-        /// <param name="commandName">MCC CommandBase Name</param>
-        /// <param name="commandParams">MCC CommandBase Parameters</param>
-        /// <param name="result">MCC command result</param>
-        public virtual void OnInternalCommand(string commandName, string commandParams, string result) { }
-
-        public virtual void OnGameTeamContactStatus(uint contactId, CharConnectionState online) { }
-
-        public virtual void OnGameTeamContactInit(List<uint> vFriendListName, List<CharConnectionState> vFriendListOnline, List<string> vIgnoreListName) { }
-
-        public virtual void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList) { }
-
-        public virtual void OnChat(in uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, in uint dynChatId, string senderName, in uint bubbleTimer) { }
-
-        public virtual void OnTell(string ucstr, string senderName) { }
-
-        /// <summary>
-        /// Will be called every ~100ms (10fps) if loaded in MinecraftCom
+        /// Will be called every ~100ms (10fps)
         /// </summary>
         public virtual void Update() { }
 
@@ -164,11 +139,11 @@ namespace RCC.Automata.Internal
         }
 
         /// <summary>
-        /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
+        /// Perform an internal RCC command (not a server command, use SendText() instead for that!)
         /// </summary>
         /// <param name="command">The command to process</param>
         /// <param name="localVars">Local variables passed along with the command</param>
-        /// <returns>TRUE if the command was indeed an internal MCC command</returns>
+        /// <returns>TRUE if the command was indeed an internal RCC command</returns>
         protected bool PerformInternalCommand(string command, Dictionary<string, object> localVars = null)
         {
             string temp = "";
@@ -176,12 +151,12 @@ namespace RCC.Automata.Internal
         }
 
         /// <summary>
-        /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
+        /// Perform an internal RCC command (not a server command, use SendText() instead for that!)
         /// </summary>
         /// <param name="command">The command to process</param>
         /// <param name="responseMsg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <param name="localVars">Local variables passed along with the command</param>
-        /// <returns>TRUE if the command was indeed an internal MCC command</returns>
+        /// <returns>TRUE if the command was indeed an internal RCC command</returns>
         protected bool PerformInternalCommand(string command, ref string responseMsg, Dictionary<string, object> localVars = null)
         {
             return Handler.PerformInternalCommand(command, ref responseMsg, localVars);
@@ -231,8 +206,9 @@ namespace RCC.Automata.Internal
         /// Load an additional AutomatonBase
         /// </summary>
         /// <param name="automaton">AutomatonBase to load</param>
-        protected void LoadAutomaton(AutomatonBase automaton) { 
-            Handler.Automata.UnloadAutomaton(automaton); 
+        protected void LoadAutomaton(AutomatonBase automaton)
+        {
+            Handler.Automata.UnloadAutomaton(automaton);
             Handler.Automata.LoadAutomaton(automaton);
         }
 
@@ -350,5 +326,132 @@ namespace RCC.Automata.Internal
         /// <param name="args">Arguments in the command</param>
         /// <returns>CommandBase result to display to the user</returns>
         public delegate string CommandRunner(string command, string[] args);
+
+        /// <summary>
+        /// Called after the server has been joined successfully and chat messages are able to be sent.
+        /// This method is called again after reconnecting to the server, whereas Initialize() is called only once.
+        ///
+        /// NOTE: This is not always right after joining the server - if the automaton was loaded after logging
+        /// in this is still called.
+        /// </summary>
+        public virtual void OnGameJoined() { }
+
+        /// <summary>
+        /// Called after an internal RCC command has been performed
+        /// </summary>
+        /// <param name="commandName">RCC CommandBase Name</param>
+        /// <param name="commandParams">RCC CommandBase Parameters</param>
+        /// <param name="result">RCC command result</param>
+        public virtual void OnInternalCommand(string commandName, string commandParams, string result) { }
+
+        public virtual void OnTeamContactStatus(uint contactId, CharConnectionState online) { }
+
+        /// <summary>
+        /// called when the friend list gets initialised
+        /// </summary>
+        public virtual void OnTeamContactInit(List<uint> friendListNames, List<CharConnectionState> friendListOnline, List<string> ignoreListNames) { }
+
+        /// <summary>
+        /// called when a friend list contact was created
+        /// </summary>
+        public virtual void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList) { }
+
+        /// <summary>
+        /// Called when a chat message arrives
+        /// </summary>
+        public virtual void OnChat(in uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, in uint dynChatId, string senderName, in uint bubbleTimer) { }
+
+        /// <summary>
+        /// Called when a tell arrives
+        /// </summary>
+        public virtual void OnTell(string ucstr, string senderName) { }
+
+        /// <summary>
+        /// called when the server activates/deactivates use of female titles
+        /// </summary>
+        public virtual void OnGuildUseFemaleTitles(bool useFemaleTitles) { }
+
+        /// <summary>
+        /// called when the server upload the phrases.
+        /// </summary>
+        public virtual void OnPhraseDownLoad() { }
+
+        /// <summary>
+        /// called when the server block/unblock some reserved titles
+        /// </summary>
+        public virtual void OnGuildUpdatePlayerTitle(bool unblock, int len, List<ushort> titles) { }
+
+        /// <summary>
+        /// called when the server sends a new respawn point
+        /// </summary>
+        public virtual void OnDeathRespawnPoint(int x, int y) { }
+
+        /// <summary>
+        /// called when the server sends the encyclopedia initialisation
+        /// </summary>
+        public virtual void OnEncyclopediaInit() { }
+
+        /// <summary>
+        /// called when the server sends the inventory initialisation
+        /// </summary>
+        public virtual void OnInitInventory(uint serverTick) { }
+
+        /// <summary>
+        /// called when the server sends the database initialisation
+        /// </summary>
+        public virtual void OnDatabaseInitPlayer(uint serverTick) { }
+
+        /// <summary>
+        /// called when the server updates the user hp, sap, stamina and focus bars/stats
+        /// </summary>
+        public virtual void OnUserBars(byte msgNumber, int hp, int sap, int sta, int focus) { }
+
+        /// <summary>
+        /// called when a database bank gets initialised
+        /// </summary>
+        public virtual void OnDatabaseInitBank(in uint serverTick, in uint bank) { }
+
+        /// <summary>
+        /// called when the string cache reloads
+        /// </summary>
+        public virtual void OnReloadCache(in int timestamp) { }
+
+        /// <summary>
+        /// called when the local string set updates
+        /// </summary>
+        public virtual void OnStringResp(in uint stringId, string strUtf8) { }
+
+        /// <summary>
+        /// called on local string set updates
+        /// </summary>
+        public virtual void OnPhraseSend(DynamicStringInfo dynInfo) { }
+
+        /// <summary>
+        /// called when the player gets invited to a team
+        /// </summary>
+        public virtual void OnTeamInvitation(in uint textID) { }
+
+        /// <summary>
+        /// called when the server sends information about the user char after the login
+        /// </summary>
+        public virtual void OnUserChar(int highestMainlandSessionId, int firstConnectedTime, int playedTime, Vector3 initPos, Vector3 initFront, short season, int role, bool isInRingSession) { }
+
+        /// <summary>
+        /// called when the server sends information about the all the user chars
+        /// </summary>
+        /// <remarks>
+        /// character summaries are updated in the network manager before the Event fires
+        /// </remarks>
+        public virtual void OnUserChars() { }
+
+        /// <summary>
+        /// called when the server sends the database updates
+        /// </summary>
+        public virtual void OnDatabaseUpdatePlayer(uint serverTick) { }
+
+        /// <summary>
+        /// called when the client receives the shard id and the webhost from the server
+        /// </summary>
+        public virtual void OnShardID(in uint shardId, string webHost) { }
     }
 }

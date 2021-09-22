@@ -61,7 +61,7 @@ namespace RCC
         public ILogger Log;
 
         /// <summary>
-        /// Automata class that holds the loaded automatons from the Automata directory
+        /// Automata class that holds the loaded automata from the Automata directory
         /// </summary>
         public Automata.Internal.Automata Automata;
 
@@ -105,7 +105,6 @@ namespace RCC
             _stringManager = new StringManager(this);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager);
 
-
             Automata = new Automata.Internal.Automata(this);
 
             StartClient();
@@ -122,10 +121,12 @@ namespace RCC
                 ? new FileLogLogger(ClientConfig.LogFile, ClientConfig.PrependTimestamp)
                 : new FilteredLogger();
 
-            /* Load commands from Commands namespace */
+            Log.DebugEnabled = ClientConfig.DebugEnabled;
+
+            // Load commands from Commands namespace
             LoadCommands();
 
-            /* Load commands from Commands namespace */
+            // Load commands from Commands namespace
             Automata.LoadAutomata();
 
             _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
@@ -603,7 +604,7 @@ namespace RCC
         /// </summary>
         public void OnUpdate()
         {
-            // execute all the automatons scripts
+            // execute all the automata scripts
             Automata.OnUpdate();
 
             // process the queued chat messages

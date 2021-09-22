@@ -88,7 +88,7 @@ namespace RCC.Client
             {
                 _cacheFilename = "save/" + _shardId.Split(":")[0] + ".string_cache";
 
-                _client.GetLogger().Info($"SM : Try to open the string cache : {_cacheFilename}");
+                _client.GetLogger().Info($"Loading string cache from {Path.GetFullPath(_cacheFilename)}");
 
                 if (File.Exists(_cacheFilename))
                 {
@@ -104,7 +104,7 @@ namespace RCC.Client
 
                     if (_timestamp != timestamp)
                     {
-                        _client.GetLogger().Info("SM: Clearing string cache : outofdate");
+                        _client.GetLogger().Debug("SM: Clearing string cache : outofdate");
 
                         // the cache is not sync, reset it TODO this is not working correctly
                         using var fileStream = new FileStream(_cacheFilename, FileMode.Create);
@@ -115,12 +115,12 @@ namespace RCC.Client
                     }
                     else
                     {
-                        _client.GetLogger().Info("SM : string cache in sync. cool");
+                        _client.GetLogger().Debug("SM : string cache in sync. cool");
                     }
                 }
                 else
                 {
-                    _client.GetLogger().Info("SM: Creating string cache");
+                    _client.GetLogger().Debug("SM: Creating string cache");
 
                     // cache file don't exist, create it with the timestamp
                     using var fileStream = new FileStream(_cacheFilename, FileMode.Create);
@@ -175,8 +175,7 @@ namespace RCC.Client
             }
             catch (Exception e)
             {
-                _client.GetLogger().Warn($"SM : loadCache failed, exception : {e.GetType().Name} {e.Message}");
-                _client.GetLogger().Warn("SM : cache deactivated");
+                _client.GetLogger().Warn($"SM : loadCache failed, cache deactivated, exception : {e.GetType().Name} {e.Message}");
 
                 // deactivated cache.
                 _cacheFilename = "";
@@ -259,6 +258,9 @@ namespace RCC.Client
             }
             else
                 WaitingDynStrings.Add(dynId, dynInfo);
+
+            // Fire an Event
+            _client.Automata.OnPhraseSend(dynInfo);
         }
 
         /// <summary>
