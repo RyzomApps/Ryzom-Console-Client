@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using RCC.Commands.Internal;
-using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
@@ -13,8 +12,8 @@ namespace RCC.Commands
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
-            // If we are not connected, quit now TODO
-            if (false /*!RyzomClient.ConnectionReadySent*/)
+            // If we are not connected, quit now
+            if (!handler.IsInGame())
             {
                 Connection.GameExit = true;
                 RyzomClient.Log.Info("User Request to Quit ryzom");
@@ -24,7 +23,7 @@ namespace RCC.Commands
                 // Don't quit but wait for server Quit
                 const string msgName = "CONNECTION:CLIENT_QUIT_REQUEST";
                 var out2 = new BitMemoryStream();
-                GenericMessageHeaderManager.PushNameToStream(msgName, out2);
+                handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2);
                 var bypassDisconnectionTimer = false; // no need on a ring shard, as it's very short
                 out2.Serial(ref bypassDisconnectionTimer);
 
@@ -34,7 +33,7 @@ namespace RCC.Commands
                 uint asNum = 0; // this has to be short, but thats not implemented
                 out2.Serial(ref asNum);
 
-                NetworkManager.Push(out2);
+                handler.GetNetworkManager().Push(out2);
                 //nlinfo("impulseCallBack : %s sent", msgName.c_str());
 
                 RyzomClient.Log.Info("Initiating quit sequence... Please wait 30s for the logout.");

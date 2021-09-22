@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using RCC.Commands.Internal;
-using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
@@ -19,7 +18,7 @@ namespace RCC.Commands
 
             var out2 = new BitMemoryStream();
 
-            if (!GenericMessageHeaderManager.PushNameToStream("DEBUG:WHO", out2))
+            if (!handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream("DEBUG:WHO", out2))
             {
                 RyzomClient.Log?.Warn("Unknown message name DEBUG:WHO");
                 return "";
@@ -33,7 +32,7 @@ namespace RCC.Commands
             }
 
             out2.Serial(ref opt);
-            NetworkManager.Push(out2);
+            handler.GetNetworkManager().Push(out2);
             return "";
         }
 

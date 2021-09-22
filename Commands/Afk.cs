@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using RCC.Commands.Internal;
-using RCC.Messages;
+﻿using RCC.Commands.Internal;
 using RCC.Network;
+using System.Collections.Generic;
 
 namespace RCC.Commands
 {
@@ -25,10 +24,10 @@ namespace RCC.Commands
             // send afk state
             string msgName = "COMMAND:AFK";
             BitMemoryStream out2 = new BitMemoryStream();
-            if (GenericMessageHeaderManager.PushNameToStream(msgName, out2))
+            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 out2.Serial(ref b);
-                NetworkManager.Push(out2);
+                handler.GetNetworkManager().Push(out2);
             }
             else
                 RyzomClient.Log?.Warn($"Unknown message named '{msgName}'.");
@@ -36,10 +35,10 @@ namespace RCC.Commands
             // custom afk txt
             BitMemoryStream outTxt = new BitMemoryStream();
             msgName = "STRING:AFK_TXT";
-            if (GenericMessageHeaderManager.PushNameToStream(msgName, outTxt))
+            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, outTxt))
             {
                 outTxt.Serial(ref customText);
-                NetworkManager.Push(outTxt);
+                handler.GetNetworkManager().Push(outTxt);
             }
             else
             {

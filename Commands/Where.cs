@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using RCC.Commands.Internal;
-using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
@@ -18,10 +17,11 @@ namespace RCC.Commands
             {
                 // Create the message and send.
                 const string msgName = "COMMAND:WHERE";
-                BitMemoryStream out2 = new BitMemoryStream();
-                if (GenericMessageHeaderManager.PushNameToStream(msgName, out2))
+                var out2 = new BitMemoryStream();
+
+                if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
                 {
-                    NetworkManager.Push(out2);
+                    handler.GetNetworkManager().Push(out2);
                 }
                 else
                     RyzomClient.Log?.Warn($"Unknown message named '{msgName}'.");

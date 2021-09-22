@@ -18,9 +18,9 @@ namespace RCC.Chat
     /// </summary>
     internal static class ChatManager
     {
-        public const uint INVALID_DATASET_INDEX = 0x00FFFFFF;
+        public const uint InvalidDatasetIndex = 0x00FFFFFF;
 
-        const int PreTagSize = 5;
+        private const int PreTagSize = 5;
         static readonly List<ChatMsgNode> _ChatBuffer = new List<ChatMsgNode>();
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace RCC.Chat
 
             // If !complete, wait
             bool complete = true;
-            complete &= StringManagerClient.GetString(chatMsg.SenderNameId, out string senderStr);
+            complete &= StringManagerClient.GetString(chatMsg.SenderNameId, out string senderStr, ((RyzomClient)RyzomClient.GetInstance()).GetNetworkManager());
             if (!complete)
             {
                 _ChatBuffer.Add(new ChatMsgNode(chatMsg, true));
@@ -69,7 +69,7 @@ namespace RCC.Chat
             string senderStr;
 
             bool complete = true;
-            complete = StringManagerClient.GetString(chatMsg.SenderNameId, out senderStr);
+            complete = StringManagerClient.GetString(chatMsg.SenderNameId, out senderStr, ((RyzomClient)RyzomClient.GetInstance()).GetNetworkManager());
 
             if (type == ChatGroupType.DynChat)
             {
@@ -105,7 +105,7 @@ namespace RCC.Chat
             uint phraseID = 0;
             bms.Serial(ref phraseID);
             //if (PermanentlyBanned) return;
-            chatMsg.CompressedIndex = INVALID_DATASET_INDEX;
+            chatMsg.CompressedIndex = InvalidDatasetIndex;
             chatMsg.SenderNameId = 0;
             chatMsg.ChatMode = type;
             chatMsg.PhraseId = phraseID;
@@ -122,7 +122,7 @@ namespace RCC.Chat
 
             // diplay
             string senderName = "";
-            chatDisplayer.DisplayChat(INVALID_DATASET_INDEX, ucstr, ucstr, type, 0, senderName);
+            chatDisplayer.DisplayChat(InvalidDatasetIndex, ucstr, ucstr, type, 0, senderName);
         }
 
         internal static void FlushBuffer(IChatDisplayer chatDisplayer)
@@ -135,7 +135,7 @@ namespace RCC.Chat
             //ChatMsgNode itMsg;
 
             for (int i = 0; i < _ChatBuffer.Count; i++)
-                //for (itMsg = _ChatBuffer.begin(); itMsg != _ChatBuffer.end();)
+            //for (itMsg = _ChatBuffer.begin(); itMsg != _ChatBuffer.end();)
             {
                 ChatMsgNode itMsg = _ChatBuffer[i];
                 ChatGroupType type = itMsg.ChatMode;
@@ -145,7 +145,7 @@ namespace RCC.Chat
                 // all strings received?
                 bool complete = true;
                 if (itMsg.SenderNameId != 0)
-                    complete &= StringManagerClient.GetString(itMsg.SenderNameId, out sender);
+                    complete &= StringManagerClient.GetString(itMsg.SenderNameId, out sender, ((RyzomClient)RyzomClient.GetInstance()).GetNetworkManager());
                 if (itMsg.UsePhraseId)
                     complete &= StringManagerClient.GetDynString(itMsg.PhraseId, out content);
                 else
@@ -264,7 +264,7 @@ namespace RCC.Chat
             }
 
             // Format the sentence with the provided sender name
-            string senderName = Entity.RemoveTitleAndShardFromName(sender); 
+            string senderName = Entity.RemoveTitleAndShardFromName(sender);
 
             string csr = "";
             // Does the char have a CSR title?

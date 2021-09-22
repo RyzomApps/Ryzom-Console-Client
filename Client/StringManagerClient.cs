@@ -265,7 +265,7 @@ namespace RCC.Client
         {
             if (dynInfo.Status == TStatus.Received)
             {
-                if (!GetString(dynInfo.StringId, out dynInfo.String))
+                if (!GetString(dynInfo.StringId, out dynInfo.String, ((RyzomClient)RyzomClient.GetInstance()).GetNetworkManager()))
                 {
                     // can't continue now, need the base string.
                     return false;
@@ -384,7 +384,7 @@ namespace RCC.Client
                     {
                         case ParamType.StringID:
                         {
-                            if (!GetString(param.StringId, out string str))
+                            if (!GetString(param.StringId, out string str, ((RyzomClient)RyzomClient.GetInstance()).GetNetworkManager()))
                                 return false;
 
                             var p1 = str.IndexOf('[');
@@ -605,13 +605,13 @@ namespace RCC.Client
         /// <summary>
         ///     request the stringId from the local cache or if missing ask the server
         /// </summary>
-        public static bool GetString(uint stringId, out string result)
+        public static bool GetString(uint stringId, out string result, NetworkManager networkManager)
         {
-            if (stringId == 93402 || stringId == 93403) // TODO: why do this ids lead to a disconnect?
-            {
-                result = string.Empty;
-                return false;
-            }
+            //if (stringId == 93402 || stringId == 93403) // TODO: why do this ids lead to a disconnect?
+            //{
+            //    result = string.Empty;
+            //    return false;
+            //}
 
             if (!ReceivedStrings.ContainsKey(stringId))
             {
@@ -623,10 +623,10 @@ namespace RCC.Client
                     var bms = new BitMemoryStream();
                     const string msgType = "STRING_MANAGER:STRING_RQ";
 
-                    if (GenericMessageHeaderManager.PushNameToStream(msgType, bms))
+                    if (networkManager.GetMessageHeaderManager().PushNameToStream(msgType, bms))
                     {
                         bms.Serial(ref stringId);
-                        NetworkManager.Push(bms);
+                        networkManager.Push(bms);
                         RyzomClient.Log?.Debug(
                             $"<CStringManagerClient.getString> sending 'STRING_MANAGER:STRING_RQ' message to server for stringId {stringId}");
                     }

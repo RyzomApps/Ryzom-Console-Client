@@ -31,13 +31,13 @@ namespace RCC.Commands
             const string msgName = "COMMAND:CUSTOM_EMOTE";
             var out2 = new BitMemoryStream();
 
-            if (GenericMessageHeaderManager.PushNameToStream(msgName, out2))
+            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 emotePhrase = "&EMT&" + Connection.PlayerSelectedHomeShardName + " " + emotePhrase;
 
                 out2.Serial(ref behavToSend);
                 out2.Serial(ref emotePhrase);
-                NetworkManager.Push(out2);
+                handler.GetNetworkManager().Push(out2);
             }
             else
                 RyzomClient.Log?.Warn($"Unknown message named '{msgName}'.");

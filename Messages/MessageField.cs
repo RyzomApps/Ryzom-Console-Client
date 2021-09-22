@@ -11,7 +11,7 @@ namespace RCC.Messages
     /// <summary>
     ///     A message field - TMessageFormat with message type and bit size
     /// </summary>
-    internal class MessageField
+    public class MessageField
     {
         byte _bitSize;
         MessageFieldType _type;

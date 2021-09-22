@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using RCC.Commands.Internal;
-using RCC.Messages;
 
 namespace RCC.Commands
 {
@@ -12,7 +11,7 @@ namespace RCC.Commands
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
-            GenericMessageHeaderManager.SendMsgToServer("COMBAT:DODGE");
+            handler.GetNetworkManager().SendMsgToServer("COMBAT:DODGE");
 
             return "";
         }

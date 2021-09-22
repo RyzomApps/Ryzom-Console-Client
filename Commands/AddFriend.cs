@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using RCC.Commands.Internal;
-using RCC.Messages;
 using RCC.Network;
 
 namespace RCC.Commands
@@ -26,7 +25,7 @@ namespace RCC.Commands
             const string msgName = "TEAM:CONTACT_ADD";
             var out2 = new BitMemoryStream();
 
-            if (GenericMessageHeaderManager.PushNameToStream(msgName, out2))
+            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 byte list = 0; // friendslist
                 string temp = args[0];
@@ -36,7 +35,7 @@ namespace RCC.Commands
 
                 Debug.Print(out2.ToString());
 
-                NetworkManager.Push(out2);
+                handler.GetNetworkManager().Push(out2);
             }
             else
                 RyzomClient.Log?.Warn($"Unknown message named '{msgName}'.");

@@ -21,21 +21,33 @@ namespace RCC.Network
     /// <summary>
     ///     used to control the connection and implements the impulse callbacks from the connection
     /// </summary>
-    public static class NetworkManager
+    public class NetworkManager
     {
-        public static bool ServerReceivedReady;
+        public bool ServerReceivedReady;
 
-        private static NetworkConnection _networkConnection;
+        private NetworkConnection _networkConnection;
 
-        public static void SetNetworkConnection(NetworkConnection networkConnection)
+        private readonly RyzomClient _handler;
+
+        private readonly GenericMessageHeaderManager _messageHeaderManager;
+
+        public NetworkManager(RyzomClient handler, NetworkConnection networkConnection)
         {
+            _messageHeaderManager = new GenericMessageHeaderManager();
             _networkConnection = networkConnection;
+            _handler = handler;
         }
+
+        public GenericMessageHeaderManager GetMessageHeaderManager()
+        {
+            return _messageHeaderManager;
+        }
+
 
         /// <summary>
         ///     Send - updates when packets were received
         /// </summary>
-        public static void Send(uint gameCycle)
+        public void Send(uint gameCycle)
         {
             // wait till next server is received
             if (_networkConnection.LastSentCycle >= gameCycle)
@@ -63,7 +75,7 @@ namespace RCC.Network
         ///     Buffers a bitmemstream, that will be converted into a generic action, to be sent later to the server (at next
         ///     update).
         /// </summary>
-        public static void Push(BitMemoryStream msg)
+        public void Push(BitMemoryStream msg)
         {
             //if (PermanentlyBanned) return; LOL
 
@@ -74,7 +86,7 @@ namespace RCC.Network
         /// <summary>
         ///     Reset data and init the socket
         /// </summary>
-        public static void ReInit()
+        public void ReInit()
         {
             //IngameDbMngr.resetInitState();
             _networkConnection.ReInit();
@@ -86,7 +98,7 @@ namespace RCC.Network
         ///     Call this method evently.
         /// </summary>
         /// <returns>'true' if data were sent/received.</returns>
-        public static bool Update()
+        public bool Update()
         {
             // Update the base class.
             _networkConnection.Update();
@@ -96,7 +108,7 @@ namespace RCC.Network
 
             // TODO:  Manage changes
 
-            ChatManager.FlushBuffer(RyzomClient.GetInstance());
+            ChatManager.FlushBuffer(_handler);
 
             // TODO: update everyting
 
@@ -106,7 +118,7 @@ namespace RCC.Network
         /// <summary>
         ///     Send updates
         /// </summary>
-        public static void Send()
+        public void Send()
         {
             _networkConnection.Send();
         }
@@ -115,449 +127,449 @@ namespace RCC.Network
         ///     ImpulseCallBack :
         ///     The Impulse callback to receive all msg from the frontend.
         /// </summary>
-        public static void ImpulseCallBack(BitMemoryStream impulse)
+        public void ImpulseCallBack(BitMemoryStream impulse)
         {
-            GenericMessageHeaderManager.Execute(impulse);
+            _messageHeaderManager.Execute(impulse);
         }
 
         /// <summary>
         ///     initializeNetwork :
         /// </summary>
-        public static void InitializeNetwork()
+        public void InitializeNetwork()
         {
-            GenericMessageHeaderManager.SetCallback("DB_UPD_PLR", ImpulseDatabaseUpdatePlayer);
-            GenericMessageHeaderManager.SetCallback("DB_INIT:PLR", ImpulseDatabaseInitPlayer);
-            GenericMessageHeaderManager.SetCallback("DB_UPD_INV", ImpulseUpdateInventory);
-            GenericMessageHeaderManager.SetCallback("DB_INIT:INV", ImpulseInitInventory);
-            GenericMessageHeaderManager.SetCallback("DB_GROUP:UPDATE_BANK", ImpulseDatabaseUpdateBank);
-            GenericMessageHeaderManager.SetCallback("DB_GROUP:INIT_BANK", ImpulseDatabaseInitBank);
-            GenericMessageHeaderManager.SetCallback("DB_GROUP:RESET_BANK", ImpulseDatabaseResetBank);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:NO_USER_CHAR", ImpulseNoUserChar);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:USER_CHARS", ImpulseUserChars);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:USER_CHAR", ImpulseUserChar);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:FAR_TP", ImpulseFarTp);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:READY", ImpulseServerReady);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:VALID_NAME", ImpulseCharNameValid);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:SHARD_ID", ImpulseShardId);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:SERVER_QUIT_OK", ImpulseServerQuitOk);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:SERVER_QUIT_ABORT", ImpulseServerQuitAbort);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:MAIL_AVAILABLE", ImpulseMailNotification);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:GUILD_MESSAGE_AVAILABLE", ImpulseForumNotification);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:PERMANENT_BAN", ImpulsePermanentBan);
-            GenericMessageHeaderManager.SetCallback("CONNECTION:UNBAN", ImpulsePermanentUnban);
+            _messageHeaderManager.SetCallback("DB_UPD_PLR", ImpulseDatabaseUpdatePlayer);
+            _messageHeaderManager.SetCallback("DB_INIT:PLR", ImpulseDatabaseInitPlayer);
+            _messageHeaderManager.SetCallback("DB_UPD_INV", ImpulseUpdateInventory);
+            _messageHeaderManager.SetCallback("DB_INIT:INV", ImpulseInitInventory);
+            _messageHeaderManager.SetCallback("DB_GROUP:UPDATE_BANK", ImpulseDatabaseUpdateBank);
+            _messageHeaderManager.SetCallback("DB_GROUP:INIT_BANK", ImpulseDatabaseInitBank);
+            _messageHeaderManager.SetCallback("DB_GROUP:RESET_BANK", ImpulseDatabaseResetBank);
+            _messageHeaderManager.SetCallback("CONNECTION:NO_USER_CHAR", ImpulseNoUserChar);
+            _messageHeaderManager.SetCallback("CONNECTION:USER_CHARS", ImpulseUserChars);
+            _messageHeaderManager.SetCallback("CONNECTION:USER_CHAR", ImpulseUserChar);
+            _messageHeaderManager.SetCallback("CONNECTION:FAR_TP", ImpulseFarTp);
+            _messageHeaderManager.SetCallback("CONNECTION:READY", ImpulseServerReady);
+            _messageHeaderManager.SetCallback("CONNECTION:VALID_NAME", ImpulseCharNameValid);
+            _messageHeaderManager.SetCallback("CONNECTION:SHARD_ID", ImpulseShardId);
+            _messageHeaderManager.SetCallback("CONNECTION:SERVER_QUIT_OK", ImpulseServerQuitOk);
+            _messageHeaderManager.SetCallback("CONNECTION:SERVER_QUIT_ABORT", ImpulseServerQuitAbort);
+            _messageHeaderManager.SetCallback("CONNECTION:MAIL_AVAILABLE", ImpulseMailNotification);
+            _messageHeaderManager.SetCallback("CONNECTION:GUILD_MESSAGE_AVAILABLE", ImpulseForumNotification);
+            _messageHeaderManager.SetCallback("CONNECTION:PERMANENT_BAN", ImpulsePermanentBan);
+            _messageHeaderManager.SetCallback("CONNECTION:UNBAN", ImpulsePermanentUnban);
 
-            GenericMessageHeaderManager.SetCallback("STRING:CHAT", ImpulseChat);
-            GenericMessageHeaderManager.SetCallback("STRING:TELL", ImpulseTell);
-            GenericMessageHeaderManager.SetCallback("STRING:FAR_TELL", ImpulseFarTell);
-            GenericMessageHeaderManager.SetCallback("STRING:CHAT2", ImpulseChat2);
-            GenericMessageHeaderManager.SetCallback("STRING:DYN_STRING", ImpulseDynString);
-            GenericMessageHeaderManager.SetCallback("STRING:DYN_STRING_GROUP", ImpulseDynStringInChatGroup);
-            GenericMessageHeaderManager.SetCallback("STRING:TELL2", ImpulseTell2);
+            _messageHeaderManager.SetCallback("STRING:CHAT", ImpulseChat);
+            _messageHeaderManager.SetCallback("STRING:TELL", ImpulseTell);
+            _messageHeaderManager.SetCallback("STRING:FAR_TELL", ImpulseFarTell);
+            _messageHeaderManager.SetCallback("STRING:CHAT2", ImpulseChat2);
+            _messageHeaderManager.SetCallback("STRING:DYN_STRING", ImpulseDynString);
+            _messageHeaderManager.SetCallback("STRING:DYN_STRING_GROUP", ImpulseDynStringInChatGroup);
+            _messageHeaderManager.SetCallback("STRING:TELL2", ImpulseTell2);
             //	GenericMsgHeaderMngr.setCallback("STRING:ADD_DYN_STR",		ImpulseAddDynStr);
-            GenericMessageHeaderManager.SetCallback("TP:DEST", ImpulseTp);
-            GenericMessageHeaderManager.SetCallback("TP:DEST_WITH_SEASON", ImpulseTpWithSeason);
-            GenericMessageHeaderManager.SetCallback("TP:CORRECT", ImpulseCorrectPos);
-            GenericMessageHeaderManager.SetCallback("COMBAT:ENGAGE_FAILED", ImpulseCombatEngageFailed);
-            GenericMessageHeaderManager.SetCallback("BOTCHAT:DYNCHAT_OPEN", ImpulseDynChatOpen);
-            GenericMessageHeaderManager.SetCallback("BOTCHAT:DYNCHAT_CLOSE", ImpulseDynChatClose);
+            _messageHeaderManager.SetCallback("TP:DEST", ImpulseTp);
+            _messageHeaderManager.SetCallback("TP:DEST_WITH_SEASON", ImpulseTpWithSeason);
+            _messageHeaderManager.SetCallback("TP:CORRECT", ImpulseCorrectPos);
+            _messageHeaderManager.SetCallback("COMBAT:ENGAGE_FAILED", ImpulseCombatEngageFailed);
+            _messageHeaderManager.SetCallback("BOTCHAT:DYNCHAT_OPEN", ImpulseDynChatOpen);
+            _messageHeaderManager.SetCallback("BOTCHAT:DYNCHAT_CLOSE", ImpulseDynChatClose);
 
-            GenericMessageHeaderManager.SetCallback("CASTING:BEGIN", ImpulseBeginCast);
-            GenericMessageHeaderManager.SetCallback("TEAM:INVITATION", ImpulseTeamInvitation);
-            GenericMessageHeaderManager.SetCallback("TEAM:SHARE_OPEN", ImpulseTeamShareOpen);
-            GenericMessageHeaderManager.SetCallback("TEAM:SHARE_INVALID", ImpulseTeamShareInvalid);
-            GenericMessageHeaderManager.SetCallback("TEAM:SHARE_CLOSE", ImpulseTeamShareClose);
-            GenericMessageHeaderManager.SetCallback("TEAM:CONTACT_INIT", ImpulseTeamContactInit);
-            GenericMessageHeaderManager.SetCallback("TEAM:CONTACT_CREATE", ImpulseTeamContactCreate);
-            GenericMessageHeaderManager.SetCallback("TEAM:CONTACT_STATUS", ImpulseTeamContactStatus);
-            GenericMessageHeaderManager.SetCallback("TEAM:CONTACT_REMOVE", ImpulseTeamContactRemove);
+            _messageHeaderManager.SetCallback("CASTING:BEGIN", ImpulseBeginCast);
+            _messageHeaderManager.SetCallback("TEAM:INVITATION", ImpulseTeamInvitation);
+            _messageHeaderManager.SetCallback("TEAM:SHARE_OPEN", ImpulseTeamShareOpen);
+            _messageHeaderManager.SetCallback("TEAM:SHARE_INVALID", ImpulseTeamShareInvalid);
+            _messageHeaderManager.SetCallback("TEAM:SHARE_CLOSE", ImpulseTeamShareClose);
+            _messageHeaderManager.SetCallback("TEAM:CONTACT_INIT", ImpulseTeamContactInit);
+            _messageHeaderManager.SetCallback("TEAM:CONTACT_CREATE", ImpulseTeamContactCreate);
+            _messageHeaderManager.SetCallback("TEAM:CONTACT_STATUS", ImpulseTeamContactStatus);
+            _messageHeaderManager.SetCallback("TEAM:CONTACT_REMOVE", ImpulseTeamContactRemove);
 
-            GenericMessageHeaderManager.SetCallback("EXCHANGE:INVITATION", ImpulseExchangeInvitation);
-            GenericMessageHeaderManager.SetCallback("EXCHANGE:CLOSE_INVITATION", ImpulseExchangeCloseInvitation);
-            GenericMessageHeaderManager.SetCallback("ANIMALS:MOUNT_ABORT", ImpulseMountAbort);
+            _messageHeaderManager.SetCallback("EXCHANGE:INVITATION", ImpulseExchangeInvitation);
+            _messageHeaderManager.SetCallback("EXCHANGE:CLOSE_INVITATION", ImpulseExchangeCloseInvitation);
+            _messageHeaderManager.SetCallback("ANIMALS:MOUNT_ABORT", ImpulseMountAbort);
 
-            GenericMessageHeaderManager.SetCallback("DEBUG:REPLY_WHERE", ImpulseWhere);
-            GenericMessageHeaderManager.SetCallback("DEBUG:COUNTER", ImpulseCounter);
+            _messageHeaderManager.SetCallback("DEBUG:REPLY_WHERE", ImpulseWhere);
+            _messageHeaderManager.SetCallback("DEBUG:COUNTER", ImpulseCounter);
 
             //
-            GenericMessageHeaderManager.SetCallback("STRING_MANAGER:PHRASE_SEND", ImpulsePhraseSend);
-            GenericMessageHeaderManager.SetCallback("STRING_MANAGER:STRING_RESP", ImpulseStringResp);
-            GenericMessageHeaderManager.SetCallback("STRING_MANAGER:RELOAD_CACHE", ImpulseReloadCache);
+            _messageHeaderManager.SetCallback("STRING_MANAGER:PHRASE_SEND", ImpulsePhraseSend);
+            _messageHeaderManager.SetCallback("STRING_MANAGER:STRING_RESP", ImpulseStringResp);
+            _messageHeaderManager.SetCallback("STRING_MANAGER:RELOAD_CACHE", ImpulseReloadCache);
             //
-            GenericMessageHeaderManager.SetCallback("BOTCHAT:FORCE_END", ImpulseBotChatForceEnd);
+            _messageHeaderManager.SetCallback("BOTCHAT:FORCE_END", ImpulseBotChatForceEnd);
 
-            GenericMessageHeaderManager.SetCallback("JOURNAL:INIT_COMPLETED_MISSIONS",
+            _messageHeaderManager.SetCallback("JOURNAL:INIT_COMPLETED_MISSIONS",
                 ImpulseJournalInitCompletedMissions);
-            GenericMessageHeaderManager.SetCallback("JOURNAL:UPDATE_COMPLETED_MISSIONS",
+            _messageHeaderManager.SetCallback("JOURNAL:UPDATE_COMPLETED_MISSIONS",
                 ImpulseJournalUpdateCompletedMissions);
             //	GenericMsgHeaderMngr.setCallback("JOURNAL:CANT_ABANDON",				ImpulseJournalCantAbandon);
 
-            GenericMessageHeaderManager.SetCallback("JOURNAL:ADD_COMPASS", ImpulseJournalAddCompass);
-            GenericMessageHeaderManager.SetCallback("JOURNAL:REMOVE_COMPASS", ImpulseJournalRemoveCompass);
+            _messageHeaderManager.SetCallback("JOURNAL:ADD_COMPASS", ImpulseJournalAddCompass);
+            _messageHeaderManager.SetCallback("JOURNAL:REMOVE_COMPASS", ImpulseJournalRemoveCompass);
 
 
             //GenericMsgHeaderMngr.setCallback("GUILD:SET_MEMBER_INFO",	ImpulseGuildSetMemberInfo);
             //GenericMsgHeaderMngr.setCallback("GUILD:INIT_MEMBER_INFO",	ImpulseGuildInitMemberInfo);
 
-            GenericMessageHeaderManager.SetCallback("GUILD:JOIN_PROPOSAL", ImpulseGuildJoinProposal);
+            _messageHeaderManager.SetCallback("GUILD:JOIN_PROPOSAL", ImpulseGuildJoinProposal);
 
-            GenericMessageHeaderManager.SetCallback("GUILD:ASCENSOR", ImpulseGuildAscensor);
-            GenericMessageHeaderManager.SetCallback("GUILD:LEAVE_ASCENSOR", ImpulseGuildLeaveAscensor);
-            GenericMessageHeaderManager.SetCallback("GUILD:ABORT_CREATION", ImpulseGuildAbortCreation);
-            GenericMessageHeaderManager.SetCallback("GUILD:OPEN_GUILD_WINDOW", ImpulseGuildOpenGuildWindow);
+            _messageHeaderManager.SetCallback("GUILD:ASCENSOR", ImpulseGuildAscensor);
+            _messageHeaderManager.SetCallback("GUILD:LEAVE_ASCENSOR", ImpulseGuildLeaveAscensor);
+            _messageHeaderManager.SetCallback("GUILD:ABORT_CREATION", ImpulseGuildAbortCreation);
+            _messageHeaderManager.SetCallback("GUILD:OPEN_GUILD_WINDOW", ImpulseGuildOpenGuildWindow);
 
-            GenericMessageHeaderManager.SetCallback("GUILD:OPEN_INVENTORY", ImpulseGuildOpenInventory);
-            GenericMessageHeaderManager.SetCallback("GUILD:CLOSE_INVENTORY", ImpulseGuildCloseInventory);
+            _messageHeaderManager.SetCallback("GUILD:OPEN_INVENTORY", ImpulseGuildOpenInventory);
+            _messageHeaderManager.SetCallback("GUILD:CLOSE_INVENTORY", ImpulseGuildCloseInventory);
 
-            GenericMessageHeaderManager.SetCallback("GUILD:UPDATE_PLAYER_TITLE", ImpulseGuildUpdatePlayerTitle);
-            GenericMessageHeaderManager.SetCallback("GUILD:USE_FEMALE_TITLES", ImpulseGuildUseFemaleTitles);
+            _messageHeaderManager.SetCallback("GUILD:UPDATE_PLAYER_TITLE", ImpulseGuildUpdatePlayerTitle);
+            _messageHeaderManager.SetCallback("GUILD:USE_FEMALE_TITLES", ImpulseGuildUseFemaleTitles);
             //GenericMsgHeaderMngr.setCallback("GUILD:INVITATION", ImpulseGuildInvitation);
 
-            GenericMessageHeaderManager.SetCallback("HARVEST:CLOSE_TEMP_INVENTORY", ImpulseCloseTempInv);
+            _messageHeaderManager.SetCallback("HARVEST:CLOSE_TEMP_INVENTORY", ImpulseCloseTempInv);
 
-            GenericMessageHeaderManager.SetCallback("COMMAND:REMOTE_ADMIN", ImpulseRemoteAdmin);
+            _messageHeaderManager.SetCallback("COMMAND:REMOTE_ADMIN", ImpulseRemoteAdmin);
 
-            GenericMessageHeaderManager.SetCallback("PHRASE:DOWNLOAD", ImpulsePhraseDownLoad);
-            GenericMessageHeaderManager.SetCallback("PHRASE:CONFIRM_BUY", ImpulsePhraseConfirmBuy);
-            GenericMessageHeaderManager.SetCallback("PHRASE:EXEC_CYCLIC_ACK", ImpulsePhraseAckExecuteCyclic);
-            GenericMessageHeaderManager.SetCallback("PHRASE:EXEC_NEXT_ACK", ImpulsePhraseAckExecuteNext);
+            _messageHeaderManager.SetCallback("PHRASE:DOWNLOAD", ImpulsePhraseDownLoad);
+            _messageHeaderManager.SetCallback("PHRASE:CONFIRM_BUY", ImpulsePhraseConfirmBuy);
+            _messageHeaderManager.SetCallback("PHRASE:EXEC_CYCLIC_ACK", ImpulsePhraseAckExecuteCyclic);
+            _messageHeaderManager.SetCallback("PHRASE:EXEC_NEXT_ACK", ImpulsePhraseAckExecuteNext);
 
-            GenericMessageHeaderManager.SetCallback("ITEM_INFO:SET", ImpulseItemInfoSet);
-            GenericMessageHeaderManager.SetCallback("ITEM_INFO:REFRESH_VERSION", ImpulseItemInfoRefreshVersion);
-            GenericMessageHeaderManager.SetCallback("MISSION_PREREQ:SET", ImpulsePrereqInfoSet);
-            GenericMessageHeaderManager.SetCallback("ITEM:OPEN_ROOM_INVENTORY", ImpulseItemOpenRoomInventory);
-            GenericMessageHeaderManager.SetCallback("ITEM:CLOSE_ROOM_INVENTORY", ImpulseItemCloseRoomInventory);
+            _messageHeaderManager.SetCallback("ITEM_INFO:SET", ImpulseItemInfoSet);
+            _messageHeaderManager.SetCallback("ITEM_INFO:REFRESH_VERSION", ImpulseItemInfoRefreshVersion);
+            _messageHeaderManager.SetCallback("MISSION_PREREQ:SET", ImpulsePrereqInfoSet);
+            _messageHeaderManager.SetCallback("ITEM:OPEN_ROOM_INVENTORY", ImpulseItemOpenRoomInventory);
+            _messageHeaderManager.SetCallback("ITEM:CLOSE_ROOM_INVENTORY", ImpulseItemCloseRoomInventory);
 
-            GenericMessageHeaderManager.SetCallback("DEATH:RESPAWN_POINT", ImpulseDeathRespawnPoint);
-            GenericMessageHeaderManager.SetCallback("DEATH:RESPAWN", ImpulseDeathRespawn);
+            _messageHeaderManager.SetCallback("DEATH:RESPAWN_POINT", ImpulseDeathRespawnPoint);
+            _messageHeaderManager.SetCallback("DEATH:RESPAWN", ImpulseDeathRespawn);
 
-            GenericMessageHeaderManager.SetCallback("DUEL:INVITATION", ImpulseDuelInvitation);
-            GenericMessageHeaderManager.SetCallback("DUEL:CANCEL_INVITATION", ImpulseDuelCancelInvitation);
+            _messageHeaderManager.SetCallback("DUEL:INVITATION", ImpulseDuelInvitation);
+            _messageHeaderManager.SetCallback("DUEL:CANCEL_INVITATION", ImpulseDuelCancelInvitation);
 
-            GenericMessageHeaderManager.SetCallback("PVP_CHALLENGE:INVITATION", ImpulsePvpChallengeInvitation);
-            GenericMessageHeaderManager.SetCallback("PVP_CHALLENGE:CANCEL_INVITATION",
+            _messageHeaderManager.SetCallback("PVP_CHALLENGE:INVITATION", ImpulsePvpChallengeInvitation);
+            _messageHeaderManager.SetCallback("PVP_CHALLENGE:CANCEL_INVITATION",
                 ImpulsePvpChallengeCancelInvitation);
 
-            GenericMessageHeaderManager.SetCallback("PVP_FACTION:PUSH_FACTION_WAR", ImpulsePvpFactionPushFactionWar);
-            GenericMessageHeaderManager.SetCallback("PVP_FACTION:POP_FACTION_WAR", ImpulsePvpFactionPopFactionWar);
-            GenericMessageHeaderManager.SetCallback("PVP_FACTION:FACTION_WARS", ImpulsePvpFactionFactionWars);
+            _messageHeaderManager.SetCallback("PVP_FACTION:PUSH_FACTION_WAR", ImpulsePvpFactionPushFactionWar);
+            _messageHeaderManager.SetCallback("PVP_FACTION:POP_FACTION_WAR", ImpulsePvpFactionPopFactionWar);
+            _messageHeaderManager.SetCallback("PVP_FACTION:FACTION_WARS", ImpulsePvpFactionFactionWars);
 
 
             //	GenericMsgHeaderMngr.setCallback("PVP_VERSUS:CHOOSE_CLAN",	ImpulsePVPChooseClan);
 
-            GenericMessageHeaderManager.SetCallback("ENCYCLOPEDIA:UPDATE", ImpulseEncyclopediaUpdate);
-            GenericMessageHeaderManager.SetCallback("ENCYCLOPEDIA:INIT", ImpulseEncyclopediaInit);
+            _messageHeaderManager.SetCallback("ENCYCLOPEDIA:UPDATE", ImpulseEncyclopediaUpdate);
+            _messageHeaderManager.SetCallback("ENCYCLOPEDIA:INIT", ImpulseEncyclopediaInit);
 
-            GenericMessageHeaderManager.SetCallback("USER:BARS", ImpulseUserBars);
-            GenericMessageHeaderManager.SetCallback("USER:POPUP", ImpulseUserPopup);
+            _messageHeaderManager.SetCallback("USER:BARS", ImpulseUserBars);
+            _messageHeaderManager.SetCallback("USER:POPUP", ImpulseUserPopup);
 
 
-            GenericMessageHeaderManager.SetCallback("MISSION:ASK_ENTER_CRITICAL", ImpulseEnterCrZoneProposal);
-            GenericMessageHeaderManager.SetCallback("MISSION:CLOSE_ENTER_CRITICAL", ImpulseCloseEnterCrZoneProposal);
+            _messageHeaderManager.SetCallback("MISSION:ASK_ENTER_CRITICAL", ImpulseEnterCrZoneProposal);
+            _messageHeaderManager.SetCallback("MISSION:CLOSE_ENTER_CRITICAL", ImpulseCloseEnterCrZoneProposal);
 
             // Module gateway message
-            GenericMessageHeaderManager.SetCallback("MODULE_GATEWAY:FEOPEN", CbImpulsionGatewayOpen);
-            GenericMessageHeaderManager.SetCallback("MODULE_GATEWAY:GATEWAY_MSG", CbImpulsionGatewayMessage);
-            GenericMessageHeaderManager.SetCallback("MODULE_GATEWAY:FECLOSE", CbImpulsionGatewayClose);
+            _messageHeaderManager.SetCallback("MODULE_GATEWAY:FEOPEN", CbImpulsionGatewayOpen);
+            _messageHeaderManager.SetCallback("MODULE_GATEWAY:GATEWAY_MSG", CbImpulsionGatewayMessage);
+            _messageHeaderManager.SetCallback("MODULE_GATEWAY:FECLOSE", CbImpulsionGatewayClose);
 
-            GenericMessageHeaderManager.SetCallback("OUTPOST:CHOOSE_SIDE", ImpulseOutpostChooseSide);
-            GenericMessageHeaderManager.SetCallback("OUTPOST:DECLARE_WAR_ACK", ImpulseOutpostDeclareWarAck);
+            _messageHeaderManager.SetCallback("OUTPOST:CHOOSE_SIDE", ImpulseOutpostChooseSide);
+            _messageHeaderManager.SetCallback("OUTPOST:DECLARE_WAR_ACK", ImpulseOutpostDeclareWarAck);
 
-            GenericMessageHeaderManager.SetCallback("COMBAT:FLYING_HP_DELTA", ImpulseCombatFlyingHpDelta);
-            GenericMessageHeaderManager.SetCallback("COMBAT:FLYING_TEXT_ISE",
+            _messageHeaderManager.SetCallback("COMBAT:FLYING_HP_DELTA", ImpulseCombatFlyingHpDelta);
+            _messageHeaderManager.SetCallback("COMBAT:FLYING_TEXT_ISE",
                 ImpulseCombatFlyingTextItemSpecialEffectProc);
-            GenericMessageHeaderManager.SetCallback("COMBAT:FLYING_TEXT", ImpulseCombatFlyingText);
+            _messageHeaderManager.SetCallback("COMBAT:FLYING_TEXT", ImpulseCombatFlyingText);
 
-            GenericMessageHeaderManager.SetCallback("SEASON:SET", ImpulseSetSeason);
-            GenericMessageHeaderManager.SetCallback("RING_MISSION:DSS_DOWN", ImpulseDssDown);
+            _messageHeaderManager.SetCallback("SEASON:SET", ImpulseSetSeason);
+            _messageHeaderManager.SetCallback("RING_MISSION:DSS_DOWN", ImpulseDssDown);
 
-            GenericMessageHeaderManager.SetCallback("NPC_ICON:SET_DESC", ImpulseSetNpcIconDesc);
-            GenericMessageHeaderManager.SetCallback("NPC_ICON:SVR_EVENT_MIS_AVL",
+            _messageHeaderManager.SetCallback("NPC_ICON:SET_DESC", ImpulseSetNpcIconDesc);
+            _messageHeaderManager.SetCallback("NPC_ICON:SVR_EVENT_MIS_AVL",
                 ImpulseServerEventForMissionAvailability);
-            GenericMessageHeaderManager.SetCallback("NPC_ICON:SET_TIMER", ImpulseSetNpcIconTimer);
+            _messageHeaderManager.SetCallback("NPC_ICON:SET_TIMER", ImpulseSetNpcIconTimer);
         }
 
-        private static void ImpulseSetNpcIconTimer(BitMemoryStream impulse)
+        private void ImpulseSetNpcIconTimer(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseServerEventForMissionAvailability(BitMemoryStream impulse)
+        private void ImpulseServerEventForMissionAvailability(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseSetNpcIconDesc(BitMemoryStream impulse)
+        private void ImpulseSetNpcIconDesc(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDssDown(BitMemoryStream impulse)
+        private void ImpulseDssDown(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseSetSeason(BitMemoryStream impulse)
+        private void ImpulseSetSeason(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseCombatFlyingText(BitMemoryStream impulse)
+        private void ImpulseCombatFlyingText(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseCombatFlyingTextItemSpecialEffectProc(BitMemoryStream impulse)
+        private void ImpulseCombatFlyingTextItemSpecialEffectProc(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseCombatFlyingHpDelta(BitMemoryStream impulse)
+        private void ImpulseCombatFlyingHpDelta(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void CbImpulsionGatewayMessage(BitMemoryStream impulse)
+        private void CbImpulsionGatewayMessage(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseOutpostDeclareWarAck(BitMemoryStream impulse)
+        private void ImpulseOutpostDeclareWarAck(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseOutpostChooseSide(BitMemoryStream impulse)
+        private void ImpulseOutpostChooseSide(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void CbImpulsionGatewayClose(BitMemoryStream impulse)
+        private void CbImpulsionGatewayClose(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void CbImpulsionGatewayOpen(BitMemoryStream impulse)
+        private void CbImpulsionGatewayOpen(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseCloseEnterCrZoneProposal(BitMemoryStream impulse)
+        private void ImpulseCloseEnterCrZoneProposal(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseEnterCrZoneProposal(BitMemoryStream impulse)
+        private void ImpulseEnterCrZoneProposal(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseUserPopup(BitMemoryStream impulse)
+        private void ImpulseUserPopup(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseUserBars(BitMemoryStream impulse)
+        private void ImpulseUserBars(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseEncyclopediaInit(BitMemoryStream impulse)
+        private void ImpulseEncyclopediaInit(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseEncyclopediaUpdate(BitMemoryStream impulse)
+        private void ImpulseEncyclopediaUpdate(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePvpFactionFactionWars(BitMemoryStream impulse)
+        private void ImpulsePvpFactionFactionWars(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePvpFactionPopFactionWar(BitMemoryStream impulse)
+        private void ImpulsePvpFactionPopFactionWar(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePvpFactionPushFactionWar(BitMemoryStream impulse)
+        private void ImpulsePvpFactionPushFactionWar(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePvpChallengeCancelInvitation(BitMemoryStream impulse)
+        private void ImpulsePvpChallengeCancelInvitation(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePvpChallengeInvitation(BitMemoryStream impulse)
+        private void ImpulsePvpChallengeInvitation(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDuelCancelInvitation(BitMemoryStream impulse)
+        private void ImpulseDuelCancelInvitation(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDuelInvitation(BitMemoryStream impulse)
+        private void ImpulseDuelInvitation(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDeathRespawn(BitMemoryStream impulse)
+        private void ImpulseDeathRespawn(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDeathRespawnPoint(BitMemoryStream impulse)
+        private void ImpulseDeathRespawnPoint(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseItemCloseRoomInventory(BitMemoryStream impulse)
+        private void ImpulseItemCloseRoomInventory(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseItemOpenRoomInventory(BitMemoryStream impulse)
+        private void ImpulseItemOpenRoomInventory(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseItemInfoRefreshVersion(BitMemoryStream impulse)
+        private void ImpulseItemInfoRefreshVersion(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePrereqInfoSet(BitMemoryStream impulse)
+        private void ImpulsePrereqInfoSet(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseItemInfoSet(BitMemoryStream impulse)
+        private void ImpulseItemInfoSet(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePhraseAckExecuteNext(BitMemoryStream impulse)
+        private void ImpulsePhraseAckExecuteNext(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePhraseAckExecuteCyclic(BitMemoryStream impulse)
+        private void ImpulsePhraseAckExecuteCyclic(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePhraseConfirmBuy(BitMemoryStream impulse)
+        private void ImpulsePhraseConfirmBuy(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePhraseDownLoad(BitMemoryStream impulse)
+        private void ImpulsePhraseDownLoad(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseRemoteAdmin(BitMemoryStream impulse)
+        private void ImpulseRemoteAdmin(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseCloseTempInv(BitMemoryStream impulse)
+        private void ImpulseCloseTempInv(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseGuildUseFemaleTitles(BitMemoryStream impulse)
+        private void ImpulseGuildUseFemaleTitles(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseGuildUpdatePlayerTitle(BitMemoryStream impulse)
+        private void ImpulseGuildUpdatePlayerTitle(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseGuildCloseInventory(BitMemoryStream impulse)
+        private void ImpulseGuildCloseInventory(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseGuildOpenInventory(BitMemoryStream impulse)
+        private void ImpulseGuildOpenInventory(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseGuildOpenGuildWindow(BitMemoryStream impulse)
+        private void ImpulseGuildOpenGuildWindow(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseGuildAbortCreation(BitMemoryStream impulse)
+        private void ImpulseGuildAbortCreation(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseGuildLeaveAscensor(BitMemoryStream impulse)
+        private void ImpulseGuildLeaveAscensor(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseGuildAscensor(BitMemoryStream impulse)
+        private void ImpulseGuildAscensor(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseGuildJoinProposal(BitMemoryStream impulse)
+        private void ImpulseGuildJoinProposal(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseJournalRemoveCompass(BitMemoryStream impulse)
+        private void ImpulseJournalRemoveCompass(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseJournalAddCompass(BitMemoryStream impulse)
+        private void ImpulseJournalAddCompass(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseJournalUpdateCompletedMissions(BitMemoryStream impulse)
+        private void ImpulseJournalUpdateCompletedMissions(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseJournalInitCompletedMissions(BitMemoryStream impulse)
+        private void ImpulseJournalInitCompletedMissions(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseBotChatForceEnd(BitMemoryStream impulse)
+        private void ImpulseBotChatForceEnd(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         /// <summary>
         ///     reload the string cache
         /// </summary>
-        private static void ImpulseReloadCache(BitMemoryStream impulse)
+        private void ImpulseReloadCache(BitMemoryStream impulse)
         {
             var timestamp = 0;
             impulse.Serial(ref timestamp);
 
             StringManagerClient.LoadCache(timestamp);
 
-            RyzomClient.Log?.Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
+            _handler.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
         }
 
         /// <summary>
         ///     Update the local string set
         /// </summary>
-        private static void ImpulseStringResp(BitMemoryStream impulse)
+        private void ImpulseStringResp(BitMemoryStream impulse)
         {
             uint stringId = 0;
             string strUtf8 = "";
@@ -566,7 +578,7 @@ namespace RCC.Network
             //string str;
             //str.fromUtf8(strUtf8);
 
-            RyzomClient.Log?.Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
+            _handler.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
 
             StringManagerClient.ReceiveString(stringId, strUtf8);
         }
@@ -574,45 +586,45 @@ namespace RCC.Network
         /// <summary>
         ///     A dyn string (or phrase) is send (so, we receive it)
         /// </summary>
-        private static void ImpulsePhraseSend(BitMemoryStream impulse)
+        private void ImpulsePhraseSend(BitMemoryStream impulse)
         {
             StringManagerClient.ReceiveDynString(impulse);
         }
 
-        private static void ImpulseCounter(BitMemoryStream impulse)
+        private void ImpulseCounter(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseWhere(BitMemoryStream impulse)
+        private void ImpulseWhere(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseMountAbort(BitMemoryStream impulse)
+        private void ImpulseMountAbort(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseExchangeCloseInvitation(BitMemoryStream impulse)
+        private void ImpulseExchangeCloseInvitation(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseExchangeInvitation(BitMemoryStream impulse)
+        private void ImpulseExchangeInvitation(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseTeamContactRemove(BitMemoryStream impulse)
+        private void ImpulseTeamContactRemove(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         /// <summary>
         /// update one of the character from the friend list
         /// </summary>
-        private static void ImpulseTeamContactStatus(BitMemoryStream impulse)
+        private void ImpulseTeamContactStatus(BitMemoryStream impulse)
         {
             uint contactId = 0;
             byte state = 0;
@@ -622,10 +634,10 @@ namespace RCC.Network
 
             var online = (CharConnectionState)state;
 
-            ((RyzomClient)RyzomClient.GetInstance()).Automata.OnGameTeamContactStatus(contactId, online);
+            _handler.Automata.OnGameTeamContactStatus(contactId, online);
         }
 
-        private static void ImpulseTeamContactCreate(BitMemoryStream impulse)
+        private void ImpulseTeamContactCreate(BitMemoryStream impulse)
         {
             uint contactId = 0;
             uint nameId = 0;
@@ -646,13 +658,13 @@ namespace RCC.Network
                 if (nameId == 0) return;
             }
 
-            ((RyzomClient)RyzomClient.GetInstance()).Automata.OnTeamContactCreate(contactId, nameId, online, nList);
+            _handler.Automata.OnTeamContactCreate(contactId, nameId, online, nList);
         }
 
         /// <summary>
         /// initialize friend list and ignore list from the contact list
         /// </summary>
-        private static void ImpulseTeamContactInit(BitMemoryStream impulse)
+        private void ImpulseTeamContactInit(BitMemoryStream impulse)
         {
             List<uint> vFriendListName;
             List<CharConnectionState> vFriendListOnline;
@@ -689,166 +701,166 @@ namespace RCC.Network
 
             //PeopleInterraction.initContactLists(vFriendListName, vFriendListOnline, vIgnoreListName);
 
-            ((RyzomClient)RyzomClient.GetInstance()).Automata.OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
+            _handler.Automata.OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
         }
 
-        private static void ImpulseTeamShareClose(BitMemoryStream impulse)
+        private void ImpulseTeamShareClose(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseTeamShareInvalid(BitMemoryStream impulse)
+        private void ImpulseTeamShareInvalid(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseTeamShareOpen(BitMemoryStream impulse)
+        private void ImpulseTeamShareOpen(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseTeamInvitation(BitMemoryStream impulse)
+        private void ImpulseTeamInvitation(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} -> AutoJoin");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} -> AutoJoin");
 
-            GenericMessageHeaderManager.SendMsgToServer("TEAM:JOIN");
+            SendMsgToServer("TEAM:JOIN");
         }
 
-        private static void ImpulseBeginCast(BitMemoryStream impulse)
+        private void ImpulseBeginCast(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDynChatClose(BitMemoryStream impulse)
+        private void ImpulseDynChatClose(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDynChatOpen(BitMemoryStream impulse)
+        private void ImpulseDynChatOpen(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseCombatEngageFailed(BitMemoryStream impulse)
+        private void ImpulseCombatEngageFailed(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseCorrectPos(BitMemoryStream impulse)
+        private void ImpulseCorrectPos(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseTpWithSeason(BitMemoryStream impulse)
+        private void ImpulseTpWithSeason(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseTp(BitMemoryStream impulse)
+        private void ImpulseTp(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseTell2(BitMemoryStream impulse)
+        private void ImpulseTell2(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDynStringInChatGroup(BitMemoryStream impulse)
+        private void ImpulseDynStringInChatGroup(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDynString(BitMemoryStream impulse)
+        private void ImpulseDynString(BitMemoryStream impulse)
         {
-            //RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
-            ChatManager.ProcessChatStringWithNoSender(impulse, ChatGroupType.System, RyzomClient.GetInstance());
+            //_handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            ChatManager.ProcessChatStringWithNoSender(impulse, ChatGroupType.System, _handler);
         }
 
-        private static void ImpulseChat2(BitMemoryStream impulse)
+        private void ImpulseChat2(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseFarTell(BitMemoryStream impulse)
+        private void ImpulseFarTell(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseTell(BitMemoryStream impulse)
+        private void ImpulseTell(BitMemoryStream impulse)
         {
-            ChatManager.ProcessTellString(impulse, RyzomClient.GetInstance());
+            ChatManager.ProcessTellString(impulse, _handler);
         }
 
-        private static void ImpulseChat(BitMemoryStream impulse)
+        private void ImpulseChat(BitMemoryStream impulse)
         {
-            ChatManager.ProcessChatString(impulse, RyzomClient.GetInstance());
+            ChatManager.ProcessChatString(impulse, _handler);
         }
 
-        private static void ImpulsePermanentUnban(BitMemoryStream impulse)
+        private void ImpulsePermanentUnban(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulsePermanentBan(BitMemoryStream impulse)
+        private void ImpulsePermanentBan(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseForumNotification(BitMemoryStream impulse)
+        private void ImpulseForumNotification(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseMailNotification(BitMemoryStream impulse)
+        private void ImpulseMailNotification(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseServerQuitAbort(BitMemoryStream impulse)
+        private void ImpulseServerQuitAbort(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseServerQuitOk(BitMemoryStream impulse)
+        private void ImpulseServerQuitOk(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
             Connection.GameExit = true;
         }
 
-        private static void ImpulseShardId(BitMemoryStream impulse)
+        private void ImpulseShardId(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseCharNameValid(BitMemoryStream impulse)
+        private void ImpulseCharNameValid(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseServerReady(BitMemoryStream impulse)
+        private void ImpulseServerReady(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             ServerReceivedReady = true;
 
             CheckHandshake(impulse);
 
-            ((RyzomClient)RyzomClient.GetInstance()).Automata.OnGameJoined();
+            _handler.Automata.OnGameJoined();
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_ready_received);
         }
 
-        private static void ImpulseFarTp(BitMemoryStream impulse)
+        private void ImpulseFarTp(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
 
-        private static void ImpulseUserChar(BitMemoryStream impulse)
+        private void ImpulseUserChar(BitMemoryStream impulse)
         {
             //// received USER_CHAR
-            RyzomClient.Log?.Info("ImpulseCallBack : Received CONNECTION:USER_CHAR");
+            _handler.GetLogger().Info("ImpulseCallBack : Received CONNECTION:USER_CHAR");
             //
             //// Serialize the message
             //COfflineEntityState posState;
@@ -907,13 +919,13 @@ namespace RCC.Network
             var userEntityInitPos = new Vector3((float)x / 1000.0f, (float)y / 1000.0f, (float)z / 1000.0f);
             var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
 
-            RyzomClient.Log?.Info($"Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
+            _handler.GetLogger().Info($"Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
 
             // Update the position for the vision.
             //NetworkManager.setReferencePosition(UserEntityInitPos);
             //}
 
-            RyzomClient.UserCharPosReceived = true;
+            _handler.UserCharPosReceived = true;
 
             //// Configure the ring editor
             //extern R2::TUserRole UserRoleInSession;
@@ -928,10 +940,10 @@ namespace RCC.Network
             // updatePatcherPriorityBasedOnCharacters();
         }
 
-        private static void ImpulseUserChars(BitMemoryStream impulse)
+        private void ImpulseUserChars(BitMemoryStream impulse)
         {
             // received USER_CHARS
-            RyzomClient.Log?.Info("Received user characters");
+            _handler.GetLogger().Info("Received user characters");
 
             impulse.Serial(ref Connection.ServerPeopleActive);
             impulse.Serial(ref Connection.ServerCareerActive);
@@ -947,14 +959,14 @@ namespace RCC.Network
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
                 if ((PeopleType)cs.People != PeopleType.Unknown)
-                    RyzomClient.Log?.Info($"Character {cs.Name} from shard {cs.Mainland} in slot {i}");
+                    _handler.GetLogger().Info($"Character {cs.Name} from shard {cs.Mainland} in slot {i}");
                 Connection.CharacterSummaries.Add(cs);
             }
             // END WORKAROUND
 
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
-            RyzomClient.Log?.Debug("st_ingame->st_select_char");
+            _handler.GetLogger().Debug("st_ingame->st_select_char");
             Connection.AutoSendCharSelection = true;
 
             //// Create the message for the server to select the first character.
@@ -994,37 +1006,37 @@ namespace RCC.Network
             //updatePatcherPriorityBasedOnCharacters();
         }
 
-        private static void ImpulseNoUserChar(BitMemoryStream impulse)
+        private void ImpulseNoUserChar(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDatabaseResetBank(BitMemoryStream impulse)
+        private void ImpulseDatabaseResetBank(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDatabaseInitBank(BitMemoryStream impulse)
+        private void ImpulseDatabaseInitBank(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDatabaseUpdateBank(BitMemoryStream impulse)
+        private void ImpulseDatabaseUpdateBank(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseInitInventory(BitMemoryStream impulse)
+        private void ImpulseInitInventory(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseUpdateInventory(BitMemoryStream impulse)
+        private void ImpulseUpdateInventory(BitMemoryStream impulse)
         {
-            RyzomClient.Log?.Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private static void ImpulseDatabaseInitPlayer(BitMemoryStream impulse)
+        private void ImpulseDatabaseInitPlayer(BitMemoryStream impulse)
         {
             var p = impulse.Pos;
 
@@ -1036,10 +1048,10 @@ namespace RCC.Network
             // TODO: IngameDbMngr.readDelta + setInitPacketReceived
             //IngameDbMngr.readDelta(serverTick, Impulse, TCDBBank.CDBPlayer);
             //IngameDbMngr.setInitPacketReceived();
-            RyzomClient.Log?.Info($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
+            _handler.GetLogger().Info($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
         }
 
-        private static void ImpulseDatabaseUpdatePlayer(BitMemoryStream impulse)
+        private void ImpulseDatabaseUpdatePlayer(BitMemoryStream impulse)
         {
             //ConsoleIO.WriteLine("Impulse on " + MethodBase.GetCurrentMethod()?.Name);
         }
@@ -1048,18 +1060,38 @@ namespace RCC.Network
         ///     Decode handshake to check versions
         /// </summary>
         /// <param name="impulse"></param>
-        private static void CheckHandshake(BitMemoryStream impulse)
+        private void CheckHandshake(BitMemoryStream impulse)
         {
             uint handshakeVersion = 0;
             impulse.Serial(ref handshakeVersion, 2);
             if (handshakeVersion > 0)
-                RyzomClient.Log?.Warn("Server handshake version is more recent than client one");
+                _handler.GetLogger().Warn("Server handshake version is more recent than client one");
 
             uint itemSlotVersion = 0;
             impulse.Serial(ref itemSlotVersion, 2);
-            RyzomClient.Log?.Info($"Item slot version: {itemSlotVersion}");
+            _handler.GetLogger().Info($"Item slot version: {itemSlotVersion}");
             //if (itemSlotVersion != INVENTORIES::CItemSlot::getVersion())
             //    nlerror("Handshake: itemSlotVersion mismatch (S:%hu C:%hu)", itemSlotVersion, INVENTORIES::CItemSlot::getVersion());
+        }
+
+
+        /// <summary>
+        ///     sendMsgToServer Helper
+        ///     selects the message by its name and pushes it to the connection
+        /// </summary>
+        public void SendMsgToServer(string sMsg)
+        {
+            var out2 = new BitMemoryStream();
+
+            if (_messageHeaderManager.PushNameToStream(sMsg, out2))
+            {
+                //nlinfo("ImpulseCallBack : %s sent", sMsg.c_str());
+                Push(out2);
+            }
+            else
+            {
+                _handler.GetLogger().Warn($"Unknown message named '{sMsg}'.");
+            }
         }
     }
 }

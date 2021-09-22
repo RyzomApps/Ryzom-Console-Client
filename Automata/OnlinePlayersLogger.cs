@@ -54,7 +54,7 @@ namespace RCC.Automata
             // Get missing names from server
             foreach (var id in _friendNames.Keys.Where(id => _friendNames[id] == string.Empty))
             {
-                if (StringManagerClient.GetString(id, out var name))
+                if (StringManagerClient.GetString(id, out var name, Handler.GetNetworkManager()))
                 {
                     _friendNames[id] = Entity.RemoveTitleAndShardFromName(name).ToLower();
                 }
@@ -137,7 +137,7 @@ namespace RCC.Automata
         public override void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList)
         {
             _friendOnline.Add(nameId, online);
-            _friendNames.Add(nameId, StringManagerClient.GetString(nameId, out var name) ? Entity.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
+            _friendNames.Add(nameId, StringManagerClient.GetString(nameId, out var name, Handler.GetNetworkManager()) ? Entity.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
 
             RyzomClient.Log.Info($"Added {(_friendNames[nameId] != string.Empty ? _friendNames[nameId] : $"{nameId}")} to the friend list.");
         }

@@ -32,6 +32,7 @@ namespace RCC
     {
         private static RyzomClient _instance;
         private readonly NetworkConnection _networkConnection;
+        private NetworkManager _networkManager;
 
         private static Thread _clientThread;
         private Thread _cmdprompt;
@@ -55,7 +56,7 @@ namespace RCC
         private static DateTime _nextMessageSendTime = DateTime.MinValue;
         private ChatGroupType _channel = ChatGroupType.Around;
         private static uint _lastGameCycle;
-        public static bool UserCharPosReceived = false;
+        public bool UserCharPosReceived = false;
 
         public static ILogger Log;
 
@@ -88,6 +89,7 @@ namespace RCC
         public bool IsInGame() => _networkConnection.ConnectionState == ConnectionState.Connected;
 
         public NetworkConnection GetNetworkConnection() { return _networkConnection; }
+        public NetworkManager GetNetworkManager() { return _networkManager; }
 
         #region Initialisation
 
@@ -99,7 +101,7 @@ namespace RCC
             _instance = this;
             _clientThread = Thread.CurrentThread;
             _networkConnection = new NetworkConnection(this);
-            NetworkManager.SetNetworkConnection(_networkConnection);
+            _networkManager = new NetworkManager(this, _networkConnection);
 
             Automata = new Automata.Internal.Automata(this);
 
@@ -247,17 +249,17 @@ namespace RCC
             while (_lastGameCycle == _networkConnection.GetCurrentServerTick())
             {
                 // Update Network.
-                NetworkManager.Update();
+                _networkManager.Update();
             }
 
             // Create the message for the server to create the character.
             var out2 = new BitMemoryStream();
 
-            if (GenericMessageHeaderManager.PushNameToStream("CONNECTION:READY", out2))
+            if (_networkManager.GetMessageHeaderManager().PushNameToStream("CONNECTION:READY", out2))
             {
                 out2.Serial(ref ClientConfig.LanguageCode);
-                NetworkManager.Push(out2);
-                NetworkManager.Send(_networkConnection.GetCurrentServerTick());
+                _networkManager.Push(out2);
+                _networkManager.Send(_networkConnection.GetCurrentServerTick());
             }
             else
             {
@@ -309,14 +311,14 @@ namespace RCC
         ///     Initialize the application after login
         ///     if the init fails, call nlerror
         /// </summary>
-        private static void PostlogInit()
+        private void PostlogInit()
         {
             //std::string msgXMLPath = CPath::lookup("msg.xml");
             const string msgXmlPath = "./data/msg.xml";
-            GenericMessageHeaderManager.Init(msgXmlPath);
+            _networkManager.GetMessageHeaderManager().Init(msgXmlPath);
 
             // Initialize the Generic Message Header Manager.
-            NetworkManager.InitializeNetwork();
+            _networkManager.InitializeNetwork();
 
             // todo: init the chat manager
             // ChatManager.init(CPath::lookup("chat_static.cdb"));
@@ -389,7 +391,7 @@ namespace RCC
 
                 // Ok the client is connected
                 // Set the impulse callback.
-                _networkConnection.SetImpulseCallback(NetworkManager.ImpulseCallBack);
+                _networkConnection.SetImpulseCallback(_networkManager.ImpulseCallBack);
 
                 // Set the database.
                 //TODO _networkConnection.setDataBase(IngameDbMngr.getNodePtr());
@@ -418,7 +420,7 @@ namespace RCC
                 try
                 {
                     if (!firewallTimeout)
-                        NetworkManager.Update();
+                        _networkManager.Update();
                 }
                 catch
                 {
@@ -471,17 +473,17 @@ namespace RCC
 
                         // Auto-selection for fast launching (dev only)
                         Network.Connection.AutoSendCharSelection = false;
-                        ActionHandlerLaunchGame.Execute(charSelect.ToString());
+                        ActionHandlerLaunchGame.Execute(charSelect.ToString(), _networkManager);
                     }
 
                     // Clear sending buffer that may contain prevous QUIT_GAME when getting back to the char selection screen
                     _networkConnection.FlushSendBuffer();
                 }
 
-                if (NetworkManager.ServerReceivedReady)
+                if (_networkManager.ServerReceivedReady)
                 {
                     //nlinfo("impulseCallBack : received serverReceivedReady");
-                    NetworkManager.ServerReceivedReady = false;
+                    _networkManager.ServerReceivedReady = false;
                     Network.Connection.WaitServerAnswer = false;
                     playerWantToGoInGame = true;
                 }
@@ -531,13 +533,13 @@ namespace RCC
                 }
 
                 // NetWork Update.
-                NetworkManager.Update();
+                _networkManager.Update();
 
                 // Send new data Only when server tick changed.
                 if (_networkConnection.GetCurrentServerTick() > _lastGameCycle)
                 {
                     // Send the Packet.
-                    NetworkManager.Send(_networkConnection.GetCurrentServerTick());
+                    _networkManager.Send(_networkConnection.GetCurrentServerTick());
 
                     // Update the Last tick received from the server.
                     _lastGameCycle = _networkConnection.GetCurrentServerTick();
@@ -657,11 +659,11 @@ namespace RCC
                 byte mode = (byte)channel;
                 uint dynamicChannelId = 0;
 
-                if (GenericMessageHeaderManager.PushNameToStream(msgType, bms))
+                if (_networkManager.GetMessageHeaderManager().PushNameToStream(msgType, bms))
                 {
                     bms.Serial(ref mode);
                     bms.Serial(ref dynamicChannelId);
-                    NetworkManager.Push(bms);
+                    _networkManager.Push(bms);
                     //nlinfo("impulseCallBack : %s %d sent", msgType.c_str(), mode);
                 }
                 else
@@ -674,10 +676,10 @@ namespace RCC
                 msgType = "STRING:CHAT";
 
                 var out2 = new BitMemoryStream();
-                if (GenericMessageHeaderManager.PushNameToStream(msgType, out2))
+                if (_networkManager.GetMessageHeaderManager().PushNameToStream(msgType, out2))
                 {
                     out2.Serial(ref message);
-                    NetworkManager.Push(out2);
+                    _networkManager.Push(out2);
                 }
                 else
                 {

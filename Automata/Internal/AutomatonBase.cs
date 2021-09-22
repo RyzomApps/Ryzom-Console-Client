@@ -49,7 +49,7 @@ namespace RCC.Automata.Internal
         /// </summary>
         public void SetHandler(RyzomClient handler) { _handler = handler; }
 
-        private RyzomClient Handler
+        protected RyzomClient Handler
         {
             get
             {

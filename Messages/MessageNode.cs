@@ -18,7 +18,7 @@ namespace RCC.Messages
     ///     Node Leafs in a tree storing server message information (callbacks, bit sizes, names, ...)
     ///     from CGenericXmlMsgHeaderManager::CNode
     /// </summary>
-    internal class MessageNode
+    public class MessageNode
     {
         //public delegate void TMsgHeaderCallback(object[] arguments); // TMsgHeaderCallback -> Event Structure
         public Action<BitMemoryStream> Callback;
