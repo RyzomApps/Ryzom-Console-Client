@@ -35,8 +35,6 @@ namespace RCC.Automata
 
         private string _playerName;
 
-        //private readonly Random _rand = new Random();
-
         public override void Initialize()
         {
             RyzomClient.Log.Info("Bot 'OnlinePlayersLogger' initialized.");
@@ -47,7 +45,7 @@ namespace RCC.Automata
                 RyzomClient.Log.Info("No server for player online status updates set: Not using this feature.");
         }
 
-        // nach einer aktion jeweils abbrechen, da noch ein problem mit mehreren actions in einem action block beim senden besteht -> disco
+        /// <remarks>nach einer aktion jeweils abbrechen, da noch ein problem mit mehreren actions in einem action block beim senden besteht -> disco</remarks>
         public override void Update()
         {
             if (!_initialized)

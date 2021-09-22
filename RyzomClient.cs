@@ -45,6 +45,11 @@ namespace RCC
         private readonly Queue<Action> _threadTasks = new Queue<Action>();
         private readonly object _threadTasksLock = new object();
 
+        /// <summary>
+        /// when was the last OnUpdate call of the RyzomClient
+        /// </summary>
+        private long _lastClientUpdate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+
         private static bool _firstConnection = true;
         private static DateTime _nextMessageSendTime = DateTime.MinValue;
         private ChatGroupType _channel = ChatGroupType.Around;
@@ -512,7 +517,11 @@ namespace RCC
                 Thread.Sleep(10);
 
                 // Update Ryzom Client stuff -> Execute Tasks (like commands and automaton stuff)
-                OnUpdate();
+                if (Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - _lastClientUpdate) > 100)
+                {
+                    _lastClientUpdate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    OnUpdate();
+                }
 
                 // NetWork Update.
                 NetworkManager.Update();
@@ -591,12 +600,14 @@ namespace RCC
         #region Console Client Methods 
 
         /// <summary>
-        /// Called ~10 times per second by the protocol handler
+        /// Called ~10 times per second by the game loop
         /// </summary>
         public void OnUpdate()
         {
+            // execute all the automatons scripts
             Automata.OnUpdate();
 
+            // process the queued chat messages
             lock (_chatQueue)
             {
                 if (_chatQueue.Count > 0 && _nextMessageSendTime < DateTime.Now)
@@ -607,11 +618,12 @@ namespace RCC
                 }
             }
 
+            // processing of the pending tasks
             lock (_threadTasksLock)
             {
                 while (_threadTasks.Count > 0)
                 {
-                    Action taskToRun = _threadTasks.Dequeue();
+                    var taskToRun = _threadTasks.Dequeue();
                     taskToRun();
                 }
             }
@@ -623,6 +635,7 @@ namespace RCC
         /// <param name="message">Message</param>
         /// <param name="channel">Channel (e.g. around, universe, region, ...)</param>
         /// <returns>True if properly sent</returns>
+        /// TODO: Move that closer to the chatManager
         public bool SendChatMessage(string message, ChatGroupType channel = ChatGroupType.Around)
         {
             if (string.IsNullOrEmpty(message))
@@ -704,8 +717,6 @@ namespace RCC
 
             _commandsLoaded = true;
         }
-
-
 
         /// <summary>
         ///     Allows the user to send chat messages, commands, and leave the server.
@@ -811,7 +822,6 @@ namespace RCC
             Cmds.Remove(cmdName.ToLower());
             CmdNames.Remove(cmdName.ToLower());
             return true;
-
         }
 
         /// <summary>
