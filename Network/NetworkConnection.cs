@@ -108,11 +108,11 @@ namespace RCC.Network
         private bool _alreadyWarned;
         private byte _impulseMultiPartNumber = 0;
 
-        private readonly RyzomClient _handler;
+        private readonly RyzomClient _client;
 
-        public NetworkConnection(RyzomClient handler)
+        public NetworkConnection(RyzomClient client)
         {
-            _handler = handler;
+            _client = client;
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace RCC.Network
             get => _connectionState;
             set
             {
-                _handler.GetLogger().Info($"Connection state changed to {value}");
+                _client.GetLogger().Info($"Connection state changed to {value}");
                 _connectionState = value;
             }
         }
@@ -303,7 +303,7 @@ namespace RCC.Network
 
             SetLoginCookieFromString(cookie);
 
-            _handler.GetLogger().Info($"Network initialisation with front end '{_frontendAddress}' and cookie {cookie}");
+            _client.GetLogger().Info($"Network initialisation with front end '{_frontendAddress}' and cookie {cookie}");
 
             ConnectionState = ConnectionState.NotConnected;
         }
@@ -351,14 +351,14 @@ namespace RCC.Network
                         case SystemMessageType.SystemSyncCode:
                             // receive sync, decode sync
                             ConnectionState = ConnectionState.Synchronize;
-                            _handler.GetLogger().Debug("CNET: login->synchronize");
+                            _client.GetLogger().Debug("CNET: login->synchronize");
                             ReceiveSystemSync(msgin);
                             return true;
 
                         case SystemMessageType.SystemStalledCode:
                             // receive stalled, decode stalled and state stalled
                             ConnectionState = ConnectionState.Stalled;
-                            _handler.GetLogger().Debug("CNET: login->stalled");
+                            _client.GetLogger().Debug("CNET: login->stalled");
                             ReceiveSystemStalled(msgin);
                             return true;
 
@@ -366,25 +366,25 @@ namespace RCC.Network
                             // receive probe, decode probe and state probe
                             ConnectionState = ConnectionState.Probe;
                             //_Changes.push_back(CChange(0, ProbeReceived));
-                            _handler.GetLogger().Debug("CNET: login->probe");
+                            _client.GetLogger().Debug("CNET: login->probe");
                             ReceiveSystemProbe(msgin);
                             return true;
 
                         case SystemMessageType.SystemServerDownCode:
                             Disconnect(); // will send disconnection message
-                            _handler.GetLogger().Error("BACK-END DOWN");
+                            _client.GetLogger().Error("BACK-END DOWN");
                             return false; // exit now from loop, don't expect a new state
 
                         default:
                             //msgin.displayStream("DBG:BEN:stateLogin:msgin");
-                            _handler.GetLogger().Warn($"CNET: received system {message} in state Login");
+                            _client.GetLogger().Warn($"CNET: received system {message} in state Login");
                             break;
                     }
                 }
                 else
                 {
                     //msgin.displayStream("DBG:BEN:stateLogin:msgin");
-                    _handler.GetLogger().Warn($"CNET: received normal in state Login");
+                    _client.GetLogger().Warn($"CNET: received normal in state Login");
                 }
             }
 
@@ -399,7 +399,7 @@ namespace RCC.Network
                 {
                     _mLoginAttempts = 0;
                     Disconnect(); // will send disconnection message
-                    _handler.GetLogger().Warn("CNET: Too many LOGIN attempts, connection problem");
+                    _client.GetLogger().Warn("CNET: Too many LOGIN attempts, connection problem");
                     return true; // exit now from loop, don't expect a new state
                 }
 
@@ -454,17 +454,17 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemServerDownCode:
                                 Disconnect(); // will send disconnection message
-                                _handler.GetLogger().Error("BACK-END DOWN");
+                                _client.GetLogger().Error("BACK-END DOWN");
                                 return false; // exit now from loop, don't expect a new state
 
                             default:
-                                _handler.GetLogger().Warn($"CNET: received system {message} in state Probe");
+                                _client.GetLogger().Warn($"CNET: received system {message} in state Probe");
                                 break;
                         }
                     }
                     else
                     {
-                        _handler.GetLogger().Warn("CNET: received normal in state Probe");
+                        _client.GetLogger().Warn("CNET: received normal in state Probe");
                         _latestProbeTime = _updateTime;
                     }
                 }
@@ -528,11 +528,11 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemServerDownCode:
                                 Disconnect(); // will send disconnection message
-                                _handler.GetLogger().Error("BACK-END DOWN");
+                                _client.GetLogger().Error("BACK-END DOWN");
                                 return false; // exit now from loop, don't expect a new state
 
                             default:
-                                _handler.GetLogger().Warn($"CNET: received system {message} in state Synchronize");
+                                _client.GetLogger().Warn($"CNET: received system {message} in state Synchronize");
                                 break;
                         }
                     }
@@ -645,11 +645,11 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemServerDownCode:
                                 Disconnect(); // will send disconnection message
-                                _handler.GetLogger().Error("BACK-END DOWN");
+                                _client.GetLogger().Error("BACK-END DOWN");
                                 return false; // exit now from loop, don't expect a new state
 
                             default:
-                                _handler.GetLogger().Warn($"CNET: received system {message} in state Connected");
+                                _client.GetLogger().Warn($"CNET: received system {message} in state Connected");
                                 break;
                         }
                     }
@@ -670,7 +670,7 @@ namespace RCC.Network
         /// </summary>
         private bool StateStalled()
         {
-            _handler.GetLogger().Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
+            _client.GetLogger().Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
             return false;
         }
 
@@ -680,7 +680,7 @@ namespace RCC.Network
         /// </summary>
         private bool StateQuit()
         {
-            _handler.GetLogger().Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
+            _client.GetLogger().Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
             return false;
         }
 
@@ -689,7 +689,7 @@ namespace RCC.Network
         /// </summary>
         private void ReceiveNormalMessage(BitMemoryStream msgin)
         {
-            _handler.GetLogger().Debug($"CNET: received normal message Packet={LastReceivedNumber} Ack={_lastReceivedAck}");
+            _client.GetLogger().Debug($"CNET: received normal message Packet={LastReceivedNumber} Ack={_lastReceivedAck}");
 
             var actions = new List<Action.Action>();
             ImpulseDecoder.Decode(msgin, _currentReceivedNumber, _lastReceivedAck, _currentSendNumber, actions);
@@ -701,7 +701,7 @@ namespace RCC.Network
             {
                 // CActionBlock automatically remove() actions when deleted
 
-                _handler.GetLogger().Debug($"removed action {_actions[0]}");
+                _client.GetLogger().Debug($"removed action {_actions[0]}");
                 _actions.RemoveAt(0);
             }
 
@@ -717,7 +717,7 @@ namespace RCC.Network
                 {
                     case ActionCode.ActionDisconnectionCode:
                         // Self disconnection
-                        _handler.GetLogger().Info("You were disconnected by the server");
+                        _client.GetLogger().Info("You were disconnected by the server");
                         Disconnect(); // will send disconnection message
                         // TODO LoginSM.pushEvent(CLoginStateMachine::ev_conn_dropped);
 
@@ -732,7 +732,7 @@ namespace RCC.Network
 
                     case ActionCode.ActionDummyCode:
                         //CActionDummy* dummy = ((CActionDummy*)actions[i]);
-                        _handler.GetLogger().Debug($"CNET Received Dummy{action}");
+                        _client.GetLogger().Debug($"CNET Received Dummy{action}");
                         // Nothing to do
                         break;
                 }
@@ -1009,7 +1009,7 @@ namespace RCC.Network
         /// </summary>
         private void ReceiveSystemStalled(BitMemoryStream msgin)
         {
-            _handler.GetLogger().Info("CNET: received STALLED but not implemented");
+            _client.GetLogger().Info("CNET: received STALLED but not implemented");
         }
 
         /// <summary>
@@ -1023,7 +1023,7 @@ namespace RCC.Network
             msgin.Serial(ref stime);
             msgin.Serial(ref _latestSync);
 
-            _handler.GetLogger().Debug($"receiveSystemSync {msgin}");
+            _client.GetLogger().Debug($"receiveSystemSync {msgin}");
 
             //return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
             byte[] checkMsgXml = new byte[16];
@@ -1038,12 +1038,12 @@ namespace RCC.Network
             if (xmlInvalid && !_alreadyWarned)
             {
                 _alreadyWarned = true;
-                _handler.GetLogger().Warn(
+                _client.GetLogger().Warn(
                     $"XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
 
-                _handler.GetLogger().Warn(
+                _client.GetLogger().Warn(
                     $"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
-                _handler.GetLogger().Warn(
+                _client.GetLogger().Warn(
                     $"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
             }
 
@@ -1082,7 +1082,7 @@ namespace RCC.Network
                 // A receiving error means the front-end is down
                 ConnectionState = ConnectionState.Disconnect;
                 Disconnect(); // won't send a disconnection msg because state is already Disconnect
-                _handler.GetLogger().Warn($"DISCONNECTION");
+                _client.GetLogger().Warn($"DISCONNECTION");
                 return false;
             }
         }
@@ -1125,7 +1125,7 @@ namespace RCC.Network
                 ConnectionState == ConnectionState.Authenticate ||
                 ConnectionState == ConnectionState.Disconnect)
             {
-                _handler.GetLogger().Warn("Unable to disconnect(): not connected yet, or already disconnected.");
+                _client.GetLogger().Warn("Unable to disconnect(): not connected yet, or already disconnected.");
                 return;
             }
 
@@ -1157,7 +1157,7 @@ namespace RCC.Network
 
             message.Serial(ref _latestSync);
 
-            _handler.GetLogger().Debug($"sendSystemAckSync {message}");
+            _client.GetLogger().Debug($"sendSystemAckSync {message}");
 
             var length = message.Length;
             _connection.Send(message.Buffer(), length);
@@ -1218,12 +1218,12 @@ namespace RCC.Network
             {
                 try
                 {
-                    _handler.GetLogger().Debug($"sendSystemDisconnection {message}");
+                    _client.GetLogger().Debug($"sendSystemDisconnection {message}");
                     _connection.Send(message.Buffer(), length);
                 }
                 catch (Exception e)
                 {
-                    _handler.GetLogger().Error($"Socket exception: " + e.Message);
+                    _client.GetLogger().Error($"Socket exception: " + e.Message);
                 }
             }
 
@@ -1257,7 +1257,7 @@ namespace RCC.Network
 
             message.Serial(ref ClientConfig.LanguageCode);
 
-            _handler.GetLogger().Debug($"sendSystemLogin {message}");
+            _client.GetLogger().Debug($"sendSystemLogin {message}");
             _connection.Send(message.Buffer(), message.Length);
         }
 
@@ -1301,7 +1301,7 @@ namespace RCC.Network
 
             if (!_connection.Connected())
             {
-                _handler.GetLogger().Warn("CNET: update() attempted whereas socket is not connected !");
+                _client.GetLogger().Warn("CNET: update() attempted whereas socket is not connected !");
                 return false;
             }
 
@@ -1481,7 +1481,7 @@ namespace RCC.Network
                 break;
             }
 
-            _handler.GetLogger().Debug($"sendNormalMessage {message}");
+            _client.GetLogger().Debug($"sendNormalMessage {message}");
             _connection.Send(message.Buffer(), message.Length);
 
             _lastSendTime = RyzomGetLocalTime();

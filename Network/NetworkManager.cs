@@ -49,15 +49,19 @@ namespace RCC.Network
 
         private readonly NetworkConnection _networkConnection;
 
-        private readonly RyzomClient _handler;
+        private readonly RyzomClient _client;
 
         private readonly GenericMessageHeaderManager _messageHeaderManager;
 
-        public NetworkManager(RyzomClient handler, NetworkConnection networkConnection)
+        private readonly ChatManager _chatManager;
+
+        public NetworkManager(RyzomClient client, NetworkConnection networkConnection)
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
+            _chatManager = new ChatManager(this);
+
             _networkConnection = networkConnection;
-            _handler = handler;
+            _client = client;
         }
 
         public GenericMessageHeaderManager GetMessageHeaderManager()
@@ -130,7 +134,7 @@ namespace RCC.Network
 
             // TODO:  Manage changes
 
-            ChatManager.FlushBuffer(_handler, this);
+            _chatManager.FlushBuffer(_client);
 
             // TODO: update everyting
 
@@ -312,267 +316,267 @@ namespace RCC.Network
 
         private void ImpulseSetNpcIconTimer(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseServerEventForMissionAvailability(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseSetNpcIconDesc(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDssDown(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseSetSeason(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseCombatFlyingText(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseCombatFlyingTextItemSpecialEffectProc(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseCombatFlyingHpDelta(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void CbImpulsionGatewayMessage(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseOutpostDeclareWarAck(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseOutpostChooseSide(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void CbImpulsionGatewayClose(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void CbImpulsionGatewayOpen(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseCloseEnterCrZoneProposal(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseEnterCrZoneProposal(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseUserPopup(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseUserBars(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseEncyclopediaInit(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseEncyclopediaUpdate(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePvpFactionFactionWars(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePvpFactionPopFactionWar(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePvpFactionPushFactionWar(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePvpChallengeCancelInvitation(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePvpChallengeInvitation(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDuelCancelInvitation(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDuelInvitation(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDeathRespawn(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDeathRespawnPoint(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseItemCloseRoomInventory(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseItemOpenRoomInventory(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseItemInfoRefreshVersion(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePrereqInfoSet(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseItemInfoSet(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePhraseAckExecuteNext(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePhraseAckExecuteCyclic(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePhraseConfirmBuy(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePhraseDownLoad(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseRemoteAdmin(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseCloseTempInv(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseGuildUseFemaleTitles(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseGuildUpdatePlayerTitle(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseGuildCloseInventory(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseGuildOpenInventory(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseGuildOpenGuildWindow(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseGuildAbortCreation(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseGuildLeaveAscensor(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseGuildAscensor(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseGuildJoinProposal(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseJournalRemoveCompass(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseJournalAddCompass(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseJournalUpdateCompletedMissions(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseJournalInitCompletedMissions(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseBotChatForceEnd(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         /// <summary>
@@ -585,7 +589,7 @@ namespace RCC.Network
 
             StringManagerClient.LoadCache(timestamp);
 
-            _handler.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
         }
 
         /// <summary>
@@ -600,7 +604,7 @@ namespace RCC.Network
             //string str;
             //str.fromUtf8(strUtf8);
 
-            _handler.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
 
             StringManagerClient.ReceiveString(stringId, strUtf8, this);
         }
@@ -615,32 +619,32 @@ namespace RCC.Network
 
         private void ImpulseCounter(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseWhere(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseMountAbort(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseExchangeCloseInvitation(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseExchangeInvitation(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseTeamContactRemove(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         /// <summary>
@@ -656,7 +660,7 @@ namespace RCC.Network
 
             var online = (CharConnectionState)state;
 
-            _handler.Automata.OnGameTeamContactStatus(contactId, online);
+            _client.Automata.OnGameTeamContactStatus(contactId, online);
         }
 
         private void ImpulseTeamContactCreate(BitMemoryStream impulse)
@@ -680,7 +684,7 @@ namespace RCC.Network
                 if (nameId == 0) return;
             }
 
-            _handler.Automata.OnTeamContactCreate(contactId, nameId, online, nList);
+            _client.Automata.OnTeamContactCreate(contactId, nameId, online, nList);
         }
 
         /// <summary>
@@ -721,166 +725,166 @@ namespace RCC.Network
 
             //PeopleInterraction.initContactLists(vFriendListName, vFriendListOnline, vIgnoreListName);
 
-            _handler.Automata.OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
+            _client.Automata.OnGameTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
         }
 
         private void ImpulseTeamShareClose(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseTeamShareInvalid(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseTeamShareOpen(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseTeamInvitation(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} -> AutoJoin");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} -> AutoJoin");
 
             SendMsgToServer("TEAM:JOIN");
         }
 
         private void ImpulseBeginCast(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDynChatClose(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDynChatOpen(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseCombatEngageFailed(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseCorrectPos(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseTpWithSeason(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseTp(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseTell2(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDynStringInChatGroup(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDynString(BitMemoryStream impulse)
         {
-            //_handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
-            ChatManager.ProcessChatStringWithNoSender(impulse, ChatGroupType.System, _handler, this);
+            //_client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _chatManager.ProcessChatStringWithNoSender(impulse, ChatGroupType.System, _client);
         }
 
         private void ImpulseChat2(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseFarTell(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseTell(BitMemoryStream impulse)
         {
-            ChatManager.ProcessTellString(impulse, _handler);
+            _chatManager.ProcessTellString(impulse, _client);
         }
 
         private void ImpulseChat(BitMemoryStream impulse)
         {
-            ChatManager.ProcessChatString(impulse, _handler);
+            _chatManager.ProcessChatString(impulse, _client);
         }
 
         private void ImpulsePermanentUnban(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePermanentBan(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseForumNotification(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseMailNotification(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseServerQuitAbort(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseServerQuitOk(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
             GameExit = true;
         }
 
         private void ImpulseShardId(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseCharNameValid(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseServerReady(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             ServerReceivedReady = true;
 
             CheckHandshake(impulse);
 
-            _handler.Automata.OnGameJoined();
+            _client.Automata.OnGameJoined();
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_ready_received);
         }
 
         private void ImpulseFarTp(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
 
         private void ImpulseUserChar(BitMemoryStream impulse)
         {
             //// received USER_CHAR
-            _handler.GetLogger().Info("ImpulseCallBack : Received CONNECTION:USER_CHAR");
+            _client.GetLogger().Info("ImpulseCallBack : Received CONNECTION:USER_CHAR");
             //
             //// Serialize the message
             //COfflineEntityState posState;
@@ -939,13 +943,13 @@ namespace RCC.Network
             var userEntityInitPos = new Vector3((float)x / 1000.0f, (float)y / 1000.0f, (float)z / 1000.0f);
             var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
 
-            _handler.GetLogger().Info($"Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
+            _client.GetLogger().Info($"Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
 
             // Update the position for the vision.
             //NetworkManager.setReferencePosition(UserEntityInitPos);
             //}
 
-            _handler.UserCharPosReceived = true;
+            _client.UserCharPosReceived = true;
 
             //// Configure the ring editor
             //extern R2::TUserRole UserRoleInSession;
@@ -963,7 +967,7 @@ namespace RCC.Network
         private void ImpulseUserChars(BitMemoryStream impulse)
         {
             // received USER_CHARS
-            _handler.GetLogger().Info("Received user characters");
+            _client.GetLogger().Info("Received user characters");
 
             impulse.Serial(ref ServerPeopleActive);
             impulse.Serial(ref ServerCareerActive);
@@ -979,14 +983,14 @@ namespace RCC.Network
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
                 if ((PeopleType)cs.People != PeopleType.Unknown)
-                    _handler.GetLogger().Info($"Character {cs.Name} from shard {cs.Mainland} in slot {i}");
+                    _client.GetLogger().Info($"Character {cs.Name} from shard {cs.Mainland} in slot {i}");
                 CharacterSummaries.Add(cs);
             }
             // END WORKAROUND
 
 
             //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
-            _handler.GetLogger().Debug("st_ingame->st_select_char");
+            _client.GetLogger().Debug("st_ingame->st_select_char");
             AutoSendCharSelection = true;
 
             //// Create the message for the server to select the first character.
@@ -1028,32 +1032,32 @@ namespace RCC.Network
 
         private void ImpulseNoUserChar(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDatabaseResetBank(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDatabaseInitBank(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDatabaseUpdateBank(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseInitInventory(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseUpdateInventory(BitMemoryStream impulse)
         {
-            _handler.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseDatabaseInitPlayer(BitMemoryStream impulse)
@@ -1068,7 +1072,7 @@ namespace RCC.Network
             // TODO: IngameDbMngr.readDelta + setInitPacketReceived
             //IngameDbMngr.readDelta(serverTick, Impulse, TCDBBank.CDBPlayer);
             //IngameDbMngr.setInitPacketReceived();
-            _handler.GetLogger().Info($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
+            _client.GetLogger().Info($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
         }
 
         private void ImpulseDatabaseUpdatePlayer(BitMemoryStream impulse)
@@ -1085,11 +1089,11 @@ namespace RCC.Network
             uint handshakeVersion = 0;
             impulse.Serial(ref handshakeVersion, 2);
             if (handshakeVersion > 0)
-                _handler.GetLogger().Warn("Server handshake version is more recent than client one");
+                _client.GetLogger().Warn("Server handshake version is more recent than client one");
 
             uint itemSlotVersion = 0;
             impulse.Serial(ref itemSlotVersion, 2);
-            _handler.GetLogger().Info($"Item slot version: {itemSlotVersion}");
+            _client.GetLogger().Info($"Item slot version: {itemSlotVersion}");
             //if (itemSlotVersion != INVENTORIES::CItemSlot::getVersion())
             //    nlerror("Handshake: itemSlotVersion mismatch (S:%hu C:%hu)", itemSlotVersion, INVENTORIES::CItemSlot::getVersion());
         }
@@ -1110,7 +1114,7 @@ namespace RCC.Network
             }
             else
             {
-                _handler.GetLogger().Warn($"Unknown message named '{sMsg}'.");
+                _client.GetLogger().Warn($"Unknown message named '{sMsg}'.");
             }
         }
     }

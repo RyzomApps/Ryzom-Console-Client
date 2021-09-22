@@ -16,17 +16,25 @@ namespace RCC.Chat
     /// <summary>
     ///     Class for management of incoming and outgoing chat messages
     /// </summary>
-    internal static class ChatManager
+    internal class ChatManager
     {
+
         public const uint InvalidDatasetIndex = 0x00FFFFFF;
 
         private const int PreTagSize = 5;
         static readonly List<ChatMsgNode> _ChatBuffer = new List<ChatMsgNode>();
 
+        private readonly NetworkManager _networkManager;
+
+        public ChatManager(NetworkManager networkManager)
+        {
+            _networkManager = networkManager;
+        }
+
         /// <summary>
         ///     interprets the incoming tell string
         /// </summary>
-        public static void ProcessTellString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
+        public void ProcessTellString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
         {
             ChatMsg chatMsg = new ChatMsg();
 
@@ -39,7 +47,7 @@ namespace RCC.Chat
 
             // If !complete, wait
             bool complete = true;
-            complete &= StringManagerClient.GetString(chatMsg.SenderNameId, out string senderStr, ((RyzomClient)RyzomClient.GetInstance()).GetNetworkManager());
+            complete &= StringManagerClient.GetString(chatMsg.SenderNameId, out string senderStr, _networkManager);
             if (!complete)
             {
                 _ChatBuffer.Add(new ChatMsgNode(chatMsg, true));
@@ -55,7 +63,7 @@ namespace RCC.Chat
         /// <summary>
         ///     interprets the incoming say string
         /// </summary>
-        public static void ProcessChatString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
+        public void ProcessChatString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
         {
             //// before displaying anything, must ensure dynamic channels are up to date
             //// NB: only processChatString() have to do this. Other methods cannot be in dyn_chat mode
@@ -69,7 +77,7 @@ namespace RCC.Chat
             string senderStr;
 
             bool complete = true;
-            complete = StringManagerClient.GetString(chatMsg.SenderNameId, out senderStr, ((RyzomClient)RyzomClient.GetInstance()).GetNetworkManager());
+            complete = StringManagerClient.GetString(chatMsg.SenderNameId, out senderStr, _networkManager);
 
             if (type == ChatGroupType.DynChat)
             {
@@ -95,13 +103,12 @@ namespace RCC.Chat
                 senderStr);
         }
 
-        internal static void ProcessChatStringWithNoSender(BitMemoryStream bms, ChatGroupType type,
-            IChatDisplayer chatDisplayer, NetworkManager _networkManager)
+        internal void ProcessChatStringWithNoSender(BitMemoryStream bms, ChatGroupType type, IChatDisplayer chatDisplayer)
         {
             Debug.Assert(type != ChatGroupType.DynChat);
 
             // serial
-            ChatMsg2 chatMsg = new ChatMsg2();
+            var chatMsg = new ChatMsg2();
             uint phraseID = 0;
             bms.Serial(ref phraseID);
             //if (PermanentlyBanned) return;
@@ -111,7 +118,7 @@ namespace RCC.Chat
             chatMsg.PhraseId = phraseID;
 
             // if !complete, wait
-            bool complete = StringManagerClient.GetDynString(chatMsg.PhraseId, out string ucstr, _networkManager);
+            var complete = StringManagerClient.GetDynString(chatMsg.PhraseId, out string ucstr, _networkManager);
 
             if (!complete)
             {
@@ -125,7 +132,7 @@ namespace RCC.Chat
             chatDisplayer.DisplayChat(InvalidDatasetIndex, ucstr, ucstr, type, 0, senderName);
         }
 
-        internal static void FlushBuffer(IChatDisplayer chatDisplayer, NetworkManager _networkManager)
+        internal void FlushBuffer(IChatDisplayer chatDisplayer)
         {
             // before displaying anything, must ensure dynamic channels are up to date
             //updateDynamicChatChannels(chatDisplayer); TODO
@@ -134,7 +141,7 @@ namespace RCC.Chat
 
             //ChatMsgNode itMsg;
 
-            for (int i = 0; i < _ChatBuffer.Count; i++)
+            for (var i = 0; i < _ChatBuffer.Count; i++)
             //for (itMsg = _ChatBuffer.begin(); itMsg != _ChatBuffer.end();)
             {
                 ChatMsgNode itMsg = _ChatBuffer[i];
@@ -145,7 +152,7 @@ namespace RCC.Chat
                 // all strings received?
                 bool complete = true;
                 if (itMsg.SenderNameId != 0)
-                    complete &= StringManagerClient.GetString(itMsg.SenderNameId, out sender, ((RyzomClient)RyzomClient.GetInstance()).GetNetworkManager());
+                    complete &= StringManagerClient.GetString(itMsg.SenderNameId, out sender, _networkManager);
                 if (itMsg.UsePhraseId)
                     complete &= StringManagerClient.GetDynString(itMsg.PhraseId, out content, _networkManager);
                 else
@@ -195,7 +202,7 @@ namespace RCC.Chat
         }
 
         // ***************************************************************************
-        static void BuildTellSentence(string sender, string msg, out string result)
+        private static void BuildTellSentence(string sender, string msg, out string result)
         {
             // If no sender name was provided, show only the msg
             if (sender.Length == 0)
@@ -233,7 +240,7 @@ namespace RCC.Chat
             }
         }
 
-        static void BuildChatSentence(uint compressedSenderIndex, string sender, string msg, ChatGroupType type,
+        private static void BuildChatSentence(uint compressedSenderIndex, string sender, string msg, ChatGroupType type,
             out string result)
         {
             // if its a tell, then use buildTellSentence
