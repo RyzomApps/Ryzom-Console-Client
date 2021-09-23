@@ -245,16 +245,16 @@ namespace RCC.Network
         /// <summary>
         ///     serializes type string (see ucstring)
         /// </summary>
-        public void Serial(ref string obj, bool doubled = true)
+        public void Serial(ref string obj, bool isUnicode = true)
         {
             if (IsReading())
             {
                 int len = 0;
                 Serial(ref len);
-                byte[] b = new byte[len * (doubled ? 2 : 1)];
+                byte[] b = new byte[len * (isUnicode ? 2 : 1)];
 
                 // Read the string.
-                for (uint i = 0; i != len * (doubled ? 2 : 1); ++i)
+                for (uint i = 0; i != len * (isUnicode ? 2 : 1); ++i)
                     Serial(ref b[i]);
 
                 obj = Encoding.UTF8.GetString(b).Replace("\0", "");
@@ -262,7 +262,7 @@ namespace RCC.Network
             else
             {
                 obj = new string(obj.Reverse().ToArray());
-                var str8 = new byte[obj.Length * (doubled ? 2 : 1)];
+                var str8 = new byte[obj.Length * (isUnicode ? 2 : 1)];
                 int index2 = 0;
 
                 int len = obj.Length;
@@ -276,7 +276,7 @@ namespace RCC.Network
                     str8[index2] = bytes[0];
                     index2++;
 
-                    if (doubled)
+                    if (isUnicode)
                     {
                         str8[index2] = 0;
                         index2++;
