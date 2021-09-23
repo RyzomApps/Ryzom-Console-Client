@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using RCC.Client;
+﻿using RCC.Client;
 using RCC.Commands.Internal;
-using RCC.Messages;
 using RCC.Network;
+using System.Collections.Generic;
 
 namespace RCC.Commands
 {
-    // TODO: em command is not working yet
+    // TODO: em command seems to be broken (still)
     public class Emote : CommandBase
     {
         public override string CmdName => "em";
@@ -21,7 +20,7 @@ namespace RCC.Commands
                 return "";
 
             var emotePhrase = "";
-            byte behavToSend = 1; //MBEHAV::IDLE;
+            byte behavToSend = 60; //EMOTE_BEGIN <- first emote
 
             if (args.Length != 0)
             {
@@ -34,10 +33,11 @@ namespace RCC.Commands
 
             if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                emotePhrase = $"&EMT&{Entity.RemoveTitleAndShardFromName(handler.GetNetworkManager().PlayerSelectedHomeShardName)} {emotePhrase}";
+                var displayName = $"{Entity.RemoveTitleAndShardFromName(handler.GetNetworkManager().PlayerSelectedHomeShardName)}";
+                emotePhrase = $"&EMT&{displayName} {emotePhrase}";
 
                 out2.Serial(ref behavToSend);
-                out2.Serial(ref emotePhrase);
+                out2.Serial(ref emotePhrase); // ucstring
                 handler.GetNetworkManager().Push(out2);
             }
             else
