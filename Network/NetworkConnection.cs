@@ -218,6 +218,91 @@ namespace RCC.Network
         }
 
         /// <summary>
+        ///     update connection info - tests the connection state and inits the state machine
+        /// </summary>
+        public bool Update()
+        {
+            _updateTime = RyzomGetLocalTime();
+            _totalMessages = 0;
+
+            // If we are disconnected, bypass the real network update
+            if (ConnectionState == ConnectionState.Disconnect)
+            {
+                return false;
+            }
+
+            // Yoyo. OnUpdate the Smooth ServerTick.
+            UpdateSmoothServerTick();
+
+            if (!_connection.Connected())
+            {
+                _client.GetLogger().Warn("CNET: update() attempted whereas socket is not connected !");
+                return false;
+            }
+
+            try
+            {
+                // State automaton
+                bool stateBroke;
+
+                do
+                {
+                    stateBroke = ConnectionState switch
+                    {
+                        ConnectionState.Login =>
+                            // if receives System SYNC
+                            //    immediate state Synchronize
+                            // else
+                            //    sends System LoginCookie
+                            StateLogin(),
+                        ConnectionState.Synchronize =>
+                            // if receives System PROBE
+                            //    immediate state Probe
+                            // else if receives Normal
+                            //    immediate state Connected
+                            // else
+                            //    sends System ACK_SYNC
+                            StateSynchronize(),
+                        ConnectionState.Connected =>
+                            // if receives System PROBE
+                            //    immediate state Probe
+                            // else if receives Normal
+                            //	   sends Normal data
+                            StateConnected(),
+                        ConnectionState.Probe =>
+                            // if receives System SYNC
+                            //    immediate state SYNC
+                            // else if receives System PROBE
+                            //    decode PROBE
+                            // sends System ACK_PROBE
+                            StateProbe(),
+                        ConnectionState.Stalled =>
+                            // if receives System SYNC
+                            //    immediate state SYNC
+                            // else if receives System STALLED
+                            //    decode STALLED (nothing to do)
+                            // else if receives System PROBE
+                            //    immediate state PROBE
+                            StateStalled(),
+                        ConnectionState.Quit =>
+                            // if receives System SYNC
+                            //    immediate state Synchronize
+                            // else
+                            //    sends System LoginCookie
+                            StateQuit(),
+                        _ => false
+                    };
+                } while (stateBroke); // && _TotalMessages<5);
+            }
+            catch (Exception)
+            {
+                _connectionState = ConnectionState.Disconnect;
+            }
+
+            return _totalMessages != 0;
+        }
+
+        /// <summary>
         ///     Connection state machine - Login state
         ///     if receives System SYNC
         ///     immediate state Synchronize
@@ -432,8 +517,13 @@ namespace RCC.Network
                     {
                         ConnectionState = ConnectionState.Connected;
                         // TODO _Changes.push_back(CChange(0, ConnectionReady));
+
                         ImpulseDecoder.Reset();
+
+                        //stateAfterProbe = true;
+
                         ReceiveNormalMessage(msgin);
+
                         return true;
                     }
                 }
@@ -496,6 +586,7 @@ namespace RCC.Network
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, and goto state probe
                                 ConnectionState = ConnectionState.Probe;
+                                _client.Log.Info("Probe State received!");
                                 // TODO _Changes.Add(CChange(0, ProbeReceived));
                                 ReceiveSystemProbe(msgin);
                                 return true;
@@ -894,91 +985,6 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     update connection info - tests the connection state and inits the state machine
-        /// </summary>
-        public bool Update()
-        {
-            _updateTime = RyzomGetLocalTime();
-            _totalMessages = 0;
-
-            // If we are disconnected, bypass the real network update
-            if (ConnectionState == ConnectionState.Disconnect)
-            {
-                return false;
-            }
-
-            // Yoyo. OnUpdate the Smooth ServerTick.
-            UpdateSmoothServerTick();
-
-            if (!_connection.Connected())
-            {
-                _client.GetLogger().Warn("CNET: update() attempted whereas socket is not connected !");
-                return false;
-            }
-
-            try
-            {
-                // State automaton
-                bool stateBroke;
-
-                do
-                {
-                    stateBroke = ConnectionState switch
-                    {
-                        ConnectionState.Login =>
-                            // if receives System SYNC
-                            //    immediate state Synchronize
-                            // else
-                            //    sends System LoginCookie
-                            StateLogin(),
-                        ConnectionState.Synchronize =>
-                            // if receives System PROBE
-                            //    immediate state Probe
-                            // else if receives Normal
-                            //    immediate state Connected
-                            // else
-                            //    sends System ACK_SYNC
-                            StateSynchronize(),
-                        ConnectionState.Connected =>
-                            // if receives System PROBE
-                            //    immediate state Probe
-                            // else if receives Normal
-                            //	   sends Normal data
-                            StateConnected(),
-                        ConnectionState.Probe =>
-                            // if receives System SYNC
-                            //    immediate state SYNC
-                            // else if receives System PROBE
-                            //    decode PROBE
-                            // sends System ACK_PROBE
-                            StateProbe(),
-                        ConnectionState.Stalled =>
-                            // if receives System SYNC
-                            //    immediate state SYNC
-                            // else if receives System STALLED
-                            //    decode STALLED (nothing to do)
-                            // else if receives System PROBE
-                            //    immediate state PROBE
-                            StateStalled(),
-                        ConnectionState.Quit =>
-                            // if receives System SYNC
-                            //    immediate state Synchronize
-                            // else
-                            //    sends System LoginCookie
-                            StateQuit(),
-                        _ => false
-                    };
-                } while (stateBroke); // && _TotalMessages<5);
-            }
-            catch (Exception)
-            {
-                _connectionState = ConnectionState.Disconnect;
-            }
-
-            return _totalMessages != 0;
-        }
-
-        /// <summary>
         ///     sends normal messages to the server including action blocks with actions if there are any to send
         /// </summary>
         public void Send(in uint cycle)
@@ -1110,7 +1116,7 @@ namespace RCC.Network
         /// <summary>
         ///     pushes an action to be sent by the client to the send queue
         /// </summary>
-        private void Push(Action.ActionBase action)
+        private void Push(ActionBase action)
         {
             if (_actions.Count == 0 || _actions[^1].Cycle != 0)
             {
