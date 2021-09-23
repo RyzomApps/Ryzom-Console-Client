@@ -38,7 +38,7 @@ namespace RCC
         /// ryzom client thread to determine if other threads need to invoke
         /// </summary>
         private static Thread _clientThread;
-        
+
         /// <summary>
         /// thread that handles console input
         /// </summary>
@@ -212,7 +212,10 @@ namespace RCC
         /// </summary>
         private void Main()
         {
-            // Login State Machine
+            // Initialize the application
+            PrelogInit();
+
+            // Log the client and choose from shard
             if (!Login())
             {
                 Log?.Error("Could not login!");
@@ -245,6 +248,33 @@ namespace RCC
             }
 
             Log?.Info("EXIT of the Application.");
+        }
+
+        /// <summary>
+        /// Initialize the application before login
+        /// </summary>
+        private static void PrelogInit()
+        {
+            // create the save dir
+            if (!Directory.Exists("save")) Directory.CreateDirectory("save");
+
+            // create the user dir
+            if (!Directory.Exists("user")) Directory.CreateDirectory("user");
+        }
+
+        /// <summary>
+        /// OnInitialize the application after login
+        /// </summary>
+        private void PostlogInit()
+        {
+            const string msgXmlPath = "./data/msg.xml";
+            _networkManager.GetMessageHeaderManager().Init(msgXmlPath);
+
+            // OnInitialize the Generic Message Header Manager.
+            _networkManager.InitializeNetwork();
+
+            // TODO: init the chat manager
+            // ChatManager.init(CPath::lookup("chat_static.cdb"));
         }
 
         /// <summary>
@@ -316,23 +346,6 @@ namespace RCC
             }
 
             return Cookie != null;
-        }
-
-        /// <summary>
-        ///     OnInitialize the application after login
-        ///     if the init fails, call nlerror
-        /// </summary>
-        private void PostlogInit()
-        {
-            //std::string msgXMLPath = CPath::lookup("msg.xml");
-            const string msgXmlPath = "./data/msg.xml";
-            _networkManager.GetMessageHeaderManager().Init(msgXmlPath);
-
-            // OnInitialize the Generic Message Header Manager.
-            _networkManager.InitializeNetwork();
-
-            // TODO: init the chat manager
-            // ChatManager.init(CPath::lookup("chat_static.cdb"));
         }
 
         /// <summary>
@@ -466,7 +479,7 @@ namespace RCC
                         _networkManager.WaitServerAnswer = false;
 
                         // check that the pre selected character is available
-                        if (_networkManager.CharacterSummaries[charSelect].People == (int) PeopleType.Unknown ||
+                        if (_networkManager.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown ||
                             charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
