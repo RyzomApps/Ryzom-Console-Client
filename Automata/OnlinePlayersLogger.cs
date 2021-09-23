@@ -127,7 +127,7 @@ namespace RCC.Automata
                 _friendNames.Add(id, /*StringManager.GetString(id, out string name) ? name :*/ string.Empty);
             }
 
-            Handler.GetLogger().Info($"Initialised friend list with {friendListNames.Count} contacts.");
+            Handler.GetLogger().Info($"Initialized friend list with {friendListNames.Count} contacts.");
 
             _playerName = Entity.RemoveTitleAndShardFromName(Handler.GetNetworkManager().PlayerSelectedHomeShardName).ToLower();
 

@@ -258,7 +258,7 @@ namespace RCC.Automata.Internal
         }
 
         /// <summary>
-        /// called when the server sends the encyclopedia initialisation
+        /// called when the server sends the encyclopedia initialization
         /// </summary>
         public void OnEncyclopediaInit()
         {
@@ -266,7 +266,7 @@ namespace RCC.Automata.Internal
         }
 
         /// <summary>
-        /// called when the server sends the inventory initialisation
+        /// called when the server sends the inventory initialization
         /// </summary>
         public void OnInitInventory(uint serverTick)
         {
@@ -274,7 +274,7 @@ namespace RCC.Automata.Internal
         }
 
         /// <summary>
-        /// called when the server sends the database initialisation
+        /// called when the server sends the database initialization
         /// </summary>
         public void OnDatabaseInitPlayer(uint serverTick)
         {
@@ -298,7 +298,7 @@ namespace RCC.Automata.Internal
         }
 
         /// <summary>
-        /// called when a database bank gets initialised
+        /// called when a database bank gets initialized
         /// </summary>
         public void OnDatabaseInitBank(uint serverTick, uint bank)
         {

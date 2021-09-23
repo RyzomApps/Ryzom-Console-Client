@@ -35,7 +35,7 @@ namespace RCC.Network
 
         private readonly UdpSocket _connection = new UdpSocket();
 
-        private ConnectionState _connectionState = ConnectionState.NotInitialised;
+        private ConnectionState _connectionState = ConnectionState.NotInitialized;
 
         private int _userAddr;
         private int _userKey;
@@ -146,7 +146,7 @@ namespace RCC.Network
             if (ConnectionState != ConnectionState.NotConnected)
             {
                 throw new Exception(
-                    "Unable to connect(): connection not properly initialised (maybe connection not closed).");
+                    "Unable to connect(): connection not properly initialized (maybe connection not closed).");
             }
 
             // S12: connect to the FES. Note: In UDP mode, it's the user that have to send the cookie to the front end
@@ -172,7 +172,7 @@ namespace RCC.Network
         /// </summary>
         public void Init(string cookie, string addr)
         {
-            if (ConnectionState != ConnectionState.NotInitialised &&
+            if (ConnectionState != ConnectionState.NotInitialized &&
                 ConnectionState != ConnectionState.Disconnect)
             {
                 throw new Exception("Unable to init(): connection not properly closed yet.");
@@ -202,7 +202,7 @@ namespace RCC.Network
 
             SetLoginCookieFromString(cookie);
 
-            _client.GetLogger().Info($"Network initialisation with front end '{_frontendAddress}'");
+            _client.GetLogger().Info($"Network initialization with front end '{_frontendAddress}'");
             _client.GetLogger().Debug($"cookie {cookie}");
 
             ConnectionState = ConnectionState.NotConnected;
@@ -757,7 +757,7 @@ namespace RCC.Network
         /// </summary>
         public void Disconnect()
         {
-            if (ConnectionState == ConnectionState.NotInitialised ||
+            if (ConnectionState == ConnectionState.NotInitialized ||
                 ConnectionState == ConnectionState.NotConnected ||
                 ConnectionState == ConnectionState.Authenticate ||
                 ConnectionState == ConnectionState.Disconnect)

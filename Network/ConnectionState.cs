@@ -16,7 +16,7 @@ namespace RCC.Network
         /// <summary>
         ///     nothing happened yet
         /// </summary>
-        NotInitialised = 0,
+        NotInitialized = 0,
 
         /// <summary>
         ///     init() called

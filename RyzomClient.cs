@@ -92,7 +92,7 @@ namespace RCC
 
         public StringManager GetStringManager() { return _stringManager; }
 
-        #region Initialisation
+        #region initialization
 
         /// <summary>
         ///     Starts the main chat client

@@ -357,7 +357,7 @@ namespace RCC.Automata.Internal
         public virtual void OnTeamContactStatus(uint contactId, CharConnectionState online) { }
 
         /// <summary>
-        /// called when the friend list gets initialised
+        /// called when the friend list gets initialized
         /// </summary>
         public virtual void OnTeamContactInit(List<uint> friendListNames, List<CharConnectionState> friendListOnline, List<string> ignoreListNames) { }
 
@@ -397,17 +397,17 @@ namespace RCC.Automata.Internal
         public virtual void OnDeathRespawnPoint(int x, int y) { }
 
         /// <summary>
-        /// called when the server sends the encyclopedia initialisation
+        /// called when the server sends the encyclopedia initialization
         /// </summary>
         public virtual void OnEncyclopediaInit() { }
 
         /// <summary>
-        /// called when the server sends the inventory initialisation
+        /// called when the server sends the inventory initialization
         /// </summary>
         public virtual void OnInitInventory(uint serverTick) { }
 
         /// <summary>
-        /// called when the server sends the database initialisation
+        /// called when the server sends the database initialization
         /// </summary>
         public virtual void OnDatabaseInitPlayer(uint serverTick) { }
 
@@ -417,7 +417,7 @@ namespace RCC.Automata.Internal
         public virtual void OnUserBars(byte msgNumber, int hp, int sap, int sta, int focus) { }
 
         /// <summary>
-        /// called when a database bank gets initialised
+        /// called when a database bank gets initialized
         /// </summary>
         public virtual void OnDatabaseInitBank(in uint serverTick, in uint bank) { }
 
