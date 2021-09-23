@@ -118,6 +118,15 @@ namespace RCC
 
             Automata = new Automata.Internal.Automata(this);
 
+            // create the data dir
+            if (!Directory.Exists("data")) Directory.CreateDirectory("data");
+
+            // copy msg.xml from resources
+            if (!File.Exists("./data/msg.xml")) Misc.WriteResourceToFile("msg", "./data/msg.xml");
+
+            // copy database.xml from resources
+            if (!File.Exists("./data/database.xml")) Misc.WriteResourceToFile("database", "./data/database.xml");
+
             StartClient();
 
             Program.Exit();

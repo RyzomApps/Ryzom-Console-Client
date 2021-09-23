@@ -66,11 +66,61 @@ namespace RCC {
         ///LanguageCode = &quot;en&quot;;		// english
         ///Application = { &quot;ryzom_live&quot;, &quot;./client_ryzom_r.exe&quot;, &quot;./&quot; };
         ///Username = &quot;&quot;;
-        ///Password = &quot;&quot;;.
+        ///Password = &quot;&quot;;
+        ///SelectCharacter = &quot;0&quot;;
+        ///OnlinePlayersLogger = false;
+        ///OnlinePlayersAPI = &quot;&quot;;.
         /// </summary>
         internal static string client {
             get {
                 return ResourceManager.GetString("client", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;database_description&gt;
+        ///  &lt;!-- Define bank superclass --&gt;
+        ///  &lt;bank_superclass&gt;
+        ///    &lt;bank name=&quot;PLR&quot;
+        ///          class=&quot;CCDBSynchronised&quot; /&gt;
+        ///    &lt;bank name=&quot;GUILD&quot;
+        ///          class=&quot;CCDBGroup&quot;
+        ///          dbAccessor=&quot;.Database&quot;&gt;
+        ///      &lt;include file=&quot;game_share/far_position.h&quot; /&gt;
+        ///      &lt;verbatime&gt;inline void _setProp(CCDBSynchronised &amp;amp;db,
+        ///      ICDBStructNode *node, TCharConnectionState value, bool
+        ///      forceSending = false) { db.x_setProp(node, uint64(value),
+        ///      forceSending); } inline void _getProp(const C [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string database {
+            get {
+                return ResourceManager.GetString("database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;client_messages_description&gt;
+        ///  &lt;branch name=&quot;TARGET&quot;&gt;
+        ///    &lt;leaf name=&quot;PARTY&quot; /&gt;
+        ///    &lt;leaf name=&quot;INVENTORY&quot; /&gt;
+        ///    &lt;leaf name=&quot;FOLLOW&quot;
+        ///          sendto=&quot;AIS&quot;
+        ///          format=&quot;&quot;
+        ///          description=&quot;The client follows its target&quot; /&gt;
+        ///    &lt;leaf name=&quot;NO_FOLLOW&quot;
+        ///          sendto=&quot;AIS&quot;
+        ///          format=&quot;&quot;
+        ///          description=&quot;The client stop following its target&quot; /&gt;
+        ///  &lt;/branch&gt;
+        ///  &lt;branch name=&quot;CONNECTION&quot;&gt;
+        ///    &lt;leaf name=&quot;USER_CHAR&quot; /&gt;
+        ///    &lt;leaf name=&quot;NO_USER_CHAR&quot; /&gt;
+        ///    &lt;leaf name=&quot;USER_CHARS&quot;
+        ///          d [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string msg {
+            get {
+                return ResourceManager.GetString("msg", resourceCulture);
             }
         }
     }

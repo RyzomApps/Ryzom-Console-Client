@@ -6,12 +6,12 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
+using RCC.Helper;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using RCC.Helper;
 
 namespace RCC.Config
 {
@@ -70,7 +70,7 @@ namespace RCC.Config
         public static bool ImpulseDebuggerEnabled = false;
 
         // Read : "ID", "R G B A MODE [FX]"
-        public static Dictionary<string, string> SystemInfoColors = new Dictionary<string, string>()
+        public static Dictionary<string, string> SystemInfoColors = new Dictionary<string, string>
         {
             // OLD STUFF Here for compatibility
             {"RG", "0   0   0   255 normal"}, // Black to see when there is an error
@@ -121,6 +121,8 @@ namespace RCC.Config
             {"R2_INVITE", "0 255 0 255 around"} // Ring invitation
         };
 
+        //private static string configPattern = "^(?<parameter>\\w*)[ ]*=[ ]*({(?<value1>\\w*[^={}]*)}|['\"](?<value2>\\w*[^=]*)['\"]|(?<value3>\\w*[^=\"'\\n]*)).*(;|#|\\/\\/)+.*$";
+
         /// <summary>
         ///     Load settings from the given INI file
         /// </summary>
@@ -132,11 +134,57 @@ namespace RCC.Config
 
             try
             {
+                //var text = File.ReadAllText(file);
+                //
+                //var match = Regex.Match(text, configPattern, RegexOptions.Multiline & RegexOptions.ECMAScript);
+                //
+                //while (match.Success)
+                //{
+                //    Console.WriteLine("'{0}' found in the source code at position {1}.", match.Value, match.Index);
+                //
+                //    if (match.Groups.ContainsKey("parameter"))
+                //    {
+                //        if (match.Groups.ContainsKey("value1"))
+                //        {
+                //            LoadSingleSetting(match.Groups["parameter"].Value, match.Groups["value1"].Value);
+                //        }
+                //        else if (match.Groups.ContainsKey("value2"))
+                //        {
+                //            LoadSingleSetting(match.Groups["parameter"].Value, match.Groups["value2"].Value);
+                //        }
+                //        else if (match.Groups.ContainsKey("value3"))
+                //        {
+                //            LoadSingleSetting(match.Groups["parameter"].Value, match.Groups["value3"].Value);
+                //        }
+                //    }
+                //
+                //    match = match.NextMatch();
+                //}
+
                 var lines = File.ReadAllLines(file);
 
                 foreach (var lineRaw in lines)
                 {
                     var line = lineRaw.Split('#')[0]/*Split("//")[0]*/.Trim();
+
+                    #region comments after second quotes - TODO Replace by regex
+                    var firstQuotationMark = line.IndexOf('"');
+
+                    if (firstQuotationMark > 0)
+                    {
+                        var secondQuotationMark = line.IndexOf('"', firstQuotationMark + 1);
+
+                        if (secondQuotationMark > 0)
+                        {
+                            var commentMark = line.IndexOf('/', secondQuotationMark + 1);
+
+                            if (secondQuotationMark < commentMark)
+                            {
+                                line = line.Substring(0, commentMark);
+                            }
+                        }
+                    }
+                    #endregion
 
                     if (line.Length <= 0) continue;
 
@@ -154,8 +202,9 @@ namespace RCC.Config
                     }
                 }
             }
-            catch (IOException)
+            catch (IOException e)
             {
+                ConsoleIO.WriteLineFormatted("§cError loading Settings: " + e.Message);
             }
         }
 
@@ -166,7 +215,7 @@ namespace RCC.Config
         public static void WriteDefaultSettings(string settingsfile)
         {
             // Load embedded default config and adjust line break for the current operating system
-            string settingsContents = string.Join(Environment.NewLine,
+            var settingsContents = string.Join(Environment.NewLine,
                 Resources.client.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None));
 
             // Write configuration file with current version number
@@ -183,7 +232,7 @@ namespace RCC.Config
         /// <param name="argName">Setting name</param>
         /// <param name="argValue">Setting value</param>
         /// <returns>TRUE if setting was valid</returns>
-        private static bool LoadSingleSetting(string argName, string argValue)
+        private static void LoadSingleSetting(string argName, string argValue)
         {
             argName = argName.Trim();
             argValue = argValue.Trim();
@@ -194,58 +243,59 @@ namespace RCC.Config
             {
                 case "startuphost":
                     StartupHost = argValue;
-                    return true;
+                    return;
 
                 case "startuppage":
                     StartupPage = argValue;
-                    return true;
+                    return;
 
                 case "languagecode":
                     LanguageCode = argValue;
-                    return true;
+                    return;
 
                 case "application":
                     argValue = argValue.Replace("{", "").Replace("}", "").Trim();
+                    //todo this is not good
                     var argValueSplit = argValue.Split();
 
                     ApplicationServer = CleanUpArgument(argValueSplit[0], true);
-                    return true;
+                    return;
 
                 case "username":
                     Username = argValue;
-                    return true;
+                    return;
 
                 case "password":
                     Password = argValue;
-                    return true;
+                    return;
 
                 case "selectcharacter":
                     SelectCharacter = int.Parse(argValue);
-                    return true;
+                    return;
 
                 case "onlineplayersapi":
                     OnlinePlayersApi = argValue;
-                    return true;
+                    return;
 
                 case "onlineplayerslogger":
                     OnlinePlayersLoggerEnabled = bool.Parse(argValue);
-                    return true;
+                    return;
 
                 case "autojointeam":
                     AutoJoinTeamEnabled = bool.Parse(argValue);
-                    return true;
+                    return;
 
                 case "impulsedebugger":
                     ImpulseDebuggerEnabled = bool.Parse(argValue);
-                    return true;
+                    return;
 
                 case "debug":
                     DebugEnabled = bool.Parse(argValue);
-                    return true;
+                    return;
 
                 default:
                     RyzomClient.GetInstance().GetLogger().Warn($"Could not parse setting {argName} with value '{argValue}'.");
-                    return false;
+                    return;
             }
         }
 
