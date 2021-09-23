@@ -25,7 +25,7 @@ using RCC.Helper.Tasks;
 namespace RCC
 {
     /// <summary>
-    ///     The main client class, used to connect to a Ryzom server.
+    /// The main client class, used to connect to a Ryzom server
     /// </summary>
     public class RyzomClient : IChatDisplayer
     {
@@ -34,8 +34,19 @@ namespace RCC
         private readonly NetworkManager _networkManager;
         private readonly StringManager _stringManager;
 
+        /// <summary>
+        /// ryzom client thread to determine if other threads need to invoke
+        /// </summary>
         private static Thread _clientThread;
+        
+        /// <summary>
+        /// thread that handles console input
+        /// </summary>
         private Thread _cmdprompt;
+
+        /// <summary>
+        /// thread used to detect if the connection has a timeout
+        /// </summary>
         private Thread _timeoutdetector;
 
         private readonly List<string> _cmdNames = new List<string>();
@@ -45,7 +56,7 @@ namespace RCC
         private readonly Queue<KeyValuePair<ChatGroupType, string>> _chatQueue = new Queue<KeyValuePair<ChatGroupType, string>>();
 
         private readonly Queue<Action> _threadTasks = new Queue<Action>();
-        private readonly object _threadTasksLock = new object();
+        private readonly object _threadTasksLocks = new object();
 
         /// <summary>
         /// when was the last OnUpdate call of the RyzomClient
@@ -92,7 +103,7 @@ namespace RCC
 
         public StringManager GetStringManager() { return _stringManager; }
 
-        #region initialization
+        #region Initialization
 
         /// <summary>
         ///     Starts the main chat client
@@ -140,7 +151,7 @@ namespace RCC
 
         #endregion
 
-        #region IChatDisplayer
+        #region Chat
         /// <summary>
         /// Returns the client instance (singleton pattern)
         /// </summary>
@@ -552,7 +563,7 @@ namespace RCC
 
         #endregion
 
-        #region Concurrent Threads
+        #region Watchdogs
 
         /// <summary>
         ///     Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive
@@ -619,7 +630,7 @@ namespace RCC
             }
 
             // processing of the pending tasks
-            lock (_threadTasksLock)
+            lock (_threadTasksLocks)
             {
                 while (_threadTasks.Count > 0)
                 {
@@ -925,7 +936,7 @@ namespace RCC
 
             var taskWithResult = new TaskWithResult<T>(task);
 
-            lock (_threadTasksLock)
+            lock (_threadTasksLocks)
             {
                 _threadTasks.Enqueue(taskWithResult.ExecuteSynchronously);
             }

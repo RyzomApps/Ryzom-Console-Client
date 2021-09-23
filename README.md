@@ -7,6 +7,9 @@ Get the exe file from the latest build. This exe file is a .NET-Core binary that
 ## Usage
 Take a look at the sample configuration that is created when RCC is started for the first time.
 
+## Scripting
+Use an automaton that inherits from RCC.Automata.Internal.AutomatonBase. It has an initialization method and is updated every few ticks by the server. Many so-called "impulses" of the Ryzom server are already included as methods that can be inherited by the automaton.
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 Please make sure to update tests as appropriate.

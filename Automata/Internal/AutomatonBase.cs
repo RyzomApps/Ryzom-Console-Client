@@ -76,7 +76,8 @@ namespace RCC.Automata.Internal
             {
                 if (_delayedTasks.Count > 0)
                 {
-                    List<int> tasksToRemove = new List<int>();
+                    var tasksToRemove = new List<int>();
+
                     for (int i = 0; i < _delayedTasks.Count; i++)
                     {
                         if (_delayedTasks[i].Tick())
@@ -85,6 +86,7 @@ namespace RCC.Automata.Internal
                             tasksToRemove.Add(i);
                         }
                     }
+
                     if (tasksToRemove.Count > 0)
                     {
                         tasksToRemove.Sort((a, b) => b.CompareTo(a)); // descending sort

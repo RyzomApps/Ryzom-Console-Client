@@ -10,7 +10,7 @@
     <Company>IVV</Company>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	<Deterministic>false</Deterministic>
-	<AssemblyName>RyzomClient</AssemblyName>
+	<AssemblyName>RyzomConsoleClient</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
