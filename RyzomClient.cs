@@ -302,7 +302,7 @@ namespace RCC
                 _networkManager.Update();
             }
 
-            // Create the message for the server to create the character.
+            // Create the message for the server that the client is ready
             var out2 = new BitMemoryStream();
 
             if (_networkManager.GetMessageHeaderManager().PushNameToStream("CONNECTION:READY", out2))

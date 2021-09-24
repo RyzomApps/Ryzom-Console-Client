@@ -47,6 +47,10 @@ namespace RCC.Network
         private const int FillNbitsWithNbBitsForCdbbank = 3;
 
         // non ryzom variables (for workarounds)
+
+        /// <summary>
+        /// client is ready for the selection of the character
+        /// </summary>
         public bool CanSendCharSelection;
 
         private readonly NetworkConnection _networkConnection;
