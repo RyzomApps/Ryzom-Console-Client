@@ -907,7 +907,7 @@ namespace RCC.Network
                 return false;
             }
 
-            // Yoyo. OnUpdate the Smooth ServerTick.
+            // Yoyo. Update the Smooth ServerTick.
             UpdateSmoothServerTick();
 
             if (!_connection.Connected())

@@ -83,7 +83,7 @@ namespace RCC.Network
             {
                 while (_networkConnection.LastSentCycle >= gameCycle)
                 {
-                    // OnUpdate network.
+                    // Update network.
                     Update();
 
                     // Send dummy info
@@ -115,7 +115,9 @@ namespace RCC.Network
         /// <returns>'true' if data were sent/received.</returns>
         public bool Update()
         {
-            // OnUpdate the base class.
+            //ConsoleIO.WriteLineFormatted($"§e{GetType().Name}.{MethodBase.GetCurrentMethod()?.Name}() {DateTimeOffset.Now.ToUnixTimeMilliseconds()}");
+
+            // Update the base class.
             _networkConnection.Update();
 
             // TODO:  Get and manage changes with the netmgr update
@@ -632,7 +634,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     OnUpdate the local string set
+        ///     Update the local string set
         /// </summary>
         private void ImpulseStringResp(BitMemoryStream impulse)
         {
@@ -997,7 +999,7 @@ namespace RCC.Network
             //    UserControls.resetCameraDeltaYaw();
             //    //nldebug("<ImpulseUserChar> pos : %f %f %f  heading : %f",UserEntity->pos().x,UserEntity->pos().y,UserEntity->pos().z,posState.Heading);
             //
-            //    // OnUpdate the position for the vision.
+            //    // Update the position for the vision.
             //    TODO NetMngr.setReferencePosition(UserEntity->pos());
             //}
             //else
@@ -1007,7 +1009,7 @@ namespace RCC.Network
 
             _client.GetLogger().Info($"Received Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
 
-            // OnUpdate the position for the vision.
+            // Update the position for the vision.
             //NetworkManager.setReferencePosition(UserEntityInitPos);
             //}
 

@@ -59,7 +59,7 @@ namespace RCC
         private readonly object _threadTasksLocks = new object();
 
         /// <summary>
-        /// when was the last OnUpdate call of the RyzomClient
+        /// when was the last Update call of the RyzomClient
         /// </summary>
         private long _lastClientUpdate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
@@ -293,12 +293,12 @@ namespace RCC
         /// </summary>
         private void InitMainLoop()
         {
-            // OnUpdate Network till current tick increase.
+            // Update Network till current tick increase.
             _lastGameCycle = _networkConnection.GetCurrentServerTick();
 
             while (_lastGameCycle == _networkConnection.GetCurrentServerTick())
             {
-                // OnUpdate Network.
+                // Update Network.
                 _networkManager.Update();
             }
 
@@ -443,7 +443,7 @@ namespace RCC
 
             while (!playerWantToGoInGame)
             {
-                // OnUpdate network.
+                // Update network.
                 try
                 {
                     if (!firewallTimeout)
@@ -481,7 +481,7 @@ namespace RCC
                 // SERVER INTERACTIONS WITH INTERFACE
                 if (_networkManager.WaitServerAnswer)
                 {
-                    if (_networkManager.CanSendCharSelection)
+                    if (false && _networkManager.CanSendCharSelection)
                     {
                         var charSelect = ClientConfig.SelectCharacter;
 
@@ -522,6 +522,8 @@ namespace RCC
                     }
                 }
 
+                //Thread.Sleep(10);
+
                 if (_networkManager.GameExit)
                     return InterfaceState.QuitTheGame;
             }
@@ -549,14 +551,14 @@ namespace RCC
                 // Do not eat up all the processor
                 Thread.Sleep(10);
 
-                // OnUpdate Ryzom Client stuff -> Execute Tasks (like commands and automaton stuff)
+                // Update Ryzom Client stuff -> Execute Tasks (like commands and automaton stuff)
                 if (Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - _lastClientUpdate) > 100)
                 {
                     _lastClientUpdate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                     OnUpdate();
                 }
 
-                // NetWork OnUpdate.
+                // NetWork Update.
                 _networkManager.Update();
 
                 // Send new data Only when server tick changed.
@@ -565,7 +567,7 @@ namespace RCC
                     // Send the Packet.
                     _networkManager.Send(_networkConnection.GetCurrentServerTick());
 
-                    // OnUpdate the Last tick received from the server.
+                    // Update the Last tick received from the server.
                     _lastGameCycle = _networkConnection.GetCurrentServerTick();
                 }
 

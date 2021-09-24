@@ -59,7 +59,7 @@ namespace RCC.Chat
 
             // display
             BuildTellSentence(senderStr, chatMsg.Content, out var ucstr);
-            chatDisplayer.DisplayTell( ucstr, senderStr);
+            chatDisplayer.DisplayTell(ucstr, senderStr);
         }
 
         /// <summary>
@@ -129,12 +129,14 @@ namespace RCC.Chat
             chatDisplayer.DisplayChat(InvalidDatasetIndex, ucstr, ucstr, type, 0, senderName);
         }
 
+        /// <summary>
+        /// Process waiting messages
+        /// </summary>
         internal void FlushBuffer(IChatDisplayer chatDisplayer)
         {
             // before displaying anything, must ensure dynamic channels are up to date
             // TODO updateDynamicChatChannels(chatDisplayer); 
 
-            // **** Process waiting messages
             for (var i = 0; i < _chatBuffer.Count; i++)
             {
                 var itMsg = _chatBuffer[i];
@@ -179,12 +181,10 @@ namespace RCC.Chat
 
                     // display
                     if (itMsg.DisplayAsTell)
-                        chatDisplayer.DisplayTell( /*itMsg->CompressedIndex, */ucstr, sender);
+                        chatDisplayer.DisplayTell(ucstr, sender);
                     else
-                        chatDisplayer.DisplayChat(itMsg.CompressedIndex, ucstr, content, type, itMsg.DynChatChanID,
-                            sender);
+                        chatDisplayer.DisplayChat(itMsg.CompressedIndex, ucstr, content, type, itMsg.DynChatChanID, sender);
 
-                    //list<ChatMsgNode>::iterator itTmp = itMsg++;
                     _chatBuffer.Remove(itMsg);
                 }
             }
@@ -313,7 +313,7 @@ namespace RCC.Chat
 
                         if (startPos != 0)
                             // leave <NEW> or <CHG> in the dest string
-                            destTmp = preTag; 
+                            destTmp = preTag;
 
                         destTmp += src.Substring(nextPos + 1);
                         dest = destTmp;
