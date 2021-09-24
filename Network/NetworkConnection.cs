@@ -12,9 +12,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using RCC.Config;
+using RCC.Entity;
 using RCC.Helper;
 using RCC.Network.Action;
 
@@ -52,6 +52,11 @@ namespace RCC.Network
         /// actions in sending buffer
         /// </summary>
         private readonly List<ActionBlock> _actions = new List<ActionBlock>();
+
+        /// <summary>
+        /// Changes since
+        /// </summary>
+        private readonly List<Change> _changes = new List<Change>();
 
         #region Login Variables
         /// <summary>
@@ -106,6 +111,8 @@ namespace RCC.Network
         private long _lastSendTime;
 
         private int _totalMessages;
+
+        VpNodeClient _VisualPropertyTreeRoot;
 
         /// <summary>
         /// the time currently played at this frame (in the past)
@@ -239,6 +246,10 @@ namespace RCC.Network
             }
 
             InitCookie(cookie, addr);
+
+            // Init visual property tree
+            _VisualPropertyTreeRoot = new VpNodeClient();
+            _VisualPropertyTreeRoot.BuildTree();
 
             // get md5 hashes
             _msgXmlMD5 = Misc.GetFileMD5("data\\msg.xml");
@@ -461,7 +472,7 @@ namespace RCC.Network
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, decode probe and state probe
                                 ConnectionState = ConnectionState.Probe;
-                                // TODO _Changes.push_back(CChange(0, ProbeReceived));
+                                _changes.Add(new Change(0, (byte)Change.Prop.ProbeReceived));
                                 _client.GetLogger().Debug("CNET: login->probe");
                                 ReceiveSystemProbe(msgin);
                                 return true;
@@ -606,7 +617,7 @@ namespace RCC.Network
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, decode probe and state probe
                                 ConnectionState = ConnectionState.Probe;
-                                // TODO _Changes.push_back(CChange(0, ProbeReceived)); 
+                                _changes.Add(new Change(0, (byte)Change.Prop.ProbeReceived));
                                 ReceiveSystemProbe(msgin);
                                 return true;
 
@@ -637,7 +648,7 @@ namespace RCC.Network
                     {
                         ConnectionState = ConnectionState.Connected;
 
-                        // TODO _Changes.push_back(CChange(0, ConnectionReady));
+                        _changes.Add(new Change(0, (byte)Change.Prop.ConnectionReady));
 
                         ImpulseDecoder.Reset();
 
@@ -705,18 +716,8 @@ namespace RCC.Network
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, and goto state probe
                                 ConnectionState = ConnectionState.Probe;
-                                // reset client impulse & vars
-                                /*
-                                ImpulseDecoder.Reset();
-                                // clears sent actions
-					            while (!_Actions.empty())
-						            CActionFactory::getInstance()->remove(_Actions.front().Actions),
-                                _actions.Clear();
-                                _ackBitMask = 0;
-                                _lastReceivedNumber = int.MaxValue;
-                                */
 
-                                // TODO _Changes.Add(CChange(0, ProbeReceived));
+                                _changes.Add(new Change(0, (byte)Change.Prop.ProbeReceived));
                                 ReceiveSystemProbe(msgin);
                                 return true;
 
@@ -831,15 +832,233 @@ namespace RCC.Network
             }
 
             // Decode the visual properties
-            DecodeVisualProperties();
+            DecodeVisualProperties(msgin);
         }
 
         /// <summary>
         ///     extract properties (database, sheets, ...) from a stream
         /// </summary>
-        private static void DecodeVisualProperties()
+        private void DecodeVisualProperties(BitMemoryStream msgin)
         {
-            // TODO decodeVisualProperties -> adding _Changes
+            try
+            {
+                //nldebug( "pos: %d  len: %u", msgin.getPos(), msgin.length() );
+                while (true)
+                {
+                    //nlinfo( "Reading pass %u, BEFORE HEADER: pos: %d  len: %u", ++i, msgin.getPosInBit(), msgin.length() * 8 );
+
+                    // Check if there is a new block to read
+                    if (msgin.GetPosInBit() + (sizeof(byte) * 8) > msgin.Length * 8)
+                        return;
+
+                    // Header
+                    byte slot = 0;
+                    msgin.Serial(ref slot);
+
+                    uint associationBits = 0;
+                    msgin.Serial(ref associationBits, 2);
+
+                    //_client.Log.Info($"slot {slot} AB: {associationBits}");
+
+                    //        if (associationBitsHaveChanged(slot, associationBits) && (!IgnoreEntityDbUpdates || slot == 0))
+                    //        {
+                    //            //displayBitStream( msgin, beginbitpos, msgin.getPosInBit() );
+                    //            //			   nlinfo ("Disassociating S%hu (AB %u)", (uint16)slot, associationBits );
+                    //            if (_PropertyDecoder.isUsed(slot))
+                    //            {
+                    //                TSheetId sheet = _PropertyDecoder.sheet(slot);
+                    //                TIdMap::iterator it = _IdMap.find(sheet);
+                    //                if (it != _IdMap.end())
+                    //                    _IdMap.erase(it);
+                    //                _PropertyDecoder.removeEntity(slot);
+                    //
+                    //                CChange theChange(slot, RemoveOldEntity );
+                    //                _Changes.push_back(theChange);
+                    //            }
+                    //            else
+                    //            {
+                    //					nlinfo( "Cannot disassociate slot %hu: sheet not received yet", (uint16)slot );
+                    //            }
+                    //        }
+                    //
+
+                    // Read the timestamp delta if there's one (otherwise take _CurrentServerTick)
+                    uint timestamp;
+                    bool timestampIsThere = false;
+                    msgin.Serial(ref timestampIsThere);
+
+                    if (timestampIsThere)
+                    {
+                        uint timestampDelta = 0;
+                        msgin.Serial(ref timestampDelta, 4);
+                        timestamp = _currentServerTick - timestampDelta;
+                        //nldebug( "TD: %u (S%hu)", timestampDelta, (uint16)slot );
+                    }
+                    else
+                    {
+                        timestamp = _currentServerTick;
+                    }
+
+                    //_client.Log.Info($"slot {slot} AB: {associationBits} timestamp: {timestamp}");
+
+                    // Tree
+                    //nlinfo( "AFTER HEADER: posBit: %d pos: %d  len: %u", msgin.getPosInBit(), msgin.getPos(), msgin.length() );
+
+                    VpNodeClient currentNode = _VisualPropertyTreeRoot;
+                    msgin.Serial(ref currentNode.A().BranchHasPayload);
+
+                    if (currentNode.A().BranchHasPayload)
+                    {
+                        //            CActionPosition* ap = (CActionPosition*)CActionFactory::getInstance()->create(slot, ACTION_POSITION_CODE);
+                        //            ap->unpack(msgin);
+                        //            _PropertyDecoder.receive(_CurrentReceivedNumber, ap);
+                        //
+                        //            /*
+                        //             * Set into property database
+                        //             */
+                        //
+                        //            // TEMP
+                        //            if (ap->Position[0] == 0 || ap->Position[1] == 0)
+                        //                nlwarning("S%hu: Receiving an invalid position", (uint16)slot);
+                        //
+                        //            if (_DataBase != NULL && (!IgnoreEntityDbUpdates || slot == 0))
+                        //            {
+                        //                CCDBNodeBranch* nodeRoot;
+                        //                nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->getNode((uint16)0));
+                        //                if (nodeRoot)
+                        //                {
+                        //                    CCDBNodeLeaf* node;
+                        //                    node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(0));
+                        //                    nlassert(node != NULL);
+                        //                    node->setValue64(ap->Position[0]);
+                        //                    node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(1));
+                        //                    nlassert(node != NULL);
+                        //                    node->setValue64(ap->Position[1]);
+                        //                    node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(2));
+                        //                    nlassert(node != NULL);
+                        //                    node->setValue64(ap->Position[2]);
+                        //
+                        //                    if (LoggingMode)
+                        //                    {
+                        //                        nlinfo("recvd position (%d,%d) for slot %hu, date %u", (sint32)(ap->Position[0]), (sint32)(ap->Position[1]), (uint16)slot, timestamp);
+                        //                    }
+                        //                }
+                        //            }
+                        //
+                        //            bool interior = ap->Interior;
+                        //
+                        //            CActionFactory::getInstance()->remove((CAction * &)ap);
+                        //
+                        //
+                        //            /*
+                        //             * Statistical prediction of time before next position update: set PredictedInterval
+                        //             */
+                        //
+                        //            //nlassert( MAX_POSUPDATETICKQUEUE_SIZE > 1 );
+                        //            deque<TGameCycle> & puTicks = _PosUpdateTicks[slot];
+                        //            multiset<TGameCycle> & puIntervals = _PosUpdateIntervals[slot];
+                        //
+                        //            // Flush the old element of tick queue and of the interval sorted set
+                        //            if (puTicks.size() == MAX_POSUPDATETICKQUEUE_SIZE)
+                        //            {
+                        //                puIntervals.erase(puIntervals.find(puTicks[1] - puTicks[0])); // erase only one element, not all corresponding to the value
+                        //                puTicks.pop_front();
+                        //            }
+                        //
+                        //            // Add a new element to the tick queue and possibly to the interval sorted set
+                        //            // Still to choose: _CurrentServerTick or timestamp ?
+                        //            TGameCycle latestInterval = 0;
+                        //            if (!puTicks.empty())
+                        //            {
+                        //                latestInterval = timestamp - puTicks.back();
+                        //                puIntervals.insert(latestInterval);
+                        //
+                        //                if (PosUpdateIntervalGraph)
+                        //                    PosUpdateIntervalGraph->addOneValue(slot, (float)latestInterval);
+                        //            }
+                        //            puTicks.push_back(timestamp);
+                        //
+                        //            nlassert(puTicks.size() == puIntervals.size() + 1);
+                        //
+                        //            // Prediction function : Percentile(25 last, 0.8) + 1
+                        //            TGameCycle predictedInterval;
+                        //            if (puIntervals.empty())
+                        //            {
+                        //                predictedInterval = 0;
+                        //            }
+                        //            else
+                        //            {
+                        //                predictedInterval = (TGameCycle)(percentileRev(puIntervals, PREDICTION_REV_PERCENTILE) + 1);
+                        //
+                        //                //if ( predictedInterval > 100 )
+                        //                //	nlwarning( "Slot %hu: Predicted interval %u exceeds 100 ticks", (uint16)slot, predictedInterval );
+                        //
+                        //                if (PosUpdatePredictionGraph)
+                        //                    PosUpdatePredictionGraph->addOneValue(slot, (float)predictedInterval);
+                        //            }
+                        //
+                        //            //nlinfo( "Slot %hu: Interval=%u Predicted=%u", (uint16)slot, latestInterval, predictedInterval );
+                        //
+                        //            /*
+                        //             * Add into the changes vector
+                        //             */
+                        //            CChange thechange(slot, PROPERTY_POSITION, timestamp );
+                        //            thechange.PositionInfo.PredictedInterval = predictedInterval;
+                        //            thechange.PositionInfo.IsInterior = interior;
+                        //            _Changes.push_back(thechange);
+                        //
+                        //
+                    }
+
+                    currentNode = currentNode.B();
+                    msgin.Serial(ref currentNode.BranchHasPayload);
+                    if (currentNode.BranchHasPayload)
+                    {
+                        //            msgin.serialBitAndLog(currentNode->a()->BranchHasPayload);
+                        //            if (currentNode->a()->BranchHasPayload)
+                        //            {
+                        //                CActionSint64* ac = (CActionSint64*)CActionFactory::getInstance()->createByPropIndex(slot, PROPERTY_ORIENTATION);
+                        //                ac->unpack(msgin);
+                        //
+                        //                // Process orientation
+                        //                CChange thechange(slot, PROPERTY_ORIENTATION, timestamp);
+                        //                _Changes.push_back(thechange);
+                        //                if (_DataBase != NULL && (!IgnoreEntityDbUpdates || slot == 0))
+                        //                {
+                        //                    CCDBNodeBranch* nodeRoot;
+                        //                    nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->getNode(0));
+                        //                    if (nodeRoot)
+                        //                    {
+                        //                        CCDBNodeLeaf* node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(PROPERTY_ORIENTATION));
+                        //                        nlassert(node != NULL);
+                        //                        node->setValue64(ac->getValue());
+                        //                        if (LoggingMode)
+                        //                        {
+                        //                            nlinfo("CLIENT: recvd property %hu (%s) for slot %hu, date %u", (uint16)PROPERTY_ORIENTATION, getPropText(PROPERTY_ORIENTATION), (uint16)slot, timestamp);
+                        //                        }
+                        //                        //nldebug("CLPROPNET[%p]: received property %d for entity %d: %" NL_I64 "u", this, action->PropIndex, action->CLEntityId, action->getValue());
+                        //                    }
+                        //                }
+                        //
+                        //                CActionFactory::getInstance()->remove((CAction * &)ac);
+                        //            }
+                        //
+                        //            TVPNodeClient::SlotContext.NetworkConnection = this;
+                        //            TVPNodeClient::SlotContext.Slot = slot;
+                        //            TVPNodeClient::SlotContext.Timestamp = timestamp;
+                        //
+                        //            // Discreet properties
+                        //            currentNode->b()->decodeDiscreetProperties(msgin);
+                    }
+
+                    break; // TODO remove - only decode one for testing  
+                }
+            }
+            catch (Exception e)
+            {
+                // End of stream (saves useless bits)
+                _client.Log.Error("End of stream (saves useless bits) " + e.Message);
+            }
         }
 
         /// <summary>
@@ -1050,7 +1269,7 @@ namespace RCC.Network
             message.Serial(ref _lastAckInLongAck); // 32
 
             message.SerialVersion(0); // 8
-            uint size = (uint)_longAckBitField.Length; 
+            uint size = (uint)_longAckBitField.Length;
             message.Serial(ref size); // 32
             int len = (int)(size / 32);
             message.Serial(ref len);

@@ -425,7 +425,7 @@ namespace RCC.Client
 
                                 if (str.Length > 0 && pos != -1)
                                 {
-                                    str = Entity.RemoveTitleFromName(str);
+                                    str = Entity.Entity.RemoveTitleFromName(str);
                                 }
 
                                 // if the string contains a special rename of creature, remove it
@@ -714,7 +714,7 @@ namespace RCC.Client
                 StringsCallbacks.Remove(stringId);
             }
 
-            // todo: try to complete any pending dyn string
+            // TODO: try to complete any pending dyn string
             bool restartLoop = false;
 
             while (restartLoop)

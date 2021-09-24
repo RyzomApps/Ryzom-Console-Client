@@ -193,7 +193,7 @@ namespace RCC.Chat
         private static void BuildTellSentence(string sender, string msg, out string result)
         {
             // If no sender name was provided, show only the msg
-            var name = Entity.RemoveTitleAndShardFromName(sender);
+            var name = Entity.Entity.RemoveTitleAndShardFromName(sender);
 
             if (sender.Length == 0)
                 result = msg;
@@ -240,7 +240,7 @@ namespace RCC.Chat
             }
 
             // Format the sentence with the provided sender name
-            var senderName = Entity.RemoveTitleAndShardFromName(sender);
+            var senderName = Entity.Entity.RemoveTitleAndShardFromName(sender);
 
             // TODO Does the char have a CSR title?
             const string csr = "";

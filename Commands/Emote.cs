@@ -33,7 +33,7 @@ namespace RCC.Commands
 
             if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                var displayName = $"{Entity.RemoveTitleAndShardFromName(handler.GetNetworkManager().PlayerSelectedHomeShardName)}";
+                var displayName = $"{Entity.Entity.RemoveTitleAndShardFromName(handler.GetNetworkManager().PlayerSelectedHomeShardName)}";
                 emotePhrase = $"&EMT&{displayName} {emotePhrase}";
 
                 out2.Serial(ref behavToSend);

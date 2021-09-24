@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -7,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RCC.Automata.Internal;
 using RCC.Chat;
-using RCC.Client;
 using RCC.Commands;
 using RCC.Config;
 using RCC.Helper;
@@ -56,7 +56,7 @@ namespace RCC.Automata
             {
                 if (Handler.GetStringManager().GetString(id, out var name, Handler.GetNetworkManager()))
                 {
-                    _friendNames[id] = Entity.RemoveTitleAndShardFromName(name).ToLower();
+                    _friendNames[id] = Entity.Entity.RemoveTitleAndShardFromName(name).ToLower();
                 }
 
                 return;
@@ -74,7 +74,7 @@ namespace RCC.Automata
                     return;
 
                 Handler.GetLogger().Info($"Trying to add {name} to the friend list. {_namesToAdd.Count} left.");
-                new AddFriend().Run((RyzomClient)Handler, "addfriend " + name, null);
+                new AddFriend().Run(Handler, "addfriend " + name, null);
 
                 return;
             }
@@ -84,7 +84,7 @@ namespace RCC.Automata
             {
                 _lastWhoCommand = DateTime.Now + _intervalWhoCommand;
 
-                new Who().Run((RyzomClient)Handler, "who ", null);
+                new Who().Run(Handler, "who ", null);
             }
 
             // update the api
@@ -94,13 +94,7 @@ namespace RCC.Automata
                 {
                     _lastApiServerUpdate = DateTime.Now + _intervalApiServer;
 
-                    Task.Factory.StartNew(() =>
-                    {
-                        foreach (var id in _friendNames.Keys.Where(id => _friendNames[id] != string.Empty))
-                        {
-                            SendUpdate(_friendNames[id], _friendOnline[id]);
-                        }
-                    });
+                    Task.Factory.StartNew(() => { SendUpdate(); });
                 }
             }
         }
@@ -129,7 +123,7 @@ namespace RCC.Automata
 
             Handler.GetLogger().Info($"Initialized friend list with {friendListNames.Count} contacts.");
 
-            _playerName = Entity.RemoveTitleAndShardFromName(Handler.GetNetworkManager().PlayerSelectedHomeShardName).ToLower();
+            _playerName = Entity.Entity.RemoveTitleAndShardFromName(Handler.GetNetworkManager().PlayerSelectedHomeShardName).ToLower();
 
             _initialized = true;
         }
@@ -137,7 +131,7 @@ namespace RCC.Automata
         public override void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList)
         {
             _friendOnline.Add(nameId, online);
-            _friendNames.Add(nameId, Handler.GetStringManager().GetString(nameId, out var name, Handler.GetNetworkManager()) ? Entity.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
+            _friendNames.Add(nameId, Handler.GetStringManager().GetString(nameId, out var name, Handler.GetNetworkManager()) ? Entity.Entity.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
 
             Handler.GetLogger().Info($"Added {(_friendNames[nameId] != string.Empty ? _friendNames[nameId] : $"{nameId}")} to the friend list.");
         }
@@ -177,12 +171,12 @@ namespace RCC.Automata
             }
 
             // try to add players from the chat
-            var name = Entity.RemoveTitleAndShardFromName(senderName).ToLower();
+            var name = Entity.Entity.RemoveTitleAndShardFromName(senderName).ToLower();
 
             if (name.Trim().Equals(string.Empty))
                 return;
 
-            if (name.ToLower().Equals(Entity.RemoveTitleAndShardFromName(Handler.GetNetworkManager().PlayerSelectedHomeShardName).ToLower()))
+            if (name.ToLower().Equals(Entity.Entity.RemoveTitleAndShardFromName(Handler.GetNetworkManager().PlayerSelectedHomeShardName).ToLower()))
                 return;
 
             if (_friendNames.ContainsValue(name)) return;
@@ -191,7 +185,7 @@ namespace RCC.Automata
                 name = name[1..];
 
             Handler.GetLogger().Info($"{name} will be added to the friends list.");
-            new AddFriend().Run((RyzomClient)Handler, "addfriend " + name, null);
+            new AddFriend().Run(Handler, "addfriend " + name, null);
         }
 
         public string Command(string cmd, string[] args)
@@ -271,8 +265,11 @@ namespace RCC.Automata
             }
         }
 
-        public void SendUpdate(string name, CharConnectionState status)
+        public void SendUpdate()
         {
+            if (_friendNames.Keys.Where(id => _friendNames[id] != string.Empty).Count() == 0)
+                return;
+
             try
             {
                 var httpWebRequest = (HttpWebRequest)WebRequest.Create(ClientConfig.OnlinePlayersApi);
@@ -282,13 +279,21 @@ namespace RCC.Automata
                 //using var md5 = MD5.Create();
                 var hash = Misc.GetMD5(DateTime.Now.ToString("ddMMyyyy")).ToLower();
 
+                var json = "[";
+
+                foreach (var id in _friendNames.Keys.Where(id => _friendNames[id] != string.Empty))
+                {
+                    json += $"{{\"auth\":\"{hash}\",\"name\":\"{_friendNames[id]}\",\"status\":\"{(_friendOnline[id] == CharConnectionState.CcsOnline ? "online" : "offline")}\"}},";
+                }
+
+                json = json[..^1];
+
+                json += "]";
+
+                Debug.Print(json);
+
                 using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                 {
-                    var json =
-                        $"[{{\"auth\":\"{hash}\",\"name\":\"{name}\",\"status\":\"{(status == CharConnectionState.CcsOnline ? "online" : "offline")}\"}}]";
-
-                    //Debug.Print(json);
-
                     streamWriter.Write(json);
                 }
 

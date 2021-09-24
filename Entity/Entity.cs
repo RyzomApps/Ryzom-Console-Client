@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Client
+namespace RCC.Entity
 {
     public static class Entity
     {
@@ -23,7 +23,7 @@ namespace RCC.Client
 
             if (p2 != -1)
             {
-                return name.Substring(0, p1) + name.Substring(p2 + 1);
+                return name.Substring(0, p1) + name[(p2 + 1)..];
             }
 
             return name.Substring(0, p1);
@@ -39,7 +39,7 @@ namespace RCC.Client
                 return name;
 
             // Remove all shard names (hack) TODO
-            return name.Substring(0, p0) + name.Substring(p1 + 1);
+            return name.Substring(0, p0) + name[(p1 + 1)..];
         }
 
 

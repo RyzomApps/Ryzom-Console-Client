@@ -566,15 +566,15 @@ namespace RCC
                 // Stats2Title
                 Console.Title = $@"[RCC] Version: {Program.Version} - State: {_networkConnection.ConnectionState} - Down: {_networkConnection.GetMeanDownload():0.00} kbps - Up: {_networkConnection.GetMeanUpload():0.00} kbps - Loss: {_networkConnection.GetMeanPacketLoss():0.00}";
 
-                // Do not eat up all the processor
-                Thread.Sleep(10);
-
                 // Update Ryzom Client stuff ~10 times per second -> Execute Tasks (like commands and automaton stuff)
                 if (Math.Abs(Misc.GetLocalTime() - _lastClientUpdate) > 100)
                 {
                     _lastClientUpdate = Misc.GetLocalTime();
                     OnUpdate();
                 }
+
+                // Do not eat up all the processor
+                Thread.Sleep(10);
 
                 // Get the Connection State.
                 var connectionState = _networkConnection.ConnectionState;
