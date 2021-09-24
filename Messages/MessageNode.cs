@@ -109,7 +109,7 @@ namespace RCC.Messages
                                 else
                                 {
                                     // here consider s as sint
-                                    var numBits = (byte) int.Parse(scan.Substring(1));
+                                    var numBits = (byte) int.Parse(scan[1..]);
 
                                     if (numBits == 8)
                                         Format.Add(new MessageField(MessageFieldType.Sint8, numBits));
@@ -133,7 +133,7 @@ namespace RCC.Messages
                                 else
                                 {
                                     // here consider s as sint
-                                    byte numBits = (byte) int.Parse(scan.Substring(1));
+                                    byte numBits = (byte) int.Parse(scan[1..]);
 
                                     if (numBits == 8)
                                         Format.Add(new MessageField(MessageFieldType.Uint8, numBits));
@@ -264,7 +264,7 @@ namespace RCC.Messages
                 node = node.NodesByName[sub];
 
                 var index = node.Value;
-                strm.SerialAndLog2(ref index, nodeOld.NbBits);
+                strm.Serial(ref index, (int)nodeOld.NbBits);
 
                 if (i == subSplitted.Length - 1)
                     return node;
@@ -284,7 +284,7 @@ namespace RCC.Messages
             while (node != null && node.NbBits != 0)
             {
                 uint index = 0;
-                strm.SerialAndLog2(ref index, node.NbBits);
+                strm.Serial(ref index, (int)node.NbBits);
 
                 if (index >= node.Nodes.Count)
                 {

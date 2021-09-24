@@ -315,7 +315,7 @@ namespace RCC.Chat
                             // leave <NEW> or <CHG> in the dest string
                             destTmp = preTag;
 
-                        destTmp += src.Substring(nextPos + 1);
+                        destTmp += src[(nextPos + 1)..];
                         dest = destTmp;
                     }
                     else

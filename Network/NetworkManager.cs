@@ -122,7 +122,7 @@ namespace RCC.Network
             //ConsoleIO.WriteLineFormatted($"§e{GetType().Name}.{MethodBase.GetCurrentMethod()?.Name}() {DateTimeOffset.Now.ToUnixTimeMilliseconds()}");
 
             // Update the base class.
-            _networkConnection.Update();
+            var result = _networkConnection.Update();
 
             // TODO:  Get and manage changes with the netmgr update
             // 	const vector<CChange> &changes = NetMngr.getChanges();
@@ -131,7 +131,7 @@ namespace RCC.Network
 
             // TODO: update everyting with the netmgr update
 
-            return true;
+            return result;
         }
 
         /// <summary>
@@ -505,7 +505,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// TODO server upload the phrases
+        /// TODO server sends the phrases
         /// </summary>
         private void ImpulsePhraseDownLoad(BitMemoryStream impulse)
         {
@@ -947,7 +947,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// todo received USER_CHAR impulse
+        /// todo properly received USER_CHAR impulse
         /// </summary>
         private void ImpulseUserChar(BitMemoryStream impulse)
         {

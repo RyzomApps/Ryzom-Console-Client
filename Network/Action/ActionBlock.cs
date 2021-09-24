@@ -81,15 +81,16 @@ namespace RCC.Network.Action
                 //sprintf(buff, "Pack[%d]:", Cycle);
                 for (i = 0; i < num; ++i)
                 {
-                    int msgPosBefore = msg.GetPosInBit();
+                    var msgPosBefore = msg.GetPosInBit();
                     ActionFactory.Pack(Actions[i], msg);
-                    int msgPosAfter = msg.GetPosInBit();
+                    var msgPosAfter = msg.GetPosInBit();
 
-                    int actionSize = ActionFactory.Size(Actions[i]);
+                    var actionSize = ActionFactory.Size(Actions[i]);
 
                     if (actionSize < msgPosAfter - msgPosBefore)
                         RyzomClient.GetInstance().GetLogger()?.Warn(
                             $"ActionBase {Actions[i].Code} declares a lower size ({actionSize} bits) from what it actually serialises ({msgPosAfter - msgPosBefore} bits)");
+                    
                     //sprintf(cat, " %d(%d bits)", Actions[i]->Code, Actions[i]->size());
                     //strcat(buff, cat);
                 }

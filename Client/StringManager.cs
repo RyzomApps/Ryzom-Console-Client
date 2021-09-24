@@ -431,7 +431,7 @@ namespace RCC.Client
                                 // if the string contains a special rename of creature, remove it
                                 if (str.Length > 2 && str[0] == '<' && str[1] == '#')
                                 {
-                                    str = char.ToUpper(str[2]) + str.Substring(3);
+                                    str = char.ToUpper(str[2]) + str[3..];
                                 }
 
                                 // append this string

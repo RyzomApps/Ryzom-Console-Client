@@ -74,8 +74,8 @@ namespace RCC.Network.Action
                 return null;
             }
 
-            if (RegisteredAction[code].Value == null)
-            {
+            //if (RegisteredAction[code].Value == null)
+            //{
                 // no action left in the store
                 var action =
                     (ActionBase)Activator.CreateInstance(RegisteredAction[code].Key); // execute the factory function
@@ -88,16 +88,16 @@ namespace RCC.Network.Action
                 action.Slot = slot;
                 action.Reset();
                 return action;
-            }
-            else
-            {
-                // pop an action off the store
-                var action = RegisteredAction[code].Value;
-                action.Reset();
-                action.Slot = slot;
-                action.PropertyCode = code;
-                return action;
-            }
+            //}
+            //else
+            //{
+            //    // pop an action off the store
+            //    var action = RegisteredAction[code].Value;
+            //    action.Reset();
+            //    action.Slot = slot;
+            //    action.PropertyCode = code;
+            //    return action;
+            //}
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace RCC.Network.Action
                 bool shortcode = true;
                 uint code = (uint)action.Code;
                 message.Serial(ref shortcode);
-                message.SerialAndLog2(ref code, 2);
+                message.Serial(ref code, 2);
             }
             else
             {

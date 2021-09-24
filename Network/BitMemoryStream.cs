@@ -161,7 +161,7 @@ namespace RCC.Network
         /// <summary>
         ///     serializes type uint32 with a given bit length
         /// </summary>
-        public void Serial(ref uint obj, int nbits = 32)
+        public void Serial(ref uint obj, int nbits)
         {
             if (IsReading())
             {
@@ -176,9 +176,35 @@ namespace RCC.Network
             }
             else
             {
-                throw new NotImplementedException();
-                //var bytes = BitConverter.GetBytes(obj);
-                //AddToArray(bytes);
+                var bytes = BitConverter.GetBytes(obj);
+                var bitArr = new bool[nbits];
+                var bitArrayIndex = 0;
+
+                foreach (var t in bytes)
+                {
+                    for (var bitIndex = 0; bitIndex < 8; bitIndex++)
+                    {
+                        bitArr[bitArrayIndex] = GetBit(t, bitIndex);
+                        bitArrayIndex++;
+
+                        if (bitArrayIndex >= nbits) break;
+                    }
+
+                    if (bitArrayIndex >= nbits) break;
+                }
+
+                bitArr = bitArr.Reverse().ToArray();
+
+                foreach (var bit in bitArr)
+                {
+                    if (_bitPos >= _contentBits.Length)
+                    {
+                        Array.Resize(ref _contentBits, _contentBits.Length + 8);
+                    }
+
+                    _contentBits[_bitPos] = bit;
+                    _bitPos++;
+                }
             }
         }
 
@@ -284,50 +310,6 @@ namespace RCC.Network
                 }
 
                 AddToArray(str8);
-            }
-        }
-
-        /// <summary>
-        ///     serializes type uint32 with a given bit length (+debug)
-        /// </summary>
-        internal void SerialAndLog2(ref uint obj, uint nbBits)
-        {
-            if (IsReading())
-            {
-                //short value = -1;
-                Serial(ref obj, (int) nbBits);
-                //obj = value;
-                return;
-            }
-
-            var bytes = BitConverter.GetBytes(obj);
-            var bitArr = new bool[nbBits];
-            var bitArrayIndex = 0;
-
-            foreach (var t in bytes)
-            {
-                for (var bitIndex = 0; bitIndex < 8; bitIndex++)
-                {
-                    bitArr[bitArrayIndex] = GetBit(t, bitIndex);
-                    bitArrayIndex++;
-
-                    if (bitArrayIndex >= nbBits) break;
-                }
-
-                if (bitArrayIndex >= nbBits) break;
-            }
-
-            bitArr = bitArr.Reverse().ToArray();
-
-            foreach (var bit in bitArr)
-            {
-                if (_bitPos >= _contentBits.Length)
-                {
-                    Array.Resize<bool>(ref _contentBits, _contentBits.Length + 8);
-                }
-
-                _contentBits[_bitPos] = bit;
-                _bitPos++;
             }
         }
 
@@ -492,11 +474,11 @@ namespace RCC.Network
         /// <summary>
         ///     TODO stream version - serializes the current steam version info (which seems to be always 0)
         /// </summary>
-        public int SerialVersion(/*uint currentVersion*/)
+        public uint SerialVersion(uint currentVersion)
         {
             byte b = 0;
-            int v = 0;
-            int streamVersion;
+            uint v = 0;
+            uint streamVersion;
 
             // Open the node
             //xmlPush("VERSION");
@@ -518,19 +500,19 @@ namespace RCC.Network
             }
             else
             {
-                throw new NotImplementedException();
-                //v = streamVersion = currentVersion;
-                //if (v >= 0xFF)
-                //{
-                //	b = 0xFF;
-                //	serial(b);
-                //	serial(v);
-                //}
-                //else
-                //{
-                //	b = (uint8)v;
-                //	serial(b);
-                //}
+                v = streamVersion = currentVersion;
+
+                if (v >= 0xFF)
+                {
+                	b = 0xFF;
+                	Serial(ref b);
+                	Serial(ref v);
+                }
+                else
+                {
+                	b = (byte)v;
+                	Serial(ref b);
+                }
             }
 
             // Close the node
@@ -587,6 +569,20 @@ namespace RCC.Network
             }
 
             return ret;
+        }
+
+        public void Serial(ref bool[] longAckBitField)
+        {
+            if (IsReading())
+            {
+                throw new NotImplementedException();
+            }
+
+            foreach (var ack in longAckBitField)
+            {
+                var b = ack;
+                Serial(ref b);
+            }
         }
     }
 }

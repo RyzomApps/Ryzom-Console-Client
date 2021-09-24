@@ -120,5 +120,19 @@ namespace RCC.Helper
             var text = (string)Resources.ResourceManager.GetObject(resourceName);
             File.WriteAllText(fileName, text);
         }
+
+        /// <summary>
+        /// Return the local time in milliseconds.
+        /// Use it only to measure time difference, the absolute value does not mean anything.
+        /// On Unix, getLocalTime() will try to use the Monotonic Clock if available, otherwise
+        /// the value can jump backwards if the system time is changed by a user or a NTP time sync process.
+        /// The value is different on 2 different computers; use the CUniTime class to get a universal
+        /// time that is the same on all computers.
+        /// </summary>
+        /// <remarks>On Win32, the value is on 32 bits only. It wraps around to 0 every about 49.71 days</remarks>
+        public static long GetLocalTime()
+        {
+            return DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        }
     }
 }

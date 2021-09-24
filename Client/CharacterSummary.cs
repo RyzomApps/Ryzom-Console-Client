@@ -75,7 +75,7 @@ namespace RCC.Client
         /// </summary>
         public void Serial(BitMemoryStream f)
         {
-            f.SerialVersion(/*0*/);
+            f.SerialVersion(0);
             f.Serial(ref Mainland);
             f.Serial(ref Name);
             f.Serial(ref People);

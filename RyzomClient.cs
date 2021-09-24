@@ -481,7 +481,7 @@ namespace RCC
                 // SERVER INTERACTIONS WITH INTERFACE
                 if (_networkManager.WaitServerAnswer)
                 {
-                    if (false && _networkManager.CanSendCharSelection)
+                    if (_networkManager.CanSendCharSelection)
                     {
                         var charSelect = ClientConfig.SelectCharacter;
 
@@ -495,7 +495,7 @@ namespace RCC
                             throw new InvalidOperationException("preselected char does not exist");
                         }
 
-                        // Clear sending buffer that may contain prevous QUIT_GAME when getting back to the char selection screen
+                        // Clear sending buffer that may contain previous QUIT_GAME when getting back to the char selection screen
                         _networkConnection.FlushSendBuffer();
 
                         // Auto-selection for fast launching (dev only)
@@ -522,8 +522,6 @@ namespace RCC
                     }
                 }
 
-                //Thread.Sleep(10);
-
                 if (_networkManager.GameExit)
                     return InterfaceState.QuitTheGame;
             }
@@ -548,27 +546,34 @@ namespace RCC
             // Main loop. If the window is no more Active -> Exit.
             while (!_networkManager.GameExit)
             {
-                // Do not eat up all the processor
-                Thread.Sleep(10);
-
-                // Update Ryzom Client stuff -> Execute Tasks (like commands and automaton stuff)
-                if (Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - _lastClientUpdate) > 100)
-                {
-                    _lastClientUpdate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                    OnUpdate();
-                }
-
-                // NetWork Update.
+                // Network Update.
                 _networkManager.Update();
 
                 // Send new data Only when server tick changed.
                 if (_networkConnection.GetCurrentServerTick() > _lastGameCycle)
                 {
+                    // TODO: Update the server with our position and orientation.
+                    // TODO: Give information to the server about the combat position (ability to strike).
+                    // TODO: Create the message for the server to move the user (except in combat mode).
+
                     // Send the Packet.
                     _networkManager.Send(_networkConnection.GetCurrentServerTick());
 
                     // Update the Last tick received from the server.
                     _lastGameCycle = _networkConnection.GetCurrentServerTick();
+                }
+
+                // Stats2Title
+                Console.Title = $@"[RCC] Version: {Program.Version} - State: {_networkConnection.ConnectionState} - Down: {_networkConnection.GetMeanDownload():0.00} kbps - Up: {_networkConnection.GetMeanUpload():0.00} kbps - Loss: {_networkConnection.GetMeanPacketLoss():0.00}";
+
+                // Do not eat up all the processor
+                Thread.Sleep(10);
+
+                // Update Ryzom Client stuff ~10 times per second -> Execute Tasks (like commands and automaton stuff)
+                if (Math.Abs(Misc.GetLocalTime() - _lastClientUpdate) > 100)
+                {
+                    _lastClientUpdate = Misc.GetLocalTime();
+                    OnUpdate();
                 }
 
                 // Get the Connection State.
@@ -579,7 +584,6 @@ namespace RCC
                     _networkManager.GameExit = true;
                     break;
                 }
-
             } // end of main loop
 
             return true;
@@ -765,7 +769,7 @@ namespace RCC
             if (ClientConfig.InternalCmdChar == ' ' || text[0] == ClientConfig.InternalCmdChar)
             {
                 var responseMsg = "";
-                var command = ClientConfig.InternalCmdChar == ' ' ? text : text.Substring(1);
+                var command = ClientConfig.InternalCmdChar == ' ' ? text : text[1..];
 
                 if (!PerformInternalCommand( /*ClientConfig.ExpandVars(*/command /*)*/, ref responseMsg) &&
                     ClientConfig.InternalCmdChar == '/')

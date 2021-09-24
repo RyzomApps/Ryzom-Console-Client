@@ -49,13 +49,13 @@ namespace RCC
 
         private static void Banner()
         {
-            ConsoleIO.WriteLineFormatted(" ");
+            ConsoleIO.WriteLineFormatted("                                          ");
             ConsoleIO.WriteLineFormatted(" §f    _/_/_/  §e     _/_/_/§c     _/_/_/ ");
             ConsoleIO.WriteLineFormatted(" §f   _/    _/ §e  _/       §c  _/        ");
             ConsoleIO.WriteLineFormatted(" §f  _/_/_/    §e _/        §c _/         ");
             ConsoleIO.WriteLineFormatted(" §f _/    _/   §e_/         §c_/          ");
             ConsoleIO.WriteLineFormatted(" §f_/    _/    §e _/_/_/    §c _/_/_/     ");
-            ConsoleIO.WriteLineFormatted(" ");
+            ConsoleIO.WriteLineFormatted("                                          ");
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace RCC
         {
             Banner();
 
-            Console.Title = $"[RCC] {Version}";
+            Console.Title = $@"[RCC] {Version}";
             ConsoleIO.WriteLineFormatted($"§bConsole Client for Ryzom §av{Version}§b - By bierdosenhalter & Contributors");
 
             // Debug input ?

@@ -197,7 +197,7 @@ namespace RCC.Config
                         var argName = line.Split('=')[0];
                         if (line.Length <= argName.Length + 1) continue;
 
-                        var argValue = line.Substring(argName.Length + 1);
+                        var argValue = line[(argName.Length + 1)..];
                         LoadSingleSetting(argName, argValue);
                     }
                 }
@@ -255,7 +255,7 @@ namespace RCC.Config
 
                 case "application":
                     argValue = argValue.Replace("{", "").Replace("}", "").Trim();
-                    //todo this is not good
+                    // config application string <- todo this is not good atm
                     var argValueSplit = argValue.Split();
 
                     ApplicationServer = CleanUpArgument(argValueSplit[0], true);
