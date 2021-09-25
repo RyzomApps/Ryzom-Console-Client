@@ -60,7 +60,7 @@ namespace RCC.Logger
             }
         }
 
-        private static string GetTimestamp()
+        internal static string GetTimestamp()
         {
             var time = DateTime.Now;
             return

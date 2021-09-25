@@ -137,9 +137,18 @@ namespace RCC
         /// </summary>
         private void StartClient()
         {
-            Log = ClientConfig.LogToFile
-                ? new FileLogLogger(ClientConfig.LogFile, ClientConfig.PrependTimestamp)
-                : new FilteredLogger();
+            if (ClientConfig.DiscordWebhook.Trim() != "")
+            {
+                Log = new DiscordLogger(ClientConfig.DiscordWebhook);
+            }
+            else if (ClientConfig.LogToFile)
+            {
+                Log = new FileLogLogger(ClientConfig.LogFile, ClientConfig.PrependTimestamp);
+            }
+            else
+            {
+                Log = new FilteredLogger();
+            }
 
             Log.DebugEnabled = ClientConfig.DebugEnabled;
 

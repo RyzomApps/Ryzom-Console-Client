@@ -60,6 +60,7 @@ namespace RCC.Config
         public static string LogFile = "console-log.txt";
         public static bool PrependTimestamp = false;
         public static string OnlinePlayersApi = "";
+        public static string DiscordWebhook = "";
 
         //Other Settings
         public static char InternalCmdChar = '/';
@@ -291,6 +292,10 @@ namespace RCC.Config
 
                 case "debug":
                     DebugEnabled = bool.Parse(argValue);
+                    return;
+
+                case "discordwebhook":
+                    DiscordWebhook = argValue;
                     return;
 
                 default:

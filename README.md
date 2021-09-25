@@ -31,3 +31,8 @@ Copyright 2019 by aannenko
 
 ### CryptSharp SHA512 (http://www.zer7.com/software/cryptsharp)
 Copyright (c) 2010, 2013 James F. Bellinger 
+
+### CSharpDiscordWebhook (https://github.com/N4T4NM/CSharpDiscordWebhook)
+released under MIT License https://github.com/N4T4NM/CSharpDiscordWebhook/blob/master/LICENSE
+
+Copyright (c) 2021 N4T4NM
