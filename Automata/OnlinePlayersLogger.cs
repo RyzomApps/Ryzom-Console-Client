@@ -41,6 +41,7 @@ namespace RCC.Automata
             RegisterAutomatonCommand("list", "Lists all online players in the friend list.", "", Command);
             RegisterAutomatonCommand("importfriends", "Imports a newline separated text file of player names to the friends list.", "<filename>", Command);
             RegisterAutomatonCommand("exportfriends", "Exports a newline separated text file of player names from the friends list.", "<filename>", Command);
+            RegisterAutomatonCommand("sendAPI", "Sending Player Array manually to API Server", "", Command);
             if (ClientConfig.OnlinePlayersApi.Trim().Equals(string.Empty))
                 Handler.GetLogger().Info("No server for player online status updates set: Not using this feature.");
         }
@@ -256,6 +257,13 @@ namespace RCC.Automata
                     // Write names to the file
                     File.WriteAllText(pathW, writeText);
 
+                    return "";
+
+                case "sendapi":
+                    Handler.GetLogger()?.Info("Sending Player Array to API");
+                    _lastApiServerUpdate = DateTime.Now + _intervalApiServer;
+
+                    Task.Factory.StartNew(() => { SendUpdate(); });
                     return "";
 
 
