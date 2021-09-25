@@ -300,6 +300,13 @@ namespace RCC.Automata
                 var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
 
                 using var streamReader = new StreamReader(httpResponse.GetResponseStream() ?? throw new NullReferenceException());
+
+                var response = streamReader.ReadToEnd();
+
+                if (bool.TryParse(response.Trim(), out bool result) || result != true)
+                {
+                    Handler.GetLogger().Error("Error API responded with: " + response);
+                }
             }
             catch (Exception e)
             {
