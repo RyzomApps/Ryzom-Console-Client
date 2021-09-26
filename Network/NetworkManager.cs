@@ -1153,6 +1153,8 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        const int CDBPlayer = 0;
+
         /// <summary>
         /// TODO: ImpulseDatabaseInitPlayer
         /// </summary>
@@ -1169,7 +1171,6 @@ namespace RCC.Network
                 impulse.Serial(ref serverTick);
 
                 // read delta
-                const int CDBPlayer = 0;
                 _databaseManager.ReadDelta(serverTick, impulse, CDBPlayer);
                 _databaseManager.SetInitPacketReceived();
                 _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
@@ -1194,6 +1195,9 @@ namespace RCC.Network
                 // get the egs tick of this change
                 uint serverTick = 0;
                 impulse.Serial(ref serverTick);
+
+                // read delta
+                _databaseManager.ReadDelta(serverTick, impulse, CDBPlayer); // unlike on the server, here there is only one unified CCDBSynchronized object
 
                 _client.Automata.OnDatabaseUpdatePlayer(serverTick);
             }

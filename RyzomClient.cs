@@ -116,7 +116,7 @@ namespace RCC
         {
             _instance = this;
             _clientThread = Thread.CurrentThread;
-            _databaseManager = new CDBSynchronised();
+            _databaseManager = new CDBSynchronised(this);
             _networkConnection = new NetworkConnection(this, _databaseManager);
             _stringManager = new StringManager(this);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager);

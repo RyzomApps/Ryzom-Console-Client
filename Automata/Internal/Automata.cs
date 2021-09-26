@@ -362,7 +362,7 @@ namespace RCC.Automata.Internal
         }
 
         /// <summary>
-        /// Calles when the ingame database was received
+        /// Calles when the ingame database was received TODO: we have this two times
         /// </summary>
         internal void OnIngameDatabaseInitialized()
         {

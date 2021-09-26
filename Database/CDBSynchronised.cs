@@ -31,7 +31,9 @@ namespace RCC.Database
 
         //protected CCDBBankHandler bankHandler;
         //protected CCDBBranchObservingHandler branchObservingHandler;
-        protected /*CRefPtr<CCDBNodeBranch>*/ object _Database;
+        protected /*CRefPtr<CCDBNodeBranch>*/ object _database;
+
+        private RyzomClient _client;
 
         //CRefPtr<CCDBNodeLeaf> m_CDBInitInProgressDB { }
 
@@ -44,13 +46,16 @@ namespace RCC.Database
         /// <summary>
         /// Default constructor
         /// </summary>
-        public CDBSynchronised() { }
+        public CDBSynchronised(RyzomClient client)
+        {
+            _client = client;
+        }
 
         /// <summary>
         /// Return a ptr on the node
         /// </summary>
         /// <returns>ptr on the node</returns>
-        public object GetNodePtr() { return _Database; }
+        public object GetNodePtr() { return _database; }
 
         /// <summary>
         /// Build the structure of the database from a file
@@ -74,7 +79,30 @@ namespace RCC.Database
         /// Update the database from a stream coming from the FE
         /// </summary>
         /// <params name="f">the stream</params>
-        public void ReadDelta(uint gc, BitMemoryStream s, uint bank) { }
+        public void ReadDelta(uint gc, BitMemoryStream s, uint bank)
+        {
+            _client.GetLogger().Debug("Update DB");
+
+            if (_database == null)
+            {
+                _client.GetLogger().Warn("<CCDBSynchronised::readDelta> the database has not been initialized");
+                //return;
+            }
+
+            //displayBitStream2( f, f.getPosInBit(), f.getPosInBit() + 64 );
+            uint propertyCount = 0;
+            s.Serial(ref propertyCount, 16);
+
+
+            //if (NLMISC::ICDBNode::isDatabaseVerbose())
+            _client.GetLogger().Info($"CDB: Reading delta ({propertyCount} changes)");
+            //NbDatabaseChanges += propertyCount;
+            //
+            //for (uint i = 0; i != propertyCount; ++i)
+            //{
+            //    _database.readAndMapDelta(gc, s, bank, &bankHandler);
+            //}
+        }
 
         /// <summary>
         /// Return the value of a property (the update flag is set to false)
