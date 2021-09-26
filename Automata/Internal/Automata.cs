@@ -361,6 +361,14 @@ namespace RCC.Automata.Internal
             DispatchAutomatonEvent(automaton => automaton.OnShardID(shardId, webHost));
         }
 
+        /// <summary>
+        /// Calles when the ingame database was received
+        /// </summary>
+        internal void OnIngameDatabaseInitialized()
+        {
+            DispatchAutomatonEvent(automaton => automaton.OnIngameDatabaseInitialized());
+        }
+
         #endregion
     }
 }

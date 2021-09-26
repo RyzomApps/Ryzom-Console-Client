@@ -466,6 +466,11 @@ namespace RCC.Automata.Internal
         /// </summary>
         public virtual void OnShardID(in uint shardId, string webHost) { }
 
+        /// <summary>
+        /// Calles when the ingame database was received
+        /// </summary>
+        public virtual void OnIngameDatabaseInitialized() { }
+
         #endregion
     }
 }

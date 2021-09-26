@@ -21,6 +21,7 @@ using System.Net.Sockets;
 using System.Threading;
 using RCC.Commands.Internal;
 using RCC.Helper.Tasks;
+using RCC.Database;
 
 namespace RCC
 {
@@ -33,6 +34,7 @@ namespace RCC
         private readonly NetworkConnection _networkConnection;
         private readonly NetworkManager _networkManager;
         private readonly StringManager _stringManager;
+        private readonly CDBSynchronised _databaseManager;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -103,6 +105,8 @@ namespace RCC
 
         public StringManager GetStringManager() { return _stringManager; }
 
+        public CDBSynchronised GetDatabaseManager() { return _databaseManager; }
+
         #region Initialization
 
         /// <summary>
@@ -112,9 +116,10 @@ namespace RCC
         {
             _instance = this;
             _clientThread = Thread.CurrentThread;
-            _networkConnection = new NetworkConnection(this);
+            _databaseManager = new CDBSynchronised();
+            _networkConnection = new NetworkConnection(this, _databaseManager);
             _stringManager = new StringManager(this);
-            _networkManager = new NetworkManager(this, _networkConnection, _stringManager);
+            _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager);
 
             Automata = new Automata.Internal.Automata(this);
 
@@ -302,6 +307,18 @@ namespace RCC
         /// </summary>
         private void InitMainLoop()
         {
+            // Create the game interface database
+            // Initialize the Database.
+            Log.Info("Initializing XML Database ...");
+            _databaseManager.Init(@"data\database.xml", null);
+            // TODO ICDBNode::CTextId textId("SERVER");
+            // TODO if (NLGUI::CDBManager::getInstance()->getDB()->getNode(textId, false))
+            // TODO     NLGUI::CDBManager::getInstance()->getDB()->removeNode(textId);
+            // TODO NLGUI::CDBManager::getInstance()->getDB()->attachChild(IngameDbMngr.getNodePtr(), "SERVER");
+
+            // Set the database
+            _networkManager.SetDataBase(_databaseManager.GetNodePtr());
+
             // Update Network till current tick increase.
             _lastGameCycle = _networkConnection.GetCurrentServerTick();
 
@@ -309,6 +326,7 @@ namespace RCC
             {
                 // Update Network.
                 _networkManager.Update();
+                _databaseManager.FlushObserverCalls();
             }
 
             // Create the message for the server that the client is ready
@@ -334,6 +352,8 @@ namespace RCC
         {
             var loggedIn = false;
             var firstRetry = true;
+
+            _databaseManager.FlushObserverCalls();
 
             while (!loggedIn)
             {
@@ -469,8 +489,7 @@ namespace RCC
                         Thread.Sleep(30);
                     }
                 }
-
-                // TODO: IngameDbMngr.flushObserverCalls();
+                _databaseManager.FlushObserverCalls();
 
                 // check if we can send another dated block
                 if (_networkConnection.GetCurrentServerTick() != serverTick)
@@ -485,7 +504,7 @@ namespace RCC
                 }
 
                 // TODO: updateClientTime();
-                // TODO: IngameDbMngr.flushObserverCalls();
+                _databaseManager.FlushObserverCalls();
 
                 // SERVER INTERACTIONS WITH INTERFACE
                 if (_networkManager.WaitServerAnswer)
@@ -557,6 +576,15 @@ namespace RCC
             {
                 // Network Update.
                 _networkManager.Update();
+                _databaseManager.FlushObserverCalls();
+                bool prevDatabaseInitStatus = _databaseManager.InitInProgress();
+                _databaseManager.SetChangesProcessed();
+                bool newDatabaseInitStatus = _databaseManager.InitInProgress();
+
+                if (!newDatabaseInitStatus && prevDatabaseInitStatus)
+                {
+                    Automata.OnIngameDatabaseInitialized();
+                }
 
                 // Send new data Only when server tick changed.
                 if (_networkConnection.GetCurrentServerTick() > _lastGameCycle)
@@ -594,6 +622,8 @@ namespace RCC
                     break;
                 }
             } // end of main loop
+
+            _databaseManager.ResetInitState();
 
             return true;
         }

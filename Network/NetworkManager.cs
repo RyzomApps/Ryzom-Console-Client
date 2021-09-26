@@ -13,13 +13,14 @@ using System.Reflection;
 using System.Threading;
 using RCC.Chat;
 using RCC.Client;
+using RCC.Database;
 using RCC.Helper;
 using RCC.Messages;
 
 namespace RCC.Network
 {
     /// <summary>
-    ///     used to control the connection and implements the impulse callbacks from the connection
+    /// used to control the connection and implements the impulse callbacks from the connection
     /// </summary>
     public class NetworkManager
     {
@@ -55,7 +56,8 @@ namespace RCC.Network
 
         private readonly NetworkConnection _networkConnection;
         private readonly StringManager _stringManager;
-
+        private readonly CDBSynchronised _databaseManager;
+        private object _dataBase;
         private readonly RyzomClient _client;
 
         private readonly GenericMessageHeaderManager _messageHeaderManager;
@@ -67,14 +69,23 @@ namespace RCC.Network
         /// <summary>
         /// Constructor
         /// </summary>
-        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager)
+        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, Database.CDBSynchronised databaseManager)
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
             _chatManager = new ChatManager(this, stringManager);
 
             _networkConnection = networkConnection;
             _stringManager = stringManager;
+            _databaseManager = databaseManager;
             _client = client;
+        }
+
+        /// <summary>
+        /// Set database entry point
+        /// </summary>
+        internal void SetDataBase(object database)
+        {
+            _dataBase = database;
         }
 
         /// <summary>
@@ -1157,6 +1168,10 @@ namespace RCC.Network
                 uint serverTick = 0;
                 impulse.Serial(ref serverTick);
 
+                // read delta
+                const int CDBPlayer = 0;
+                _databaseManager.ReadDelta(serverTick, impulse, CDBPlayer);
+                _databaseManager.SetInitPacketReceived();
                 _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
 
                 _client.Automata.OnDatabaseInitPlayer(serverTick);

@@ -14,6 +14,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using RCC.Config;
+using RCC.Database;
 using RCC.Entity;
 using RCC.Helper;
 using RCC.Network.Action;
@@ -193,6 +194,11 @@ namespace RCC.Network
         private readonly RyzomClient _client;
 
         /// <summary>
+        /// Ingame Database Manager
+        /// </summary>
+        private readonly CDBSynchronised _databaseManager;
+
+        /// <summary>
         /// the last tick sent by the server
         /// </summary>
         public uint GetCurrentServerTick() => _currentServerTick;
@@ -213,11 +219,12 @@ namespace RCC.Network
         /// <summary>
         /// Constructor
         /// </summary>
-        public NetworkConnection(RyzomClient client)
+        public NetworkConnection(RyzomClient client, CDBSynchronised databaseManager)
         {
             _connectionState = ConnectionState.NotInitialized;
 
             _client = client;
+            _databaseManager = databaseManager;
 
             Reset();
 

@@ -211,6 +211,8 @@ namespace RCC.Automata
                         online.Add(name);
                     }
 
+                    online.Sort();
+
                     var ret = $"There are {online.Count}/{_friendOnline.Count} players online:\r\n";
                     ret += string.Join(", ", online);
 
