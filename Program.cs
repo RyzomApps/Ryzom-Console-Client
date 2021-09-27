@@ -31,7 +31,7 @@ namespace RCC
         public static readonly string BuildInfo;
 
         /// <summary>
-        /// Windows-1252 or CP-1252 (code page 1252) single-byte character encoding (commonly mislabeled as "ANSI")
+        /// ISO-8859-1: Windows-1252 or CP-1252 (code page 1252) single-byte character encoding (commonly mislabeled as "ANSI")
         /// </summary>
         public static Encoding Enc1252;
 
