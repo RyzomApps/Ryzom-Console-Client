@@ -151,6 +151,8 @@ namespace RCC.Network
         private readonly List<int> _latestProbes = new List<int>();
         private int _latestProbe;
 
+        uint _quitId = 0;
+
         private const int NumBitsInLongAck = 512;
         private bool[] _longAckBitField = new bool[NumBitsInLongAck * 2];
 
@@ -167,6 +169,9 @@ namespace RCC.Network
         private bool _alreadyWarned;
 
         private long _previousTime;
+
+        private long _latestQuitTime;
+        private bool _receivedAckQuit;
 
         /// <summary>
         /// /// Mean download (payload bytes)
@@ -829,13 +834,70 @@ namespace RCC.Network
 
         /// <summary>
         ///     Connection state machine - Quit State
-        ///     TODO: Connection state machine - Quit State
         /// </summary>
         private bool StateQuit()
         {
-            _client.GetLogger().Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
-            Disconnect();
+            while (_connection.IsDataAvailable())
+            {
+                _decodedHeader = false;
+                var msgin = new BitMemoryStream(true);
+
+                if (BuildStream(msgin) && DecodeHeader(msgin))
+                {
+                    if (_systemMode)
+                    {
+                        byte message = 0;
+                        msgin.Serial(ref message);
+
+                        switch ((SystemMessageType)message)
+                        {
+                            case SystemMessageType.SystemSyncCode:
+                                // receive sync, decode sync and state synchronize
+                                Reset();
+                                _connectionState = ConnectionState.Synchronize;
+                                _client.GetLogger().Debug("CNET[%p]: quit->synchronize", this);
+                                ReceiveSystemSync(msgin);
+                                return true;
+
+                            case SystemMessageType.SystemServerDownCode:
+                                Disconnect(); // will send disconnection message
+                                _client.GetLogger().Error("BACK-END DOWN");
+                                return false; // exit now from loop, don't expect a new state
+
+                            case SystemMessageType.SystemAckQuitCode:
+                                // receive ack quit -> reset connection state
+                                ReceiveSystemAckQuit(msgin);
+                                break;
+
+                            default:
+                                _client.GetLogger().Warn($"CNET[]: received system {message} in state Quit");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        _client.GetLogger().Warn("CNET[%p]: received normal in state Stalled", this);
+                    }
+                }
+            }
+
+            // send quit if not yet received a ack quit
+            if (!_receivedAckQuit && _updateTime - _latestQuitTime > 100)
+            {
+                SendSystemQuit();
+                _latestQuitTime = _updateTime;
+            }
+
             return false;
+        }
+
+        /// <summary>
+        /// Quit state
+        /// </summary>
+        void ReceiveSystemAckQuit(BitMemoryStream _)
+        {
+            _client.GetLogger().Debug("CNET: received ACK_QUIT");
+            _receivedAckQuit = true;
         }
 
         /// <summary>
@@ -1156,7 +1218,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     TODO Stalled state - deserialise info from stream
+        ///     Stalled state - nop
         /// </summary>
         private void ReceiveSystemStalled(BitMemoryStream msgin)
         {
@@ -1332,7 +1394,7 @@ namespace RCC.Network
             uint size = (uint)_longAckBitField.Length;
             message.Serial(ref size); // 32
             int len = (int)(size / 32);
-            message.Serial(ref len);
+            message.Serial(ref len); // 32
             message.Serial(ref _longAckBitField); // 1024
 
             message.Serial(ref _latestSync); // 32
@@ -1403,6 +1465,28 @@ namespace RCC.Network
             }
 
             StatsSend(message.Length);
+        }
+
+        /// <summary>
+        /// sends system quit acknowledgement
+        /// </summary>
+        void SendSystemQuit()
+        {
+            var message = new BitMemoryStream();
+
+            message.BuildSystemHeader(ref _currentSendNumber);
+
+            Byte quit = (byte)SystemMessageType.SystemQuitCode;
+
+            message.Serial(ref quit);
+            message.Serial(ref _quitId);
+
+            _connection.Send(message.Buffer(), message.Length);
+
+            ++_quitId; // we do that here instead of in the quit() method
+            StatsSend(message.Length);
+
+            _client.GetLogger().Info("CNET: sent QUIT");
         }
 
         /// <summary>
@@ -1562,7 +1646,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     TODO updateSmoothServerTick - not that important
+        ///     TODO updateSmoothServerTick - not that important for console client
         /// </summary>
         private void UpdateSmoothServerTick()
         {
@@ -1599,7 +1683,7 @@ namespace RCC.Network
 
             var ag = (ActionGeneric)ActionFactory.Create(invalidSlot, ActionCode.ActionGenericCode);
 
-            if (ag == null) //TODO: see that with oliver...
+            if (ag == null) //TODO: ryzom: see that with oliver...
                 return;
 
             var bytelen = msg.Length;
