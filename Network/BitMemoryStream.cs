@@ -283,7 +283,7 @@ namespace RCC.Network
                 for (uint i = 0; i != len * (isUnicode ? 2 : 1); ++i)
                     Serial(ref b[i]);
 
-                obj = Encoding.UTF8.GetString(b).Replace("\0", "");
+                obj = Program.Enc1252.GetString(b).Replace("\0", "");
             }
             else
             {

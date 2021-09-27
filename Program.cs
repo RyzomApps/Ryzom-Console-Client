@@ -31,6 +31,11 @@ namespace RCC
         public static readonly string BuildInfo;
 
         /// <summary>
+        /// Windows-1252 or CP-1252 (code page 1252) single-byte character encoding (commonly mislabeled as "ANSI")
+        /// </summary>
+        public static Encoding Enc1252;
+
+        /// <summary>
         ///     Detect if the user is running Ryzom Console Client through Mono
         /// </summary>
         public static bool IsUsingMono => Type.GetType("Mono.Runtime") != null;
@@ -40,6 +45,9 @@ namespace RCC
         /// </summary>
         static Program()
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            Enc1252 = Encoding.GetEncoding(1252);
+
             if (typeof(Program)
                 .Assembly
                 .GetCustomAttributes(typeof(AssemblyConfigurationAttribute), false)

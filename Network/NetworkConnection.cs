@@ -436,8 +436,9 @@ namespace RCC.Network
                     };
                 } while (stateBroke); // && _TotalMessages<5);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _client.GetLogger().Error("Exception: " + e.Message);
                 _connectionState = ConnectionState.Disconnect;
             }
 
@@ -1252,8 +1253,8 @@ namespace RCC.Network
                 _alreadyWarned = true;
                 _client.GetLogger().Warn("XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
 
-                _client.GetLogger().Debug($"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
-                _client.GetLogger().Debug($"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
+                _client.GetLogger().Warn($"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
+                _client.GetLogger().Warn($"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
             }
 
             _msPerTick = 100;
