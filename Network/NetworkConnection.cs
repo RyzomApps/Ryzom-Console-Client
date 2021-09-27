@@ -765,12 +765,65 @@ namespace RCC.Network
 
         /// <summary>
         ///     Connection state machine - Stalled State
-        ///     TODO: Connection state machine - Stalled State
+        /// if receives System SYNC
+        ///    immediate state SYNC
+        /// else if receives System STALLED
+        ///    decode STALLED (nothing to do)
+        /// else if receives System PROBE
+        ///    immediate state PROBE
         /// </summary>
         private bool StateStalled()
         {
-            _client.GetLogger().Error($"{MethodBase.GetCurrentMethod()?.Name} called, but not implemented");
-            Disconnect();
+            while (_connection.IsDataAvailable())
+            {
+                _decodedHeader = false;
+                var msgin = new BitMemoryStream(true);
+
+                if (BuildStream(msgin) && DecodeHeader(msgin))
+                {
+                    if (_systemMode)
+                    {
+                        byte message = 0;
+                        msgin.Serial(ref message);
+
+                        switch ((SystemMessageType)message)
+                        {
+                            case SystemMessageType.SystemSyncCode:
+                                // receive sync, decode sync and state synchronize
+                                _connectionState = ConnectionState.Synchronize;
+                                _client.GetLogger().Debug("CNET: stalled->synchronize");
+                                ReceiveSystemSync(msgin);
+                                return true;
+
+                            case SystemMessageType.SystemProbeCode:
+                                // receive sync, decode sync
+                                _connectionState = ConnectionState.Probe;
+                                _client.GetLogger().Debug("CNET: stalled->probe");
+                                ReceiveSystemProbe(msgin);
+                                break;
+
+                            case SystemMessageType.SystemStalledCode:
+                                // receive stalled, decode stalled
+                                ReceiveSystemStalled(msgin);
+                                break;
+
+                            case SystemMessageType.SystemServerDownCode:
+                                Disconnect(); // will send disconnection message
+                                _client.GetLogger().Error("BACK-END DOWN");
+                                return false; // exit now from loop, don't expect a new state
+
+                            default:
+                                _client.GetLogger().Warn($"CNET: received system {message} in state Stalled");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        _client.GetLogger().Warn("CNET: received normal in state Stalled");
+                    }
+                }
+            }
+
             return false;
         }
 
@@ -1107,7 +1160,7 @@ namespace RCC.Network
         /// </summary>
         private void ReceiveSystemStalled(BitMemoryStream msgin)
         {
-            _client.GetLogger().Info("CNET: received STALLED but not implemented " + msgin);
+            _client.GetLogger().Debug("CNET: received STALLED");
         }
 
         /// <summary>
@@ -1348,6 +1401,8 @@ namespace RCC.Network
                     _client.GetLogger().Error($"Socket exception: {e.Message}");
                 }
             }
+
+            StatsSend(message.Length);
         }
 
         /// <summary>
