@@ -174,11 +174,11 @@
           format="u8"
           description="the client select a new slot to defend (or none)" />
     <leaf name="FLYING_HP_DELTA"
-          description="add a flying message to an entity (u32 entity, u32 rgba, s16 delta)" />
+          description="add a flying text to an entity (u32 entity, u32 rgba, s16 delta)" />
     <leaf name="FLYING_TEXT_ISE"
-          description="add a flying message to an entity (u32 entity, u32 rgba, u8 effect, s32 param)" />
+          description="add a flying text to an entity (u32 entity, u32 rgba, u8 effect, s32 param)" />
     <leaf name="FLYING_TEXT"
-          description="add a flying message to an entity (u32 entity, u8 type)" />
+          description="add a flying text to an entity (u32 entity, u8 type)" />
   </branch>
   <branch name="STRING">
     <leaf name="TELL"
@@ -215,7 +215,7 @@
     <leaf name="AFK_TXT"
           sendto="IOS"
           format="uc"
-          description="the client sets an afk custom message" />
+          description="the client sets an afk custom text" />
   </branch>
   <branch name="STUN">
     <leaf name="STUN" />
@@ -524,7 +524,7 @@
     <leaf name="CUSTOM_EMOTE"
           sendto="EGS"
           format="u32 uc"
-          description="client send the custom emote (behaviour, custom message) to play." />
+          description="client send the custom emote (behaviour, custom text) to play." />
     <leaf name="WHERE"
           sendto="EGS"
           format=""
@@ -732,9 +732,9 @@
   </branch>
   <branch name="JOURNAL">
     <leaf name="INIT_COMPLETED_MISSIONS"
-          description="a vector of message ids is sent to init the mission journal (vector(uint32) )" />
+          description="a vector of text ids is sent to init the mission journal (vector(uint32) )" />
     <leaf name="UPDATE_COMPLETED_MISSIONS"
-          description="a message id is sent to add a mission title to the mission journal (uint32)" />
+          description="a text id is sent to add a mission title to the mission journal (uint32)" />
     <leaf name="MISSION_ABANDON"
           sendto="EGS"
           format="u8"
@@ -1114,7 +1114,7 @@
     <leaf name="SET_ITEM_CUSTOM_TEXT"
           sendto="EGS"
           format="u32 u32 uc"
-          description="set the cursom of the item in inventory $inventory in slot $slot to $message" />
+          description="set the cursom of the item in inventory $inventory in slot $slot to $text" />
     <leaf name="DUMMY"
           description="stupid server....." />
   </branch>
