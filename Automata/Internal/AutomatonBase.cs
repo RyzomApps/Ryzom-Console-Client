@@ -356,7 +356,7 @@ namespace RCC.Automata.Internal
         /// <summary>
         /// called when the friend list contact changes its online status
         /// </summary>
-        public virtual void OnTeamContactStatus(uint contactId, CharConnectionState online) { }
+        public virtual void OnTeamContactStatus(uint contactIndex, CharConnectionState online) { }
 
         /// <summary>
         /// called when the friend list gets initialized

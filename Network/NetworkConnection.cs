@@ -934,14 +934,14 @@ namespace RCC.Network
                         //                nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->getNode((uint16)0));
                         //                if (nodeRoot)
                         //                {
-                        //                    CCDBNodeLeaf* node;
-                        //                    node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(0));
+                        //                    CDBNodeLeaf* node;
+                        //                    node = dynamic_cast<CDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(0));
                         //                    nlassert(node != NULL);
                         //                    node->setValue64(ap->Position[0]);
-                        //                    node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(1));
+                        //                    node = dynamic_cast<CDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(1));
                         //                    nlassert(node != NULL);
                         //                    node->setValue64(ap->Position[1]);
-                        //                    node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(2));
+                        //                    node = dynamic_cast<CDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(2));
                         //                    nlassert(node != NULL);
                         //                    node->setValue64(ap->Position[2]);
                         //
@@ -1036,7 +1036,7 @@ namespace RCC.Network
                         //                    nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->getNode(0));
                         //                    if (nodeRoot)
                         //                    {
-                        //                        CCDBNodeLeaf* node = dynamic_cast<CCDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(PROPERTY_ORIENTATION));
+                        //                        CDBNodeLeaf* node = dynamic_cast<CDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(PROPERTY_ORIENTATION));
                         //                        nlassert(node != NULL);
                         //                        node->setValue64(ac->getValue());
                         //                        if (LoggingMode)

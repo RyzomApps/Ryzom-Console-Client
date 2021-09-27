@@ -100,12 +100,12 @@ namespace RCC.Automata
             }
         }
 
-        public override void OnTeamContactStatus(uint contactId, CharConnectionState online)
+        public override void OnTeamContactStatus(uint contactIndex, CharConnectionState online)
         {
-            var (key, _) = _friendOnline.ElementAt((int)contactId);
+            var (key, _) = _friendOnline.ElementAt((int)contactIndex);
 
             _friendOnline[key] = online;
-            var name = _friendNames[key] != string.Empty ? _friendNames[key] : $"{contactId}";
+            var name = _friendNames[key] != string.Empty ? _friendNames[key] : $"{contactIndex}";
 
             Handler.GetLogger().Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
         }

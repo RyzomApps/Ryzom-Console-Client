@@ -11,11 +11,21 @@ using System.Xml;
 
 namespace RCC.Database
 {
-    public abstract class ICDBNode
+    public class CDBNodeLeaf : ICDBNode
     {
-        public string name;
-        public abstract void SetParent(CDBNodeBranch parent);
-        public abstract void SetAtomic(bool atomBranch);
-        internal abstract void Init(XmlElement child, Action progressCallBack);
+        public override void SetParent(CDBNodeBranch parent)
+        {
+
+        }
+
+        public override void SetAtomic(bool atomBranch)
+        {
+
+        }
+
+        internal override void Init(XmlElement child, Action progressCallBack)
+        {
+
+        }
     }
 }

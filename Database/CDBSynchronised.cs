@@ -1,14 +1,16 @@
 ﻿///////////////////////////////////////////////////////////////////
-// This file contains modified code from 'Minecraft Console Client'
-// https://github.com/ORelio/Minecraft-Console-Client
-// which is released under CDDL-1.0 License
-// http://opensource.org/licenses/CDDL-1.0
-// Copyright 2021 ORelio and Contributers
+// This file contains modified code from 'Ryzom - MMORPG Framework'
+// http://dev.ryzom.com/projects/ryzom/
+// which is released under GNU Affero General Public License.
+// http://www.gnu.org/licenses/
+// Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
 using RCC.Network;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Xml;
 
 namespace RCC.Database
 {
@@ -20,22 +22,27 @@ namespace RCC.Database
     /// <date>2002</date>
     public class CDBSynchronised //: public CCDBManager
     {
+        public enum TCDBBank { CDBPlayer, CDBGuild, /* CDBContinent, */ CDBOutpost, /* CDBGlobal, */ NB_CDB_BANKS, INVALID_CDB_BANK };
+
+        private static readonly string[] CDBBankNames = { "PLR", "GUILD", /* "CONTINENT", */ "OUTPOST", /* "GLOBAL", */ "<NB>", "INVALID" };
+
+
         /// <summary>string associations</summary>
-        private readonly Dictionary<uint, string> _Strings;
+        private readonly Dictionary<uint, string> _strings;
 
         /// <summary>True while the first database packet has not been completely processed (including branch observers)</summary>
-        private bool _InitInProgress;
+        private bool _initInProgress;
 
         /// <summary>The number of "init database packet" received</summary>
-        private byte _InitDeltaReceived;
+        private byte _initDeltaReceived;
 
-        //protected CCDBBankHandler bankHandler;
+        protected CDBBankHandler bankHandler = new CDBBankHandler();
         //protected CCDBBranchObservingHandler branchObservingHandler;
-        protected /*CRefPtr<CCDBNodeBranch>*/ object _database;
+        private CDBNodeBranch _database;
 
-        private RyzomClient _client;
+        private readonly RyzomClient _client;
 
-        //CRefPtr<CCDBNodeLeaf> m_CDBInitInProgressDB { }
+        //CRefPtr<CDBNodeLeaf> m_CDBInitInProgressDB { }
 
         /// <summary>exception thrown when database is not initialized</summary>
         public class EDBNotInit : Exception
@@ -49,19 +56,46 @@ namespace RCC.Database
         public CDBSynchronised(RyzomClient client)
         {
             _client = client;
+
+            // const char *rootNodeName, uint maxBanks
+            //CCDBManager("SERVER", NB_CDB_BANKS);
+            _initInProgress = true;
+            _initDeltaReceived = 0;
         }
 
         /// <summary>
         /// Return a ptr on the node
         /// </summary>
         /// <returns>ptr on the node</returns>
-        public object GetNodePtr() { return _database; }
+        public CDBNodeBranch GetNodePtr() { return _database; }
 
         /// <summary>
         /// Build the structure of the database from a file
         /// </summary>
         /// <params name="fileName">is the name of file containing the database structure</params>
-        public void Init(string fileName, Action progressCallBack) { }
+        public void Init(string fileName, Action progressCallBack)
+        {
+            try
+            {
+                var file = new XmlDocument();
+
+                // Init an xml stream
+                file.Load(fileName);
+
+                    //Parse the parser output!!!
+                    bankHandler.resetNodeBankMapping(); // in case the game is restarted from start
+                    bankHandler.fillBankNames(CDBBankNames, TCDBBank.INVALID_CDB_BANK + 1);
+
+                    _database ??= new CDBNodeBranch("SERVER");
+
+                    _database.Init(file.DocumentElement, progressCallBack, true, bankHandler);
+            }
+            catch (Exception e)
+            {
+                // Output error
+                _client.GetLogger().Warn($"CFormLoader: Error while loading the form {fileName}: {e.Message}");
+            }
+        }
 
         /// <summary>
         /// Load a backup of the database
@@ -144,20 +178,20 @@ namespace RCC.Database
         ~CDBSynchronised() { Clear(); }
 
         /// <summary>Return true while the first database packet has not been completely received</summary>
-        public bool InitInProgress() { return _InitInProgress; }
+        public bool InitInProgress() { return _initInProgress; }
 
         /// <summary>tests</summary>
         public void Test() { }
 
         /// <summary>Reset the init state (if you relauch the game from scratch)</summary>
-        public void ResetInitState() { _InitDeltaReceived = 0; _InitInProgress = true; WriteInitInProgressIntoUIDB(); }
+        public void ResetInitState() { _initDeltaReceived = 0; _initInProgress = true; WriteInitInProgressIntoUIDB(); }
 
         /// <summary>Called after flushObserversCalls() as it calls the observers for branches</summary>
         public void SetChangesProcessed()
         {
             if (AllInitPacketReceived())
             {
-                _InitInProgress = false;
+                _initInProgress = false;
                 WriteInitInProgressIntoUIDB(); // replaced by DECLARE_INTERFACE_USER_FCT(isDBInitInProgress)
             }
         }
@@ -173,8 +207,8 @@ namespace RCC.Database
         private void ImpulseDatabaseInitPlayer(BitMemoryStream impulse) { }
         private void ImpulseInitInventory(BitMemoryStream impulse) { }
 
-        public void SetInitPacketReceived() { ++_InitDeltaReceived; }
-        private bool AllInitPacketReceived() { return _InitDeltaReceived == 2; } // Classic database + inventory
+        public void SetInitPacketReceived() { ++_initDeltaReceived; }
+        private bool AllInitPacketReceived() { return _initDeltaReceived == 2; } // Classic database + inventory
 
         private void WriteInitInProgressIntoUIDB() { }
 

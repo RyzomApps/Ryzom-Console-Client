@@ -6,16 +6,23 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Xml;
-
 namespace RCC.Database
 {
-    public abstract class ICDBNode
+    public class CDBBankHandler
     {
-        public string name;
-        public abstract void SetParent(CDBNodeBranch parent);
-        public abstract void SetAtomic(bool atomBranch);
-        internal abstract void Init(XmlElement child, Action progressCallBack);
+        public void resetNodeBankMapping()
+        {
+
+        }
+
+        public void fillBankNames(string[] cdbBankNames, CDBSynchronised.TCDBBank invalidCdbBank)
+        {
+
+        }
+
+        public void mapNodeByBank(string bankName)
+        {
+
+        }
     }
 }
