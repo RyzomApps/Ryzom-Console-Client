@@ -23,10 +23,16 @@ namespace RCC.Network
         /// <summary>
         ///     getting server information and try to login the client with the given credentials
         /// </summary>
-        public static void CheckLogin(RyzomClient client, string login, string password, string clientApp,
-            string customParameters)
+        public static void CheckLogin(RyzomClient client, string login, string password, string clientApp, string customParameters)
         {
-            var url = "http://" + ClientConfig.StartupHost + ClientConfig.StartupPage;
+            var url = "";
+
+            if (!ClientConfig.StartupHost.Contains("http://") && !ClientConfig.StartupHost.Contains("https://"))
+            {
+                url = ClientConfig.StartupHost.Contains(":80") ? "http://" : "https://";
+            }
+
+            url += ClientConfig.StartupHost + ClientConfig.StartupPage;
 
             var salt = GetServerSalt(login, url);
 
