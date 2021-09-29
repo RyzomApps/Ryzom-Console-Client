@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using RCC.Config;
 using RCC.Database;
@@ -264,8 +263,8 @@ namespace RCC.Network
             _VisualPropertyTreeRoot.BuildTree();
 
             // get md5 hashes
-            _msgXmlMD5 = Misc.GetFileMD5("data\\msg.xml");
-            _databaseXmlMD5 = Misc.GetFileMD5("data\\database.xml");
+            _msgXmlMD5 = Misc.GetFileMD5("data\\msg.xml"); // c9728a56c6852972e52b88a37b48fd8b
+            _databaseXmlMD5 = Misc.GetFileMD5("data\\database.xml"); // 09a464f8f35fd70af3e363b69cef6950
         }
 
         /// <summary>
@@ -1239,7 +1238,7 @@ namespace RCC.Network
 
             _client.GetLogger().Debug($"receiveSystemSync {msgin}");
 
-            var checkMsgXml = new byte[16];
+            var checkMsgXml = new byte[16]; // 16 * 8
             var checkDatabaseXml = new byte[16];
 
             msgin.Serial(ref checkMsgXml);
@@ -1378,7 +1377,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     sends system sync acknowledge
+        /// sends system sync acknowledgement
         /// </summary>
         private void SendSystemAckSync()
         {
@@ -1392,9 +1391,9 @@ namespace RCC.Network
             message.Serial(ref _lastAckInLongAck); // 32
 
             message.SerialVersion(0); // 8
-            uint size = (uint)_longAckBitField.Length;
+            var size = (uint)_longAckBitField.Length;
             message.Serial(ref size); // 32
-            int len = (int)(size / 32);
+            var len = (int)(size / 32);
             message.Serial(ref len); // 32
             message.Serial(ref _longAckBitField); // 1024
 

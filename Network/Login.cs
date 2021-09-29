@@ -29,7 +29,7 @@ namespace RCC.Network
 
             if (!ClientConfig.StartupHost.Contains("http://") && !ClientConfig.StartupHost.Contains("https://"))
             {
-                url = ClientConfig.StartupHost.Contains(":80") ? "http://" : "https://";
+                url = ClientConfig.StartupHost.Contains(":80") || ClientConfig.StartupHost.Contains(":40916") ? "http://" : "https://";
             }
 
             url += ClientConfig.StartupHost + ClientConfig.StartupPage;
