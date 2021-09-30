@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Xml;
+using RCC.Network;
 
 namespace RCC.Database
 {
@@ -27,6 +28,12 @@ namespace RCC.Database
         /// <summary>subnodes sorted by name</summary>
         public List<ICDBNode> _NodesByName = new List<ICDBNode>();
 
+        ICDBNode _PredictNode;
+
+        // number of bits required to stock my children's ids
+        byte _IdBits = 7;
+        bool _Sorted = true;
+
         /// <summary>default constructor</summary>
         public CDBNodeBranch(string name)
         {
@@ -34,6 +41,11 @@ namespace RCC.Database
             _Parent = null;
             _IdBits = 0;
             _Sorted = false;
+        }
+
+        internal override void SetAtomic(bool atomBranch)
+        {
+
         }
 
         internal override void Init(XmlElement child, Action progressCallBack)
@@ -47,176 +59,110 @@ namespace RCC.Database
         /// <params id="f">is the stream</params>
         public void Init(XmlElement node, Action progressCallBack, bool mapBanks = false, CDBBankHandler bankHandler = null)
         {
-            //XmlElement child; // = new XmlElement();
-
             _Sorted = false;
-            // look for other branches within this branch
-            //uint countNode = CIXml.countChildren(node, "branch") + CIXml.countChildren(node, "leaf");
             uint nodeId = 0;
 
-            //for (child = CIXml.getFirstChildNode(node, "branch"); child; child = CIXml.getNextChildNode(child, "branch"))
+            // look for other branches within this branch
             foreach (var subNode in node.SelectNodes("branch"))
             {
-                var child = subNode as XmlElement;
-
-                if (child == null)
+                if (!(subNode is XmlElement child))
                     continue;
 
-                // Progress bar
-                //progressCallBack.progress((float)nodeId / (float)countNode);
-                //progressCallBack.pushCropedValues((float)nodeId / (float)countNode, (float)(nodeId + 1) / (float)countNode);
+                var sBank = child.GetAttribute("bank");
+                var sAtom = child.GetAttribute("atom");
+                var sClientonly = child.GetAttribute("clientonly");
+                var sCount = child.GetAttribute("count");
+                var sName = child.GetAttribute("name");
 
-                //CXMLAutoPtr name = new CXMLAutoPtr((string)xmlGetProp(child, (xmlChar)"name"));
-                //CXMLAutoPtr count = new CXMLAutoPtr((string)xmlGetProp(child, (xmlChar)"count"));
-                //CXMLAutoPtr bank = new CXMLAutoPtr((string)xmlGetProp(child, (xmlChar)"bank"));
-                //CXMLAutoPtr atom = new CXMLAutoPtr((string)xmlGetProp(child, (xmlChar)"atom"));
-                //CXMLAutoPtr clientonly = new CXMLAutoPtr((string)xmlGetProp(child, (xmlChar)"clientonly"));
-
-                string sBank = child.GetAttribute("bank");
-                string sAtom = child.GetAttribute("atom");
-                string sClientonly = child.GetAttribute("clientonly");
-                string count = child.GetAttribute("count");
-                string name = child.GetAttribute("name");
-
-                //if (bank != null)
-                //{
-                //    sBank = bank.getDatas();
-                //}
-                //if (atom != null)
-                //{
-                //    sAtom = (string)atom;
-                //}
-                //if (clientonly != null)
-                //{
-                //    sClientonly = clientonly.getDatas();
-                //}
-                Debug.Assert((string)name != null);
-
-                if (count != "")
+                if (sCount != string.Empty)
                 {
                     // dealing with an array of entries
-                    int countAsInt = int.Parse(count);
-
-                    //fromString((string)count, countAsInt);
+                    var countAsInt = int.Parse(sCount);
 
                     for (uint i = 0; i < countAsInt; i++)
                     {
-                        // Progress bar
-                        //progressCallBack.progress((float)i / (float)countAsInt);
-                        //progressCallBack.pushCropedValues((float)i / (float)countAsInt, (float)(i + 1) / (float)countAsInt);
-
-                        //				nlinfo("+ %s%d",name,i);
-                        string newName = name + i; //new string(name.getDatas()) + toString(i);
+                        var newName = sName + i;
                         addNode(new CDBNodeBranch(newName), newName, this, _Nodes, _NodesByName, child, sBank, sAtom == "1", sClientonly == "1", progressCallBack, mapBanks, bankHandler);
-                        //				nlinfo("-");
-
-                        // Progress bar
-                        //progressCallBack.popCropedValues();
                     }
                 }
                 else
                 {
                     // dealing with a single entry
-                    //			nlinfo("+ %s",name);
-                    string newName = name; //.getDatas();
+                    var newName = sName;
                     addNode(new CDBNodeBranch(newName), newName, this, _Nodes, _NodesByName, child, sBank, sAtom == "1", sClientonly == "1", progressCallBack, mapBanks, bankHandler);
-                    //			nlinfo("-");
                 }
-
-                // Progress bar
-                //progressCallBack.popCropedValues();
 
                 nodeId++;
             }
 
-            //// look for leaves of this branch
-            //for (child = CIXml.getFirstChildNode(node, "leaf"); child; child = CIXml.getNextChildNode(child, "leaf"))
-            //{
-            //    // Progress bar
-            //    progressCallBack.progress((float)nodeId / (float)countNode);
-            //    progressCallBack.pushCropedValues((float)nodeId / (float)countNode, (float)(nodeId + 1) / (float)countNode);
-            //
-            //    CXMLAutoPtr name = new CXMLAutoPtr((string)xmlGetProp(child, (xmlChar)"name"));
-            //    CXMLAutoPtr count = new CXMLAutoPtr((string)xmlGetProp(child, (xmlChar)"count"));
-            //    CXMLAutoPtr bank = new CXMLAutoPtr((string)xmlGetProp(child, (xmlChar)"bank"));
-            //
-            //    string sBank;
-            //    if (bank != null)
-            //    {
-            //        sBank = bank.getDatas();
-            //    }
-            //    Debug.Assert((string)name != null);
-            //    if ((string)count != null)
-            //    {
-            //        // dealing with an array of entries
-            //        uint countAsInt;
-            //        fromString((string)count, countAsInt);
-            //
-            //        for (uint i = 0; i < countAsInt; i++)
-            //        {
-            //            // Progress bar
-            //            progressCallBack.progress((float)i / (float)countAsInt);
-            //            progressCallBack.pushCropedValues((float)i / (float)countAsInt, (float)(i + 1) / (float)countAsInt);
-            //
-            //            //				nlinfo("  %s%d",name,i);
-            //            string newName = new string(name.getDatas()) + toString(i);
-            //            addNode(new CDBNodeLeaf(newName), newName, this, _Nodes, _NodesByName, child, sBank, false, false, progressCallBack, mapBanks, bankHandler);
-            //
-            //            // Progress bar
-            //            progressCallBack.popCropedValues();
-            //        }
-            //    }
-            //    else
-            //    {
-            //        //			nlinfo("  %s",name);
-            //        string newName = name.getDatas();
-            //        addNode(new CDBNodeLeaf(newName), newName, this, _Nodes, _NodesByName, child, sBank, false, false, progressCallBack, mapBanks, bankHandler);
-            //    }
-            //
-            //    // Progress bar
-            //    //progressCallBack.popCropedValues();
-            //
-            //    nodeId++;
-            //}
-            //
-            //// count number of bits required to store the id
-            ////C++ TO C# CONVERTER TODO TASK: The following line could not be converted:
-            //if ((mapBanks) && (getParent() == null))
-            //{
-            //    Debug.Assert(bankHandler != null);
-            //    //Debug.Assert(bankHandler.getUnifiedIndexToBankSize() == countNode /*, ("Mapped: %u Nodes: %u", bankHandler.getUnifiedIndexToBankSize(), countNode)*/);
-            //    bankHandler.calcIdBitsByBank();
-            //    _IdBits = 0;
-            //}
-            //else
-            //{
-            //    if (_Nodes.Count != 0)
-            //    {
-            //        for (_IdBits = 1; _Nodes.Count > (uint)(1 << _IdBits); _IdBits++) { }
-            //    }
-            //    else
-            //    {
-            //        _IdBits = 0;
-            //    }
-            //}
-            //
-            //find(""); // Sort !
+            // look for leaves of this branch
+            foreach (var subNode in node.SelectNodes("leaf"))
+            {
+                if (!(subNode is XmlElement child))
+                    continue;
+
+                var sBank = child.GetAttribute("bank");
+                var sCount = child.GetAttribute("count");
+                var sName = child.GetAttribute("name");
+
+                if (sCount != string.Empty)
+                {
+                    // dealing with an array of entries
+                    var countAsInt = int.Parse(sCount);
+
+                    for (uint i = 0; i < countAsInt; i++)
+                    {
+                        var newName = sName + i;
+                        addNode(new CDBNodeLeaf(newName), newName, this, _Nodes, _NodesByName, child, sBank, false, false, progressCallBack, mapBanks, bankHandler);
+                    }
+                }
+                else
+                {
+                    // dealing with a single entry
+                    var newName = sName;
+                    addNode(new CDBNodeLeaf(newName), newName, this, _Nodes, _NodesByName, child, sBank, false, false, progressCallBack, mapBanks, bankHandler);
+                }
+
+                nodeId++;
+            }
+
+            // count number of bits required to store the id
+            if (mapBanks && getParent() == null)
+            {
+                Debug.Assert(bankHandler != null);
+                //Debug.Assert(bankHandler.getUnifiedIndexToBankSize() == countNode /*, ("Mapped: %u Nodes: %u", bankHandler.getUnifiedIndexToBankSize(), countNode)*/);
+                bankHandler.calcIdBitsByBank();
+                _IdBits = 0;
+            }
+            else
+            {
+                if (_Nodes.Count != 0)
+                {
+                    for (_IdBits = 1; _Nodes.Count > (uint)(1 << _IdBits); _IdBits++) { }
+                }
+                else
+                {
+                    _IdBits = 0;
+                }
+            }
+
+            find(""); // Sort !
         }
 
         private void addNode(ICDBNode newNode, string newName, CDBNodeBranch parent, List<ICDBNode> nodes, List<ICDBNode> nodesSorted, XmlElement child, string bankName, bool atomBranch, bool clientOnly, Action progressCallBack, bool mapBanks, CDBBankHandler bankHandler = null)
         {
             nodesSorted.Add(newNode);
             nodes.Add(newNode);
-            nodes[nodes.Count - 1].SetParent(parent);
-            nodes[nodes.Count - 1].SetAtomic(parent.IsAtomic() || atomBranch);
-            nodes[nodes.Count - 1].Init(child, progressCallBack);
+            nodes[^1].SetParent(parent);
+            nodes[^1].SetAtomic(parent.IsAtomic() || atomBranch);
+            nodes[^1].Init(child, progressCallBack);
 
             // Setup bank mapping for first-level node
             if (mapBanks && (parent.getParent() == null))
             {
                 if (!string.IsNullOrEmpty(bankName))
                 {
-                    bankHandler.mapNodeByBank(bankName);
+                    bankHandler?.mapNodeByBank(bankName);
                     //nldebug( "CDB: Mapping %s for %s (node %u)", newName.c_str(), bankName.c_str(), nodes.size()-1 );
                 }
                 else
@@ -228,7 +174,7 @@ namespace RCC.Database
 
         private bool IsAtomic()
         {
-            return false; //throw new NotImplementedException();
+            return false;
         }
 
         /// <summary>
@@ -279,7 +225,32 @@ namespace RCC.Database
         //void write(CTextId id, FILE f);
 
         /// Update the database from the delta, but map the first level with the bank mapping (see _CDBBankToUnifiedIndexMapping)
-        //void readAndMapDelta(TGameCycle gc, CBitMemStream s, uint bank, CDBBankHandler bankHandler);
+        internal void readAndMapDelta(uint gc, BitMemoryStream s, uint bank, CDBBankHandler bankHandler)
+        {
+            Debug.Assert(!IsAtomic()); // root node mustn't be atomic
+
+            //// Read index
+            //uint32 idx;
+            //s.serial(idx, bankHandler->getFirstLevelIdBits(bank));
+            //
+            //// Translate bank index -> unified index
+            //idx = bankHandler->getServerToClientUIDMapping(bank, idx);
+            //if (idx >= _Nodes.size())
+            //{
+            //    throw Exception("idx %d > _Nodes.size() %d ", idx, _Nodes.size());
+            //}
+            //
+            //// Display the Name if we are in verbose mode
+            //if (verboseDatabase)
+            //{
+            //    string displayStr = string("Reading: ") + *(_Nodes[idx]->getName());
+            //    //CInterfaceManager::getInstance()->getChatOutput()->addTextChild( ucstring( displayStr ),CRGBA(255,255,255,255));
+            //    nlinfo("CDB: %s%s %u/%d", (!getParent()) ? "[root] " : "-", displayStr.c_str(), idx, _IdBits);
+            //}
+            //
+            //// Apply delta to children nodes
+            //_Nodes[idx]->readDelta(gc, s);
+        }
 
         /// Update the database from a stream coming from the FE
         //void readDelta(TGameCycle gc, CBitMemStream f);
@@ -328,11 +299,6 @@ namespace RCC.Database
 
         /// <summary>the parent node for a branch (null by default)</summary>
         public virtual void setParent(CDBNodeBranch parent) { _Parent = parent; }
-
-        public virtual CDBNodeBranch getParent()
-        {
-            return _Parent;
-        }
 
         /// <summary>get the number of nodes</summary>
         public ushort getNbNodes()
@@ -394,33 +360,69 @@ namespace RCC.Database
         //void onLeafChanged(TStringId leafName);
 
         /// Find a subnode at this level
-        //ICDBNode find(string nodeName);
+
+        public ICDBNode find(string nodeName)
+        {
+            var predictNode = _PredictNode;
+
+            if (predictNode != null)
+            {
+                if (predictNode.getParent() == this && predictNode.getName() == nodeName)
+                {
+                    return predictNode;
+                }
+            }
+
+            if (!_Sorted)
+            {
+                _Sorted = true;
+                //sort(_NodesByName.begin(), _NodesByName.end(), CCDBNodeBranchComp());
+                _NodesByName.Sort((a, b) => string.Compare(a.getName(), b.getName(), StringComparison.Ordinal));
+            }
+
+            //var tmp = new CDBNodeLeaf(nodeName);
+
+            foreach (var it in _NodesByName)
+            {
+                if ((it).getName() == nodeName)
+                {
+                    var node = it;
+                    _PredictNode = node;
+                    return node;
+                }
+            }
+
+            return null;
+
+            //List<ICDBNode>.Enumerator it = lower_bound(_NodesByName.begin(), _NodesByName.end(), tmp, CCDBNodeBranchComp());
+            //
+            //if (it == _NodesByName.end())
+            //{
+            //    return null;
+            //}
+            //else
+            //{
+            //    if ((it).getName() == nodeName)
+            //    {
+            //
+            //        ICDBNode node = it;
+            //        _PredictNode = node;
+            //        return node;
+            //
+            //    }
+            //    else
+            //    {
+            //        return null;
+            //    }
+            //}
+        }
 
         //typedef List<ICDBDBBranchObserverHandle > TObserverHandleList;
-
-        CDBNodeBranch _Parent;
-
-        // number of bits required to stock my children's ids
-        byte _IdBits = 7;
-        bool _Sorted = true;
 
         // observers for this node or branch
         //TObserverHandleList observerHandles;
 
         /// <summary>called by clear</summary>
         void removeAllBranchObserver() { }
-
-        //#if NL_CDB_OPTIMIZE_PREDICT
-        //		CRefPtr<ICDBNode>		_PredictNode;
-        //#endif
-        public override void SetParent(CDBNodeBranch parent)
-        {
-            //throw new NotImplementedException();
-        }
-
-        public override void SetAtomic(bool atomBranch)
-        {
-            //throw new NotImplementedException();
-        }
     }
 }

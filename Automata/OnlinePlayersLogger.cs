@@ -95,7 +95,7 @@ namespace RCC.Automata
                 {
                     _lastApiServerUpdate = DateTime.Now + _intervalApiServer;
 
-                    Task.Factory.StartNew(() => { SendUpdate(); });
+                    Task.Factory.StartNew(SendUpdate);
                 }
             }
         }
@@ -104,8 +104,13 @@ namespace RCC.Automata
         {
             var (key, _) = _friendOnline.ElementAt((int)contactIndex);
 
+            // if friend already has that status return
+            if (_friendOnline[key] == online)
+                return;
+
             _friendOnline[key] = online;
             var name = _friendNames[key] != string.Empty ? _friendNames[key] : $"{contactIndex}";
+
 
             Handler.GetLogger().Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
         }
@@ -265,7 +270,7 @@ namespace RCC.Automata
                     Handler.GetLogger()?.Info("Sending Player Array to API");
                     _lastApiServerUpdate = DateTime.Now + _intervalApiServer;
 
-                    Task.Factory.StartNew(() => { SendUpdate(); });
+                    Task.Factory.StartNew(SendUpdate);
                     return "";
 
 
@@ -277,7 +282,8 @@ namespace RCC.Automata
 
         public void SendUpdate()
         {
-            if (_friendNames.Keys.Where(id => _friendNames[id] != string.Empty).Count() == 0)
+            // there are friends that have not received a name
+            if (_friendNames.Keys.Count(id => _friendNames[id] == string.Empty) > 0)
                 return;
 
             try

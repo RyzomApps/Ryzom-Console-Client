@@ -36,11 +36,13 @@ namespace RCC.Database
         /// <summary>The number of "init database packet" received</summary>
         private byte _initDeltaReceived;
 
-        protected CDBBankHandler bankHandler = new CDBBankHandler();
+        protected CDBBankHandler BankHandler;
         //protected CCDBBranchObservingHandler branchObservingHandler;
         private CDBNodeBranch _database;
 
         private readonly RyzomClient _client;
+
+        uint NbDatabaseChanges = 0;
 
         //CRefPtr<CDBNodeLeaf> m_CDBInitInProgressDB { }
 
@@ -59,6 +61,8 @@ namespace RCC.Database
 
             // const char *rootNodeName, uint maxBanks
             //CCDBManager("SERVER", NB_CDB_BANKS);
+            BankHandler = new CDBBankHandler((uint)TCDBBank.NB_CDB_BANKS);
+
             _initInProgress = true;
             _initDeltaReceived = 0;
         }
@@ -82,13 +86,13 @@ namespace RCC.Database
                 // Init an xml stream
                 file.Load(fileName);
 
-                    //Parse the parser output!!!
-                    bankHandler.resetNodeBankMapping(); // in case the game is restarted from start
-                    bankHandler.fillBankNames(CDBBankNames, TCDBBank.INVALID_CDB_BANK + 1);
+                //Parse the parser output!!!
+                BankHandler.resetNodeBankMapping(); // in case the game is restarted from start
+                BankHandler.fillBankNames(CDBBankNames, (uint)(TCDBBank.INVALID_CDB_BANK + 1));
 
-                    _database ??= new CDBNodeBranch("SERVER");
+                _database ??= new CDBNodeBranch("SERVER");
 
-                    _database.Init(file.DocumentElement, progressCallBack, true, bankHandler);
+                _database.Init(file.DocumentElement, progressCallBack, true, BankHandler);
             }
             catch (Exception e)
             {
@@ -115,27 +119,28 @@ namespace RCC.Database
         /// <params name="f">the stream</params>
         public void ReadDelta(uint gc, BitMemoryStream s, uint bank)
         {
-            _client.GetLogger().Debug("Update DB");
+            _client.GetLogger().Info("Update DB");
 
             if (_database == null)
             {
                 _client.GetLogger().Warn("<CCDBSynchronised::readDelta> the database has not been initialized");
-                //return;
+                return;
             }
 
             //displayBitStream2( f, f.getPosInBit(), f.getPosInBit() + 64 );
             uint propertyCount = 0;
             s.Serial(ref propertyCount, 16);
-
+            
 
             //if (NLMISC::ICDBNode::isDatabaseVerbose())
             _client.GetLogger().Info($"CDB: Reading delta ({propertyCount} changes)");
-            //NbDatabaseChanges += propertyCount;
-            //
-            //for (uint i = 0; i != propertyCount; ++i)
-            //{
-            //    _database.readAndMapDelta(gc, s, bank, &bankHandler);
-            //}
+            NbDatabaseChanges += propertyCount;
+
+            
+            for (uint i = 0; i != propertyCount; ++i)
+            {
+                _database.readAndMapDelta(gc, s, bank, BankHandler);
+            }
         }
 
         /// <summary>
@@ -204,7 +209,12 @@ namespace RCC.Database
             // TODO FlushObserverCalls: branchObservingHandler.flushObserverCalls();
         }
 
-        private void ImpulseDatabaseInitPlayer(BitMemoryStream impulse) { }
+        private void ImpulseDatabaseInitPlayer(BitMemoryStream impulse) {
+        
+        
+        
+        }
+
         private void ImpulseInitInventory(BitMemoryStream impulse) { }
 
         public void SetInitPacketReceived() { ++_initDeltaReceived; }
@@ -213,5 +223,9 @@ namespace RCC.Database
         private void WriteInitInProgressIntoUIDB() { }
 
 
+        public void resetBank(in uint serverTick, in uint bank)
+        {
+
+        }
     }
 }

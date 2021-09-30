@@ -13,12 +13,12 @@ namespace RCC.Database
 {
     public class CDBNodeLeaf : ICDBNode
     {
-        public override void SetParent(CDBNodeBranch parent)
+        public CDBNodeLeaf(string name)
         {
-
+            this.name = name;
         }
 
-        public override void SetAtomic(bool atomBranch)
+        internal override void SetAtomic(bool atomBranch)
         {
 
         }

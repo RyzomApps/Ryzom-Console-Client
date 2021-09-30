@@ -7,15 +7,40 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
+using System.Data;
 using System.Xml;
 
 namespace RCC.Database
 {
     public abstract class ICDBNode
     {
-        public string name;
-        public abstract void SetParent(CDBNodeBranch parent);
-        public abstract void SetAtomic(bool atomBranch);
+        internal string name;
+
+        internal CDBNodeBranch _Parent;
+
+        internal virtual void SetParent(CDBNodeBranch parent)
+        {
+            _Parent = parent;
+        }
+
+        internal abstract void SetAtomic(bool atomBranch);
+
         internal abstract void Init(XmlElement child, Action progressCallBack);
+
+        /// <summary>
+        /// get the parent of a node
+        /// </summary>
+        internal virtual CDBNodeBranch getParent()
+        {
+            return _Parent;
+        }
+
+        /// <summary>
+        /// get the name of this node
+        /// </summary>
+        internal virtual string getName()
+        {
+            return name;
+        }
     }
 }

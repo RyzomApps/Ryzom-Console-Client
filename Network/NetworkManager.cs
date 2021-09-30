@@ -171,6 +171,7 @@ namespace RCC.Network
             _messageHeaderManager.SetCallback("DB_INIT:PLR", ImpulseDatabaseInitPlayer);
             _messageHeaderManager.SetCallback("DB_UPD_INV", ImpulseUpdateInventory);
             _messageHeaderManager.SetCallback("DB_INIT:INV", ImpulseInitInventory);
+
             _messageHeaderManager.SetCallback("DB_GROUP:UPDATE_BANK", ImpulseDatabaseUpdateBank);
             _messageHeaderManager.SetCallback("DB_GROUP:INIT_BANK", ImpulseDatabaseInitBank);
             _messageHeaderManager.SetCallback("DB_GROUP:RESET_BANK", ImpulseDatabaseResetBank);
@@ -1099,7 +1100,29 @@ namespace RCC.Network
 
         private void ImpulseDatabaseResetBank(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            uint serverTick = 0;
+            uint bank = 0;
+
+            try
+            {
+                // get the egs tick of this change
+                impulse.Serial(ref serverTick);
+
+                // read the bank to reset
+                const int nbits = FillNbitsWithNbBitsForCdbbank;
+                impulse.Serial(ref bank, nbits);
+
+                // reset the bank
+                _databaseManager.resetBank(serverTick, bank);
+
+                //_client.Automata.OnDatabaseResetBank(serverTick, bank);
+            }
+            catch (Exception e)
+            {
+                _client.GetLogger().Error($"Problem while decoding a DB_GROUP:RESET_BANK {bank} msg, skipped: {e.Message}");
+            }
         }
 
         /// <summary>
@@ -1121,6 +1144,9 @@ namespace RCC.Network
                 const int nbits = FillNbitsWithNbBitsForCdbbank;
                 impulse.Serial(ref bank, nbits);
 
+                // read delta
+                _databaseManager.ReadDelta(serverTick, impulse, bank);
+
                 _client.Automata.OnDatabaseInitBank(serverTick, bank);
             }
             catch (Exception e)
@@ -1131,7 +1157,29 @@ namespace RCC.Network
 
         private void ImpulseDatabaseUpdateBank(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            uint serverTick = 0;
+            uint bank = 0;
+
+            try
+            {
+                // get the egs tick of this change
+                impulse.Serial(ref serverTick);
+
+                // decode bank
+                const int nbits = FillNbitsWithNbBitsForCdbbank;
+                impulse.Serial(ref bank, nbits);
+
+                // read delta
+                _databaseManager.ReadDelta(serverTick, impulse, bank);
+
+                //_client.Automata.OnDatabaseUpdateBank(serverTick, bank);
+            }
+            catch (Exception e)
+            {
+                _client.GetLogger().Error($"Problem while decoding a DB_GROUP:INIT_BANK {bank} msg, skipped: {e.Message}");
+            }
         }
 
         /// <summary>
