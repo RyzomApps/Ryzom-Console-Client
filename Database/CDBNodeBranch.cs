@@ -34,6 +34,8 @@ namespace RCC.Database
         byte _IdBits = 7;
         bool _Sorted = true;
 
+        private bool verboseDatabase = true;
+
         /// <summary>default constructor</summary>
         public CDBNodeBranch(string name)
         {
@@ -130,7 +132,7 @@ namespace RCC.Database
             if (mapBanks && getParent() == null)
             {
                 Debug.Assert(bankHandler != null);
-                //Debug.Assert(bankHandler.getUnifiedIndexToBankSize() == countNode /*, ("Mapped: %u Nodes: %u", bankHandler.getUnifiedIndexToBankSize(), countNode)*/);
+                //Debug.Assert(bankHandler.getUnifiedIndexToBankSize() == countNode /, ("Mapped: %u Nodes: %u", bankHandler.getUnifiedIndexToBankSize(), countNode)/);
                 bankHandler.calcIdBitsByBank();
                 _IdBits = 0;
             }
@@ -154,7 +156,7 @@ namespace RCC.Database
             nodesSorted.Add(newNode);
             nodes.Add(newNode);
             nodes[^1].SetParent(parent);
-            nodes[^1].SetAtomic(parent.IsAtomic() || atomBranch);
+            nodes[^1].SetAtomic(parent.isAtomic() || atomBranch);
             nodes[^1].Init(child, progressCallBack);
 
             // Setup bank mapping for first-level node
@@ -170,11 +172,6 @@ namespace RCC.Database
                     RyzomClient.GetInstance().GetLogger().Error("Missing bank for first-level node " + newName);
                 }
             }
-        }
-
-        private bool IsAtomic()
-        {
-            return false;
         }
 
         /// <summary>
@@ -224,36 +221,110 @@ namespace RCC.Database
         /// <params id="f">is the stream</params>
         //void write(CTextId id, FILE f);
 
-        /// Update the database from the delta, but map the first level with the bank mapping (see _CDBBankToUnifiedIndexMapping)
+        /// <summary>Update the database from the delta, but map the first level with the bank mapping (see _CDBBankToUnifiedIndexMapping)</summary>
         internal void readAndMapDelta(uint gc, BitMemoryStream s, uint bank, CDBBankHandler bankHandler)
         {
-            Debug.Assert(!IsAtomic()); // root node mustn't be atomic
+            Debug.Assert(!isAtomic()); // root node mustn't be atomic
 
-            //// Read index
-            //uint32 idx;
-            //s.serial(idx, bankHandler->getFirstLevelIdBits(bank));
-            //
-            //// Translate bank index -> unified index
-            //idx = bankHandler->getServerToClientUIDMapping(bank, idx);
-            //if (idx >= _Nodes.size())
-            //{
-            //    throw Exception("idx %d > _Nodes.size() %d ", idx, _Nodes.size());
-            //}
-            //
-            //// Display the Name if we are in verbose mode
-            //if (verboseDatabase)
-            //{
-            //    string displayStr = string("Reading: ") + *(_Nodes[idx]->getName());
-            //    //CInterfaceManager::getInstance()->getChatOutput()->addTextChild( ucstring( displayStr ),CRGBA(255,255,255,255));
-            //    nlinfo("CDB: %s%s %u/%d", (!getParent()) ? "[root] " : "-", displayStr.c_str(), idx, _IdBits);
-            //}
-            //
-            //// Apply delta to children nodes
-            //_Nodes[idx]->readDelta(gc, s);
+            // Read index
+            uint idx = 0;
+            s.Serial(ref idx, (int)bankHandler.GetFirstLevelIdBits((int)bank));
+
+            // Translate bank index . unified index
+            idx = bankHandler.GetServerToClientUIDMapping((int)bank, (int)idx);
+            if (idx >= _Nodes.Count)
+            {
+                throw new Exception($"idx {idx} > _Nodes.size() {_Nodes.Count} ");
+            }
+
+            // Display the Name if we are in verbose mode
+            if (verboseDatabase)
+            {
+                var displayStr = $"Reading: {_Nodes[(int) idx].getName()}";
+                //CInterfaceManager::getInstance().getChatOutput().addTextChild( ucstring( displayStr ),CRGBA(255,255,255,255));
+                RyzomClient.GetInstance().GetLogger().Info($"CDB: {(getParent() == null ? "[root] " : "-")}{displayStr} {idx}/{_IdBits}");
+            }
+
+            // Apply delta to children nodes
+            _Nodes[(int)idx].readDelta(gc, s);
         }
 
+        /// <summary>
         /// Update the database from a stream coming from the FE
-        //void readDelta(TGameCycle gc, CBitMemStream f);
+        /// </summary>
+        internal override void readDelta(uint gc, BitMemoryStream f)
+        {
+            if (isAtomic())
+            {
+                // Read the atom bitfield
+                uint nbAtomElements = countLeaves();
+
+                if (verboseDatabase)
+                {
+                    RyzomClient.GetInstance().GetLogger().Info($"CDB/ATOM: {nbAtomElements} leaves");
+                }
+
+                bool[] bitfield = new bool[nbAtomElements];
+
+                f.Serial(ref bitfield);
+
+                //if (bitfield.Length != 0)
+                //{
+                //    if (verboseDatabase)
+                //    {
+                //        RyzomClient.GetInstance().GetLogger().Debug("CDB/ATOM: Bitfield: %s LastBits:", bitfield.ToString());
+                //        //f.displayLastBits(bitfield.size());
+                //    }
+                //}
+
+                // Set each modified property
+                uint atomIndex;
+
+                for (uint i = 0; i != bitfield.Length; ++i)
+                {
+                    if (bitfield[i])
+                    {
+                        if (verboseDatabase)
+                        {
+                            RyzomClient.GetInstance().GetLogger().Debug($"CDB/ATOM: Reading prop[{i}] of atom");
+                        }
+
+                        atomIndex = i;
+                        var leaf = findLeafAtCount(atomIndex);
+
+                        if (leaf != null)
+                        {
+                            leaf.readDelta(gc, f);
+                        }
+                        else
+                        {
+                            RyzomClient.GetInstance().GetLogger().Warn($"CDB: Can't find leaf with index {i} in atom branch {(getParent() == null ? getName() : "(root)")}");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                uint idx = 0;
+
+                f.Serial(ref idx, _IdBits);
+
+                if (idx >= _Nodes.Count)
+                {
+                    throw new Exception($"idx {idx} > _Nodes.size() {_Nodes.Count} ");
+                }
+
+                // Display the Name if we are in verbose mode
+                if (verboseDatabase)
+                {
+                    var displayStr = "Reading: " + _Nodes[(int)idx].getName();
+                    //CInterfaceManager::getInstance()->getChatOutput()->addTextChild( ucstring( displayStr ),CRGBA(255,255,255,255));
+                    RyzomClient.GetInstance().GetLogger().Info($"CDB: {(getParent() == null ? "[root] " : "-")}{displayStr} {idx}/{_IdBits}");
+                }
+
+                _Nodes[(int)idx].readDelta(gc, f);
+            }
+        }
 
         /// <summary>
         /// Return the value of a property (the update flag is set to false)
@@ -309,8 +380,23 @@ namespace RCC.Database
         /// <summary>Count the leaves</summary>
         public virtual uint countLeaves() { return 0; }
 
-        /// <summary>Find the leaf which count is specified (if found, the returned value is non-null and count is 0)</summary>
-        public virtual CDBNodeLeaf findLeafAtCount(uint count) { return null; }
+        /// <summary>
+        /// Find the leaf which count is specified (if found, the returned value is non-null and count is 0)
+        /// </summary>
+        internal override CDBNodeLeaf findLeafAtCount(uint count)
+        {
+            foreach (var itNode in _Nodes)
+            {
+                var leaf = itNode.findLeafAtCount(count);
+
+                if (leaf != null)
+                {
+                    return leaf;
+                }
+            }
+
+            return null;
+        }
 
         public virtual void display(string prefix) { }
 

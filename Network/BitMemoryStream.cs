@@ -33,7 +33,7 @@ namespace RCC.Network
         /// <summary>
         ///     Byte Position of the reader/writer in the Stream
         /// </summary>
-        public int Pos => (int) (_bitPos / 8d);
+        public int Pos => (int)(_bitPos / 8d);
 
         /// <summary>
         ///     Free bits in the current byte of the reader/writer
@@ -48,9 +48,9 @@ namespace RCC.Network
             get
             {
                 if (IsReading())
-                    return (int) (_contentBits.Length / 8d); // (_contentBits.Length - 1) / 8 + 1;
+                    return (int)(_contentBits.Length / 8d); // (_contentBits.Length - 1) / 8 + 1;
 
-                return (int) ((_bitPos - 1) / 8d) + 1;
+                return (int)((_bitPos - 1) / 8d) + 1;
             }
         }
 
@@ -92,7 +92,7 @@ namespace RCC.Network
             }
             else
             {
-                byte[] bytes = {obj};
+                byte[] bytes = { obj };
                 AddToArray(bytes);
             }
         }
@@ -208,6 +208,28 @@ namespace RCC.Network
         }
 
         /// <summary>
+        ///     serializes type uint64 with a given bit length
+        /// </summary>
+        public void Serial(ref ulong obj, int nbits)
+        {
+            if (IsReading())
+            {
+                var bits = ReadFromArray(nbits);
+
+                var newBits = new bool[64];
+                Array.Copy(bits, 0, newBits, 64 - bits.Length, bits.Length);
+
+                var bytes = ConvertBoolArrayToByteArray(newBits);
+                var reversed = bytes.Reverse().ToArray();
+                obj = BitConverter.ToUInt64(reversed);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
         ///     serializes type sint64
         /// </summary>
         public void Serial(ref long obj)
@@ -313,6 +335,28 @@ namespace RCC.Network
         }
 
         /// <summary>
+        /// Serializes a bitArray
+        /// </summary>
+        public void Serial(ref bool[] obj)
+        {
+            if (IsReading())
+            {
+                for (var i = 0; i < obj.Length; i++)
+                {
+                    Serial(ref obj[i]);
+                }
+            }
+            else
+            {
+                foreach (var ack in obj)
+                {
+                    var b = ack;
+                    Serial(ref b);
+                }
+            }
+        }
+
+        /// <summary>
         ///     reads a single bit at a given position from a byte
         /// </summary>
         public static bool GetBit(byte b, int bitNumber)
@@ -405,7 +449,7 @@ namespace RCC.Network
             {
                 // if the element is 'true' set the bit at that position
                 if (boolArr[offset + i])
-                    result |= (byte) (1 << (7 - i));
+                    result |= (byte)(1 << (7 - i));
             }
 
             return result;
@@ -457,7 +501,7 @@ namespace RCC.Network
                 for (i = 0; i != len; ++i)
                 {
                     Serial(ref v);
-                    buf.AddToArray(new[] {v});
+                    buf.AddToArray(new[] { v });
                 }
             }
             else
@@ -473,7 +517,7 @@ namespace RCC.Network
         /// <summary>
         /// stream version - serializes the current steam version info (which seems to be always 0)
         /// </summary>
-        public uint SerialVersion(uint currentVersion)
+        public uint SerialVersion(uint obj)
         {
             byte b = 0;
             uint v = 0;
@@ -499,18 +543,18 @@ namespace RCC.Network
             }
             else
             {
-                v = streamVersion = currentVersion;
+                v = streamVersion = obj;
 
                 if (v >= 0xFF)
                 {
-                	b = 0xFF;
-                	Serial(ref b);
-                	Serial(ref v);
+                    b = 0xFF;
+                    Serial(ref b);
+                    Serial(ref v);
                 }
                 else
                 {
-                	b = (byte)v;
-                	Serial(ref b);
+                    b = (byte)v;
+                    Serial(ref b);
                 }
             }
 
@@ -568,20 +612,6 @@ namespace RCC.Network
             }
 
             return ret;
-        }
-
-        public void Serial(ref bool[] longAckBitField)
-        {
-            if (IsReading())
-            {
-                throw new NotImplementedException();
-            }
-
-            foreach (var ack in longAckBitField)
-            {
-                var b = ack;
-                Serial(ref b);
-            }
         }
     }
 }

@@ -92,5 +92,26 @@ namespace RCC.Database
                 _FirstLevelIdBitsByBank[(int)bank] = idb;
             }
         }
+
+        /// <summary>
+        /// @brief   Returns the number of bits used to store the number of nodes that belong to this bank.
+        /// @param   bank The banks whose id bits we need.
+        /// @return  Returns the number of bits used to store the number of nodes that belong to this bank.
+        /// </summary>
+        public uint GetFirstLevelIdBits(in int bank)
+        {
+            return _FirstLevelIdBitsByBank[bank];
+        }
+
+        /// <summary>
+        /// @brief   Looks up the unified (node) index of a bank node.
+        /// @param   bank  The bank id of the node we are looking up.
+        /// @param   index The index of the node within the bank.
+        /// @return  Returns the unified (node) index of the specified bank node.
+        /// </summary>
+        public uint GetServerToClientUIDMapping(in int bank, in int index)
+        {
+            return _CDBBankToUnifiedIndexMapping[bank][index];
+        }
     }
 }
