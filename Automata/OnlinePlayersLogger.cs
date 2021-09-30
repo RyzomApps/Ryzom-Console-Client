@@ -313,7 +313,7 @@ namespace RCC.Automata
 
                 var response = streamReader.ReadToEnd().Trim();
 
-                if (int.TryParse(response, out var result) || result != 1)
+                if (!int.TryParse(response, out var result) || result != 1)
                 {
                     Handler.GetLogger().Error("Error API responded with: " + response);
                 }
