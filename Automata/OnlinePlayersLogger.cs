@@ -311,9 +311,9 @@ namespace RCC.Automata
 
                 using var streamReader = new StreamReader(httpResponse.GetResponseStream() ?? throw new NullReferenceException());
 
-                var response = streamReader.ReadToEnd();
+                var response = streamReader.ReadToEnd().Trim();
 
-                if (bool.TryParse(response.Trim(), out bool result) || result != true)
+                if (int.TryParse(response, out var result) || result != 1)
                 {
                     Handler.GetLogger().Error("Error API responded with: " + response);
                 }
