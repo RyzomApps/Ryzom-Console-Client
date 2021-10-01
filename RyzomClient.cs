@@ -34,7 +34,7 @@ namespace RCC
         private readonly NetworkConnection _networkConnection;
         private readonly NetworkManager _networkManager;
         private readonly StringManager _stringManager;
-        private readonly CDBSynchronised _databaseManager;
+        private readonly DatabaseManager _databaseManager;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -105,7 +105,7 @@ namespace RCC
 
         public StringManager GetStringManager() { return _stringManager; }
 
-        public CDBSynchronised GetDatabaseManager() { return _databaseManager; }
+        public DatabaseManager GetDatabaseManager() { return _databaseManager; }
 
         #region Initialization
 
@@ -116,7 +116,7 @@ namespace RCC
         {
             _instance = this;
             _clientThread = Thread.CurrentThread;
-            _databaseManager = new CDBSynchronised(this);
+            _databaseManager = new DatabaseManager(this);
             _networkConnection = new NetworkConnection(this, _databaseManager);
             _stringManager = new StringManager(this);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager);
@@ -308,16 +308,38 @@ namespace RCC
         private void InitMainLoop()
         {
             // Create the game interface database
+
             // Initialize the Database.
             Log.Info("Initializing XML Database ...");
             _databaseManager.Init(@"data\database.xml", null);
-            // TODO ICDBNode::CTextId textId("SERVER");
-            // TODO if (NLGUI::CDBManager::getInstance()->getDB()->getNode(textId, false))
-            // TODO     NLGUI::CDBManager::getInstance()->getDB()->removeNode(textId);
-            // TODO NLGUI::CDBManager::getInstance()->getDB()->attachChild(IngameDbMngr.getNodePtr(), "SERVER");
+           
+            var textId = new TextId("SERVER");
+
+            if (DatabaseManager.GetDb().GetNode(textId, false) != null)
+            {
+                DatabaseManager.GetDb().RemoveNode(textId);
+            }
+
+            DatabaseManager.GetDb().AttachChild(_databaseManager.GetNodePtr(), "SERVER");
 
             // Set the database
             _networkManager.SetDataBase(_databaseManager.GetNodePtr());
+
+            // Create interface database
+            Log.Info("Initializing Interface Database ...");
+
+            // Add the LOCAL branch
+            textId = new TextId("LOCAL");
+
+            if (DatabaseManager.GetDb().GetNode(textId, false) != null)
+            {
+                DatabaseManager.GetDb().RemoveNode(textId);
+            }
+            InterfaceManager.CreateLocalBranch("local_database.xml");
+
+
+            //nlinfo ("PROFILE: %d seconds (%d total) for Initializing interface", (uint32)(initCurrent-initLast)/1000, (uint32)(initCurrent-initStart)/1000);
+
 
             // Update Network till current tick increase.
             _lastGameCycle = _networkConnection.GetCurrentServerTick();
@@ -449,8 +471,8 @@ namespace RCC
                 // Set the impulse callback.
                 _networkConnection.SetImpulseCallback(_networkManager.ImpulseCallBack);
 
-                // Set the database.
-                //TODO _networkConnection.setDataBase(IngameDbMngr.getNodePtr());
+                // Set the database. - maybe not needed for console client
+                // _networkConnection.SetDataBase(_databaseManager.GetNodePtr());
 
                 // init the string manager cache.
                 _stringManager.InitCache(fsaddr, ClientConfig.LanguageCode);

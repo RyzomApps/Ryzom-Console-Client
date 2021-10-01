@@ -200,7 +200,7 @@ namespace RCC.Network
         /// <summary>
         /// Ingame Database Manager
         /// </summary>
-        private readonly CDBSynchronised _databaseManager;
+        private readonly DatabaseManager _databaseManager;
 
         /// <summary>
         /// the last tick sent by the server
@@ -223,7 +223,7 @@ namespace RCC.Network
         /// <summary>
         /// Constructor
         /// </summary>
-        public NetworkConnection(RyzomClient client, CDBSynchronised databaseManager)
+        public NetworkConnection(RyzomClient client, DatabaseManager databaseManager)
         {
             _connectionState = ConnectionState.NotInitialized;
 
@@ -1046,17 +1046,17 @@ namespace RCC.Network
                         //            if (_DataBase != NULL && (!IgnoreEntityDbUpdates || slot == 0))
                         //            {
                         //                CCDBNodeBranch* nodeRoot;
-                        //                nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->getNode((uint16)0));
+                        //                nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->GetNode((uint16)0));
                         //                if (nodeRoot)
                         //                {
-                        //                    CDBNodeLeaf* node;
-                        //                    node = dynamic_cast<CDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(0));
+                        //                    NodeLeaf* node;
+                        //                    node = dynamic_cast<NodeLeaf*>(nodeRoot->GetNode(slot)->GetNode(0));
                         //                    nlassert(node != NULL);
                         //                    node->setValue64(ap->Position[0]);
-                        //                    node = dynamic_cast<CDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(1));
+                        //                    node = dynamic_cast<NodeLeaf*>(nodeRoot->GetNode(slot)->GetNode(1));
                         //                    nlassert(node != NULL);
                         //                    node->setValue64(ap->Position[1]);
-                        //                    node = dynamic_cast<CDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(2));
+                        //                    node = dynamic_cast<NodeLeaf*>(nodeRoot->GetNode(slot)->GetNode(2));
                         //                    nlassert(node != NULL);
                         //                    node->setValue64(ap->Position[2]);
                         //
@@ -1148,10 +1148,10 @@ namespace RCC.Network
                         //                if (_DataBase != NULL && (!IgnoreEntityDbUpdates || slot == 0))
                         //                {
                         //                    CCDBNodeBranch* nodeRoot;
-                        //                    nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->getNode(0));
+                        //                    nodeRoot = dynamic_cast<CCDBNodeBranch*>(_DataBase->GetNode(0));
                         //                    if (nodeRoot)
                         //                    {
-                        //                        CDBNodeLeaf* node = dynamic_cast<CDBNodeLeaf*>(nodeRoot->getNode(slot)->getNode(PROPERTY_ORIENTATION));
+                        //                        NodeLeaf* node = dynamic_cast<NodeLeaf*>(nodeRoot->GetNode(slot)->GetNode(PROPERTY_ORIENTATION));
                         //                        nlassert(node != NULL);
                         //                        node->setValue64(ac->getValue());
                         //                        if (LoggingMode)

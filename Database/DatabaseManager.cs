@@ -8,8 +8,6 @@
 
 using RCC.Network;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Xml;
 
 namespace RCC.Database
@@ -20,15 +18,19 @@ namespace RCC.Database
     /// <author>Stephane Coutelas</author>
     /// <author>Nevrax France</author>
     /// <date>2002</date>
-    public class CDBSynchronised //: public CCDBManager
+    public class DatabaseManager
     {
-        public enum TCDBBank { CDBPlayer, CDBGuild, /* CDBContinent, */ CDBOutpost, /* CDBGlobal, */ NB_CDB_BANKS, INVALID_CDB_BANK };
+        private const bool IsDatabaseVerbose = true;
 
-        private static readonly string[] CDBBankNames = { "PLR", "GUILD", /* "CONTINENT", */ "OUTPOST", /* "GLOBAL", */ "<NB>", "INVALID" };
+        /// <summary>
+        /// Database bank identifiers (please change BankNames in cpp accordingly)
+        /// </summary>
+        public enum BankIdentifiers { CDBPlayer = 0, CDBGuild = 1, /* CDBContinent, */ CDBOutpost = 2, /* CDBGlobal, */ NB_CDB_BANKS = 3, INVALID_CDB_BANK = 4 };
 
-
-        /// <summary>string associations</summary>
-        private readonly Dictionary<uint, string> _strings;
+        /// <summary>
+        /// Names of the bank identifiers
+        /// </summary>
+        private static readonly string[] BankNames = { "PLR", "GUILD", /* "CONTINENT", */ "OUTPOST", /* "GLOBAL", */ "<NB>", "INVALID" };
 
         /// <summary>True while the first database packet has not been completely processed (including branch observers)</summary>
         private bool _initInProgress;
@@ -36,42 +38,48 @@ namespace RCC.Database
         /// <summary>The number of "init database packet" received</summary>
         private byte _initDeltaReceived;
 
-        protected CDBBankHandler BankHandler;
-        //protected CCDBBranchObservingHandler branchObservingHandler;
-        private CDBNodeBranch _database;
+        /// <summary>
+        /// Manages the bank names and mappings
+        /// </summary>
+        protected BankHandler BankHandler;
 
+        private DatabaseNodeBranch _serverDatabase;
+
+        private static DatabaseNodeBranch _database;
+
+        /// <summary>Pointer to the ryzom client</summary>
         private readonly RyzomClient _client;
-
-        uint NbDatabaseChanges = 0;
-
-        //CRefPtr<CDBNodeLeaf> m_CDBInitInProgressDB { }
-
-        /// <summary>exception thrown when database is not initialized</summary>
-        public class EDBNotInit : Exception
-        {
-            public EDBNotInit() : base("Property Database not initialized", null) { }
-        }
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        public CDBSynchronised(RyzomClient client)
+        public DatabaseManager(RyzomClient client)
         {
             _client = client;
 
-            // const char *rootNodeName, uint maxBanks
-            //CCDBManager("SERVER", NB_CDB_BANKS);
-            BankHandler = new CDBBankHandler((uint)TCDBBank.NB_CDB_BANKS);
+            //_database = new DatabaseNodeBranch("ROOT");
+            _serverDatabase = new DatabaseNodeBranch("SERVER");
+
+            BankHandler = new BankHandler((uint)BankIdentifiers.NB_CDB_BANKS);
 
             _initInProgress = true;
             _initDeltaReceived = 0;
         }
 
         /// <summary>
-        /// Return a ptr on the node
+        /// Return a ptr on the databaseNode
         /// </summary>
-        /// <returns>ptr on the node</returns>
-        public CDBNodeBranch GetNodePtr() { return _database; }
+        /// <returns>ptr on the databaseNode</returns>
+        public DatabaseNodeBranch GetNodePtr() { return _serverDatabase; }
+
+        /// <summary>
+        ///  Returns the root branch of the database.
+        /// </summary>
+        /// <returns></returns>
+        public static DatabaseNodeBranch GetDb()
+        {
+            return _database ??= new DatabaseNodeBranch("ROOT");
+        }
 
         /// <summary>
         /// Build the structure of the database from a file
@@ -86,13 +94,13 @@ namespace RCC.Database
                 // Init an xml stream
                 file.Load(fileName);
 
-                //Parse the parser output!!!
-                BankHandler.resetNodeBankMapping(); // in case the game is restarted from start
-                BankHandler.fillBankNames(CDBBankNames, (uint)(TCDBBank.INVALID_CDB_BANK + 1));
+                // Parse the parser output!!!
+                BankHandler.ResetNodeBankMapping(); // in case the game is restarted from start
+                BankHandler.FillBankNames(BankNames, (uint)(BankIdentifiers.INVALID_CDB_BANK + 1));
 
-                _database ??= new CDBNodeBranch("SERVER");
+                _serverDatabase ??= new DatabaseNodeBranch("SERVER"); // redundant?
 
-                _database.Init(file.DocumentElement, progressCallBack, true, BankHandler);
+                _serverDatabase.Init(file.DocumentElement, progressCallBack, true, BankHandler);
             }
             catch (Exception e)
             {
@@ -105,13 +113,7 @@ namespace RCC.Database
         /// Load a backup of the database
         /// </summary>
         /// <params name="fileName">is the name of the backup file</params>
-        public void Read(string fileName) { }
-
-        /// <summary>
-        /// Save a backup of the database
-        /// </summary>
-        /// <params name="fileName">is the name of the backup file</params>
-        public void Write(string fileName) { }
+        public void Read(string fileName) { throw new NotImplementedException(); }
 
         /// <summary>
         /// Update the database from a stream coming from the FE
@@ -121,72 +123,40 @@ namespace RCC.Database
         {
             _client.GetLogger().Info("Update DB");
 
-            if (_database == null)
+            if (_serverDatabase == null)
             {
                 _client.GetLogger().Warn("<CCDBSynchronised::readDelta> the database has not been initialized");
                 return;
             }
 
-            //displayBitStream2( f, f.getPosInBit(), f.getPosInBit() + 64 );
             uint propertyCount = 0;
             s.Serial(ref propertyCount, 16);
-            
 
-            //if (NLMISC::ICDBNode::isDatabaseVerbose())
-            _client.GetLogger().Info($"CDB: Reading delta ({propertyCount} changes)");
-            NbDatabaseChanges += propertyCount;
+            if (IsDatabaseVerbose)
+                _client.GetLogger().Info($"CDB: Reading delta ({propertyCount} changes)");
 
-            
+
             for (uint i = 0; i != propertyCount; ++i)
             {
-                _database.readAndMapDelta(gc, s, bank, BankHandler);
+                _serverDatabase.ReadAndMapDelta(gc, s, bank, BankHandler);
             }
         }
 
         /// <summary>
-        /// Return the value of a property (the update flag is set to false)
-        /// </summary>
-        /// <params name="name">is the name of the property</params>
-        /// <returns>the value of the property</returns>
-        public long GetProp(string name) { return 0; }
-
-        /// <summary>
-        /// Set the value of a property (the update flag is set to true)
-        /// </summary>
-        /// <params name="name">is the name of the property</params>
-        /// <params name="value">is the value of the property</params>
-        /// <returns>bool : 'true' if the property was found.</returns>
-        public bool SetProp(string name, long value) { return false; }
-
-        /// <summary>
-        /// Return the string associated with id
-        /// </summary>
-        /// <params name="id">is the string id</params>
-        /// <returns>the string</returns>
-        public string GetString(uint id) { return null; }
-
-        /// <summary>
-        /// Set a new string association
-        /// </summary>
-        /// <params name="id">is the string id</params>
-        /// <params name="str">is the new string</params>
-        public void SetString(uint id, string str) { }
-
-        /// <summary>
         /// Clear the database
         /// </summary>
-        public void Clear() { }
+        public void Clear()
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Destructor
         /// </summary>
-        ~CDBSynchronised() { Clear(); }
+        ~DatabaseManager() { Clear(); }
 
         /// <summary>Return true while the first database packet has not been completely received</summary>
         public bool InitInProgress() { return _initInProgress; }
-
-        /// <summary>tests</summary>
-        public void Test() { }
 
         /// <summary>Reset the init state (if you relauch the game from scratch)</summary>
         public void ResetInitState() { _initDeltaReceived = 0; _initInProgress = true; WriteInitInProgressIntoUIDB(); }
@@ -209,23 +179,15 @@ namespace RCC.Database
             // TODO FlushObserverCalls: branchObservingHandler.flushObserverCalls();
         }
 
-        private void ImpulseDatabaseInitPlayer(BitMemoryStream impulse) {
-        
-        
-        
-        }
-
-        private void ImpulseInitInventory(BitMemoryStream impulse) { }
-
         public void SetInitPacketReceived() { ++_initDeltaReceived; }
+
         private bool AllInitPacketReceived() { return _initDeltaReceived == 2; } // Classic database + inventory
 
         private void WriteInitInProgressIntoUIDB() { }
 
-
-        public void resetBank(in uint serverTick, in uint bank)
+        public void ResetBank(in uint gc, in uint bank)
         {
-
+            _database.ResetNode(gc, BankHandler.GetUidForBank(bank));
         }
     }
 }

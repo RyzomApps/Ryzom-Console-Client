@@ -56,8 +56,8 @@ namespace RCC.Network
 
         private readonly NetworkConnection _networkConnection;
         private readonly StringManager _stringManager;
-        private readonly CDBSynchronised _databaseManager;
-        private object _dataBase;
+        private readonly DatabaseManager _databaseManager;
+        private DatabaseNodeBranch _dataBase;
         private readonly RyzomClient _client;
 
         private readonly GenericMessageHeaderManager _messageHeaderManager;
@@ -69,7 +69,7 @@ namespace RCC.Network
         /// <summary>
         /// Constructor
         /// </summary>
-        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, Database.CDBSynchronised databaseManager)
+        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, Database.DatabaseManager databaseManager)
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
             _chatManager = new ChatManager(this, stringManager);
@@ -83,7 +83,7 @@ namespace RCC.Network
         /// <summary>
         /// Set database entry point
         /// </summary>
-        internal void SetDataBase(object database)
+        internal void SetDataBase(DatabaseNodeBranch database)
         {
             _dataBase = database;
         }
@@ -135,7 +135,7 @@ namespace RCC.Network
             // Update the base class.
             var result = _networkConnection.Update();
 
-            // TODO:  Get and manage changes with the netmgr update
+            // TODO: Get and manage changes with the netmgr update
             // 	const vector<CChange> &changes = NetMngr.getChanges();
 
             _chatManager.FlushBuffer(_client);
@@ -959,7 +959,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// todo properly received USER_CHAR impulse
+        /// TODO properly received USER_CHAR impulse
         /// </summary>
         private void ImpulseUserChar(BitMemoryStream impulse)
         {
@@ -1115,7 +1115,7 @@ namespace RCC.Network
                 impulse.Serial(ref bank, nbits);
 
                 // reset the bank
-                _databaseManager.resetBank(serverTick, bank);
+                _databaseManager.ResetBank(serverTick, bank);
 
                 //_client.Automata.OnDatabaseResetBank(serverTick, bank);
             }
@@ -1183,7 +1183,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// TODO: impulseInitInventory
+        /// TODO: ImpulseInitInventory
         /// </summary>
         private void ImpulseInitInventory(BitMemoryStream impulse)
         {
@@ -1204,7 +1204,7 @@ namespace RCC.Network
         const int CDBPlayer = 0;
 
         /// <summary>
-        /// TODO: ImpulseDatabaseInitPlayer
+        /// ImpulseDatabaseInitPlayer
         /// </summary>
         private void ImpulseDatabaseInitPlayer(BitMemoryStream impulse)
         {
@@ -1232,7 +1232,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// TODO: player database update
+        /// player database update
         /// </summary>
         private void ImpulseDatabaseUpdatePlayer(BitMemoryStream impulse)
         {

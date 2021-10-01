@@ -613,5 +613,11 @@ namespace RCC.Network
 
             return ret;
         }
+
+        public string DisplayLastBits(in int bitfieldLength)
+        {
+            var content = _contentBits[..^bitfieldLength];
+            return string.Join("", content.Select(b => b.ToString()).ToArray());
+        }
     }
 }
