@@ -44,7 +44,7 @@ namespace RCC.Network
         public bool CreateInterf;
         public bool CharacterInterf;
 
-        // This must be changed when cdbank bits in the client change
+        /// <remarks>This must be changed when cdbank bits in the client change</remarks>
         private const int FillNbitsWithNbBitsForCdbbank = 3;
 
         // non ryzom variables (for workarounds)
@@ -923,7 +923,6 @@ namespace RCC.Network
         /// <summary>
         /// received SHARD_ID
         /// </summary>
-        /// <param name="impulse"></param>
         private void ImpulseShardId(BitMemoryStream impulse)
         {
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
@@ -1210,8 +1209,8 @@ namespace RCC.Network
         {
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            try
-            {
+            //try
+            //{
                 var p = impulse.Pos;
 
                 // get the egs tick of this change
@@ -1224,11 +1223,11 @@ namespace RCC.Network
                 _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
 
                 _client.Automata.OnDatabaseInitPlayer(serverTick);
-            }
-            catch (Exception e)
-            {
-                _client.GetLogger().Error($"Problem while decoding a DB_INIT:PLR msg, skipped: {e.Message}");
-            }
+            //}
+            //catch (Exception e)
+            //{
+            //    _client.GetLogger().Error($"Problem while decoding a DB_INIT:PLR msg, skipped: {e.Message}");
+            //}
         }
 
         /// <summary>

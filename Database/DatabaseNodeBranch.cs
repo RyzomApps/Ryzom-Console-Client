@@ -418,8 +418,8 @@ namespace RCC.Database
         /// </summary>
         internal override uint CountLeaves()
         {
-            uint n = 0; 
-            
+            uint n = 0;
+
             foreach (var it in _nodes)
             {
                 n += it.CountLeaves();

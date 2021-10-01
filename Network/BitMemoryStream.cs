@@ -401,8 +401,6 @@ namespace RCC.Network
         /// <summary>
         ///     reads (length) bit from the stream incrementing the reader pos
         /// </summary>
-        /// <param name="length"></param>
-        /// <returns></returns>
         private bool[] ReadFromArray(int length)
         {
             bool[] newBits = new bool[length];
@@ -419,7 +417,6 @@ namespace RCC.Network
         /// <summary>
         ///     Returns the complete stream as a byte array
         /// </summary>
-        /// <returns></returns>
         public byte[] Buffer()
         {
             return ConvertBoolArrayToByteArray(_contentBits);
