@@ -345,6 +345,8 @@ namespace RCC.Network
                 {
                     Serial(ref obj[i]);
                 }
+
+                obj = obj.Reverse().ToArray();
             }
             else
             {
