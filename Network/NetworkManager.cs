@@ -1116,7 +1116,7 @@ namespace RCC.Network
                 // reset the bank
                 _databaseManager.ResetBank(serverTick, bank);
 
-                //_client.Automata.OnDatabaseResetBank(serverTick, bank);
+                _client.Automata.OnDatabaseResetBank(serverTick, bank, _databaseManager);
             }
             catch (Exception e)
             {
@@ -1146,7 +1146,7 @@ namespace RCC.Network
                 // read delta
                 _databaseManager.ReadDelta(serverTick, impulse, bank);
 
-                _client.Automata.OnDatabaseInitBank(serverTick, bank);
+                _client.Automata.OnDatabaseInitBank(serverTick, bank, _databaseManager);
             }
             catch (Exception e)
             {
@@ -1173,7 +1173,7 @@ namespace RCC.Network
                 // read delta
                 _databaseManager.ReadDelta(serverTick, impulse, bank);
 
-                //_client.Automata.OnDatabaseUpdateBank(serverTick, bank);
+                _client.Automata.OnDatabaseUpdateBank(serverTick, bank, _databaseManager);
             }
             catch (Exception e)
             {
@@ -1211,18 +1211,18 @@ namespace RCC.Network
 
             //try
             //{
-                var p = impulse.Pos;
+            var p = impulse.Pos;
 
-                // get the egs tick of this change
-                uint serverTick = 0;
-                impulse.Serial(ref serverTick);
+            // get the egs tick of this change
+            uint serverTick = 0;
+            impulse.Serial(ref serverTick);
 
-                // read delta
-                _databaseManager.ReadDelta(serverTick, impulse, CDBPlayer);
-                _databaseManager.SetInitPacketReceived();
-                _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
+            // read delta
+            _databaseManager.ReadDelta(serverTick, impulse, CDBPlayer);
+            _databaseManager.SetInitPacketReceived();
+            _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
 
-                _client.Automata.OnDatabaseInitPlayer(serverTick);
+            _client.Automata.OnDatabaseInitPlayer(serverTick);
             //}
             //catch (Exception e)
             //{

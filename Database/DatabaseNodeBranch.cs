@@ -39,7 +39,7 @@ namespace RCC.Database
 
         private bool _sorted;
 
-        private const bool VerboseDatabase = true;
+        private const bool VerboseDatabase = false;
 
         /// <summary>default constructor</summary>
         public DatabaseNodeBranch(string name)
@@ -316,7 +316,7 @@ namespace RCC.Database
                 {
                     if (VerboseDatabase)
                     {
-                        RyzomClient.GetInstance().GetLogger().Debug($"CDB/ATOM: Bitfield: {bitfield} LastBits: {f.DisplayLastBits(bitfield.Length)}");
+                        RyzomClient.GetInstance().GetLogger().Info($"CDB/ATOM: Bitfield: {bitfield.Length} LastBits: {f.DisplayLastBits(bitfield.Length)}");
                     }
                 }
 
@@ -327,7 +327,7 @@ namespace RCC.Database
 
                     if (VerboseDatabase)
                     {
-                        RyzomClient.GetInstance().GetLogger().Debug($"CDB/ATOM: Reading prop[{i}] of atom");
+                        RyzomClient.GetInstance().GetLogger().Info($"CDB/ATOM: Reading prop[{i}] of atom");
                     }
 
                     var atomIndex = i;

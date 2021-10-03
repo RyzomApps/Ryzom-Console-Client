@@ -7,6 +7,7 @@ using RCC.Chat;
 using RCC.Client;
 using RCC.Commands.Internal;
 using RCC.Config;
+using RCC.Database;
 using RCC.Network;
 
 namespace RCC.Automata.Internal
@@ -300,9 +301,25 @@ namespace RCC.Automata.Internal
         /// <summary>
         /// called when a database bank gets initialized
         /// </summary>
-        public void OnDatabaseInitBank(uint serverTick, uint bank)
+        public void OnDatabaseInitBank(uint serverTick, uint bank, DatabaseManager databaseManager)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnDatabaseInitBank(serverTick, bank));
+            DispatchAutomatonEvent(automaton => automaton.OnDatabaseInitBank(serverTick, bank, databaseManager));
+        }
+
+        /// <summary>
+        /// called when a database bank gets updated
+        /// </summary>
+        internal void OnDatabaseUpdateBank(uint serverTick, uint bank, DatabaseManager databaseManager)
+        {
+            DispatchAutomatonEvent(automaton => automaton.OnDatabaseUpdateBank(serverTick, bank, databaseManager));
+        }
+
+        /// <summary>
+        /// called when a database bank gets reset
+        /// </summary>
+        internal void OnDatabaseResetBank(uint serverTick, uint bank, DatabaseManager databaseManager)
+        {
+            DispatchAutomatonEvent(automaton => automaton.OnDatabaseResetBank(serverTick, bank, databaseManager));
         }
 
         /// <summary>

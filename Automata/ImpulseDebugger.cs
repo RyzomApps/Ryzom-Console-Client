@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using RCC.Automata.Internal;
+using RCC.Database;
 
 namespace RCC.Automata
 {
@@ -51,10 +52,19 @@ namespace RCC.Automata
             Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} msgNumber: {msgNumber} hp: {hp} sap: {sap} sta: {sta} focus: {focus}");
         }
 
-        public override void OnDatabaseInitBank(in uint serverTick, in uint bank)
+        public override void OnDatabaseInitBank(in uint serverTick, in uint bank, DatabaseManager manager)
         {
             Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} serverTick: {serverTick} bank: {bank}");
         }
 
+        public override void OnDatabaseUpdateBank(uint serverTick, uint bank, DatabaseManager databaseManager)
+        {
+            Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} serverTick: {serverTick} bank: {bank}");
+        }
+
+        public override void OnDatabaseResetBank(uint serverTick, uint bank, DatabaseManager databaseManager)
+        {
+            Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} serverTick: {serverTick} bank: {bank}");
+        }
     }
 }

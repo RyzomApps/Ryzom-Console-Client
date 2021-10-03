@@ -121,7 +121,7 @@ namespace RCC.Database
         /// <params name="f">the stream</params>
         public void ReadDelta(uint gc, BitMemoryStream s, uint bank)
         {
-            _client.GetLogger().Info("Update DB");
+            _client.GetLogger().Debug("Update DB");
 
             if (_serverDatabase == null)
             {
@@ -133,7 +133,7 @@ namespace RCC.Database
             s.Serial(ref propertyCount, 16);
 
             if (IsDatabaseVerbose)
-                _client.GetLogger().Info($"CDB: Reading delta ({propertyCount} changes)");
+                _client.GetLogger().Debug($"CDB: Reading delta ({propertyCount} changes)");
 
 
             for (uint i = 0; i != propertyCount; ++i)

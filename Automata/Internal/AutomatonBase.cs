@@ -14,6 +14,7 @@ using System.Numerics;
 using System.Text;
 using RCC.Chat;
 using RCC.Client;
+using RCC.Database;
 using RCC.Helper.Tasks;
 using RCC.Network;
 
@@ -421,7 +422,17 @@ namespace RCC.Automata.Internal
         /// <summary>
         /// called when a database bank gets initialized
         /// </summary>
-        public virtual void OnDatabaseInitBank(in uint serverTick, in uint bank) { }
+        public virtual void OnDatabaseInitBank(in uint serverTick, in uint bank, DatabaseManager databaseManager) { }
+
+        /// <summary>
+        /// called when a database bank gets updated
+        /// </summary>
+        public virtual void OnDatabaseUpdateBank(uint serverTick, uint bank, DatabaseManager databaseManager) { }
+
+        /// <summary>
+        /// called when a database bank gets reset
+        /// </summary>
+        public virtual void OnDatabaseResetBank(uint serverTick, uint bank, DatabaseManager databaseManager) { }
 
         /// <summary>
         /// called when the string cache reloads

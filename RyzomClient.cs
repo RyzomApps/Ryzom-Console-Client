@@ -312,7 +312,7 @@ namespace RCC
             // Initialize the Database.
             Log.Info("Initializing XML Database ...");
             _databaseManager.Init(@"data\database.xml", null);
-           
+
             var textId = new TextId("SERVER");
 
             if (DatabaseManager.GetDb().GetNode(textId, false) != null)

@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RCC.Network
@@ -341,12 +342,28 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                for (var i = 0; i < obj.Length; i++)
+                var len = obj.Length;
+                List<byte> bytefield = new List<byte>();
+
+                uint v = 0;
+                uint i = 0;
+
+                while (len > 32)
                 {
-                    Serial(ref obj[i]);
+                    Serial(ref v);
+
+                    bytefield.AddRange(BitConverter.GetBytes(v));
+
+                    len -= 32;
+                    ++i;
                 }
 
-                obj = obj.Reverse().ToArray();
+                Serial(ref v, len);
+                bytefield.AddRange(BitConverter.GetBytes(v));
+
+                bool[] converted = ConvertByteArrayToBoolArray(bytefield.ToArray()).Reverse().ToArray();
+
+                Array.Copy(converted, obj, obj.Length);
             }
             else
             {
@@ -436,6 +453,21 @@ namespace RCC.Network
 
             return byteArr;
         }
+
+        /// <summary>
+        /// Convert Byte Array To Bool Array
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        public static bool[] ConvertByteArrayToBoolArray(byte[] bytes)
+        {
+            BitArray b = new BitArray(bytes);
+            bool[] bitValues = new bool[b.Count];
+            b.CopyTo(bitValues, 0);
+            Array.Reverse(bitValues);
+            return bitValues;
+        }
+
 
         /// <summary>
         ///     read a byte at a given offset from the bit (8x) array
@@ -613,10 +645,70 @@ namespace RCC.Network
             return ret;
         }
 
-        public string DisplayLastBits(in int bitfieldLength)
+        /// <summary>
+        /// Display the bits of the stream just before the current pos
+        /// </summary>
+        public string DisplayLastBits(int nbits)
         {
-            var content = _contentBits[..^bitfieldLength];
-            return string.Join("", content.Select(b => b.ToString()).ToArray());
+            var bitpos = GetPosInBit();
+            return DisplayLastBits(Math.Max(bitpos - nbits, 0), bitpos - 1);
+        }
+
+        /// <summary>
+        /// Display a part of a bitmemstream
+        /// </summary>
+        public string DisplayLastBits(int beginbitpos, int endbitpos)
+        {
+            int beginpos = beginbitpos / 8;
+            int endpos = endbitpos / 8;
+
+            string ret = $"BMS: beginpos {beginpos} endpos {endpos} beginbitpos {beginbitpos} endbitpos {endbitpos}\r\n";
+
+            ret += DisplayByteBits(Buffer()[beginpos], 8, 8 - (beginbitpos - beginpos * 8), true) + "\r\n";
+
+            int p;
+
+            for (p = beginpos + 1; p < endpos - 1; ++p)
+            {
+                ret += DisplayByteBits(Buffer()[p], 8, 0, false) + "\r\n";
+            }
+
+            if (endpos > beginpos)
+            {
+                ret += DisplayByteBits(Buffer()[endpos], 8, 0, false);
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        ///  Display the bits (with 0 and 1) composing a byte (from right to left)
+        /// </summary>
+        string DisplayByteBits(byte b, int nbits, int beginpos, bool displayBegin)
+        {
+            string ret = "";
+
+            string s1 = "", s2 = "\r\n";
+            int i;
+
+            for (i = nbits - 1; i != -1; --i)
+            {
+                s1 += ((b >> i) & 1) == 1 ? "1" : "0";
+            }
+
+            ret += s1;
+
+            if (displayBegin)
+            {
+                for (i = nbits; i > beginpos + 1; --i)
+                {
+                    s2 += " ";
+                }
+                s2 += $"^ beginpos={beginpos}";
+                ret += s2;
+            }
+
+            return ret;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace RCC.Database
 {
     public class DatabaseNodeLeaf : DatabaseNodeBase
     {
-        private const bool VerboseDatabase = true;
+        private const bool VerboseDatabase = false;
 
         /// <summary>property type</summary>
         private EPropType _type;
@@ -28,6 +28,10 @@ namespace RCC.Database
 
         /// <summary>property value</summary>
         private long _property;
+        private long _oldProperty;
+
+        /// <summary>true if this value has changed</summary>
+        bool _changed;
 
         public DatabaseNodeLeaf(string name)
         {
@@ -203,7 +207,33 @@ namespace RCC.Database
 
         internal override void ResetData(uint gc, bool forceReset = false)
         {
-            throw new NotImplementedException();
+            if (forceReset)
+            {
+                _lastChangeGc = 0;
+                SetValue64(0);
+            }
+            else if (gc >= _lastChangeGc)   // apply only if happens after the DB change
+            {
+                _lastChangeGc = gc;
+                SetValue64(0);
+            }
+        }
+
+        void SetValue64(long prop)
+        {
+            if (_property != prop)
+            {
+                if (!_changed)
+                {
+                    _changed = true;
+                }
+
+                _oldProperty = _property;
+                _property = prop;
+
+                // notify observer
+                NotifyObservers();
+            }
         }
 
         /// <summary>
