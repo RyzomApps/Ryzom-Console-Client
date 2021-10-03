@@ -9,7 +9,7 @@
 namespace RCC.Messages
 {
     /// <summary>
-    ///     A message field - TMessageFormat with message type and bit size
+    /// A message field - TMessageFormat with message type and bit size
     /// </summary>
     public class MessageField
     {

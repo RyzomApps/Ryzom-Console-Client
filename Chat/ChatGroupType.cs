@@ -9,7 +9,7 @@
 namespace RCC.Chat
 {
     /// <summary>
-    ///     Type of the chat channel (e.g. around, region, dynamic).
+    /// Type of the chat channel (e.g. around, region, dynamic).
     /// </summary>
     public enum ChatGroupType : byte
     {

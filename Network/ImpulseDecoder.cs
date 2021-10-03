@@ -12,7 +12,7 @@ using RCC.Network.Action;
 namespace RCC.Network
 {
     /// <summary>
-    ///     Interpretation of actions deserialized from a stream
+    /// Interpretation of actions deserialized from a stream
     /// </summary>
     internal static class ImpulseDecoder
     {
@@ -21,7 +21,7 @@ namespace RCC.Network
         private static readonly int[] LastAck2 = new int[4];
 
         /// <summary>
-        ///     Constructor
+        /// Constructor
         /// </summary>
         static ImpulseDecoder()
         {
@@ -29,7 +29,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     clear the decoder for a new incoming packet
+        /// clear the decoder for a new incoming packet
         /// </summary>
         public static void Reset()
         {
@@ -40,7 +40,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     unpacking actions from a stream and calling the corresponding impusions
+        /// unpacking actions from a stream and calling the corresponding impusions
         /// </summary>
         public static void Decode(BitMemoryStream inbox, int receivedPacket, int receivedAck, int nextSentPacket,
             List<Action.ActionBase> actions)

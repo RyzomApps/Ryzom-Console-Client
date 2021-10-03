@@ -11,7 +11,7 @@ using RCC.Helper;
 namespace RCC.Logger
 {
     /// <summary>
-    ///     Abstract class providing basic implementation of the ILogger interface
+    /// Abstract class providing basic implementation of the ILogger interface
     /// </summary>
     public abstract class LoggerBase : ILogger
     {

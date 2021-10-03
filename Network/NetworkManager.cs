@@ -89,7 +89,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Send - updates when packets were received
+        /// Send - updates when packets were received
         /// </summary>
         public void Send(uint gameCycle)
         {
@@ -115,8 +115,8 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Buffers a bitmemstream, that will be converted into a generic action, to be sent later to the server (at next
-        ///     update).
+        /// Buffers a bitmemstream, that will be converted into a generic action, to be sent later to the server (at next
+        /// update).
         /// </summary>
         public void Push(BitMemoryStream msg)
         {
@@ -124,8 +124,8 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Updates the whole connection with the frontend.
-        ///     Call this method evently.
+        /// Updates the whole connection with the frontend.
+        /// Call this method evently.
         /// </summary>
         /// <returns>'true' if data were sent/received.</returns>
         public bool Update()
@@ -146,7 +146,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Send updates
+        /// Send updates
         /// </summary>
         public void Send()
         {
@@ -154,8 +154,8 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     ImpulseCallBack :
-        ///     The Impulse callback to receive all msg from the frontend.
+        /// ImpulseCallBack :
+        /// The Impulse callback to receive all msg from the frontend.
         /// </summary>
         public void ImpulseCallBack(BitMemoryStream impulse)
         {
@@ -163,7 +163,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     initializeNetwork :
+        /// initializeNetwork :
         /// </summary>
         public void InitializeNetwork()
         {
@@ -635,7 +635,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     reload the string cache
+        /// reload the string cache
         /// </summary>
         private void ImpulseReloadCache(BitMemoryStream impulse)
         {
@@ -650,7 +650,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Update the local string set
+        /// Update the local string set
         /// </summary>
         private void ImpulseStringResp(BitMemoryStream impulse)
         {
@@ -667,7 +667,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     A dyn string (or phrase) is send (so, we receive it)
+        /// A dyn string (or phrase) is send (so, we receive it)
         /// </summary>
         /// <remarks>Automaton Event is fired inside the string manager</remarks>
         private void ImpulsePhraseSend(BitMemoryStream impulse)
@@ -1209,25 +1209,25 @@ namespace RCC.Network
         {
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            //try
-            //{
-            var p = impulse.Pos;
+            try
+            {
+                var p = impulse.Pos;
 
-            // get the egs tick of this change
-            uint serverTick = 0;
-            impulse.Serial(ref serverTick);
+                // get the egs tick of this change
+                uint serverTick = 0;
+                impulse.Serial(ref serverTick);
 
-            // read delta
-            _databaseManager.ReadDelta(serverTick, impulse, CDBPlayer);
-            _databaseManager.SetInitPacketReceived();
-            _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
+                // read delta
+                _databaseManager.ReadDelta(serverTick, impulse, CDBPlayer);
+                _databaseManager.SetInitPacketReceived();
+                _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
 
-            _client.Automata.OnDatabaseInitPlayer(serverTick);
-            //}
-            //catch (Exception e)
-            //{
-            //    _client.GetLogger().Error($"Problem while decoding a DB_INIT:PLR msg, skipped: {e.Message}");
-            //}
+                _client.Automata.OnDatabaseInitPlayer(serverTick);
+            }
+            catch (Exception e)
+            {
+                _client.GetLogger().Error($"Problem while decoding a DB_INIT:PLR msg, skipped: {e.Message}");
+            }
         }
 
         /// <summary>
@@ -1255,7 +1255,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Decode handshake to check versions
+        /// Decode handshake to check versions
         /// </summary>
         private void CheckHandshake(BitMemoryStream impulse)
         {
@@ -1273,8 +1273,8 @@ namespace RCC.Network
 
 
         /// <summary>
-        ///     sendMsgToServer Helper
-        ///     selects the message by its name and pushes it to the connection
+        /// sendMsgToServer Helper
+        /// selects the message by its name and pushes it to the connection
         /// </summary>
         public void SendMsgToServer(string sMsg)
         {

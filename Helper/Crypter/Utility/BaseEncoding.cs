@@ -38,8 +38,8 @@ namespace RCC.Helper.Crypter.Utility
         /// </summary>
         /// <param name="characterSet">The characters of the encoding.</param>
         /// <param name="msbComesFirst">
-        ///     <c>true</c> to begin with the most-significant bit of each byte.
-        ///     Otherwise, the encoding begins with the least-significant bit.
+        /// <c>true</c> to begin with the most-significant bit of each byte.
+        /// Otherwise, the encoding begins with the least-significant bit.
         /// </param>
         public BaseEncoding(string characterSet, bool msbComesFirst)
             : this(characterSet, msbComesFirst, null, null)
@@ -54,14 +54,14 @@ namespace RCC.Helper.Crypter.Utility
         /// </summary>
         /// <param name="characterSet">The characters of the encoding.</param>
         /// <param name="msbComesFirst">
-        ///     <c>true</c> to begin with the most-significant bit of each byte.
-        ///     Otherwise, the encoding begins with the least-significant bit.
+        /// <c>true</c> to begin with the most-significant bit of each byte.
+        /// Otherwise, the encoding begins with the least-significant bit.
         /// </param>
         /// <param name="additionalDecodeCharacters">
-        ///     A dictionary of alias characters, or <c>null</c> if no aliases are desired.
+        /// A dictionary of alias characters, or <c>null</c> if no aliases are desired.
         /// </param>
         /// <param name="decodeFilterCallback">
-        ///     A callback to map arbitrary characters onto the characters that can be decoded.
+        /// A callback to map arbitrary characters onto the characters that can be decoded.
         /// </param>
         public BaseEncoding(string characterSet, bool msbComesFirst,
                             IDictionary<char, int> additionalDecodeCharacters,

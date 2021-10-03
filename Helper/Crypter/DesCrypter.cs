@@ -9,11 +9,11 @@ using System;
 namespace RCC.Helper.Crypter
 {
     /// <summary>
-    ///     A performant .NET implementation of crypt(3) that leverages Span
-    ///     T type in order to hold and transform data.
-    ///     Requires.NET Core 2.1 / .NET Standard 2.1 or later(Span
-    ///     T was introduced in .NET Core 2.1).
-    ///     by aannenko
+    /// A performant .NET implementation of crypt(3) that leverages Span
+    /// T type in order to hold and transform data.
+    /// Requires.NET Core 2.1 / .NET Standard 2.1 or later(Span
+    /// T was introduced in .NET Core 2.1).
+    /// by aannenko
     /// </summary>
     public static class DesCrypter
     {

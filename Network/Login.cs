@@ -16,12 +16,12 @@ using System.Text;
 namespace RCC.Network
 {
     /// <summary>
-    ///     http login process prior to the udp connection to the ryzom server
+    /// http login process prior to the udp connection to the ryzom server
     /// </summary>
     public class Login
     {
         /// <summary>
-        ///     getting server information and try to login the client with the given credentials
+        /// getting server information and try to login the client with the given credentials
         /// </summary>
         public static void CheckLogin(RyzomClient client, string login, string password, string clientApp, string customParameters)
         {
@@ -66,18 +66,18 @@ namespace RCC.Network
 
                     if (first != -1)
                     {
-                        responseString = responseString.Substring(first + 4);
+                        responseString = responseString[(first + 4)..];
                     }
                 }
 
                 else
                 {
-                    responseString = responseString.Substring(first + 2);
+                    responseString = responseString[(first + 2)..];
                 }
             }
             else
             {
-                responseString = responseString.Substring(first + 2);
+                responseString = responseString[(first + 2)..];
             }
 
             switch (responseString[0])
@@ -87,7 +87,7 @@ namespace RCC.Network
 
                 case '0':
                     // server returns an error
-                    throw new InvalidOperationException($"server error: {responseString.Substring(2)}");
+                    throw new InvalidOperationException($"server error: {responseString[2..]}");
 
                 case '1':
                     var lines = responseString.Split('\n');
@@ -136,7 +136,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     ask ryzom login server for password salt
+        /// ask ryzom login server for password salt
         /// </summary>
         private static string GetServerSalt(string login, string url)
         {
@@ -163,8 +163,8 @@ namespace RCC.Network
             var salt = res[0] switch
             {
                 'H' => throw new InvalidOperationException("missing response body (error code 64)"),
-                '0' => throw new InvalidOperationException($"server error: {res.Substring(2)}"),
-                '1' => res.Substring(2),
+                '0' => throw new InvalidOperationException($"server error: {res[2..]}"),
+                '1' => res[2..],
                 _ => throw new InvalidOperationException(res)
             };
 
@@ -172,8 +172,8 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Return a pointer to static data consisting of the "salt"
-        ///     followed by an encryption produced by the "key" and "salt".
+        /// Return a pointer to static data consisting of the "salt"
+        /// followed by an encryption produced by the "key" and "salt".
         /// </summary>
         protected static string Crypt(string password, string salt)
         {
@@ -181,7 +181,7 @@ namespace RCC.Network
 
             if (salt.StartsWith("$6$") && !salt.Contains("$rounds="))
             {
-                salt = "$6$rounds=5000$" + salt.Substring(3);
+                salt = "$6$rounds=5000$" + salt[3..];
             }
 
             if (salt.EndsWith("$"))

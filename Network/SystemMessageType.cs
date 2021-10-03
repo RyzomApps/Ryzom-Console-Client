@@ -9,57 +9,57 @@
 namespace RCC.Network
 {
     /// <summary>
-    ///     system messages used in the connection state machine
+    /// system messages used in the connection state machine
     /// </summary>
     internal enum SystemMessageType : byte
     {
         /// <summary>
-        ///     From client
+        /// From client
         /// </summary>
         SystemLoginCode = 0,
 
         /// <summary>
-        ///     From server
+        /// From server
         /// </summary>
         SystemSyncCode = 1,
 
         /// <summary>
-        ///     From client
+        /// From client
         /// </summary>
         SystemAckSyncCode = 2,
 
         /// <summary>
-        ///     From server
+        /// From server
         /// </summary>
         SystemProbeCode = 3,
 
         /// <summary>
-        ///     From client
+        /// From client
         /// </summary>
         SystemAckProbeCode = 4,
 
         /// <summary>
-        ///     From client
+        /// From client
         /// </summary>
         SystemDisconnectionCode = 5,
 
         /// <summary>
-        ///     From server
+        /// From server
         /// </summary>
         SystemStalledCode = 6,
 
         /// <summary>
-        ///     From server
+        /// From server
         /// </summary>
         SystemServerDownCode = 7,
 
         /// <summary>
-        ///     From client
+        /// From client
         /// </summary>
         SystemQuitCode = 8,
 
         /// <summary>
-        ///     From server
+        /// From server
         /// </summary>
         SystemAckQuitCode = 9
     }

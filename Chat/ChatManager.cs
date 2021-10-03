@@ -14,7 +14,7 @@ using RCC.Network;
 namespace RCC.Chat
 {
     /// <summary>
-    ///     Class for management of incoming and outgoing chat messages
+    /// Class for management of incoming and outgoing chat messages
     /// </summary>
     internal class ChatManager
     {
@@ -34,7 +34,7 @@ namespace RCC.Chat
         }
 
         /// <summary>
-        ///     interprets the incoming tell string
+        /// interprets the incoming tell string
         /// </summary>
         public void ProcessTellString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
         {
@@ -63,7 +63,7 @@ namespace RCC.Chat
         }
 
         /// <summary>
-        ///     interprets the incoming say string
+        /// interprets the incoming say string
         /// </summary>
         public void ProcessChatString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
         {

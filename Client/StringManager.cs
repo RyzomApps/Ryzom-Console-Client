@@ -16,7 +16,7 @@ using static RCC.Client.DynamicStringInfo;
 namespace RCC.Client
 {
     /// <summary>
-    ///     Management for dynamically generated text from servers
+    /// Management for dynamically generated text from servers
     /// </summary>
     public class StringManager
     {
@@ -30,23 +30,23 @@ namespace RCC.Client
             new Dictionary<uint, DynamicStringInfo>();
 
         /// <summary>
-        ///     String waiting the string value from the server.
+        /// String waiting the string value from the server.
         /// </summary>
         private readonly Dictionary<uint, StringWaiter> StringsWaiters = new Dictionary<uint, StringWaiter>();
 
         /// <summary>
-        ///     String waiting the dyn string value from the server.
+        /// String waiting the dyn string value from the server.
         /// </summary>
         private readonly Dictionary<uint, StringWaiter> DynStringsWaiters = new Dictionary<uint, StringWaiter>();
 
         /// <summary>
-        ///     Callback for string value from the server
+        /// Callback for string value from the server
         /// </summary>
         private readonly Dictionary<uint, StringWaitCallback> StringsCallbacks =
             new Dictionary<uint, StringWaitCallback>();
 
         /// <summary>
-        ///     Callback for dyn string value from the server
+        /// Callback for dyn string value from the server
         /// </summary>
         private readonly Dictionary<uint, StringWaitCallback> DynStringsCallbacks =
             new Dictionary<uint, StringWaitCallback>();
@@ -183,7 +183,7 @@ namespace RCC.Client
         }
 
         /// <summary>
-        ///     flush the server string cache
+        /// flush the server string cache
         /// </summary>
         public void FlushStringCache()
         {
@@ -211,7 +211,7 @@ namespace RCC.Client
         }
 
         /// <summary>
-        ///     extract the dynamic string from the stream and check if it is complete
+        /// extract the dynamic string from the stream and check if it is complete
         /// </summary>
         public void ReceiveDynString(BitMemoryStream bms, NetworkManager _networkManager)
         {
@@ -264,7 +264,7 @@ namespace RCC.Client
         }
 
         /// <summary>
-        ///     assemble the dynamic string from DynamicStringInfo
+        /// assemble the dynamic string from DynamicStringInfo
         /// </summary>
         private bool BuildDynString(DynamicStringInfo dynInfo, NetworkManager _networkManager)
         {
@@ -608,7 +608,7 @@ namespace RCC.Client
         }
 
         /// <summary>
-        ///     request the stringId from the local cache or if missing ask the server
+        /// request the stringId from the local cache or if missing ask the server
         /// </summary>
         public bool GetString(uint stringId, out string result, NetworkManager networkManager)
         {

@@ -13,14 +13,14 @@ using System.Net.Sockets;
 namespace RCC.Network
 {
     /// <summary>
-    ///     wrapper for the udpclient class to have a synch connection the the server
+    /// wrapper for the udpclient class to have a synch connection the the server
     /// </summary>
     internal class UdpSocket
     {
         private UdpClient _udpMain;
 
         /// <summary>
-        ///     connect to a given frontend address containing a host and a port in the string
+        /// connect to a given frontend address containing a host and a port in the string
         /// </summary>
         public void Connect(string frontendAddress)
         {
@@ -31,7 +31,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     get host and port from a address string
+        /// get host and port from a address string
         /// </summary>
         public void ParseHostString(string hostString, out string hostName, out int port)
         {
@@ -49,7 +49,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     checks if the udp client is connected
+        /// checks if the udp client is connected
         /// </summary>
         public bool Connected()
         {
@@ -57,7 +57,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     send buffer data to the server
+        /// send buffer data to the server
         /// </summary>
         public void Send(byte[] buffer, in int length)
         {
@@ -65,7 +65,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     checks if data is available at the client
+        /// checks if data is available at the client
         /// </summary>
         public bool IsDataAvailable()
         {
@@ -73,7 +73,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     receives available data
+        /// receives available data
         /// </summary>
         public bool Receive(ref byte[] receiveBuffer, bool throwException)
         {

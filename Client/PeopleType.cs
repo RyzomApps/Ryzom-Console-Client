@@ -9,7 +9,7 @@
 namespace RCC.Client
 {
     /// <summary>
-    ///     Entity type specification
+    /// Entity type specification
     /// </summary>
     public enum PeopleType
     {

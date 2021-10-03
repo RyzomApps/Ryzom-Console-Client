@@ -12,7 +12,7 @@ using System.Diagnostics;
 namespace RCC.Network.Action
 {
     /// <summary>
-    ///     temporary multipart holder until the generic action is complete
+    /// temporary multipart holder until the generic action is complete
     /// </summary>
     internal class GenericMultiPartTemp
     {
@@ -22,7 +22,7 @@ namespace RCC.Network.Action
         private int _nbCurrentBlock;
 
         /// <summary>
-        ///     Constructor
+        /// Constructor
         /// </summary>
         public GenericMultiPartTemp()
         {
@@ -30,7 +30,7 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     add a part to the temp action - and call an action if message is complete
+        /// add a part to the temp action - and call an action if message is complete
         /// </summary>
         public void Set(ActionGenericMultiPart agmp, NetworkConnection networkConnection)
         {

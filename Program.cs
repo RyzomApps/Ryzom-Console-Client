@@ -17,8 +17,8 @@ using RCC.WinAPI;
 namespace RCC
 {
     /// <summary>
-    ///     Ryzom Console Client by bierdosenhalter and Contributors (c) 2021.
-    ///     Allows to connect to the Ryzom server, send and receive text, automated scripts.
+    /// Ryzom Console Client by bierdosenhalter and Contributors (c) 2021.
+    /// Allows to connect to the Ryzom server, send and receive text, automated scripts.
     /// </summary>
     internal class Program
     {
@@ -36,12 +36,12 @@ namespace RCC
         public static Encoding Enc1252;
 
         /// <summary>
-        ///     Detect if the user is running Ryzom Console Client through Mono
+        /// Detect if the user is running Ryzom Console Client through Mono
         /// </summary>
         public static bool IsUsingMono => Type.GetType("Mono.Runtime") != null;
 
         /// <summary>
-        ///     Static initialization of build information, read from assembly information
+        /// Static initialization of build information, read from assembly information
         /// </summary>
         static Program()
         {
@@ -67,7 +67,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     The main entry point of Ryzom Console Client
+        /// The main entry point of Ryzom Console Client
         /// </summary>
         private static void Main(string[] args)
         {
@@ -157,7 +157,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Reduest user to submit password.
+        /// Reduest user to submit password.
         /// </summary>
         private static void RequestPassword()
         {
@@ -182,7 +182,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Start a new Client
+        /// Start a new Client
         /// </summary>
         private static void InitializeClient()
         {
@@ -190,7 +190,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Enumerate types in namespace through reflection
+        /// Enumerate types in namespace through reflection
         /// </summary>
         /// <param name="nameSpace">Namespace to process</param>
         /// <param name="assembly">Assembly to use. Default is Assembly.GetExecutingAssembly()</param>
@@ -207,7 +207,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Disconnect the current client from the server and exit the app
+        /// Disconnect the current client from the server and exit the app
         /// </summary>
         public static void Exit(int exitcode = 0)
         {

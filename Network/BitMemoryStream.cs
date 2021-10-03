@@ -14,7 +14,7 @@ using System.Linq;
 namespace RCC.Network
 {
     /// <summary>
-    ///     (de)serializes data for server communication
+    /// (de)serializes data for server communication
     /// </summary>
     public class BitMemoryStream
     {
@@ -23,7 +23,7 @@ namespace RCC.Network
         private bool _inputStream;
 
         /// <summary>
-        ///     constructor differentiating between input and output stream and specifying the size of the stream
+        /// constructor differentiating between input and output stream and specifying the size of the stream
         /// </summary>
         public BitMemoryStream(bool inputStream = false, int defaultcapacity = 32)
         {
@@ -32,17 +32,17 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Byte Position of the reader/writer in the Stream
+        /// Byte Position of the reader/writer in the Stream
         /// </summary>
         public int Pos => (int)(_bitPos / 8d);
 
         /// <summary>
-        ///     Free bits in the current byte of the reader/writer
+        /// Free bits in the current byte of the reader/writer
         /// </summary>
         public int FreeBits => 8 - _bitPos % 8;
 
         /// <summary>
-        ///     Length in bytes of the overall stream (reader) or length of the written bytes (writer)
+        /// Length in bytes of the overall stream (reader) or length of the written bytes (writer)
         /// </summary>
         public int Length
         {
@@ -56,12 +56,12 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     input or output
+        /// input or output
         /// </summary>
         public bool IsReading() => _inputStream;
 
         /// <summary>
-        ///     Returns the number of bit from the beginning of the buffer (in bit)
+        /// Returns the number of bit from the beginning of the buffer (in bit)
         /// </summary>
         public int GetPosInBit()
         {
@@ -70,8 +70,8 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Builds the header that is needed for the communication with the ryzom server
-        ///     TODO: this shouldn't be here, but it is - move to a better position
+        /// Builds the header that is needed for the communication with the ryzom server
+        /// TODO: this shouldn't be here, but it is - move to a better position
         /// </summary>
         public void BuildSystemHeader(ref int currentSendNumber)
         {
@@ -82,7 +82,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes type byte
+        /// serializes type byte
         /// </summary>
         public void Serial(ref byte obj)
         {
@@ -99,7 +99,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes type sint32
+        /// serializes type sint32
         /// </summary>
         public void Serial(ref int obj)
         {
@@ -117,7 +117,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes type uint32
+        /// serializes type uint32
         /// </summary>
         public void Serial(ref uint obj)
         {
@@ -135,7 +135,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes type sint16 with a given bit length
+        /// serializes type sint16 with a given bit length
         /// </summary>
         public void Serial(ref short obj, int nbits = 16)
         {
@@ -159,7 +159,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes type uint32 with a given bit length
+        /// serializes type uint32 with a given bit length
         /// </summary>
         public void Serial(ref uint obj, int nbits)
         {
@@ -209,7 +209,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes type uint64 with a given bit length
+        /// serializes type uint64 with a given bit length
         /// </summary>
         public void Serial(ref ulong obj, int nbits)
         {
@@ -231,7 +231,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes type sint64
+        /// serializes type sint64
         /// </summary>
         public void Serial(ref long obj)
         {
@@ -249,7 +249,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes type byte[]
+        /// serializes type byte[]
         /// </summary>
         public void Serial(ref byte[] obj)
         {
@@ -269,7 +269,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes type bit
+        /// serializes type bit
         /// </summary>
         public void Serial(ref bool obj)
         {
@@ -291,7 +291,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes type string (see ucstring)
+        /// serializes type string (see ucstring)
         /// </summary>
         public void Serial(ref string obj, bool isUnicode = true)
         {
@@ -376,7 +376,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     reads a single bit at a given position from a byte
+        /// reads a single bit at a given position from a byte
         /// </summary>
         public static bool GetBit(byte b, int bitNumber)
         {
@@ -384,7 +384,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     HELPER since this is not c++, memcopy (overwrite) byte[] data to the bit[] array of the stream
+        /// HELPER since this is not c++, memcopy (overwrite) byte[] data to the bit[] array of the stream
         /// </summary>
         public void MemCpy(byte[] data)
         {
@@ -397,7 +397,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     add the bytes to the end of the stream
+        /// add the bytes to the end of the stream
         /// </summary>
         private void AddToArray(byte[] bytes)
         {
@@ -416,7 +416,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     reads (length) bit from the stream incrementing the reader pos
+        /// reads (length) bit from the stream incrementing the reader pos
         /// </summary>
         private bool[] ReadFromArray(int length)
         {
@@ -432,7 +432,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Returns the complete stream as a byte array
+        /// Returns the complete stream as a byte array
         /// </summary>
         public byte[] Buffer()
         {
@@ -440,7 +440,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Packs a bit array into bytes
+        /// Packs a bit array into bytes
         /// </summary>
         public static byte[] ConvertBoolArrayToByteArray(bool[] boolArr)
         {
@@ -470,7 +470,7 @@ namespace RCC.Network
 
 
         /// <summary>
-        ///     read a byte at a given offset from the bit (8x) array
+        /// read a byte at a given offset from the bit (8x) array
         /// </summary>
         private static byte ReadByte(bool[] boolArr, int offset)
         {
@@ -488,7 +488,7 @@ namespace RCC.Network
 
 
         /// <summary>
-        ///     Transforms the message from input to output or from output to input
+        /// Transforms the message from input to output or from output to input
         /// </summary>
         public void Invert()
         {
@@ -509,10 +509,10 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Set the position at the beginning. In output mode, the method ensures the buffer
-        ///     contains at least one blank byte to write to.
-        ///     If you are using the stream only in output mode, you can use this method as a faster version
-        ///     of clear() *if you don't serialize pointers*.
+        /// Set the position at the beginning. In output mode, the method ensures the buffer
+        /// contains at least one blank byte to write to.
+        /// If you are using the stream only in output mode, you can use this method as a faster version
+        /// of clear() *if you don't serialize pointers*.
         /// </summary>
         public void ResetBufPos()
         {
@@ -520,7 +520,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     serializes another stream with a given length
+        /// serializes another stream with a given length
         /// </summary>
         public void SerialBuffer(BitMemoryStream buf, in int len)
         {
@@ -596,7 +596,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     double serialisation: serializes type byte[] and serializes length parameter
+        /// double serialisation: serializes type byte[] and serializes length parameter
         /// </summary>
         public void SerialBufferWithSize(byte[] buf, int len)
         {
@@ -605,7 +605,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     ToString override for bitwise output
+        /// ToString override for bitwise output
         /// </summary>
         public override string ToString()
         {
@@ -613,7 +613,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     byte or bitwise output of the stream
+        /// byte or bitwise output of the stream
         /// </summary>
         public string ToString(bool displayBytes)
         {

@@ -82,15 +82,15 @@ namespace RCC {
         ///  &lt;!-- Define bank superclass --&gt;
         ///  &lt;bank_superclass&gt;
         ///    &lt;bank name=&quot;PLR&quot;
-        ///          class=&quot;CCDBSynchronised&quot; /&gt;
+        ///      class=&quot;CCDBSynchronised&quot; /&gt;
         ///    &lt;bank name=&quot;GUILD&quot;
-        ///          class=&quot;CCDBGroup&quot;
-        ///          dbAccessor=&quot;.Database&quot;&gt;
-        ///      &lt;include file=&quot;game_share/far_position.h&quot; /&gt;
-        ///      &lt;verbatime&gt;inline void _setProp(CCDBSynchronised &amp;amp;db,
-        ///      ICDBStructNode *node, TCharConnectionState value, bool
-        ///      forceSending = false) { db.x_setProp(node, uint64(value),
-        ///      forceSending); } inline void _getProp(const C [rest of string was truncated]&quot;;.
+        ///      class=&quot;CCDBGroup&quot;
+        ///      dbAccessor=&quot;.Database&quot;&gt;
+        ///  &lt;include file=&quot;game_share/far_position.h&quot; /&gt;
+        ///  &lt;verbatime&gt;inline void _setProp(CCDBSynchronised &amp;amp;db,
+        ///  ICDBStructNode *node, TCharConnectionState value, bool
+        ///  forceSending = false) { db.x_setProp(node, uint64(value),
+        ///  forceSending); } inline void _getProp(const C [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string database {
             get {
@@ -104,19 +104,19 @@ namespace RCC {
         ///    &lt;leaf name=&quot;PARTY&quot; /&gt;
         ///    &lt;leaf name=&quot;INVENTORY&quot; /&gt;
         ///    &lt;leaf name=&quot;FOLLOW&quot;
-        ///          sendto=&quot;AIS&quot;
-        ///          format=&quot;&quot;
-        ///          description=&quot;The client follows its target&quot; /&gt;
+        ///      sendto=&quot;AIS&quot;
+        ///      format=&quot;&quot;
+        ///      description=&quot;The client follows its target&quot; /&gt;
         ///    &lt;leaf name=&quot;NO_FOLLOW&quot;
-        ///          sendto=&quot;AIS&quot;
-        ///          format=&quot;&quot;
-        ///          description=&quot;The client stop following its target&quot; /&gt;
+        ///      sendto=&quot;AIS&quot;
+        ///      format=&quot;&quot;
+        ///      description=&quot;The client stop following its target&quot; /&gt;
         ///  &lt;/branch&gt;
         ///  &lt;branch name=&quot;CONNECTION&quot;&gt;
         ///    &lt;leaf name=&quot;USER_CHAR&quot; /&gt;
         ///    &lt;leaf name=&quot;NO_USER_CHAR&quot; /&gt;
         ///    &lt;leaf name=&quot;USER_CHARS&quot;
-        ///          d [rest of string was truncated]&quot;;.
+        ///      d [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string msg {
             get {

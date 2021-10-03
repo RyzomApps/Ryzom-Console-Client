@@ -12,12 +12,12 @@ using RCC.Network;
 namespace RCC.Client
 {
     /// <summary>
-    ///     Launch the game given a slot (slot is reference to the character summaries)
+    /// Launch the game given a slot (slot is reference to the character summaries)
     /// </summary>
     public static class ActionHandlerLaunchGame
     {
         /// <summary>
-        ///     Gets the player selected slot and sends it to the server
+        /// Gets the player selected slot and sends it to the server
         /// </summary>
         public static void Execute(string sSlot, NetworkManager networkManager)
         {

@@ -12,7 +12,7 @@ using System.Threading;
 namespace RCC.Helper.Tasks
 {
     /// <summary>
-    ///     Holds an asynchronous task with return value
+    /// Holds an asynchronous task with return value
     /// </summary>
     /// <typeparam name="T">Type of the return value</typeparam>
     public class TaskWithResult<T>
@@ -23,7 +23,7 @@ namespace RCC.Helper.Tasks
         private T _result;
 
         /// <summary>
-        ///     Create a new asynchronous task with return value
+        /// Create a new asynchronous task with return value
         /// </summary>
         /// <param name="task">Delegate with return value</param>
         public TaskWithResult(Func<T> task)
@@ -32,12 +32,12 @@ namespace RCC.Helper.Tasks
         }
 
         /// <summary>
-        ///     Check whether the task has finished running
+        /// Check whether the task has finished running
         /// </summary>
         public bool HasRun { get; private set; }
 
         /// <summary>
-        ///     Get the task result (return value of the inner delegate)
+        /// Get the task result (return value of the inner delegate)
         /// </summary>
         /// <exception cref="System.InvalidOperationException">Thrown if the task is not finished yet</exception>
         public T Result
@@ -54,13 +54,13 @@ namespace RCC.Helper.Tasks
         }
 
         /// <summary>
-        ///     Get the exception thrown by the inner delegate, if any
+        /// Get the exception thrown by the inner delegate, if any
         /// </summary>
         public Exception Exception { get; private set; } = null;
 
         /// <summary>
-        ///     Execute the task in the current thread and set the <see cref="Result" /> property or to the returned
-        ///     value
+        /// Execute the task in the current thread and set the <see cref="Result" /> property or to the returned
+        /// value
         /// </summary>
         public void ExecuteSynchronously()
         {
@@ -93,7 +93,7 @@ namespace RCC.Helper.Tasks
         }
 
         /// <summary>
-        ///     Wait until the task has run from another thread and get the returned value or exception thrown by the task
+        /// Wait until the task has run from another thread and get the returned value or exception thrown by the task
         /// </summary>
         /// <returns>Task result once available</returns>
         /// <exception cref="System.Exception">Any exception thrown by the task</exception>

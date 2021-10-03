@@ -15,10 +15,10 @@ using static System.String;
 namespace RCC.Helper
 {
     /// <summary>
-    ///     Allows simultaneous console input and output without breaking user input
-    ///     (Without having this annoying behaviour : User inp[Some Console output]ut)
-    ///     Provide some fancy features such as formatted output, text pasting and tab-completion.
-    ///     By ORelio - (c) 2012-2018 - Available under the CDDL-1.0 license
+    /// Allows simultaneous console input and output without breaking user input
+    /// (Without having this annoying behaviour : User inp[Some Console output]ut)
+    /// Provide some fancy features such as formatted output, text pasting and tab-completion.
+    /// By ORelio - (c) 2012-2018 - Available under the CDDL-1.0 license
     /// </summary>
     public static class ConsoleIO
     {
@@ -31,29 +31,29 @@ namespace RCC.Helper
         private static string _buffer2 = "";
 
         /// <summary>
-        ///     Determines whether to use interactive IO or basic IO.
-        ///     Set to true to disable interactive command prompt and use the default Console.Read|Write() methods.
-        ///     Color codes are printed as is when BasicIO is enabled.
+        /// Determines whether to use interactive IO or basic IO.
+        /// Set to true to disable interactive command prompt and use the default Console.Read|Write() methods.
+        /// Color codes are printed as is when BasicIO is enabled.
         /// </summary>
         public static bool BasicIo = false;
 
         /// <summary>
-        ///     Determines whether not to print color codes in BasicIO mode.
+        /// Determines whether not to print color codes in BasicIO mode.
         /// </summary>
         public static bool BasicIoNoColor = false;
 
         /// <summary>
-        ///     Determine whether WriteLineFormatted() should prepend lines with timestamps by default.
+        /// Determine whether WriteLineFormatted() should prepend lines with timestamps by default.
         /// </summary>
         public static bool EnableTimestamps = false;
 
         /// <summary>
-        ///     Specify a generic log line prefix for WriteLogLine()
+        /// Specify a generic log line prefix for WriteLogLine()
         /// </summary>
         public static string LogPrefix = "§8[Log] ";
 
         /// <summary>
-        ///     Reset the IO mechanism and clear all buffers
+        /// Reset the IO mechanism and clear all buffers
         /// </summary>
         public static void Reset()
         {
@@ -68,7 +68,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Set an auto-completion engine for TAB autocompletion.
+        /// Set an auto-completion engine for TAB autocompletion.
         /// </summary>
         /// <param name="engine">Engine implementing the IAutoComplete interface</param>
         public static void SetAutoCompleteEngine(IAutoComplete engine)
@@ -77,7 +77,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Read a password from the standard input
+        /// Read a password from the standard input
         /// </summary>
         public static string ReadPassword()
         {
@@ -124,7 +124,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Read a line from the standard input
+        /// Read a line from the standard input
         /// </summary>
         public static string ReadLine()
         {
@@ -265,7 +265,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Debug routine: print all keys pressed in the console
+        /// Debug routine: print all keys pressed in the console
         /// </summary>
         public static void DebugReadInput()
         {
@@ -277,7 +277,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Write a string to the standard output, without newline character
+        /// Write a string to the standard output, without newline character
         /// </summary>
         public static void Write(string text)
         {
@@ -332,7 +332,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Write a string to the standard output with a trailing newline
+        /// Write a string to the standard output with a trailing newline
         /// </summary>
         public static void WriteLine(string line)
         {
@@ -340,7 +340,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Write a single character to the standard output
+        /// Write a single character to the standard output
         /// </summary>
         public static void Write(char c)
         {
@@ -348,15 +348,15 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Write a Ryzom-Like formatted string to the standard output, using §c color codes
-        ///     See Ryzom.gamepedia.com/Classic_server_protocol#Color_Codes for more info
+        /// Write a Ryzom-Like formatted string to the standard output, using §c color codes
+        /// See Ryzom.gamepedia.com/Classic_server_protocol#Color_Codes for more info
         /// </summary>
         /// <param name="str">String to write</param>
         /// <param name="acceptnewlines">If false, space are printed instead of newlines</param>
         /// <param name="displayTimestamp">
-        ///     If false, no timestamp is prepended.
-        ///     If true, "hh-mm-ss" timestamp will be prepended.
-        ///     If unspecified, value is retrieved from EnableTimestamps.
+        /// If false, no timestamp is prepended.
+        /// If true, "hh-mm-ss" timestamp will be prepended.
+        /// If unspecified, value is retrieved from EnableTimestamps.
         /// </param>
         public static void WriteLineFormatted(string str, bool acceptnewlines = true, bool? displayTimestamp = null)
         {
@@ -467,7 +467,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Write a prefixed log line. Prefix is set in LogPrefix.
+        /// Write a prefixed log line. Prefix is set in LogPrefix.
         /// </summary>
         /// <param name="text">Text of the log line</param>
         /// <param name="acceptnewlines">Allow line breaks</param>
@@ -481,7 +481,7 @@ namespace RCC.Helper
         #region Clipboard management
 
         /// <summary>
-        ///     Read a string from the Windows clipboard
+        /// Read a string from the Windows clipboard
         /// </summary>
         /// <returns>String from the Windows clipboard</returns>
         private static string ReadClipboard()
@@ -505,7 +505,7 @@ namespace RCC.Helper
         #region Subfunctions
 
         /// <summary>
-        ///     Clear all text inside the input prompt
+        /// Clear all text inside the input prompt
         /// </summary>
         private static void ClearLineAndBuffer()
         {
@@ -521,7 +521,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Remove one character on the left of the cursor in input prompt
+        /// Remove one character on the left of the cursor in input prompt
         /// </summary>
         private static void RemoveOneChar()
         {
@@ -554,7 +554,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Move the cursor one character to the left inside the console, regardless of input prompt state
+        /// Move the cursor one character to the left inside the console, regardless of input prompt state
         /// </summary>
         private static void GoBack()
         {
@@ -578,7 +578,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Move the cursor one character to the left in input prompt, adjusting buffers accordingly
+        /// Move the cursor one character to the left in input prompt, adjusting buffers accordingly
         /// </summary>
         private static void GoLeft()
         {
@@ -590,7 +590,7 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Move the cursor one character to the right in input prompt, adjusting buffers accordingly
+        /// Move the cursor one character to the right in input prompt, adjusting buffers accordingly
         /// </summary>
         private static void GoRight()
         {
@@ -598,11 +598,11 @@ namespace RCC.Helper
 
             _buffer += _buffer2[0];
             Console.Write(_buffer2[0]);
-            _buffer2 = _buffer2.Substring(1);
+            _buffer2 = _buffer2[1..];
         }
 
         /// <summary>
-        ///     Insert a new character in the input prompt
+        /// Insert a new character in the input prompt
         /// </summary>
         /// <param name="c">New character</param>
         private static void AddChar(char c)

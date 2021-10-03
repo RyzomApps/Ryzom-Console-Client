@@ -11,14 +11,14 @@ using System.IO;
 namespace RCC.Network.Action
 {
     /// <summary>
-    ///     generic action that was sent over the network connection
+    /// generic action that was sent over the network connection
     /// </summary>
     public class ActionGeneric : ActionImpulsion
     {
         private BitMemoryStream _message;
 
         /// <summary>
-        ///     unpack the message from the stream
+        /// unpack the message from the stream
         /// </summary>
         public override void Unpack(BitMemoryStream message)
         {
@@ -34,7 +34,7 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     returns the corresponding stream
+        /// returns the corresponding stream
         /// </summary>
         internal BitMemoryStream Get()
         {
@@ -49,7 +49,7 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     sets the corresponding stream
+        /// sets the corresponding stream
         /// </summary>
         internal void Set(BitMemoryStream message)
         {
@@ -61,8 +61,8 @@ namespace RCC.Network.Action
 
 
         /// <summary>
-        ///     Returns the size of this action when it will be send to the UDP connection:
-        ///     the size is IN BITS, not in bytes(the actual size is this one plus the header size)
+        /// Returns the size of this action when it will be send to the UDP connection:
+        /// the size is IN BITS, not in bytes(the actual size is this one plus the header size)
         /// </summary>
         public override int Size()
         {
@@ -73,7 +73,7 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     pack a message for the stream
+        /// pack a message for the stream
         /// </summary>
         public override void Pack(BitMemoryStream message)
         {

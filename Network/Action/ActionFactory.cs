@@ -12,7 +12,7 @@ using System.Collections.Generic;
 namespace RCC.Network.Action
 {
     /// <summary>
-    ///     Factory for actions - unpacking actions from streams and registering them
+    /// Factory for actions - unpacking actions from streams and registering them
     /// </summary>
     public static class ActionFactory
     {
@@ -22,7 +22,7 @@ namespace RCC.Network.Action
             new Dictionary<ActionCode, KeyValuePair<Type, ActionBase>>();
 
         /// <summary>
-        ///     upacks an action from a stream - using the right action type
+        /// upacks an action from a stream - using the right action type
         /// </summary>
         public static ActionBase Unpack(BitMemoryStream message)
         {
@@ -64,7 +64,7 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     creates instances of an action based on the given action code
+        /// creates instances of an action based on the given action code
         /// </summary>
         internal static ActionBase Create(byte slot, ActionCode code)
         {
@@ -101,7 +101,7 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     removes an action from the registered actions
+        /// removes an action from the registered actions
         /// </summary>
         public static void Remove(ActionBase action)
         {
@@ -112,8 +112,8 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     Return the size IN BITS, not in bytes
-        ///     If you change this size, please update IMPULSE_ACTION_HEADER_SIZE in the front-end
+        /// Return the size IN BITS, not in bytes
+        /// If you change this size, please update IMPULSE_ACTION_HEADER_SIZE in the front-end
         /// </summary>
         public static int Size(ActionBase action)
         {
@@ -133,7 +133,7 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     adds an action to the registered actions
+        /// adds an action to the registered actions
         /// </summary>
         internal static void RegisterAction(ActionCode code, Type creator)
         {
@@ -160,8 +160,8 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     Pack an action to a bit stream. Set transmitTimestamp=true for server-->client,
-        ///     false for client-->server. If true, set the current gamecycle.
+        /// Pack an action to a bit stream. Set transmitTimestamp=true for server-->client,
+        /// false for client-->server. If true, set the current gamecycle.
         /// </summary>
         public static void Pack(ActionBase action, BitMemoryStream message)
         {

@@ -11,7 +11,7 @@ using System;
 namespace RCC.Network.Action
 {
     /// <summary>
-    ///     represents an action that is splitted into serveral parts for transport
+    /// represents an action that is splitted into serveral parts for transport
     /// </summary>
     public class ActionGenericMultiPart : ActionImpulsion
     {
@@ -21,7 +21,7 @@ namespace RCC.Network.Action
         public byte[] PartCont;
 
         /// <summary>
-        ///     unpack the action from the stream
+        /// unpack the action from the stream
         /// </summary>
         /// <param name="message">bit stream</param>
         public override void Unpack(BitMemoryStream message)
@@ -39,8 +39,8 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     Returns the size of this action when it will be send to the UDP connection:
-        ///     the size is IN BITS, not in bytes(the actual size is this one plus the header size)
+        /// Returns the size of this action when it will be send to the UDP connection:
+        /// the size is IN BITS, not in bytes(the actual size is this one plus the header size)
         /// </summary>
         public override int Size()
         {
@@ -50,7 +50,7 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     pack a message for the stream
+        /// pack a message for the stream
         /// </summary>
         public override void Pack(BitMemoryStream message)
         {

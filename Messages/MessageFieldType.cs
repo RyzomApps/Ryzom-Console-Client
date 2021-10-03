@@ -9,7 +9,7 @@
 namespace RCC.Messages
 {
     /// <summary>
-    ///     type of the variable used in MessageField of the MessageNode
+    /// type of the variable used in MessageField of the MessageNode
     /// </summary>
     public enum MessageFieldType
     {

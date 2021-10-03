@@ -45,9 +45,9 @@ namespace RCC.Helper.Crypter
     /// 
     /// // Specify the $apr1$ Apache htpasswd variant of the MD5 crypt algorithm.
     /// string cryptedPassword = CrypterBase.MD5.Crypt(password, new CrypterOptions()
-    ///     {
-    ///         { CrypterOption.Variant, MD5CrypterVariant.Apache }
-    ///     });
+    /// {
+    ///     { CrypterOption.Variant, MD5CrypterVariant.Apache }
+    /// });
     /// </code>
     /// </example>
 	public abstract class CrypterBase

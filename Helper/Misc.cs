@@ -37,11 +37,11 @@ namespace RCC.Helper
         }
 
         /// <summary>
-        ///     Return the power of 2 of v.
+        /// Return the power of 2 of v.
         /// </summary>
         /// <example>
-        ///     getPowerOf2(8) is 3
-        ///     getPowerOf2(5) is 3
+        /// getPowerOf2(8) is 3
+        /// getPowerOf2(5) is 3
         /// </example>
         public static uint GetPowerOf2(uint v)
         {

@@ -11,7 +11,7 @@ using RCC.Network;
 namespace RCC.Client
 {
     /// <summary>
-    ///     Holds information about the character such as name, sheetid and title.
+    /// Holds information about the character such as name, sheetid and title.
     /// </summary>
     public class CharacterSummary
     {
@@ -29,17 +29,17 @@ namespace RCC.Client
         private int _title;
 
         /// <summary>
-        ///     visual property for appearance A
+        /// visual property for appearance A
         /// </summary>
         private long _visualPropA;
 
         /// <summary>
-        ///     visual property for appearance B
+        /// visual property for appearance B
         /// </summary>
         private long _visualPropB;
 
         /// <summary>
-        ///     visual property for appearance C
+        /// visual property for appearance C
         /// </summary>
         private long _visualPropC;
 
@@ -52,7 +52,7 @@ namespace RCC.Client
         public int SheetId;
 
         /// <summary>
-        ///     Constructor
+        /// Constructor
         /// </summary>
         public CharacterSummary()
         {
@@ -71,7 +71,7 @@ namespace RCC.Client
         }
 
         /// <summary>
-        ///     serialisation coming from a stream (net message)
+        /// serialisation coming from a stream (net message)
         /// </summary>
         public void Serial(BitMemoryStream f)
         {

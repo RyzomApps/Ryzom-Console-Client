@@ -17,7 +17,7 @@ namespace RCC.Messages
         public MessageNode Root;
 
         /// <summary>
-        ///     init the massages from a xml file
+        /// init the massages from a xml file
         /// </summary>
         public void Init(string filename)
         {
@@ -42,7 +42,7 @@ namespace RCC.Messages
         }
 
         /// <summary>
-        ///     set callback that is executed when a specific message arrived
+        /// set callback that is executed when a specific message arrived
         /// </summary>
         public bool SetCallback(string msgName, Action<BitMemoryStream> callback)
         {
@@ -70,7 +70,7 @@ namespace RCC.Messages
         }
 
         /// <summary>
-        ///     execute a message based on the interpretation of the stream
+        /// execute a message based on the interpretation of the stream
         /// </summary>
         public void Execute(BitMemoryStream strm)
         {
@@ -101,7 +101,7 @@ namespace RCC.Messages
         }
 
         /// <summary>
-        ///     selects the message by its name and writes it to the stream
+        /// selects the message by its name and writes it to the stream
         /// </summary>
         public bool PushNameToStream(string msgName, BitMemoryStream strm)
         {

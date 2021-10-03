@@ -9,7 +9,7 @@
 namespace RCC.Network.Action
 {
     /// <summary>
-    ///     type of the action or action property
+    /// type of the action or action property
     /// </summary>
     public enum ActionCode : byte
     {

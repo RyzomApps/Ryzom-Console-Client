@@ -12,7 +12,7 @@ using RCC.Network;
 namespace RCC.Client
 {
     /// <summary>
-    ///     Info about a dynamically generated string from the server
+    /// Info about a dynamically generated string from the server
     /// </summary>
     public class DynamicStringInfo
     {

@@ -21,7 +21,7 @@ namespace RCC.Chat
             uint dynChatId, string senderName, uint bubbleTimer = 0);
 
         /// <summary>
-        ///     display a player tell message
+        /// display a player tell message
         /// </summary>
         public void DisplayTell( /*TDataSetIndex senderIndex, */ string ucstr, string senderName);
     };

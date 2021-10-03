@@ -16,12 +16,12 @@ using System.Text.RegularExpressions;
 namespace RCC.Config
 {
     /// <summary>
-    ///     Contains main settings for Ryzom Console Client
+    /// Contains main settings for Ryzom Console Client
     /// </summary>
     public static class ClientConfig
     {
         /// <summary>
-        ///     Logging
+        /// Logging
         /// </summary>
         public enum FilterModeEnum
         {
@@ -125,7 +125,7 @@ namespace RCC.Config
         //private static string configPattern = "^(?<parameter>\\w*)[ ]*=[ ]*({(?<value1>\\w*[^={}]*)}|['\"](?<value2>\\w*[^=]*)['\"]|(?<value3>\\w*[^=\"'\\n]*)).*(;|#|\\/\\/)+.*$";
 
         /// <summary>
-        ///     Load settings from the given INI file
+        /// Load settings from the given INI file
         /// </summary>
         /// <param name="file">File to load</param>
         public static void LoadFile(string file)
@@ -210,7 +210,7 @@ namespace RCC.Config
         }
 
         /// <summary>
-        ///     Write an INI file with default settings
+        /// Write an INI file with default settings
         /// </summary>
         /// <param name="settingsfile">File to (over)write</param>
         public static void WriteDefaultSettings(string settingsfile)
@@ -228,7 +228,7 @@ namespace RCC.Config
         }
 
         /// <summary>
-        ///     Load a single setting from INI file or command-line argument
+        /// Load a single setting from INI file or command-line argument
         /// </summary>
         /// <param name="argName">Setting name</param>
         /// <param name="argValue">Setting value</param>

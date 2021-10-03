@@ -11,19 +11,19 @@ using Microsoft.Win32;
 namespace RCC.WinAPI
 {
     /// <summary>
-    ///     Retrieve information about the current Windows version
+    /// Retrieve information about the current Windows version
     /// </summary>
     /// <remarks>
-    ///     Environment.OSVersion does not work with Windows 10.
-    ///     It returns 6.2 which is Windows 8
+    /// Environment.OSVersion does not work with Windows 10.
+    /// It returns 6.2 which is Windows 8
     /// </remarks>
     /// <seealso>
-    ///     https://stackoverflow.com/a/37755503
+    /// https://stackoverflow.com/a/37755503
     /// </seealso>
     class WindowsVersion
     {
         /// <summary>
-        ///     Returns the Windows major version number for this computer.
+        /// Returns the Windows major version number for this computer.
         /// </summary>
         public static uint WinMajorVersion
         {
@@ -48,7 +48,7 @@ namespace RCC.WinAPI
         }
 
         /// <summary>
-        ///     Returns the Windows minor version number for this computer.
+        /// Returns the Windows minor version number for this computer.
         /// </summary>
         public static uint WinMinorVersion
         {
@@ -73,7 +73,7 @@ namespace RCC.WinAPI
         }
 
         /// <summary>
-        ///     Try retrieving a registry key
+        /// Try retrieving a registry key
         /// </summary>
         /// <param name="path">key path</param>
         /// <param name="key">Key</param>

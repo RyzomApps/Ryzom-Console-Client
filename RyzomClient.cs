@@ -110,7 +110,7 @@ namespace RCC
         #region Initialization
 
         /// <summary>
-        ///     Starts the main chat client
+        /// Starts the main chat client
         /// </summary>
         public RyzomClient()
         {
@@ -138,7 +138,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Starts the main chat client, wich will login to the server.
+        /// Starts the main chat client, wich will login to the server.
         /// </summary>
         private void StartClient()
         {
@@ -231,7 +231,7 @@ namespace RCC
         #region Ryzom Game Loop
 
         /// <summary>
-        ///     OnInitialize the application. Login to the server. Main loop.
+        /// OnInitialize the application. Login to the server. Main loop.
         /// </summary>
         private void Main()
         {
@@ -301,9 +301,9 @@ namespace RCC
         }
 
         /// <summary>
-        ///     OnInitialize the main loop.
-        ///     If you add something in this function, check CFarTP,
-        ///     some kind of reinitialization might be useful over there.
+        /// OnInitialize the main loop.
+        /// If you add something in this function, check CFarTP,
+        /// some kind of reinitialization might be useful over there.
         /// </summary>
         private void InitMainLoop()
         {
@@ -367,8 +367,8 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Called from client.cpp
-        ///     start the login state machine
+        /// Called from client.cpp
+        /// start the login state machine
         /// </summary>
         private bool Login()
         {
@@ -409,9 +409,9 @@ namespace RCC
         }
 
         /// <summary>
-        ///     New version of the menu after the server connection
-        ///     If you add something in this function, check CFarTP,
-        ///     some kind of reinitialization might be useful over there.
+        /// New version of the menu after the server connection
+        /// If you add something in this function, check CFarTP,
+        /// some kind of reinitialization might be useful over there.
         /// </summary>
         private bool Connection(string cookie, string fsaddr)
         {
@@ -484,7 +484,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Launch the interface to choose a character
+        /// Launch the interface to choose a character
         /// </summary>
         public InterfaceState GlobalMenu()
         {
@@ -655,8 +655,8 @@ namespace RCC
         #region Watchdogs
 
         /// <summary>
-        ///     Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive
-        ///     is too old.
+        /// Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive
+        /// is too old.
         /// </summary>
         private void TimeoutDetector()
         {
@@ -678,7 +678,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Allows the user to send chat messages, commands, and leave the server.
+        /// Allows the user to send chat messages, commands, and leave the server.
         /// </summary>
         private void CommandPrompt()
         {
@@ -786,7 +786,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Load commands from the 'Commands' namespace
+        /// Load commands from the 'Commands' namespace
         /// </summary>
         public void LoadCommands()
         {
@@ -819,8 +819,8 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Allows the user to send chat messages, commands, and leave the server.
-        ///     Process message from the RCC command prompt on the main thread.
+        /// Allows the user to send chat messages, commands, and leave the server.
+        /// Process message from the RCC command prompt on the main thread.
         /// </summary>
         private void HandleCommandPromptText(string text)
         {
@@ -846,7 +846,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Send a chat message or command to the server (Enqueues messages)
+        /// Send a chat message or command to the server (Enqueues messages)
         /// </summary>
         /// <param name="text">Text to send to the server</param>
         public void SendText(string text)
@@ -925,7 +925,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Perform an internal RCC command (not a server command, use SendText() instead for that!)
+        /// Perform an internal RCC command (not a server command, use SendText() instead for that!)
         /// </summary>
         /// <param name="command">The command</param>
         /// <param name="responseMsg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
@@ -975,7 +975,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Disconnect the client from the server (initiated from RCC)
+        /// Disconnect the client from the server (initiated from RCC)
         /// </summary>
         public void Disconnect()
         {
@@ -1008,7 +1008,7 @@ namespace RCC
         #region Thread-Invoke: Cross-thread method calls
 
         /// <summary>
-        ///     Invoke a task on the main thread, wait for completion and retrieve return value.
+        /// Invoke a task on the main thread, wait for completion and retrieve return value.
         /// </summary>
         /// <param name="task">Task to run with any type or return value</param>
         /// <returns>Any result returned from task, result type is inferred from the task</returns>
@@ -1034,7 +1034,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Invoke a task on the main thread and wait for completion
+        /// Invoke a task on the main thread and wait for completion
         /// </summary>
         /// <param name="task">Task to run without return value</param>
         /// <example>InvokeOnMainThread(methodThatReturnsNothing);</example>
@@ -1050,7 +1050,7 @@ namespace RCC
         }
 
         /// <summary>
-        ///     Check if running on a different thread and InvokeOnMainThread is required
+        /// Check if running on a different thread and InvokeOnMainThread is required
         /// </summary>
         /// <returns>True if calling thread is not the main thread</returns>
         public bool InvokeRequired => GetNetReadThreadId() != Thread.CurrentThread.ManagedThreadId;

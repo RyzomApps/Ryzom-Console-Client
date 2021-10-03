@@ -445,11 +445,11 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Connection state machine - Login state
-        ///     if receives System SYNC
-        ///     immediate state Synchronize
-        ///     else
-        ///     sends System LoginCookie
+        /// Connection state machine - Login state
+        /// if receives System SYNC
+        /// immediate state Synchronize
+        /// else
+        /// sends System LoginCookie
         /// </summary>
         private bool StateLogin()
         {
@@ -478,7 +478,7 @@ namespace RCC.Network
                                 // receive stalled, decode stalled and state stalled
                                 ConnectionState = ConnectionState.Stalled;
                                 _client.GetLogger().Debug("CNET: login->stalled");
-                                ReceiveSystemStalled(msgin);
+                                ReceiveSystemStalled();
                                 return true;
 
                             case SystemMessageType.SystemProbeCode:
@@ -530,12 +530,12 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Connection state machine - Probe State
-        ///     if receives System SYNC
-        ///     immediate state SYNC
-        ///     else if receives System PROBE
-        ///     decode PROBE
-        ///     sends System ACK_PROBE
+        /// Connection state machine - Probe State
+        /// if receives System SYNC
+        /// immediate state SYNC
+        /// else if receives System PROBE
+        /// decode PROBE
+        /// sends System ACK_PROBE
         /// </summary>
         private bool StateProbe()
         {
@@ -562,7 +562,7 @@ namespace RCC.Network
                             case SystemMessageType.SystemStalledCode:
                                 // receive sync, decode sync and state synchronize
                                 ConnectionState = ConnectionState.Stalled;
-                                ReceiveSystemStalled(msgin);
+                                ReceiveSystemStalled();
                                 return true;
 
                             case SystemMessageType.SystemProbeCode:
@@ -603,12 +603,12 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Connection state machine - Synchronize State
-        ///     if receives System PROBE
-        ///     immediate state Probe
-        ///     else if receives Normal
-        ///     immediate state Connected
-        ///     sends System ACK_SYNC
+        /// Connection state machine - Synchronize State
+        /// if receives System PROBE
+        /// immediate state Probe
+        /// else if receives Normal
+        /// immediate state Connected
+        /// sends System ACK_SYNC
         /// </summary>
         private bool StateSynchronize()
         {
@@ -636,7 +636,7 @@ namespace RCC.Network
                             case SystemMessageType.SystemStalledCode:
                                 // receive stalled, decode stalled and state stalled
                                 ConnectionState = ConnectionState.Stalled;
-                                ReceiveSystemStalled(msgin);
+                                ReceiveSystemStalled();
                                 return true;
 
                             case SystemMessageType.SystemSyncCode:
@@ -679,11 +679,11 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Connection state machine - Connected State
-        ///     if receives System PROBE
-        ///     immediate state Probe
-        ///     else if receives Normal
-        ///     sends Normal data
+        /// Connection state machine - Connected State
+        /// if receives System PROBE
+        /// immediate state Probe
+        /// else if receives Normal
+        /// sends Normal data
         /// </summary>
         private bool StateConnected()
         {
@@ -742,7 +742,7 @@ namespace RCC.Network
                             case SystemMessageType.SystemStalledCode:
                                 // receive stalled, decode stalled and state stalled
                                 ConnectionState = ConnectionState.Stalled;
-                                ReceiveSystemStalled(msgin);
+                                ReceiveSystemStalled();
                                 return true;
 
                             case SystemMessageType.SystemServerDownCode:
@@ -769,7 +769,7 @@ namespace RCC.Network
 
 
         /// <summary>
-        ///     Connection state machine - Stalled State
+        /// Connection state machine - Stalled State
         /// if receives System SYNC
         ///    immediate state SYNC
         /// else if receives System STALLED
@@ -809,7 +809,7 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemStalledCode:
                                 // receive stalled, decode stalled
-                                ReceiveSystemStalled(msgin);
+                                ReceiveSystemStalled();
                                 break;
 
                             case SystemMessageType.SystemServerDownCode:
@@ -833,7 +833,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Connection state machine - Quit State
+        /// Connection state machine - Quit State
         /// </summary>
         private bool StateQuit()
         {
@@ -901,7 +901,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Receive and extract a normal (non system) message from a stream
+        /// Receive and extract a normal (non system) message from a stream
         /// </summary>
         private void ReceiveNormalMessage(BitMemoryStream msgin)
         {
@@ -958,7 +958,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     extract properties (database, sheets, ...) from a stream
+        /// extract properties (database, sheets, ...) from a stream
         /// </summary>
         private void DecodeVisualProperties(BitMemoryStream msgin)
         {
@@ -1184,7 +1184,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     manage a generic action - invoke the impulse callback for the action
+        /// manage a generic action - invoke the impulse callback for the action
         /// </summary>
         private void GenericAction(ActionGeneric ag)
         {
@@ -1194,7 +1194,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     manage a generic multi part action - generate temporary multipart holder until the action is complete
+        /// manage a generic multi part action - generate temporary multipart holder until the action is complete
         /// </summary>
         /// <param name="agmp"></param>
         private void GenericAction(ActionGenericMultiPart agmp)
@@ -1208,7 +1208,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Probe state - deserialise info from stream
+        /// Probe state - deserialise info from stream
         /// </summary>
         private void ReceiveSystemProbe(BitMemoryStream msgin)
         {
@@ -1218,15 +1218,15 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Stalled state - nop
+        /// Stalled state - nop
         /// </summary>
-        private void ReceiveSystemStalled(BitMemoryStream msgin)
+        private void ReceiveSystemStalled()
         {
             _client.GetLogger().Debug("CNET: received STALLED");
         }
 
         /// <summary>
-        ///     Sync state - deserialise info from stream - send ack
+        /// Sync state - deserialise info from stream - send ack
         /// </summary>
         private void ReceiveSystemSync(BitMemoryStream msgin)
         {
@@ -1267,7 +1267,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Receive available data and convert it to a bitmemstream
+        /// Receive available data and convert it to a bitmemstream
         /// </summary>
         private bool BuildStream(BitMemoryStream msgin)
         {
@@ -1293,7 +1293,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     decode the message header from the stream
+        /// decode the message header from the stream
         /// </summary>
         private bool DecodeHeader(BitMemoryStream msgin, bool checkMessageNumber = true)
         {
@@ -1358,7 +1358,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Disconnects the Client from the server sending a disconnection packet
+        /// Disconnects the Client from the server sending a disconnection packet
         /// </summary>
         public void Disconnect()
         {
@@ -1409,7 +1409,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     sends system Probe acknowledge
+        /// sends system Probe acknowledge
         /// </summary>
         private void SendSystemAckProbe()
         {
@@ -1437,7 +1437,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     sends system Disconnection acknowledge
+        /// sends system Disconnection acknowledge
         /// </summary>
         private void SendSystemDisconnection()
         {
@@ -1490,7 +1490,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     sends system login cookie
+        /// sends system login cookie
         /// </summary>
         public void SendSystemLogin()
         {
@@ -1516,7 +1516,7 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     Sets the cookie for the connection
+        /// Sets the cookie for the connection
         /// </summary>
         private void SetLoginCookieFromString(string str)
         {
@@ -1646,14 +1646,14 @@ namespace RCC.Network
         }
 
         /// <summary>
-        ///     TODO updateSmoothServerTick - not that important for console client
+        /// TODO updateSmoothServerTick - not that important for console client
         /// </summary>
         private void UpdateSmoothServerTick()
         {
         }
 
         /// <summary>
-        ///     Clear not acknownledged actions in sending buffer
+        /// Clear not acknownledged actions in sending buffer
         /// </summary>
         public void FlushSendBuffer()
         {

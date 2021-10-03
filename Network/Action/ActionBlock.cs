@@ -12,7 +12,7 @@ using System.Collections.Generic;
 namespace RCC.Network.Action
 {
     /// <summary>
-    ///     a block of actions for sending and receiving
+    /// a block of actions for sending and receiving
     /// </summary>
     internal class ActionBlock
     {
@@ -22,7 +22,7 @@ namespace RCC.Network.Action
         public bool Success;
 
         /// <summary>
-        ///     Constructor
+        /// Constructor
         /// </summary>
         public ActionBlock()
         {
@@ -32,7 +32,7 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        ///     serialisation method to the stream for the whole block
+        /// serialisation method to the stream for the whole block
         /// </summary>
         public void Serial(BitMemoryStream msg)
         {

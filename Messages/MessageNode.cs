@@ -15,8 +15,8 @@ using RCC.Network;
 namespace RCC.Messages
 {
     /// <summary>
-    ///     Node Leafs in a tree storing server message information (callbacks, bit sizes, names, ...)
-    ///     from CGenericXmlMsgHeaderManager::CNode
+    /// Node Leafs in a tree storing server message information (callbacks, bit sizes, names, ...)
+    /// from CGenericXmlMsgHeaderManager::CNode
     /// </summary>
     public class MessageNode
     {
@@ -35,7 +35,7 @@ namespace RCC.Messages
         public uint Value;
 
         /// <summary>
-        ///     Constructor that copies its settings from a xml Node
+        /// Constructor that copies its settings from a xml Node
         /// </summary>
         public MessageNode(XmlElement xmlNode, uint value)
         {
@@ -207,7 +207,7 @@ namespace RCC.Messages
         }
 
         /// <summary>
-        ///     select node using name, no other action performed
+        /// select node using name, no other action performed
         /// </summary>
         internal MessageNode Select(string msgName)
         {
@@ -236,7 +236,7 @@ namespace RCC.Messages
 
 
         /// <summary>
-        ///     select node using name, and write bits in stream
+        /// select node using name, and write bits in stream
         /// </summary>
         internal MessageNode Select(string name, BitMemoryStream strm)
         {
@@ -275,7 +275,7 @@ namespace RCC.Messages
 
 
         /// <summary>
-        ///     select node using bits stream
+        /// select node using bits stream
         /// </summary>
         public MessageNode Select(BitMemoryStream strm)
         {
@@ -300,7 +300,7 @@ namespace RCC.Messages
         }
 
         /// <summary>
-        ///     Destructor
+        /// Destructor
         /// </summary>
         ~MessageNode()
         {
