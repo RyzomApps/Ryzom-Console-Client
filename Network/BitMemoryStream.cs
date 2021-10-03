@@ -135,6 +135,24 @@ namespace RCC.Network
         }
 
         /// <summary>
+        /// serializes type uint16
+        /// </summary>
+        public void Serial(ref ushort obj)
+        {
+            if (IsReading())
+            {
+                var newBits = ReadFromArray(16);
+                byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                obj = BitConverter.ToUInt16(reversed);
+            }
+            else
+            {
+                var bytes = BitConverter.GetBytes(obj);
+                AddToArray(bytes);
+            }
+        }
+
+        /// <summary>
         /// serializes type sint16 with a given bit length
         /// </summary>
         public void Serial(ref short obj, int nbits = 16)

@@ -6,8 +6,6 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System.IO;
-
 namespace RCC.Network.Action
 {
     /// <summary>

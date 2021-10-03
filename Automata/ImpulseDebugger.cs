@@ -52,7 +52,7 @@ namespace RCC.Automata
             Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} msgNumber: {msgNumber} hp: {hp} sap: {sap} sta: {sta} focus: {focus}");
         }
 
-        public override void OnDatabaseInitBank(in uint serverTick, in uint bank, DatabaseManager manager)
+        public override void OnDatabaseInitBank(in uint serverTick, in uint bank, DatabaseManager databaseManager)
         {
             Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} serverTick: {serverTick} bank: {bank}");
         }

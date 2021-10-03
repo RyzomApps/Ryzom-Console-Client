@@ -76,18 +76,18 @@ namespace RCC.Network.Action
 
             //if (RegisteredAction[code].Value == null)
             //{
-                // no action left in the store
-                var action =
-                    (ActionBase)Activator.CreateInstance(RegisteredAction[code].Key); // execute the factory function
+            // no action left in the store
+            var action =
+                (ActionBase)Activator.CreateInstance(RegisteredAction[code].Key); // execute the factory function
 
-                if (action == null) return null;
+            if (action == null) return null;
 
-                action.Code = code;
-                // default, set the property code to the action code (see create(TProperty,TPropIndex))
-                action.PropertyCode = code;
-                action.Slot = slot;
-                action.Reset();
-                return action;
+            action.Code = code;
+            // default, set the property code to the action code (see create(TProperty,TPropIndex))
+            action.PropertyCode = code;
+            action.Slot = slot;
+            action.Reset();
+            return action;
             //}
             //else
             //{
@@ -182,6 +182,34 @@ namespace RCC.Network.Action
             }
 
             action.Pack(message);
+        }
+
+        const byte PROPERTY_POSITION = 0;
+
+        // <summary>
+        // Create the action from a property code, fills property index and fill the internal propindex if needed
+        // (it assumes the frontend and the client have the same mapping property/propindex).
+        // </summary>
+        internal static ActionBase CreateByPropIndex(byte slot, byte propIndex)
+        {
+            ActionBase action;
+
+            switch (propIndex)
+            {
+                case PROPERTY_POSITION: // same as propertyId
+                    {
+                        action = Create(slot, ActionCode.ActionPositionCode);
+                        break;
+                    }
+                default:
+                    {
+                        action = Create(slot, ActionCode.ActionSint64);
+                        ((ActionSint64)action).SetNbBits(propIndex);
+                        break;
+                    }
+            }
+            action.PropertyCode = (ActionCode)propIndex;
+            return action;
         }
     }
 }

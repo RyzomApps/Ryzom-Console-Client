@@ -31,6 +31,7 @@ namespace RCC.Entity
         void DecodeDiscreetProperties(BitMemoryStream msgin)
         {
             msgin.Serial(ref BranchHasPayload);
+
             if (BranchHasPayload)
             {
                 if (IsLeaf())

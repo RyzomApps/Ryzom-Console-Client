@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using RCC.Chat;
@@ -133,6 +135,24 @@ namespace RCC.Helper
         public static long GetLocalTime()
         {
             return DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        }
+
+        public static void Resize<T>(this List<T> list, int sz, T c)
+        {
+            int cur = list.Count;
+            if (sz < cur)
+                list.RemoveRange(sz, cur - sz);
+            else if (sz > cur)
+            {
+                if (sz > list.Capacity) //this bit is purely an optimisation, to avoid multiple automatic capacity changes.
+                    list.Capacity = sz;
+                list.AddRange(Enumerable.Repeat(c, sz - cur));
+            }
+        }
+
+        public static void Resize<T>(this List<T> list, int sz) where T : new()
+        {
+            Resize(list, sz, new T());
         }
     }
 }

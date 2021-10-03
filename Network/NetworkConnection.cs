@@ -58,6 +58,8 @@ namespace RCC.Network
         /// </summary>
         private readonly List<Change> _changes = new List<Change>();
 
+        PropertyDecoder _PropertyDecoder = new PropertyDecoder();
+
         #region Login Variables
         /// <summary>
         /// is the ipv4 address of the client in uint32
@@ -172,6 +174,10 @@ namespace RCC.Network
         private long _latestQuitTime;
         private bool _receivedAckQuit;
 
+        const bool IgnoreEntityDbUpdates = false;
+
+        readonly Dictionary<uint, byte> _IdMap = new Dictionary<uint, byte>();
+
         /// <summary>
         /// /// Mean download (payload bytes)
         /// </summary>
@@ -252,6 +258,8 @@ namespace RCC.Network
             {
                 ActionFactory.RegisterAction(ActionCode.ActionGenericCode, typeof(ActionGeneric));
                 ActionFactory.RegisterAction(ActionCode.ActionGenericMultiPartCode, typeof(ActionGenericMultiPart));
+                ActionFactory.RegisterAction(ActionCode.ActionPositionCode, typeof(ActionPosition));
+                ActionFactory.RegisterAction(ActionCode.ActionSint64, typeof(ActionSint64));
 
                 _registered = true;
             }
@@ -296,6 +304,8 @@ namespace RCC.Network
             _lct = 100;
 
             _latestSync = 0;
+
+            _PropertyDecoder.Init(256);
 
             _longAckBitField = new bool[NumBitsInLongAck * 2];
 
@@ -982,27 +992,28 @@ namespace RCC.Network
 
                     //_client.Log.Info($"slot {slot} AB: {associationBits}");
 
-                    //        if (associationBitsHaveChanged(slot, associationBits) && (!IgnoreEntityDbUpdates || slot == 0))
-                    //        {
-                    //            //displayBitStream( msgin, beginbitpos, msgin.getPosInBit() );
-                    //            //			   nlinfo ("Disassociating S%hu (AB %u)", (uint16)slot, associationBits );
-                    //            if (_PropertyDecoder.isUsed(slot))
-                    //            {
-                    //                TSheetId sheet = _PropertyDecoder.sheet(slot);
-                    //                TIdMap::iterator it = _IdMap.find(sheet);
-                    //                if (it != _IdMap.end())
-                    //                    _IdMap.erase(it);
-                    //                _PropertyDecoder.removeEntity(slot);
-                    //
-                    //                CChange theChange(slot, RemoveOldEntity );
-                    //                _Changes.push_back(theChange);
-                    //            }
-                    //            else
-                    //            {
-                    //					nlinfo( "Cannot disassociate slot %hu: sheet not received yet", (uint16)slot );
-                    //            }
-                    //        }
-                    //
+                    if (AssociationBitsHaveChanged(slot, associationBits) && (!IgnoreEntityDbUpdates || slot == 0))
+                    {
+                        //displayBitStream( msgin, beginbitpos, msgin.getPosInBit() );
+                        _client.Log.Info("Disassociating S" + (ushort)slot + "u (AB " + associationBits + ")");
+
+                        if (_PropertyDecoder.IsUsed(slot))
+                        {
+                            uint sheet = _PropertyDecoder.Sheet(slot);
+
+                            if (!_IdMap.ContainsKey(sheet))
+                                _IdMap.Remove(sheet);
+
+                            _PropertyDecoder.RemoveEntity(slot);
+
+                            Change theChange = new Change(slot, (byte)Change.Prop.RemoveOldEntity);
+                            _changes.Add(theChange);
+                        }
+                        else
+                        {
+                            _client.Log.Info("Cannot disassociate slot " + (ushort)slot + "u: sheet not received yet");
+                        }
+                    }
 
                     // Read the timestamp delta if there's one (otherwise take _CurrentServerTick)
                     uint timestamp;
@@ -1031,18 +1042,21 @@ namespace RCC.Network
 
                     if (currentNode.A().BranchHasPayload)
                     {
-                        //            CActionPosition* ap = (CActionPosition*)CActionFactory::getInstance()->create(slot, ACTION_POSITION_CODE);
-                        //            ap->unpack(msgin);
-                        //            _PropertyDecoder.receive(_CurrentReceivedNumber, ap);
-                        //
-                        //            /*
-                        //             * Set into property database
-                        //             */
-                        //
-                        //            // TEMP
-                        //            if (ap->Position[0] == 0 || ap->Position[1] == 0)
-                        //                nlwarning("S%hu: Receiving an invalid position", (uint16)slot);
-                        //
+                        ActionPosition ap = (ActionPosition)ActionFactory.Create(slot, ActionCode.ActionPositionCode);
+                        ap.Unpack(msgin);
+                        _PropertyDecoder.Receive(_currentReceivedNumber, ap);
+
+                        /*
+                         * Set into property database
+                         */
+
+                        // TEMP
+                        if (ap.Position[0] == 0 || ap.Position[1] == 0)
+                        {
+                            _client.Log.Warn("S" + (ushort)slot + "u: Receiving an invalid position");
+                        }
+
+
                         //            if (_DataBase != NULL && (!IgnoreEntityDbUpdates || slot == 0))
                         //            {
                         //                CCDBNodeBranch* nodeRoot;
@@ -1068,14 +1082,13 @@ namespace RCC.Network
                         //            }
                         //
                         //            bool interior = ap->Interior;
-                        //
-                        //            CActionFactory::getInstance()->remove((CAction * &)ap);
-                        //
-                        //
-                        //            /*
-                        //             * Statistical prediction of time before next position update: set PredictedInterval
-                        //             */
-                        //
+
+                        ActionFactory.Remove((ActionBase)ap);
+
+                        /*
+                         * Statistical prediction of time before next position update: set PredictedInterval
+                         */
+
                         //            //nlassert( MAX_POSUPDATETICKQUEUE_SIZE > 1 );
                         //            deque<TGameCycle> & puTicks = _PosUpdateTicks[slot];
                         //            multiset<TGameCycle> & puIntervals = _PosUpdateIntervals[slot];
@@ -1121,9 +1134,11 @@ namespace RCC.Network
                         //
                         //            //nlinfo( "Slot %hu: Interval=%u Predicted=%u", (uint16)slot, latestInterval, predictedInterval );
                         //
-                        //            /*
-                        //             * Add into the changes vector
-                        //             */
+
+                        /*
+                         * Add into the changes vector
+                         */
+
                         //            CChange thechange(slot, PROPERTY_POSITION, timestamp );
                         //            thechange.PositionInfo.PredictedInterval = predictedInterval;
                         //            thechange.PositionInfo.IsInterior = interior;
@@ -1136,14 +1151,17 @@ namespace RCC.Network
                     msgin.Serial(ref currentNode.BranchHasPayload);
                     if (currentNode.BranchHasPayload)
                     {
-                        //            msgin.serialBitAndLog(currentNode->a()->BranchHasPayload);
-                        //            if (currentNode->a()->BranchHasPayload)
-                        //            {
-                        //                CActionSint64* ac = (CActionSint64*)CActionFactory::getInstance()->createByPropIndex(slot, PROPERTY_ORIENTATION);
-                        //                ac->unpack(msgin);
+                        //msgin.Serial(ref currentNode.A().BranchHasPayload);
                         //
+                        //if (currentNode.A().BranchHasPayload)
+                        //{
+                        //    byte PROPERTY_ORIENTATION = 3;
+                        //
+                        //    ActionSint64 ac = (ActionSint64)ActionFactory.CreateByPropIndex(slot, PROPERTY_ORIENTATION);
+                        //    ac.Unpack(msgin);
+
                         //                // Process orientation
-                        //                CChange thechange(slot, PROPERTY_ORIENTATION, timestamp);
+                        //                Change thechange(slot, PROPERTY_ORIENTATION, timestamp);
                         //                _Changes.push_back(thechange);
                         //                if (_DataBase != NULL && (!IgnoreEntityDbUpdates || slot == 0))
                         //                {
@@ -1162,8 +1180,9 @@ namespace RCC.Network
                         //                    }
                         //                }
                         //
-                        //                CActionFactory::getInstance()->remove((CAction * &)ac);
-                        //            }
+
+                        //    ActionFactory.Remove((ActionBase)ac);
+                        //}
                         //
                         //            TVPNodeClient::SlotContext.NetworkConnection = this;
                         //            TVPNodeClient::SlotContext.Slot = slot;
@@ -1181,6 +1200,16 @@ namespace RCC.Network
                 // End of stream (saves useless bits)
                 _client.Log.Error("End of stream (saves useless bits) " + e.Message);
             }
+        }
+
+        /// <summary>
+        /// Checks if the association bits for the slot have changed
+        /// </summary>
+        bool AssociationBitsHaveChanged(byte slot, uint associationBits)
+        {
+            bool res = ((ushort)associationBits != _PropertyDecoder.GetAssociationBits(slot));
+            _PropertyDecoder.SetAssociationBits(slot, (ushort)associationBits);
+            return res;
         }
 
         /// <summary>

@@ -14,6 +14,11 @@ namespace RCC.Network.Action
     public abstract class ActionBase
     {
         /// <summary>
+        /// Returns true if the property is continuous
+        /// </summary>
+        public virtual bool IsContinuous() { return false; }
+
+        /// <summary>
         /// code that specifies the type of the action
         /// </summary>
         public ActionCode Code { get; internal set; }
