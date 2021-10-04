@@ -173,9 +173,9 @@ namespace RCC.Database
         /// <returns>Returns an uid or static_cast(uint)(-1) on failure.</returns>
         public int GetUidForBank(uint bank)
         {
-            uint uid = unchecked((uint)-1);
+            var uid = unchecked((uint)-1);
 
-            for (int i = 0; i < _unifiedIndexToBank.Count; i++)
+            for (var i = 0; i < _unifiedIndexToBank.Count; i++)
             {
                 if (_unifiedIndexToBank[i] == bank)
                 {

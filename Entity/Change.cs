@@ -11,7 +11,7 @@ namespace RCC.Entity
     /// <summary>
     /// A property change
     /// </summary>
-    internal class Change
+    public class Change
     {
         internal enum Prop
         {

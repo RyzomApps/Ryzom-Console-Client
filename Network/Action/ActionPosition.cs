@@ -6,9 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Network.Action;
-
-namespace RCC.Network
+namespace RCC.Network.Action
 {
     internal class ActionPosition : ActionBase
     {
@@ -28,10 +26,6 @@ namespace RCC.Network
         public override int Size() { return 3 * 16; }
 
         static uint GetMaxSizeInBit() { return 3 * 16; }
-
-        public ActionPosition()
-        {
-        }
 
         /// <summary>
         /// Unpacks the positions from the bitmemstream into Position16[]

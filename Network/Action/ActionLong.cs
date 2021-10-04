@@ -6,9 +6,10 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Network.Action;
+using System;
+using RCC.Entity;
 
-namespace RCC.Network
+namespace RCC.Network.Action
 {
     /// <summary>
 	/// Action containing a SInt64 value.
@@ -17,78 +18,110 @@ namespace RCC.Network
 	/// <author>Olivier Cado</author>
 	/// <author>Nevrax France</author>
 	/// <date>2002</date>
-    public class ActionSint64 : ActionBase
+    public class ActionLong : ActionBase
     {
-        // Number of visual properties
-        const uint NB_VISUAL_PROPERTIES = 28;
+        /// <summary>Number of visual properties</summary>
+        private const uint MaxPropertiesPerEntity = VpNodeBase.NbVisualProperties;
 
-        const uint MAX_PROPERTIES_PER_ENTITY = NB_VISUAL_PROPERTIES;
+        private ulong _value;
+        private int _nbBits;
+
+        /// Init
+        private static readonly int[] PropertyToNbBit = new int[MaxPropertiesPerEntity];
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public ActionLong()
+        {
+            _value = 0;
+            _nbBits = 0;
+        }
 
         public static ActionBase Create()
         {
-            return new ActionSint64();
+            return new ActionLong();
         }
 
+        /// <summary>
         /// Register a property to set the number of bits
 		/// that must be transmitted.
-        static void RegisterNumericProperty(byte propIndex, uint nbbits) { }
+		/// </summary>
+        public static void RegisterNumericProperty(byte propIndex, uint nbbits)
+        {
+            throw new NotImplementedException();
+        }
 
-        /// TEMP
-        static void RegisterNumericPropertiesRyzom() { }
-
+        /// <summary>
         /// This function creates initializes its fields using the buffer.
-		/// \param buffer pointer to the buffer where the data are
-		/// \size size of the buffer
-		///
+        /// </summary>
+		/// <param name="message">pointer to the buffer where the data are</param>  
         public override void Unpack(BitMemoryStream message)
         {
-            RyzomClient.GetInstance().GetLogger().Warn("ActionSint64.Unpack() is not yet implemented!");
+            message.Serial(ref _value, _nbBits);
         }
 
+        /// <summary>
         /// This functions is used when you want to transform an action into an IStream.
-        void Serial(BitMemoryStream f) { }
+        /// </summary>
+        private void Serial(BitMemoryStream f)
+        {
+            throw new NotImplementedException();
+        }
 
+        /// <summary>
         /// Returns the size of this action when it will be send to the UDP connection:
 		/// the size is IN BITS, not in bytes (the actual size is this one plus the header size)
-		///
+		/// </summary>
         public override int Size()
         {
-            return (int)_NbBits;
+            return _nbBits;
         }
 
+        /// <summary>
         /// Returns the maximum size of this action (INCLUDING the header size handled by CActionFactory!)
+        /// </summary>
         public static uint GetMaxSizeInBit()
         {
             return 64;
         }
 
+        /// <summary>
         /// Sets the value of the action
+        /// </summary>
         public virtual void SetValue(long value)
         {
-            _Value = (ulong)value;
+            _value = (ulong)value;
         }
 
-        /// Same, but avoids virtual
+        /// <summary>
+        /// Sets the value of the action, but avoids virtual
+        /// </summary>
         public void SetValue64(long value)
         {
-            _Value = (ulong)value;
+            _value = (ulong)value;
         }
 
+        /// <summary>
         /// Sets the number of bits to transmit
+        /// </summary>
         public void SetNbBits(byte propIndex)
         {
-            _NbBits = _PropertyToNbBit[propIndex];
+            _nbBits = PropertyToNbBit[propIndex];
         }
 
+        /// <summary>
         /// Gets the value of the action
+        /// </summary>
         public long GetValue()
         {
-            return (long)_Value;
+            return (long)_value;
         }
 
+        /// <summary>
         /// Returns false because the action is not a "continuous action".
 		/// BUT the property may be continuous, without using the benefits of CContinuousAction (deltas).
-		///
+		/// </summary>
         public override bool IsContinuous()
         {
             return false;
@@ -97,47 +130,35 @@ namespace RCC.Network
 
         public void SetAndPackValue(long value, BitMemoryStream outMsg)
         {
-            _Value = (ulong)value;
-            outMsg.Serial(ref _Value, (int)_NbBits);
+            _value = (ulong)value;
+            outMsg.Serial(ref _value, (int)_nbBits);
         }
 
         public void SetAndPackValueNBits(long value, BitMemoryStream outMsg, uint nbits)
         {
-            _Value = (ulong)value;
-            outMsg.Serial(ref _Value, (int)_NbBits);
+            _value = (ulong)value;
+            outMsg.Serial(ref _value, (int)_nbBits);
         }
 
-        public void packFast(BitMemoryStream outMsg)
+        public void PackFast(BitMemoryStream outMsg)
         {
-            outMsg.Serial(ref _Value, (int)_NbBits);
+            outMsg.Serial(ref _value, (int)_nbBits);
         }
 
 
-        private ulong _Value;
-        private uint _NbBits = new uint();
-
-        /// Constructor
-        private ActionSint64()
-        {
-            this._Value = (long)0;
-            this._NbBits = 0;
-        }
-
+        /// <summary>
         /// This function transform the internal field and transform them into a buffer for the UDP connection.
-        /// \param buffer pointer to the buffer where the data will be written
-        /// \size size of the buffer
-        ///
+        /// </summary>
+        /// <param name="message">buffer pointer to the buffer where the data will be written</param>
         public override void Pack(BitMemoryStream message) { }
 
-        /// This method intialises the action with a default state///
+        /// <summary>
+        /// This method intialises the action with a default state
+        /// </summary>
         public override void Reset()
         {
-            _Value = 0;
-            _NbBits = 0;
+            _value = 0;
+            _nbBits = 0;
         }
-
-        /// Init
-        private static uint[] _PropertyToNbBit = new uint[MAX_PROPERTIES_PER_ENTITY];
     }
-
 }

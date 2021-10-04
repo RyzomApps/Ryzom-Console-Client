@@ -20,44 +20,44 @@ namespace RCC.Entity
         }
 
         // Static data
-        static readonly TSlotContext SlotContext;
+        internal static readonly TSlotContext SlotContext = new TSlotContext();
 
         internal VpNodeClient() : base() { }
 
-        internal VpNodeClient A() { return (VpNodeClient)VPA; }
-        internal VpNodeClient B() { return (VpNodeClient)VPB; }
-        internal VpNodeClient Parent() { return (VpNodeClient)VPParent; }
+        internal VpNodeClient A() { return (VpNodeClient)VpA; }
+        internal VpNodeClient B() { return (VpNodeClient)VpB; }
+        internal VpNodeClient Parent() { return (VpNodeClient)VpParent; }
 
-        void DecodeDiscreetProperties(BitMemoryStream msgin)
+        internal void DecodeDiscreetProperties(BitMemoryStream msgin)
         {
             msgin.Serial(ref BranchHasPayload);
 
-            if (BranchHasPayload)
+            if (!BranchHasPayload) return;
+
+            if (IsLeaf())
             {
-                if (IsLeaf())
-                {
-                    //SlotContext.NetworkConnection.decodeDiscreetProperty(msgin, PropIndex);
-                }
-                else
-                {
-                    if (A() != null) A().DecodeDiscreetProperties(msgin);
-                    if (B() != null) B().DecodeDiscreetProperties(msgin);
-                }
+                SlotContext.NetworkConnection.DecodeDiscreetProperty(msgin, PropIndex);
+            }
+            else
+            {
+                if (A() != null) A().DecodeDiscreetProperties(msgin);
+                if (B() != null) B().DecodeDiscreetProperties(msgin);
             }
         }
 
-        void DeleteBranches()
+        private void DeleteBranches()
         {
             if (A() != null)
             {
                 A().DeleteBranches();
-                VPA = null;
+                VpA = null;
                 //delete a();
             }
+
             if (B() != null)
             {
                 B().DeleteBranches();
-                VPB = null;
+                VpB = null;
                 //delete b();
             }
         }
@@ -67,7 +67,7 @@ namespace RCC.Entity
             if (A() != null)
             {
                 A().DeleteBranches();
-                VPA = null;
+                VpA = null;
                 //delete a();
             }
         }
@@ -77,7 +77,7 @@ namespace RCC.Entity
             if (B() != null)
             {
                 B().DeleteBranches();
-                VPB = null;
+                VpB = null;
                 //delete b();
             }
         }

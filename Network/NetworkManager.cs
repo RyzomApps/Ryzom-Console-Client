@@ -14,6 +14,7 @@ using System.Threading;
 using RCC.Chat;
 using RCC.Client;
 using RCC.Database;
+using RCC.Entity;
 using RCC.Helper;
 using RCC.Messages;
 
@@ -44,13 +45,13 @@ namespace RCC.Network
         public bool CreateInterf;
         public bool CharacterInterf;
 
-        /// <remarks>This must be changed when cdbank bits in the client change</remarks>
+        /// <remarks>
+        /// This must be changed when cdbank bits in the client change
+        /// </remarks>
         private const int FillNbitsWithNbBitsForCdbbank = 3;
 
-        // non ryzom variables (for workarounds)
-
         /// <summary>
-        /// client is ready for the selection of the character
+        /// client is ready for the selection of the character - non ryzom variable (for workarounds)
         /// </summary>
         public bool CanSendCharSelection;
 
@@ -59,6 +60,7 @@ namespace RCC.Network
         private readonly DatabaseManager _databaseManager;
         private DatabaseNodeBranch _dataBase;
         private readonly RyzomClient _client;
+        private readonly UserEntity _userEntity;
 
         private readonly GenericMessageHeaderManager _messageHeaderManager;
 
@@ -67,12 +69,24 @@ namespace RCC.Network
         public GenericMessageHeaderManager GetMessageHeaderManager() => _messageHeaderManager;
 
         /// <summary>
+        /// was the inital server season received
+        /// </summary>
+        public bool ServerSeasonReceived;
+
+        /// <summary>
+        /// manages entities and shapes instances
+        /// </summary>
+        private readonly EntityManager _entitiesManager;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, Database.DatabaseManager databaseManager)
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
             _chatManager = new ChatManager(this, stringManager);
+            _userEntity = new UserEntity();
+            _entitiesManager = new EntityManager();
 
             _networkConnection = networkConnection;
             _stringManager = stringManager;
@@ -136,11 +150,60 @@ namespace RCC.Network
             var result = _networkConnection.Update();
 
             // TODO: Get and manage changes with the netmgr update
-            // 	const vector<CChange> &changes = NetMngr.getChanges();
+            List<Change> changes = _networkConnection.GetChanges();
+
+            foreach (var change in changes)
+            {
+                // Update a property.
+                if (change.Property < (byte)Change.Prop.AddNewEntity)
+                {
+                    // Update the visual property for the slot.
+                    _entitiesManager.UpdateVisualProperty(change.GameCycle, change.ShortId, change.Property, change.PositionInfo.PredictedInterval);
+                }
+                // Add New Entity (and remove the old one in the slot).
+                else if (change.Property == (byte)Change.Prop.AddNewEntity)
+                {
+                    // Remove the old entity.
+                    _entitiesManager.Remove(change.ShortId, false);
+
+                    // Create the new entity.
+                    if (_entitiesManager.Create(change.ShortId, _networkConnection.GetPropertyDecoder().GetSheetFromEntity(change.ShortId), change.NewEntityInfo) == 0)
+                    {
+                        _client.GetLogger().Warn("CNetManager::update : entity in the slot '%u' has not been created.", change.ShortId);
+                    }
+                }
+                // Delete an entity
+                else if (change.Property == (byte)Change.Prop.RemoveOldEntity)
+                {
+                    // Remove the old entity.
+                    _entitiesManager.Remove(change.ShortId, true);
+                }
+                // Lag detected.
+                else if (change.Property == (byte)Change.Prop.LagDetected)
+                {
+                    _client.GetLogger().Debug("CNetManager::update : Lag detected.");
+                }
+                // Probe received.
+                else if (change.Property == (byte)Change.Prop.ProbeReceived)
+                {
+                    _client.GetLogger().Debug("CNetManager::update : Probe Received.");
+                }
+                // Connection ready.
+                else if (change.Property == (byte)Change.Prop.ConnectionReady)
+                {
+                    _client.GetLogger().Debug("CNetManager::update : Connection Ready.");
+                }
+                // Property unknown.
+                else
+                {
+                    _client.GetLogger().Warn("CNetManager::update : The property '" + change.Property + "' is unknown.");
+                }
+            }
+
+            // Clear all changes.
+            _networkConnection.ClearChanges();
 
             _chatManager.FlushBuffer(_client);
-
-            // TODO: update everyting with the netmgr update
 
             return result;
         }
@@ -958,24 +1021,62 @@ namespace RCC.Network
         }
 
         /// <summary>
-        /// TODO properly received USER_CHAR impulse
+        /// server client message for the character information at the beginning
         /// </summary>
         private void ImpulseUserChar(BitMemoryStream impulse)
         {
-            //// received USER_CHAR
+            // received USER_CHAR
             _client.GetLogger().Debug("ImpulseCallBack : Received CONNECTION:USER_CHAR");
-            //
-            //// Serialize the message
-            //COfflineEntityState posState;
-            //extern uint8 ServerSeasonValue;
-            //extern bool ServerSeasonReceived;
-            //uint32 userRole;
 
-            int x = 0;
-            int y = 0;
-            int z = 0;
+            var x = UserCharMsgRead(impulse, out var y, out var z, out var heading, out var season, out var userRole, out var isInRingSession, out var highestMainlandSessionId, out var firstConnectedTime, out var playedTime);
 
-            int headingI = 0;
+            ServerSeasonReceived = true; // set the season that will be used when selecting the continent from the position
+
+            if (_userEntity != null)
+            {
+                UserEntity.Pos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
+                UserEntity.Front = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
+                UserEntity.Dir = UserEntity.Front;
+                UserEntity.SetHeadPitch(0);
+
+                _client.GetLogger().Info($"Received Char Position: {UserEntity.Pos} Heading: {heading} Front: {UserEntity.Front}");
+
+                // Update the position for the vision.
+                _networkConnection.SetReferencePosition(UserEntity.Pos);
+
+                _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, UserEntity.Pos, UserEntity.Front, season, userRole, isInRingSession);
+            }
+            else
+            {
+                var userEntityInitPos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
+                var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
+
+                _client.GetLogger().Info($"Received Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
+
+                // Update the position for the vision.
+                _networkConnection.SetReferencePosition(userEntityInitPos);
+
+                _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, userEntityInitPos, userEntityInitFront, season, userRole, isInRingSession);
+            }
+
+            _client.UserCharPosReceived = true;
+        }
+
+        /// <summary>
+        /// decode server client message for the character information at the beginning
+        /// </summary>
+        /// <author>PUZIN Guillaume(GUIGUI)</author>
+        /// <author>Nevrax France</author>
+        /// <date>2002</date>
+        private static int UserCharMsgRead(BitMemoryStream impulse, out int y, out int z, out float heading, out short season,
+            out int userRole, out bool isInRingSession, out int highestMainlandSessionId, out int firstConnectedTime,
+            out int playedTime)
+        {
+            var x = 0;
+            y = 0;
+            z = 0;
+
+            var headingI = 0;
 
             var s = impulse;
             var f = s;
@@ -985,64 +1086,24 @@ namespace RCC.Network
             f.Serial(ref z);
             f.Serial(ref headingI);
 
-            float heading = Misc.Int32BitsToSingle(headingI);
+            heading = Misc.Int32BitsToSingle(headingI);
 
             short v = 0;
             s.Serial(ref v, 3);
-            var season = v;
+            season = v;
             v = 0;
             s.Serial(ref v, 3);
-            var userRole = v & 0x3; // bits 0-1
-            var isInRingSession = (v & 0x4) != 0; // bit 2
+            userRole = v & 0x3;
+            isInRingSession = (v & 0x4) != 0;
 
-            int highestMainlandSessionId = 0;
-            int firstConnectedTime = 0;
-            int playedTime = 0;
+            highestMainlandSessionId = 0;
+            firstConnectedTime = 0;
+            playedTime = 0;
 
             s.Serial(ref highestMainlandSessionId);
             s.Serial(ref firstConnectedTime);
             s.Serial(ref playedTime);
-
-            //ServerSeasonReceived = true; // set the season that will be used when selecting the continent from the position
-            //
-            //if (UserEntity)
-            //{
-            //    UserEntity->pos(CVectorD((float)posState.X / 1000.0f, (float)posState.Y / 1000.0f, (float)posState.Z / 1000.0f));
-            //    UserEntity->front(CVector((float)cos(posState.Heading), (float)sin(posState.Heading), 0.f));
-            //    UserEntity->dir(UserEntity->front());
-            //    UserEntity->setHeadPitch(0);
-            //    UserControls.resetCameraDeltaYaw();
-            //    //nldebug("<ImpulseUserChar> pos : %f %f %f  heading : %f",UserEntity->pos().x,UserEntity->pos().y,UserEntity->pos().z,posState.Heading);
-            //
-            //    // Update the position for the vision.
-            //    TODO NetMngr.setReferencePosition(UserEntity->pos());
-            //}
-            //else
-            //{
-            var userEntityInitPos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
-            var userEntityInitFront = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
-
-            _client.GetLogger().Info($"Received Char Position: {userEntityInitPos} Heading: {heading} Front: {userEntityInitFront}");
-
-            // Update the position for the vision.
-            //NetworkManager.setReferencePosition(UserEntityInitPos);
-            //}
-
-            _client.UserCharPosReceived = true;
-
-            //// Configure the ring editor
-            //extern R2::TUserRole UserRoleInSession;
-            //UserRoleInSession = R2::TUserRole::TValues(userRole);
-            //ClientConfig.R2EDEnabled = IsInRingSession /*&& (UserRoleInSession.getValue() != R2::TUserRole::ur_player)*/;
-            //// !!!Do NOT uncomment the following line  do the  ClientConfig.R2EDEnabled = IsInRingSession && (UserRoleInSession != R2::TUserRole::ur_player);
-            //// even with UserRoleInSession R2::TUserRole::ur_player the ring features must be activated
-            //// because if the ring is not activated the dss do not know the existence of the player
-            //// So we can not kick him, tp to him, tp in to next act ....
-            //nldebug("EnableR2Ed = %u, IsInRingSession = %u, UserRoleInSession = %u", (uint)ClientConfig.R2EDEnabled, (uint)IsInRingSession, userRole);
-
-            // updatePatcherPriorityBasedOnCharacters();
-
-            _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, userEntityInitPos, userEntityInitFront, season, userRole, isInRingSession);
+            return x;
         }
 
         private void ImpulseUserChars(BitMemoryStream impulse)
@@ -1267,6 +1328,7 @@ namespace RCC.Network
             uint itemSlotVersion = 0;
             impulse.Serial(ref itemSlotVersion, 2);
             _client.GetLogger().Debug($"Item slot version: {itemSlotVersion}");
+
             //if (itemSlotVersion != INVENTORIES::CItemSlot::getVersion())
             //    nlerror("Handshake: itemSlotVersion mismatch (S:%hu C:%hu)", itemSlotVersion, INVENTORIES::CItemSlot::getVersion());
         }

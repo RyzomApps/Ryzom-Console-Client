@@ -51,15 +51,15 @@ namespace RCC.Database
         internal abstract void ReadDelta(uint gc, BitMemoryStream f);
 
         /// <summary>
-        /// Get a databaseNode
+        /// Get a database node
         /// </summary>
-        /// <returns>idx is the databaseNode index</returns>
+        /// <returns>idx is the database node index</returns>
         internal abstract DatabaseNodeBase GetNode(ushort idx);
 
         /// <summary>
-        /// Get a databaseNode index
+        /// Get a database node index
         /// </summary>
-        /// <param name="databaseNode">databaseNode is a pointer to the databaseNode</param>
+        /// <param name="databaseNode">database node is a pointer to the databaseNode</param>
         /// <param name="index">index is a reference that receive the result</param>
         /// <returns>true if the databaseNode was found</returns>
         internal abstract bool GetNodeIndex(DatabaseNodeBase databaseNode, ref uint index);
@@ -72,12 +72,12 @@ namespace RCC.Database
         internal abstract long GetProp(TextId id);
 
         /// <summary>
-        /// get the parent of a databaseNode
+        /// get the parent of a database node
         /// </summary>
         internal virtual DatabaseNodeBranch GetParent() { return Parent; }
 
         /// <summary>
-        /// get the name of this databaseNode
+        /// get the name of this database node
         /// </summary>
         internal virtual string GetName() { return Name; }
 
@@ -97,14 +97,14 @@ namespace RCC.Database
         internal virtual bool IsAtomic() { return _atomicFlag; }
 
         /// <summary>
-        /// Inform a databaseNode of its parenthood
+        /// Inform a database node of its parenthood
         /// </summary>
         internal virtual void SetParent(DatabaseNodeBranch parent) { Parent = parent; }
 
         /// <summary>
-        /// Get a databaseNode . Create it if it does not exist yet
+        /// Get a database node . Create it if it does not exist yet
         /// </summary>
-        /// <params id="id">the TextId identifying the databaseNode</params>
+        /// <params id="id">the TextId identifying the database node</params>
         internal abstract DatabaseNodeBase GetNode(TextId id, bool bCreate = true);
 
         /// <summary>

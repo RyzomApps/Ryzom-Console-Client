@@ -204,7 +204,7 @@ namespace RCC.Network.Action
                 default:
                     {
                         action = Create(slot, ActionCode.ActionSint64);
-                        ((ActionSint64)action).SetNbBits(propIndex);
+                        ((ActionLong)action).SetNbBits(propIndex);
                         break;
                     }
             }

@@ -185,7 +185,9 @@ namespace RCC.Database
             return GetValue64();
         }
 
-        /// <summary>Find the leaf which count is specified (if found, the returned value is non-null and count is 0)</summary>
+        /// <summary>
+        /// Find the leaf which count is specified (if found, the returned value is non-null and count is 0)
+        /// </summary>
         internal override DatabaseNodeLeaf FindLeafAtCount(ref uint count)
         {
             if (count == 0)
@@ -219,7 +221,7 @@ namespace RCC.Database
             }
         }
 
-        void SetValue64(long prop)
+        public void SetValue64(long prop)
         {
             if (_property != prop)
             {
@@ -250,7 +252,7 @@ namespace RCC.Database
 
         public void NotifyObservers()
         {
-            Debug.Print("NotifyObservers");
+            //Debug.Print("NotifyObservers");
             //throw new NotImplementedException();
         }
     }

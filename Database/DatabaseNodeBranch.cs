@@ -41,7 +41,9 @@ namespace RCC.Database
 
         private const bool VerboseDatabase = false;
 
-        /// <summary>default constructor</summary>
+        /// <summary>
+        /// default constructor
+        /// </summary>
         public DatabaseNodeBranch(string name)
         {
             Name = name;
@@ -148,7 +150,7 @@ namespace RCC.Database
         }
 
         /// <summary>
-        /// init
+        /// Adds a new node to the branch
         /// </summary>
         private static void AddNode(DatabaseNodeBase newDatabaseNode, string newName, DatabaseNodeBranch parent, List<DatabaseNodeBase> nodes, List<DatabaseNodeBase> nodesSorted, XmlElement child, string bankName, bool atomBranch, bool clientOnly, Action progressCallBack, bool mapBanks, BankHandler bankHandler = null)
         {
@@ -173,9 +175,9 @@ namespace RCC.Database
         }
 
         /// <summary>
-        /// Get a databaseNode . Create it if it does not exist yet
+        /// Get a database node. Create it if it does not exist yet
         /// </summary>
-        /// <params id="id">the TextId identifying the databaseNode</params>
+        /// <params id="id">the TextId identifying the database node</params>
         internal override DatabaseNodeBase GetNode(TextId id, bool bCreate = true)
         {
             // lookup next element from textid in my index => idx
@@ -219,10 +221,10 @@ namespace RCC.Database
         }
 
         /// <summary>
-        /// Add a new sub databaseNode
+        /// Add a new sub database node
         /// </summary>
         /// <params id="databaseNode">is the new subnode</params>
-        /// <params id="nodeName">is the name of the databaseNode</params>
+        /// <params id="nodeName">is the name of the database node</params>
         internal override void AttachChild(DatabaseNodeBase node, string nodeName)
         {
             Debug.Assert(Parent == null);
@@ -239,18 +241,18 @@ namespace RCC.Database
         }
 
         /// <summary>
-        /// Get a databaseNode. Return null if out of bounds (no warning)
+        /// Get a database node. Return null if out of bounds (no warning)
         /// </summary>
-        /// <params id="idx">is the databaseNode index</params>
+        /// <params id="idx">is the database node index</params>
         internal override DatabaseNodeBase GetNode(ushort idx)
         {
-            throw new NotImplementedException();
+            return idx < _nodes.Count ? _nodes[idx] : null;
         }
 
         /// <summary>
-        /// Get a databaseNode index
+        /// Get a database node index
         /// </summary>
-        /// <params id="databaseNode">is a pointer to the databaseNode</params>
+        /// <params id="databaseNode">is a pointer to the database node</params>
         internal override bool GetNodeIndex(DatabaseNodeBase databaseNode, ref uint index)
         {
             foreach (var it in _nodes)
@@ -389,6 +391,9 @@ namespace RCC.Database
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Resets the data of the specific node in the branch
+        /// </summary>
         public void ResetNode(uint gc, int node)
         {
             if (node > _nodes.Count)
@@ -509,7 +514,9 @@ namespace RCC.Database
         }
 
 
-        /// <summary>Find a subnode at this level</summary>
+        /// <summary>
+        /// Find a subnode at this level
+        /// </summary>
         public DatabaseNodeBase Find(string nodeName)
         {
             var predictNode = _predictDatabaseNode;

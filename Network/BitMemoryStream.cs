@@ -394,6 +394,91 @@ namespace RCC.Network
         }
 
         /// <summary>
+        /// serializes another stream with a given length
+        /// </summary>
+        public void SerialBuffer(BitMemoryStream buf, in int len)
+        {
+            uint i;
+            byte v = 0x00;
+
+            if (IsReading())
+            {
+                for (i = 0; i != len; ++i)
+                {
+                    Serial(ref v);
+                    buf.AddToArray(new[] { v });
+                }
+            }
+            else
+            {
+                for (i = 0; i != len; ++i)
+                {
+                    v = buf.Buffer()[i];
+                    Serial(ref v);
+                }
+            }
+        }
+
+        /// <summary>
+        /// stream version - serializes the current steam version info (which seems to be always 0)
+        /// </summary>
+        public uint SerialVersion(uint obj)
+        {
+            byte b = 0;
+            uint v = 0;
+            uint streamVersion;
+
+            // Open the node
+            //xmlPush("VERSION");
+
+            if (IsReading())
+            {
+                Serial(ref b);
+                if (b == 0xFF)
+                    Serial(ref v);
+                else
+                    v = b;
+                streamVersion = v;
+
+                // Exception test.
+                //if (_ThrowOnOlder && streamVersion < currentVersion)
+                //	throw EOlderStream(*this);
+                //if (_ThrowOnNewer && streamVersion > currentVersion)
+                //	throw ENewerStream(*this);
+            }
+            else
+            {
+                v = streamVersion = obj;
+
+                if (v >= 0xFF)
+                {
+                    b = 0xFF;
+                    Serial(ref b);
+                    Serial(ref v);
+                }
+                else
+                {
+                    b = (byte)v;
+                    Serial(ref b);
+                }
+            }
+
+            // Close the node
+            //xmlPop();
+
+            return streamVersion;
+        }
+
+        /// <summary>
+        /// double serialisation: serializes type byte[] and serializes length parameter
+        /// </summary>
+        public void SerialBufferWithSize(byte[] buf, int len)
+        {
+            Serial(ref len);
+            Serial(ref buf);
+        }
+
+        /// <summary>
         /// reads a single bit at a given position from a byte
         /// </summary>
         public static bool GetBit(byte b, int bitNumber)
@@ -535,91 +620,6 @@ namespace RCC.Network
         public void ResetBufPos()
         {
             _bitPos = 0;
-        }
-
-        /// <summary>
-        /// serializes another stream with a given length
-        /// </summary>
-        public void SerialBuffer(BitMemoryStream buf, in int len)
-        {
-            uint i;
-            byte v = 0x00;
-
-            if (IsReading())
-            {
-                for (i = 0; i != len; ++i)
-                {
-                    Serial(ref v);
-                    buf.AddToArray(new[] { v });
-                }
-            }
-            else
-            {
-                for (i = 0; i != len; ++i)
-                {
-                    v = buf.Buffer()[i];
-                    Serial(ref v);
-                }
-            }
-        }
-
-        /// <summary>
-        /// stream version - serializes the current steam version info (which seems to be always 0)
-        /// </summary>
-        public uint SerialVersion(uint obj)
-        {
-            byte b = 0;
-            uint v = 0;
-            uint streamVersion;
-
-            // Open the node
-            //xmlPush("VERSION");
-
-            if (IsReading())
-            {
-                Serial(ref b);
-                if (b == 0xFF)
-                    Serial(ref v);
-                else
-                    v = b;
-                streamVersion = v;
-
-                // Exception test.
-                //if (_ThrowOnOlder && streamVersion < currentVersion)
-                //	throw EOlderStream(*this);
-                //if (_ThrowOnNewer && streamVersion > currentVersion)
-                //	throw ENewerStream(*this);
-            }
-            else
-            {
-                v = streamVersion = obj;
-
-                if (v >= 0xFF)
-                {
-                    b = 0xFF;
-                    Serial(ref b);
-                    Serial(ref v);
-                }
-                else
-                {
-                    b = (byte)v;
-                    Serial(ref b);
-                }
-            }
-
-            // Close the node
-            //xmlPop();
-
-            return streamVersion;
-        }
-
-        /// <summary>
-        /// double serialisation: serializes type byte[] and serializes length parameter
-        /// </summary>
-        public void SerialBufferWithSize(byte[] buf, int len)
-        {
-            Serial(ref len);
-            Serial(ref buf);
         }
 
         /// <summary>

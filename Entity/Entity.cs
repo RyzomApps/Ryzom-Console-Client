@@ -8,7 +8,7 @@
 
 namespace RCC.Entity
 {
-    public static class Entity
+    public class Entity
     {
         public static string RemoveTitleFromName(string name)
         {
