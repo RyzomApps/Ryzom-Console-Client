@@ -364,7 +364,7 @@ namespace RCC.Client
                                     break;
 
                                 default:
-                                    _client.GetLogger().Warn("Error: unknown replacement tag %%%c", (char)character);
+                                    _client.GetLogger().Warn($"Error: unknown replacement tag {character}");
                                     return false;
                             }
 

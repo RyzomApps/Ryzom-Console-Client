@@ -47,5 +47,15 @@ namespace RCC.Entity
         {
             return RemoveTitleFromName(RemoveShardFromName(name));
         }
+
+        internal void dataSetId(uint dataSetIndex)
+        {
+
+        }
+
+        internal void npcAlias(uint alias)
+        {
+
+        }
     }
 }

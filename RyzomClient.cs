@@ -331,15 +331,11 @@ namespace RCC
             // Add the LOCAL branch
             textId = new TextId("LOCAL");
 
-            if (DatabaseManager.GetDb().GetNode(textId, false) != null)
-            {
-                DatabaseManager.GetDb().RemoveNode(textId);
-            }
+            if (DatabaseManager.GetDb().GetNode(textId, false) != null) { DatabaseManager.GetDb().RemoveNode(textId); }
             InterfaceManager.CreateLocalBranch("local_database.xml");
 
-
-            //nlinfo ("PROFILE: %d seconds (%d total) for Initializing interface", (uint32)(initCurrent-initLast)/1000, (uint32)(initCurrent-initStart)/1000);
-
+            // Initializing Entities Manager
+            _networkManager.GetEntityManager().Initialize(256);
 
             // Update Network till current tick increase.
             _lastGameCycle = _networkConnection.GetCurrentServerTick();

@@ -159,9 +159,9 @@ namespace RCC.Network
                     _entitiesManager.Remove(change.ShortId, false);
 
                     // Create the new entity.
-                    if (_entitiesManager.Create(change.ShortId, _networkConnection.GetPropertyDecoder().GetSheetFromEntity(change.ShortId), change.NewEntityInfo) == 0)
+                    if (_entitiesManager.Create(change.ShortId, _networkConnection.GetPropertyDecoder().GetSheetFromEntity(change.ShortId), change.NewEntityInfo) == null)
                     {
-                        _client.GetLogger().Warn("CNetManager::update : entity in the slot '%u' has not been created.", change.ShortId);
+                        _client.GetLogger().Warn($"CNetManager::update : entity in the slot '{change.ShortId}' has not been created.");
                     }
                 }
                 // Delete an entity

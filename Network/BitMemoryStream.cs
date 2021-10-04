@@ -571,7 +571,6 @@ namespace RCC.Network
             return bitValues;
         }
 
-
         /// <summary>
         /// read a byte at a given offset from the bit (8x) array
         /// </summary>

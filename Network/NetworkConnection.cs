@@ -892,7 +892,7 @@ namespace RCC.Network
                                 // receive sync, decode sync and state synchronize
                                 Reset();
                                 _connectionState = ConnectionState.Synchronize;
-                                _client.GetLogger().Debug("CNET[%p]: quit->synchronize", this);
+                                _client.GetLogger().Debug("CNET: quit->synchronize");
                                 ReceiveSystemSync(msgin);
                                 return true;
 
@@ -907,13 +907,13 @@ namespace RCC.Network
                                 break;
 
                             default:
-                                _client.GetLogger().Warn($"CNET[]: received system {message} in state Quit");
+                                _client.GetLogger().Warn($"CNET received system {message} in state Quit");
                                 break;
                         }
                     }
                     else
                     {
-                        _client.GetLogger().Warn("CNET[%p]: received normal in state Stalled", this);
+                        _client.GetLogger().Warn("CNET received normal in state Stalled");
                     }
                 }
             }
@@ -1825,7 +1825,7 @@ namespace RCC.Network
                         }
                     }
 
-                    _client.GetLogger().Debug($"CLIENT: recvd property {(ushort) propIndex}u ({propIndex}) for slot {(ushort) slot}u, date {VpNodeClient.SlotContext.Timestamp}");
+                    _client.GetLogger().Debug($"CLIENT: recvd property {(ushort)propIndex}u ({propIndex}) for slot {(ushort)slot}u, date {VpNodeClient.SlotContext.Timestamp}");
                 }
 
                 var thechange = new Change(slot, propIndex, VpNodeClient.SlotContext.Timestamp);
