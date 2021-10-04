@@ -2,6 +2,7 @@
 using System.Reflection;
 using RCC.Automata.Internal;
 using RCC.Database;
+using RCC.Entity;
 
 namespace RCC.Automata
 {
@@ -66,5 +67,21 @@ namespace RCC.Automata
         {
             Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} serverTick: {serverTick} bank: {bank}");
         }
+
+        public override void OnEntityCreate(in byte slot, in uint form, Change.TNewEntityInfo newEntityInfo)
+        {
+            Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} slot: {slot} form: {form} alias: {newEntityInfo.Alias} dataSetIndex: {newEntityInfo.DataSetIndex}");
+        }
+
+        public override void OnEntityRemove(in byte slot)
+        {
+            Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} slot: {slot}");
+        }
+
+        //public override void OnEntityUpdateVisualProperty(in uint gameCycle, in byte slot, in byte prop, in uint predictedInterval)
+        //{
+        //    Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} serverTick: {serverTick} bank: {bank}");
+        //}
+        //}
     }
 }

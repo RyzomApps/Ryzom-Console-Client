@@ -323,7 +323,7 @@ namespace RCC
             DatabaseManager.GetDb().AttachChild(_databaseManager.GetNodePtr(), "SERVER");
 
             // Set the database
-            _networkManager.SetDataBase(_databaseManager.GetNodePtr());
+            //_networkManager.SetDataBase(_databaseManager.GetNodePtr());
 
             // Create interface database
             Log.Info("Initializing Interface Database ...");

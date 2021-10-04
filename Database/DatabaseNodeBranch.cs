@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Xml;
 using RCC.Network;
 
@@ -284,13 +285,6 @@ namespace RCC.Database
                 throw new Exception($"idx {idx} > _Nodes.size() {_nodes.Count} ");
             }
 
-            // Display the Name if we are in verbose mode
-            if (VerboseDatabase)
-            {
-                var displayStr = $"Reading: {_nodes[(int)idx].GetName()}";
-                RyzomClient.GetInstance().GetLogger().Info($"CDB: {(GetParent() == null ? "[root] " : "-")}{displayStr} {idx}/{_idBits}");
-            }
-
             // Apply delta to children nodes
             _nodes[(int)idx].ReadDelta(gc, s);
         }
@@ -305,32 +299,14 @@ namespace RCC.Database
                 // Read the atom bitfield
                 var nbAtomElements = CountLeaves();
 
-                if (VerboseDatabase)
-                {
-                    RyzomClient.GetInstance().GetLogger().Info($"CDB/ATOM: {nbAtomElements} leaves");
-                }
-
                 var bitfield = new bool[nbAtomElements];
 
                 f.Serial(ref bitfield);
-
-                if (bitfield.Length != 0)
-                {
-                    if (VerboseDatabase)
-                    {
-                        RyzomClient.GetInstance().GetLogger().Info($"CDB/ATOM: Bitfield: {bitfield.Length} LastBits: {f.DisplayLastBits(bitfield.Length)}");
-                    }
-                }
 
                 // Set each modified property
                 for (uint i = 0; i != bitfield.Length; ++i)
                 {
                     if (!bitfield[i]) continue;
-
-                    if (VerboseDatabase)
-                    {
-                        RyzomClient.GetInstance().GetLogger().Info($"CDB/ATOM: Reading prop[{i}] of atom");
-                    }
 
                     var atomIndex = i;
                     var leaf = FindLeafAtCount(ref atomIndex);
@@ -354,14 +330,6 @@ namespace RCC.Database
                 if (idx >= _nodes.Count)
                 {
                     throw new Exception($"idx {idx} > _Nodes.size() {_nodes.Count} ");
-                }
-
-                // Display the Name if we are in verbose mode
-                if (VerboseDatabase)
-                {
-                    var displayStr = "Reading: " + _nodes[(int)idx].GetName();
-
-                    RyzomClient.GetInstance().GetLogger().Info($"CDB: {(GetParent() == null ? "[root] " : "-")}{displayStr} {idx}/{_idBits}");
                 }
 
                 _nodes[(int)idx].ReadDelta(gc, f);
@@ -546,6 +514,14 @@ namespace RCC.Database
             }
 
             return null;
+        }
+
+        internal override void Write(string id, StreamWriter f)
+        {
+            foreach (var node in _nodes)
+            {
+                node.Write($"{id}:{node.GetName()}", f);
+            }
         }
     }
 }

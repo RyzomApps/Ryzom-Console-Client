@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
+using System.IO;
 using System.Xml;
 using RCC.Network;
 
@@ -123,5 +124,13 @@ namespace RCC.Database
         /// Count the leaves
         /// </summary>
         internal abstract uint CountLeaves();
+
+        /// <summary>
+        /// Save a backup of the database
+        /// </summary>
+        /// <param name="id">is the text id of the property/grp</param>  
+        /// <param name="f">is the stream</param>  
+        /// 
+        internal abstract void Write(string id, StreamWriter f);
     }
 }

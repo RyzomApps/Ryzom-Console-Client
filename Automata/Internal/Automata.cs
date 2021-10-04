@@ -8,6 +8,7 @@ using RCC.Client;
 using RCC.Commands.Internal;
 using RCC.Config;
 using RCC.Database;
+using RCC.Entity;
 using RCC.Network;
 
 namespace RCC.Automata.Internal
@@ -379,11 +380,35 @@ namespace RCC.Automata.Internal
         }
 
         /// <summary>
-        /// Calles when the ingame database was received TODO: we have this two times
+        /// Called when the ingame database was received TODO: we have this two times
         /// </summary>
         internal void OnIngameDatabaseInitialized()
         {
             DispatchAutomatonEvent(automaton => automaton.OnIngameDatabaseInitialized());
+        }
+
+        /// <summary>
+        /// called when an entity is created
+        /// </summary>
+        public void OnEntityCreate(byte slot, uint form, Change.TNewEntityInfo newEntityInfo)
+        {
+            DispatchAutomatonEvent(automaton => automaton.OnEntityCreate(slot, form, newEntityInfo));
+        }
+
+        /// <summary>
+        /// called when an entity gets removed
+        /// </summary>
+        public void OnEntityRemove(byte slot, bool _)
+        {
+            DispatchAutomatonEvent(automaton => automaton.OnEntityRemove(slot));
+        }
+
+        /// <summary>
+        /// called when visual property is updated
+        /// </summary>
+        public void OnEntityUpdateVisualProperty(uint gameCycle, byte slot, byte prop, uint predictedInterval)
+        {
+            DispatchAutomatonEvent(automaton => automaton.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval));
         }
 
         #endregion

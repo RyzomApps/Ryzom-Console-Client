@@ -15,6 +15,7 @@ using System.Text;
 using RCC.Chat;
 using RCC.Client;
 using RCC.Database;
+using RCC.Entity;
 using RCC.Helper.Tasks;
 using RCC.Network;
 
@@ -481,6 +482,21 @@ namespace RCC.Automata.Internal
         /// Calles when the ingame database was received
         /// </summary>
         public virtual void OnIngameDatabaseInitialized() { }
+
+        /// <summary>
+        /// called when an entity is created
+        /// </summary>
+        public virtual void OnEntityCreate(in byte slot, in uint form, Change.TNewEntityInfo newEntityInfo) { }
+
+        /// <summary>
+        /// called when an entity gets removed
+        /// </summary>
+        public virtual void OnEntityRemove(in byte slot) { }
+
+        /// <summary>
+        /// called when visual property is updated
+        /// </summary>
+        public virtual void OnEntityUpdateVisualProperty(in uint gameCycle, in byte slot, in byte prop, in uint predictedInterval) { }
 
         #endregion
     }

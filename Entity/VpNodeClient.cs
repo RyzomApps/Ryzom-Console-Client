@@ -47,19 +47,8 @@ namespace RCC.Entity
 
         private void DeleteBranches()
         {
-            if (A() != null)
-            {
-                A().DeleteBranches();
-                VpA = null;
-                //delete a();
-            }
-
-            if (B() != null)
-            {
-                B().DeleteBranches();
-                VpB = null;
-                //delete b();
-            }
+            DeleteA();
+            DeleteB();
         }
 
         void DeleteA()

@@ -85,7 +85,7 @@ namespace RCC.Entity
             internal bool IsInterior;
         }
 
-        internal struct TNewEntityInfo
+        public struct TNewEntityInfo
         {
             internal void Reset()
             {

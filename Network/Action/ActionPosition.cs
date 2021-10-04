@@ -6,6 +6,8 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace RCC.Network.Action
 {
     internal class ActionPosition : ActionBase
@@ -25,8 +27,6 @@ namespace RCC.Network.Action
 
         public override int Size() { return 3 * 16; }
 
-        static uint GetMaxSizeInBit() { return 3 * 16; }
-
         /// <summary>
         /// Unpacks the positions from the bitmemstream into Position16[]
         /// (Position[] must then be filled externally)
@@ -36,39 +36,19 @@ namespace RCC.Network.Action
             message.Serial(ref Position16[0]);
             message.Serial(ref Position16[1]);
             message.Serial(ref Position16[2]);
-            IsRelative = (Position16[2] & (ushort)0x1) != 0;
-            Interior = (Position16[2] & (ushort)0x2) != 0;
+            IsRelative = (Position16[2] & 0x1) != 0;
+            Interior = (Position16[2] & 0x2) != 0;
         }
 
-        public override void Pack(BitMemoryStream message) { }
-
-        public void Serial(BitMemoryStream f) { }
-
-        private static ActionBase Create()
+        public override void Pack(BitMemoryStream message)
         {
-            return new ActionPosition();
-        }
-
-        private void GetPosition(long originx, long originy, long originz, ref long posx, ref long posy, ref long posz)
-        {
-            posx = Position[0];
-            posy = Position[1];
-            posz = Position[2];
-        }
-
-        public long GetValue()
-        {
-            RyzomClient.GetInstance().GetLogger().Warn("ActionPosition: forbidden call to getValue()");
-            return (long)0;
-        }
-
-        public void SetValue(long value)
-        {
-            RyzomClient.GetInstance().GetLogger().Warn("ActionPosition: forbidden call to setValue()");
+            throw new NotImplementedException();
         }
 
         public override void Reset()
         {
+            // TODO: implement ActionPosition Reset
+            //throw new NotImplementedException();
         }
     }
 }

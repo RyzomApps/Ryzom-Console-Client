@@ -1755,17 +1755,13 @@ namespace RCC.Network
 
         public void DecodeDiscreetProperty(BitMemoryStream msgin, byte propIndex)
         {
-            //nldebug( "Reading discreet property %hu at bitpos %d", (uint16)propIndex, msgin.getPosInBit() );
-
-            byte slot = VpNodeClient.SlotContext.Slot;
+            var slot = VpNodeClient.SlotContext.Slot;
 
             // \todo BEN this is temp, put it somewhere in database
             if (propIndex == (byte)VpNodeBase.PropertyType.TargetList)
             {
                 byte listSize = 0;
                 msgin.Serial(ref listSize);
-
-                //TargetSlotsList.Resize(listSize);
 
                 if (listSize > 0)
                 {
@@ -1829,12 +1825,163 @@ namespace RCC.Network
                         }
                     }
 
-                    _client.GetLogger().Debug("CLIENT: recvd property " + (ushort)propIndex + "u (" + propIndex + ") for slot " + (ushort)slot + "u, date " + VpNodeClient.SlotContext.Timestamp);
+                    _client.GetLogger().Debug($"CLIENT: recvd property {(ushort) propIndex}u ({propIndex}) for slot {(ushort) slot}u, date {VpNodeClient.SlotContext.Timestamp}");
                 }
 
                 var thechange = new Change(slot, propIndex, VpNodeClient.SlotContext.Timestamp);
                 _changes.Add(thechange);
+
+                return;
             }
+
+            var ac = (ActionLong)ActionFactory.CreateByPropIndex(slot, propIndex);
+            ac.Unpack(msgin);
+
+            switch (propIndex)
+            {
+                case (byte)VpNodeBase.PropertyType.Sheet:
+                    // Special case for sheet
+                    if (_propertyDecoder.IsUsed(slot))
+                    {
+                        var sheet = _propertyDecoder.Sheet(slot);
+
+                        if (_IdMap.ContainsKey(sheet)) { _IdMap.Remove(sheet); }
+
+                        _propertyDecoder.RemoveEntity(slot);
+                    }
+
+                    var newSheetId = (uint)(ac.GetValue() & 0xffffffff);
+                    if (_IdMap.ContainsKey(newSheetId)) _IdMap.Remove(newSheetId);
+                    _IdMap.Add(newSheetId, slot);
+
+                    _propertyDecoder.AddEntity(slot, newSheetId);
+
+                    // TODO: Reset the position update statistical data
+                    //_posUpdateTicks[slot].clear();
+                    //_posUpdateIntervals[slot].clear();
+
+                    // Read optional alias block
+                    uint alias = 0;
+                    var aliasBit = false;
+                    msgin.Serial(ref aliasBit);
+
+                    if (aliasBit)
+                    {
+                        msgin.Serial(ref alias);
+                    }
+
+                    // Set information
+                    var thechange1 = new Change(slot, (byte)Change.Prop.AddNewEntity);
+                    thechange1.NewEntityInfo.DataSetIndex = (uint)((ac.GetValue() >> 32) & 0xffffffff);
+                    thechange1.NewEntityInfo.Alias = alias;
+                    _changes.Add(thechange1);
+
+                    break;
+
+                case (byte)VpNodeBase.PropertyType.Mode:
+                    // Special case for mode: push theta or pos, then mode
+                    var mode44 = ac.GetValue();
+                    var modeTimestamp = _currentServerTick - (uint)((mode44 >> 8) & 0xF);
+
+                    // Push the mode Before the position or the orientation
+                    var thechangeMode = new Change(slot, (byte)VpNodeBase.PropertyType.Mode, modeTimestamp);
+                    _changes.Add(thechangeMode);
+
+                    // Set mode value in database
+                    if (_databaseManager != null)
+                    {
+                        if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
+                        {
+                            var node = nodeRoot.GetNode(slot).GetNode(propIndex) as DatabaseNodeLeaf;
+                            Debug.Assert(node != null);
+                            node.SetValue64(ac.GetValue() & 0xFF); // (8 bits)
+                        }
+                    }
+
+                    // Set the position or orientation received along with the mode in the database
+                    byte modeEnum = (byte)(mode44 & 0xFF);
+                    const int combatFloat = 2;
+
+                    if (modeEnum == combatFloat)
+                    {
+                        // Set theta
+                        if (_databaseManager != null)
+                        {
+                            if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
+                            {
+                                DatabaseNodeLeaf node = nodeRoot.GetNode(slot).GetNode((byte)VpNodeBase.PropertyType.Orientation) as DatabaseNodeLeaf;
+                                Debug.Assert(node != null);
+                                node.SetValue64(mode44 >> 12);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Set 2D position (the position at TVPNodeClient::SlotContext.Timestamp is not sent at the same time as the position for Mode)
+                        if (_databaseManager != null)
+                        {
+                            var x16 = (ushort)((ac.GetValue() >> 12) & 0xFFFF);
+                            var y16 = (ushort)((ac.GetValue() >> 28) & 0xFFFF);
+
+                            if (!(x16 == 0 && y16 == 0)) // don't set the position if it was not initialized yet
+                            {
+                                var x = new int();
+                                var y = new int();
+
+                                _propertyDecoder.DecodeAbsPos2D(ref x, ref y, x16, y16);
+
+                                if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
+                                {
+                                    var node = nodeRoot.GetNode(slot).GetNode(0) as DatabaseNodeLeaf;
+                                    Debug.Assert(node != null);
+                                    node.SetValue64(x);
+                                    node = nodeRoot.GetNode(slot).GetNode(1) as DatabaseNodeLeaf;
+                                    Debug.Assert(node != null);
+                                    node.SetValue64(y);
+                                }
+                            }
+                            else
+                            {
+                                // TODO: fix Received mode with null pos
+                                //RyzomClient.GetInstance().GetLogger().Warn($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos"); // TEMP
+                            }
+                        }
+                    }
+
+                    break;
+
+                default:
+                    // special for Bars, always take _currentServerTick timestamp (delta timestamp decoded is mainly for position purpose...)
+                    var timeStamp = VpNodeClient.SlotContext.Timestamp;
+                    /* YOYO: i don't know what to do with others property that really use the gamecycle and are maybe buggued:
+                        ENTITY_MOUNTED_ID,RIDER_ENTITY_ID,BEHAVIOUR,TARGET_LIST,TARGET_ID,VISUAL_FX
+                        But bars timestamp accuracy is very important (else could take DB property with falsly newer timestamp)
+                    */
+                    const int propertyBars = 15;
+
+                    if (propIndex == propertyBars)
+                    {
+                        timeStamp = _currentServerTick;
+                    }
+
+                    // Process property
+                    var thechange = new Change(slot, propIndex, timeStamp);
+                    _changes.Add(thechange);
+
+                    if (_databaseManager != null)
+                    {
+                        if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
+                        {
+                            DatabaseNodeLeaf node = nodeRoot.GetNode(slot).GetNode(propIndex) as DatabaseNodeLeaf;
+                            Debug.Assert(node != null);
+                            node.SetValue64(ac.GetValue());
+                        }
+                    }
+
+                    break;
+            }
+
+            ActionFactory.Remove(ac);
         }
     }
 }

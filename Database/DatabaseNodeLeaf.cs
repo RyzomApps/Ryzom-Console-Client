@@ -8,6 +8,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Xml;
 using RCC.Network;
 
@@ -149,11 +150,6 @@ namespace RCC.Database
                     }
                 }
 
-                if (VerboseDatabase)
-                {
-                    RyzomClient.GetInstance().GetLogger().Info($"CDB: Read value ({bits} bits) {_property}");
-                }
-
                 // bkup the date of change
                 _lastChangeGc = gc;
 
@@ -254,6 +250,14 @@ namespace RCC.Database
         {
             //Debug.Print("NotifyObservers");
             //throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// write
+        /// </summary>
+        internal override void Write(string id, StreamWriter f)
+        {
+            f.WriteLine($"{_property}\t{id}");
         }
     }
 }

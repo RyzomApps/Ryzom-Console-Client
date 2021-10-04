@@ -69,6 +69,14 @@ namespace RCC.Entity
             _entities[slot].AssociationBits = associationBits;
         }
 
+        internal void AddEntity(byte entity, uint sheet)
+        {
+            Debug.Assert(entity < _entities.Count && !_entities[entity].EntryUsed);
+
+            _entities[entity].EntryUsed = true;
+            _entities[entity].Sheet = sheet;
+        }
+
         internal bool RemoveEntity(byte entity)
         {
             Debug.Assert(entity < _entities.Count, "entity=" + (ushort)entity + "u size=" + _entities.Count);
@@ -131,7 +139,7 @@ namespace RCC.Entity
         /// <summary>
         /// Decode x and y
         /// </summary>
-        void DecodeAbsPos2D(ref int x, ref int y, ushort x16, ushort y16)
+        internal void DecodeAbsPos2D(ref int x, ref int y, ushort x16, ushort y16)
         {
             x = _refPosX + ((short)(x16 - _refBitsX) << 4);
             y = _refPosY + ((short)(y16 - _refBitsY) << 4);

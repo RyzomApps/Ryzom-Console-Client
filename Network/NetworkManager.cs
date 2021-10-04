@@ -58,15 +58,11 @@ namespace RCC.Network
         private readonly NetworkConnection _networkConnection;
         private readonly StringManager _stringManager;
         private readonly DatabaseManager _databaseManager;
-        private DatabaseNodeBranch _dataBase;
         private readonly RyzomClient _client;
-        private readonly UserEntity _userEntity;
 
         private readonly GenericMessageHeaderManager _messageHeaderManager;
 
         private readonly ChatManager _chatManager;
-
-        public GenericMessageHeaderManager GetMessageHeaderManager() => _messageHeaderManager;
 
         /// <summary>
         /// was the inital server season received
@@ -78,6 +74,11 @@ namespace RCC.Network
         /// </summary>
         private readonly EntityManager _entitiesManager;
 
+        public GenericMessageHeaderManager GetMessageHeaderManager() => _messageHeaderManager;
+
+        public EntityManager GetEntityManager() => _entitiesManager;
+
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -85,21 +86,12 @@ namespace RCC.Network
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
             _chatManager = new ChatManager(this, stringManager);
-            _userEntity = new UserEntity();
-            _entitiesManager = new EntityManager();
+            _entitiesManager = new EntityManager(client);
 
             _networkConnection = networkConnection;
             _stringManager = stringManager;
             _databaseManager = databaseManager;
             _client = client;
-        }
-
-        /// <summary>
-        /// Set database entry point
-        /// </summary>
-        internal void SetDataBase(DatabaseNodeBranch database)
-        {
-            _dataBase = database;
         }
 
         /// <summary>
@@ -1032,14 +1024,14 @@ namespace RCC.Network
 
             ServerSeasonReceived = true; // set the season that will be used when selecting the continent from the position
 
-            if (_userEntity != null)
+            if (_entitiesManager.UserEntity != null)
             {
                 UserEntity.Pos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
                 UserEntity.Front = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
                 UserEntity.Dir = UserEntity.Front;
                 UserEntity.SetHeadPitch(0);
 
-                _client.GetLogger().Info($"Received Char Position: {UserEntity.Pos} Heading: {heading} Front: {UserEntity.Front}");
+                _client.GetLogger().Info($"Received Char Position: {UserEntity.Pos} Heading: {heading:0.000} Front: {UserEntity.Front:0.000}");
 
                 // Update the position for the vision.
                 _networkConnection.SetReferencePosition(UserEntity.Pos);
@@ -1113,11 +1105,12 @@ namespace RCC.Network
 
             impulse.Serial(ref ServerPeopleActive);
             impulse.Serial(ref ServerCareerActive);
+
             // read characters summary
             CharacterSummaries.Clear();
 
-            // START WORKAROUND workaround for serialVector(T &cont) in stream.h
-            int len = 0;
+            #region workaround for serialVector(T &cont) in stream.h
+            var len = 0;
             impulse.Serial(ref len);
 
             for (var i = 0; i < len; i++)
@@ -1128,27 +1121,10 @@ namespace RCC.Network
                     _client.GetLogger().Info($"Character {cs.Name} from shard {cs.Mainland} in slot {i}");
                 CharacterSummaries.Add(cs);
             }
-            // END WORKAROUND
+            #endregion
 
-            //LoginSM.pushEvent(CLoginStateMachine::ev_chars_received);
             _client.GetLogger().Debug("st_ingame->st_select_char");
             CanSendCharSelection = true;
-
-            //if (!NewKeysCharNameValidated.empty())
-            //{
-            //    // if there's a new char for which a key set was wanted, create it now
-            //    for (uint k = 0; k < CharacterSummaries.size(); ++k)
-            //    {
-            //        if (toLower(CharacterSummaries[k].Name) == toLower(NewKeysCharNameValidated))
-            //        {
-            //            // first, stripes server name
-            //            copyKeySet(lookupSrcKeyFile(GameKeySet), "save/keys_" + buildPlayerNameForSaveFile(NewKeysCharNameValidated) + ".xml");
-            //            copyKeySet(lookupSrcKeyFile(RingEditorKeySet), "save/keys_r2ed_" + buildPlayerNameForSaveFile(NewKeysCharNameValidated) + ".xml");
-            //            break;
-            //        }
-            //    }
-            //}
-            //updatePatcherPriorityBasedOnCharacters();
 
             _client.Automata.OnUserChars();
         }

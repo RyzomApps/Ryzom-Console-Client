@@ -1,7 +1,16 @@
 ﻿namespace RCC.Entity
 {
-    internal class EntityManager
+    public class EntityManager
     {
+        private readonly RyzomClient _client;
+
+        public UserEntity UserEntity;
+
+        public EntityManager(RyzomClient client)
+        {
+            _client = client;
+        }
+
         /// <summary>
         /// Create an entity according to the slot and the form.
         /// </summary>
@@ -11,7 +20,10 @@
         /// <returns>CEntityCL : pointer on the new entity</returns> 
         public int Create(in byte slot, uint form, Change.TNewEntityInfo newEntityInfo)
         {
-            RyzomClient.GetInstance().GetLogger().Info("EntityManager.Create()");
+            _client.Automata.OnEntityCreate(slot, form, newEntityInfo);
+
+            // TODO: Implementation
+
             return -1;
         }
 
@@ -21,7 +33,9 @@
         /// <returns>bool : 'true' if the entity has been correctly removed</returns> 
         public bool Remove(in byte slot, bool warning)
         {
-            RyzomClient.GetInstance().GetLogger().Info("EntityManager.Remove()");
+            _client.Automata.OnEntityRemove(slot, warning);
+
+            // TODO: Implementation
 
             return true;
         }
@@ -33,7 +47,20 @@
         /// <param name="prop">uint : the property to udapte.</param> 
         public void UpdateVisualProperty(in uint gameCycle, in byte slot, in byte prop, in uint predictedInterval)
         {
-            //RyzomClient.GetInstance().GetLogger().Info("EntityManager.UpdateVisualProperty()");
+            _client.Automata.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval);
+
+            // TODO: Implementation
+        }
+
+        /// <summary>
+        /// Get an entity by name. Returns NULL if the entity is not found.
+        /// </summary>
+        /// <param name="name">of the entity to find</param>  
+        /// <param name="caseSensitive">type of test to perform</param>  
+        /// <param name="complete">if true, the name must match the full name of the entity</param>
+        public Entity GetEntityByName(string name, bool caseSensitive, bool complete)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -62,14 +62,6 @@ namespace RCC.Network.Action
         }
 
         /// <summary>
-        /// This functions is used when you want to transform an action into an IStream.
-        /// </summary>
-        private void Serial(BitMemoryStream f)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Returns the size of this action when it will be send to the UDP connection:
 		/// the size is IN BITS, not in bytes (the actual size is this one plus the header size)
 		/// </summary>
@@ -126,25 +118,6 @@ namespace RCC.Network.Action
         {
             return false;
         }
-
-
-        public void SetAndPackValue(long value, BitMemoryStream outMsg)
-        {
-            _value = (ulong)value;
-            outMsg.Serial(ref _value, (int)_nbBits);
-        }
-
-        public void SetAndPackValueNBits(long value, BitMemoryStream outMsg, uint nbits)
-        {
-            _value = (ulong)value;
-            outMsg.Serial(ref _value, (int)_nbBits);
-        }
-
-        public void PackFast(BitMemoryStream outMsg)
-        {
-            outMsg.Serial(ref _value, (int)_nbBits);
-        }
-
 
         /// <summary>
         /// This function transform the internal field and transform them into a buffer for the UDP connection.

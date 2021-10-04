@@ -5,19 +5,16 @@ using System.Text;
 
 namespace RCC.Entity
 {
-    class UserEntity
+    public class UserEntity
     {
-        private static int _pitch;
-
         public static Vector3 Pos { get; set; }
 
         public static Vector3 Front { get; set; }
 
         public static Vector3 Dir { get; set; }
 
-        public static void SetHeadPitch(int pitch)
+        public static void SetHeadPitch(int _)
         {
-            _pitch = pitch;
         }
     }
 }

@@ -8,6 +8,7 @@
 
 using RCC.Network;
 using System;
+using System.IO;
 using System.Xml;
 
 namespace RCC.Database
@@ -67,9 +68,14 @@ namespace RCC.Database
         }
 
         /// <summary>
-        /// Return a ptr on the databaseNode
+        /// Destructor
         /// </summary>
-        /// <returns>ptr on the databaseNode</returns>
+        ~DatabaseManager() { Clear(); }
+
+        /// <summary>
+        /// Return a ptr on the database node
+        /// </summary>
+        /// <returns>ptr on the database node</returns>
         public DatabaseNodeBranch GetNodePtr() { return _serverDatabase; }
 
         /// <summary>
@@ -116,6 +122,25 @@ namespace RCC.Database
         public void Read(string fileName) { throw new NotImplementedException(); }
 
         /// <summary>
+        /// Save a backup of the database
+        /// </summary>
+        /// <params name="fileName">is the name of the backup file</params>
+        public void Write(string fileName)
+        {
+            if (_database != null)
+            {
+                var f = new StreamWriter(fileName, false);
+
+                _database.Write(_database.GetName(), f);
+                f.Close();
+            }
+            else
+            {
+                RyzomClient.GetInstance().GetLogger().Warn($"<CCDBSynchronised::write> can't write {fileName} : the database has not been initialized");
+            }
+        }
+
+        /// <summary>
         /// Update the database from a stream coming from the FE
         /// </summary>
         /// <params name="f">the stream</params>
@@ -150,11 +175,6 @@ namespace RCC.Database
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Destructor
-        /// </summary>
-        ~DatabaseManager() { Clear(); }
-
         /// <summary>Return true while the first database packet has not been completely received</summary>
         public bool InitInProgress() { return _initInProgress; }
 
@@ -183,7 +203,10 @@ namespace RCC.Database
 
         private bool AllInitPacketReceived() { return _initDeltaReceived == 2; } // Classic database + inventory
 
-        private void WriteInitInProgressIntoUIDB() { }
+        private void WriteInitInProgressIntoUIDB()
+        {
+            //TODO: implementation of WriteInitInProgressIntoUIDB
+        }
 
         public void ResetBank(in uint gc, in uint bank)
         {
