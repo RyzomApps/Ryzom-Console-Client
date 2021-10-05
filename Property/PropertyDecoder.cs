@@ -9,10 +9,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using RCC.Entity;
 using RCC.Helper;
 using RCC.Network.Action;
 
-namespace RCC.Entity
+namespace RCC.Property
 {
     /// <summary>An engine that allows to encode/decode continuous properties using delta values.</summary>
     /// <author>Benjamin Legros</author>

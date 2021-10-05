@@ -10,6 +10,7 @@ using RCC.Config;
 using RCC.Database;
 using RCC.Entity;
 using RCC.Network;
+using RCC.Property;
 
 namespace RCC.Automata.Internal
 {

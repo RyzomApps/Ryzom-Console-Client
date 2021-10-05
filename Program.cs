@@ -84,6 +84,7 @@ namespace RCC
             }
 
             // Setup ConsoleIO
+            ConsoleIO.EnableTimestamps = true;
             ConsoleIO.LogPrefix = "§8[§fR§eC§cC§8] ";
             if (args.Length >= 1 && args[^1] == "BasicIO" || args.Length >= 1 && args[^1] == "BasicIO-NoColor")
             {

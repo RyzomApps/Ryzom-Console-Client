@@ -8,6 +8,7 @@
 
 using System;
 using RCC.Entity;
+using RCC.Property;
 
 namespace RCC.Network.Action
 {
@@ -21,7 +22,7 @@ namespace RCC.Network.Action
     public class ActionLong : ActionBase
     {
         /// <summary>Number of visual properties</summary>
-        private const uint MaxPropertiesPerEntity = VpNodeBase.NbVisualProperties;
+        private const uint MaxPropertiesPerEntity = VisualPropertyNode.NbVisualProperties;
 
         private ulong _value;
         private int _nbBits;

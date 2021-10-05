@@ -371,8 +371,7 @@ namespace RCC.Helper
 
                 if (displayTimestamp.Value)
                 {
-                    int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
-                    Write($"{hour:00}:{minute:00}:{second:00} ");
+                    Write($"[{DateTime.Now:HH:mm:ss}] ");
                 }
 
                 if (BasicIo)

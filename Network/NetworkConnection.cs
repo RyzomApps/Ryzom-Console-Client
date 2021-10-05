@@ -18,6 +18,7 @@ using RCC.Database;
 using RCC.Entity;
 using RCC.Helper;
 using RCC.Network.Action;
+using RCC.Property;
 
 namespace RCC.Network
 {
@@ -120,7 +121,7 @@ namespace RCC.Network
 
         private int _totalMessages;
 
-        VpNodeClient _VisualPropertyTreeRoot;
+        VisualPropertyNodeClient _VisualPropertyTreeRoot;
 
         /// <summary>
         /// the time currently played at this frame (in the past)
@@ -294,7 +295,7 @@ namespace RCC.Network
             InitCookie(cookie, addr);
 
             // Init visual property tree
-            _VisualPropertyTreeRoot = new VpNodeClient();
+            _VisualPropertyTreeRoot = new VisualPropertyNodeClient();
             _VisualPropertyTreeRoot.BuildTree();
 
             // get md5 hashes
@@ -521,7 +522,7 @@ namespace RCC.Network
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, decode probe and state probe
                                 ConnectionState = ConnectionState.Probe;
-                                _changes.Add(new Change(0, (byte)Change.Prop.ProbeReceived));
+                                _changes.Add(new Change(0, (byte)PropertyType.ProbeReceived));
                                 _client.GetLogger().Debug("CNET: login->probe");
                                 ReceiveSystemProbe(msgin);
                                 return true;
@@ -666,7 +667,7 @@ namespace RCC.Network
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, decode probe and state probe
                                 ConnectionState = ConnectionState.Probe;
-                                _changes.Add(new Change(0, (byte)Change.Prop.ProbeReceived));
+                                _changes.Add(new Change(0, (byte)PropertyType.ProbeReceived));
                                 ReceiveSystemProbe(msgin);
                                 return true;
 
@@ -697,7 +698,7 @@ namespace RCC.Network
                     {
                         ConnectionState = ConnectionState.Connected;
 
-                        _changes.Add(new Change(0, (byte)Change.Prop.ConnectionReady));
+                        _changes.Add(new Change(0, (byte)PropertyType.ConnectionReady));
 
                         ImpulseDecoder.Reset();
 
@@ -766,7 +767,7 @@ namespace RCC.Network
                                 // receive probe, and goto state probe
                                 ConnectionState = ConnectionState.Probe;
 
-                                _changes.Add(new Change(0, (byte)Change.Prop.ProbeReceived));
+                                _changes.Add(new Change(0, (byte)PropertyType.ProbeReceived));
                                 ReceiveSystemProbe(msgin);
                                 return true;
 
@@ -1000,6 +1001,9 @@ namespace RCC.Network
         /// </summary>
         private void DecodeVisualProperties(BitMemoryStream msgin)
         {
+            if (!ClientConfig.DecodeVisualProperties)
+                return;
+
             try
             {
                 while (true)
@@ -1029,7 +1033,7 @@ namespace RCC.Network
 
                             _propertyDecoder.RemoveEntity(slot);
 
-                            var theChange = new Change(slot, (byte)Change.Prop.RemoveOldEntity);
+                            var theChange = new Change(slot, (byte)PropertyType.RemoveOldEntity);
                             _changes.Add(theChange);
                         }
                         else
@@ -1079,19 +1083,19 @@ namespace RCC.Network
 
                         if (nodeRoot != null)
                         {
-                            var node = (DatabaseNodeLeaf)(nodeRoot.GetNode(slot).GetNode(0));
+                            var node = (DatabaseNodeLeaf)nodeRoot.GetNode(slot).GetNode(0);
                             Debug.Assert(node != null);
                             node.SetValue64(ap.Position[0]);
 
-                            node = (DatabaseNodeLeaf)(nodeRoot.GetNode(slot).GetNode(1));
+                            node = (DatabaseNodeLeaf)nodeRoot.GetNode(slot).GetNode(1);
                             Debug.Assert(node != null);
                             node.SetValue64(ap.Position[1]);
 
-                            node = (DatabaseNodeLeaf)(nodeRoot.GetNode(slot).GetNode(2));
+                            node = (DatabaseNodeLeaf)nodeRoot.GetNode(slot).GetNode(2);
                             Debug.Assert(node != null);
                             node.SetValue64(ap.Position[2]);
 
-                            _client.Log.Debug($"recvd position ({ap.Position[0]},{ap.Position[1]}) for slot {(ushort)slot}u, date {timestamp}u");
+                            _client.Log.Debug($"recvd position ({ap.Position[0]}, {ap.Position[1]}) for slot {(ushort)slot}u, date {timestamp}u");
                         }
 
                         var interior = ap.Interior;
@@ -1099,7 +1103,7 @@ namespace RCC.Network
                         ActionFactory.Remove(ap);
 
                         // Add into the changes vector
-                        var thechange = new Change(slot, (byte)VpNodeBase.PropertyType.Position, timestamp)
+                        var thechange = new Change(slot, (byte)PropertyType.Position, timestamp)
                         {
                             PositionInfo = { PredictedInterval = 0, IsInterior = interior }
                             // TODO Statistical prediction of time before next position update: set PredictedInterval
@@ -1117,31 +1121,31 @@ namespace RCC.Network
 
                         if (currentNode.A().BranchHasPayload)
                         {
-                            var ac = (ActionLong)ActionFactory.CreateByPropIndex(slot, (byte)VpNodeBase.PropertyType.Orientation);
+                            var ac = (ActionLong)ActionFactory.CreateByPropIndex(slot, (byte)PropertyType.Orientation);
                             ac.Unpack(msgin);
 
                             // Process orientation
-                            var thechange = new Change(slot, (byte)VpNodeBase.PropertyType.Orientation, timestamp);
+                            var thechange = new Change(slot, (byte)PropertyType.Orientation, timestamp);
                             _changes.Add(thechange);
 
                             var nodeRoot = (DatabaseNodeBranch)_databaseManager?.GetNodePtr().GetNode(0);
 
                             if (nodeRoot != null)
                             {
-                                var node = (DatabaseNodeLeaf)(nodeRoot.GetNode(slot).GetNode((byte)VpNodeBase.PropertyType.Orientation));
+                                var node = (DatabaseNodeLeaf)(nodeRoot.GetNode(slot).GetNode((byte)PropertyType.Orientation));
                                 Debug.Assert(node != null);
                                 node.SetValue64(ac.GetValue());
 
-                                _client.Log.Debug($"CLIENT: recvd property {(byte)VpNodeBase.PropertyType.Orientation}u ({VpNodeBase.PropertyType.Orientation}) for slot {(ushort)slot}u, date {timestamp}");
+                                _client.Log.Debug($"CLIENT: recvd property {(byte)PropertyType.Orientation}u ({PropertyType.Orientation}) for slot {(ushort)slot}u, date {timestamp}");
                             }
 
 
                             ActionFactory.Remove(ac);
                         }
 
-                        VpNodeClient.SlotContext.NetworkConnection = this;
-                        VpNodeClient.SlotContext.Slot = slot;
-                        VpNodeClient.SlotContext.Timestamp = timestamp;
+                        VisualPropertyNodeClient.SlotContext.NetworkConnection = this;
+                        VisualPropertyNodeClient.SlotContext.Slot = slot;
+                        VisualPropertyNodeClient.SlotContext.Timestamp = timestamp;
 
                         // Discreet properties
                         currentNode.B().DecodeDiscreetProperties(msgin);
@@ -1755,10 +1759,11 @@ namespace RCC.Network
 
         public void DecodeDiscreetProperty(BitMemoryStream msgin, byte propIndex)
         {
-            var slot = VpNodeClient.SlotContext.Slot;
+            Change change;
+            var slot = VisualPropertyNodeClient.SlotContext.Slot;
 
             // \todo BEN this is temp, put it somewhere in database
-            if (propIndex == (byte)VpNodeBase.PropertyType.TargetList)
+            if (propIndex == (byte)PropertyType.TargetList)
             {
                 byte listSize = 0;
                 msgin.Serial(ref listSize);
@@ -1778,7 +1783,7 @@ namespace RCC.Network
                         var nodeEntity = nodeRoot.GetNode(slot) as DatabaseNodeBranch;
                         Debug.Assert(nodeEntity != null);
 
-                        ushort writeProp = (byte)VpNodeBase.PropertyType.TargetList;
+                        ushort writeProp = (byte)PropertyType.TargetList;
                         var place = 0;
 
                         if (listSize >= 32)
@@ -1825,11 +1830,11 @@ namespace RCC.Network
                         }
                     }
 
-                    _client.GetLogger().Debug($"CLIENT: recvd property {(ushort)propIndex}u ({propIndex}) for slot {(ushort)slot}u, date {VpNodeClient.SlotContext.Timestamp}");
+                    _client.GetLogger().Debug($"CLIENT: recvd property {(ushort)propIndex}u ({propIndex}) for slot {(ushort)slot}u, date {VisualPropertyNodeClient.SlotContext.Timestamp}");
                 }
 
-                var thechange = new Change(slot, propIndex, VpNodeClient.SlotContext.Timestamp);
-                _changes.Add(thechange);
+                change = new Change(slot, propIndex, VisualPropertyNodeClient.SlotContext.Timestamp);
+                _changes.Add(change);
 
                 return;
             }
@@ -1839,7 +1844,7 @@ namespace RCC.Network
 
             switch (propIndex)
             {
-                case (byte)VpNodeBase.PropertyType.Sheet:
+                case (byte)PropertyType.Sheet:
                     // Special case for sheet
                     if (_propertyDecoder.IsUsed(slot))
                     {
@@ -1871,21 +1876,21 @@ namespace RCC.Network
                     }
 
                     // Set information
-                    var thechange1 = new Change(slot, (byte)Change.Prop.AddNewEntity);
-                    thechange1.NewEntityInfo.DataSetIndex = (uint)((ac.GetValue() >> 32) & 0xffffffff);
-                    thechange1.NewEntityInfo.Alias = alias;
-                    _changes.Add(thechange1);
+                    change = new Change(slot, (byte)PropertyType.AddNewEntity);
+                    change.NewEntityInfo.DataSetIndex = (uint)((ac.GetValue() >> 32) & 0xffffffff);
+                    change.NewEntityInfo.Alias = alias;
+                    _changes.Add(change);
 
                     break;
 
-                case (byte)VpNodeBase.PropertyType.Mode:
+                case (byte)PropertyType.Mode:
                     // Special case for mode: push theta or pos, then mode
                     var mode44 = ac.GetValue();
                     var modeTimestamp = _currentServerTick - (uint)((mode44 >> 8) & 0xF);
 
                     // Push the mode Before the position or the orientation
-                    var thechangeMode = new Change(slot, (byte)VpNodeBase.PropertyType.Mode, modeTimestamp);
-                    _changes.Add(thechangeMode);
+                    change = new Change(slot, (byte)PropertyType.Mode, modeTimestamp);
+                    _changes.Add(change);
 
                     // Set mode value in database
                     if (_databaseManager != null)
@@ -1909,7 +1914,7 @@ namespace RCC.Network
                         {
                             if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
                             {
-                                DatabaseNodeLeaf node = nodeRoot.GetNode(slot).GetNode((byte)VpNodeBase.PropertyType.Orientation) as DatabaseNodeLeaf;
+                                DatabaseNodeLeaf node = nodeRoot.GetNode(slot).GetNode((byte)PropertyType.Orientation) as DatabaseNodeLeaf;
                                 Debug.Assert(node != null);
                                 node.SetValue64(mode44 >> 12);
                             }
@@ -1952,7 +1957,7 @@ namespace RCC.Network
 
                 default:
                     // special for Bars, always take _currentServerTick timestamp (delta timestamp decoded is mainly for position purpose...)
-                    var timeStamp = VpNodeClient.SlotContext.Timestamp;
+                    var timeStamp = VisualPropertyNodeClient.SlotContext.Timestamp;
                     /* YOYO: i don't know what to do with others property that really use the gamecycle and are maybe buggued:
                         ENTITY_MOUNTED_ID,RIDER_ENTITY_ID,BEHAVIOUR,TARGET_LIST,TARGET_ID,VISUAL_FX
                         But bars timestamp accuracy is very important (else could take DB property with falsly newer timestamp)
@@ -1965,8 +1970,8 @@ namespace RCC.Network
                     }
 
                     // Process property
-                    var thechange = new Change(slot, propIndex, timeStamp);
-                    _changes.Add(thechange);
+                    change = new Change(slot, propIndex, timeStamp);
+                    _changes.Add(change);
 
                     if (_databaseManager != null)
                     {

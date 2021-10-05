@@ -8,8 +8,9 @@
 
 namespace RCC.Entity
 {
-    public class UserEntity : Entity
+    internal struct Property
     {
-
+        internal uint GameCycle;
+        internal long Value;
     }
 }

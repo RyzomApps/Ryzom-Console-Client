@@ -116,7 +116,8 @@ namespace RCC
         {
             _instance = this;
             _clientThread = Thread.CurrentThread;
-            _databaseManager = new DatabaseManager(this);
+            if (ClientConfig.UseDatabase)
+                _databaseManager = new DatabaseManager(this);
             _networkConnection = new NetworkConnection(this, _databaseManager);
             _stringManager = new StringManager(this);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager);
@@ -310,29 +311,36 @@ namespace RCC
             // Create the game interface database
 
             // Initialize the Database.
-            Log.Info("Initializing XML Database ...");
-            _databaseManager.Init(@"data\database.xml", null);
-
-            var textId = new TextId("SERVER");
-
-            if (DatabaseManager.GetDb().GetNode(textId, false) != null)
+            if (_databaseManager != null)
             {
-                DatabaseManager.GetDb().RemoveNode(textId);
+                Log.Info("Initializing XML Database ...");
+                _databaseManager.Init(@"data\database.xml", null);
+
+                var textId = new TextId("SERVER");
+
+                if (DatabaseManager.GetDb().GetNode(textId, false) != null)
+                {
+                    DatabaseManager.GetDb().RemoveNode(textId);
+                }
+
+                DatabaseManager.GetDb().AttachChild(_databaseManager.GetNodePtr(), "SERVER");
+
+                // Set the database
+                //_networkManager.SetDataBase(_databaseManager.GetNodePtr());
+
+                // Create interface database
+                Log.Info("Initializing Interface Database ...");
+
+                // Add the LOCAL branch
+                textId = new TextId("LOCAL");
+
+                if (DatabaseManager.GetDb().GetNode(textId, false) != null)
+                {
+                    DatabaseManager.GetDb().RemoveNode(textId);
+                }
+
+                InterfaceManager.CreateLocalBranch("local_database.xml");
             }
-
-            DatabaseManager.GetDb().AttachChild(_databaseManager.GetNodePtr(), "SERVER");
-
-            // Set the database
-            //_networkManager.SetDataBase(_databaseManager.GetNodePtr());
-
-            // Create interface database
-            Log.Info("Initializing Interface Database ...");
-
-            // Add the LOCAL branch
-            textId = new TextId("LOCAL");
-
-            if (DatabaseManager.GetDb().GetNode(textId, false) != null) { DatabaseManager.GetDb().RemoveNode(textId); }
-            InterfaceManager.CreateLocalBranch("local_database.xml");
 
             // Initializing Entities Manager
             _networkManager.GetEntityManager().Initialize(256);
@@ -344,7 +352,7 @@ namespace RCC
             {
                 // Update Network.
                 _networkManager.Update();
-                _databaseManager.FlushObserverCalls();
+                _databaseManager?.FlushObserverCalls();
             }
 
             // Create the message for the server that the client is ready
@@ -371,7 +379,7 @@ namespace RCC
             var loggedIn = false;
             var firstRetry = true;
 
-            _databaseManager.FlushObserverCalls();
+            _databaseManager?.FlushObserverCalls();
 
             while (!loggedIn)
             {
@@ -507,7 +515,7 @@ namespace RCC
                         Thread.Sleep(30);
                     }
                 }
-                _databaseManager.FlushObserverCalls();
+                _databaseManager?.FlushObserverCalls();
 
                 // check if we can send another dated block
                 if (_networkConnection.GetCurrentServerTick() != serverTick)
@@ -522,7 +530,7 @@ namespace RCC
                 }
 
                 // TODO: updateClientTime();
-                _databaseManager.FlushObserverCalls();
+                _databaseManager?.FlushObserverCalls();
 
                 // SERVER INTERACTIONS WITH INTERFACE
                 if (_networkManager.WaitServerAnswer)
@@ -594,14 +602,19 @@ namespace RCC
             {
                 // Network Update.
                 _networkManager.Update();
-                _databaseManager.FlushObserverCalls();
-                bool prevDatabaseInitStatus = _databaseManager.InitInProgress();
-                _databaseManager.SetChangesProcessed();
-                bool newDatabaseInitStatus = _databaseManager.InitInProgress();
 
-                if (!newDatabaseInitStatus && prevDatabaseInitStatus)
+                // Database
+                if (_databaseManager != null)
                 {
-                    Automata.OnIngameDatabaseInitialized();
+                    _databaseManager.FlushObserverCalls();
+                    bool prevDatabaseInitStatus = _databaseManager.InitInProgress();
+                    _databaseManager.SetChangesProcessed();
+                    bool newDatabaseInitStatus = _databaseManager.InitInProgress();
+
+                    if (!newDatabaseInitStatus && prevDatabaseInitStatus)
+                    {
+                        Automata.OnIngameDatabaseInitialized();
+                    }
                 }
 
                 // Send new data Only when server tick changed.
@@ -641,7 +654,7 @@ namespace RCC
                 }
             } // end of main loop
 
-            _databaseManager.ResetInitState();
+            _databaseManager?.ResetInitState();
 
             return true;
         }

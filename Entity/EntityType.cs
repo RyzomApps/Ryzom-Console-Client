@@ -8,8 +8,15 @@
 
 namespace RCC.Entity
 {
-    public class UserEntity : Entity
+    /// <summary>Primitive type</summary>
+    enum EntityType
     {
-
+        User = 0,
+        Player,
+        NPC,
+        Fauna,
+        Entity,
+        ForageSource,
+        TypeCount
     }
 }

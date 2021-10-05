@@ -6,10 +6,14 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Entity
-{
-    public class UserEntity : Entity
-    {
+using RCC.Network;
 
+namespace RCC.Property
+{
+    internal class SlotContext
+    {
+        internal NetworkConnection NetworkConnection;
+        internal byte Slot;
+        internal uint Timestamp;
     }
 }

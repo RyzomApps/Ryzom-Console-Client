@@ -161,7 +161,7 @@ namespace RCC.Automata
                     {
                         var whoName = match.Groups["name"].Value.ToLower();
 
-                        if (!_friendNames.ContainsValue(whoName) && !_namesToAdd.Contains(whoName))
+                        if (whoName.Trim() != string.Empty && !_friendNames.ContainsValue(whoName) && !_namesToAdd.Contains(whoName))
                             _namesToAdd.Enqueue(whoName);
                     }
                     else
@@ -179,6 +179,9 @@ namespace RCC.Automata
             // try to add players from the chat
             var name = Entity.Entity.RemoveTitleAndShardFromName(senderName).ToLower();
 
+            if (name.StartsWith("~"))
+                name = name[1..];
+
             if (name.Trim().Equals(string.Empty))
                 return;
 
@@ -186,9 +189,6 @@ namespace RCC.Automata
                 return;
 
             if (_friendNames.ContainsValue(name)) return;
-
-            if (name.StartsWith("~"))
-                name = name[1..];
 
             Handler.GetLogger().Info($"{name} will be added to the friends list.");
             new AddFriend().Run(Handler, "addfriend " + name, null);
@@ -241,7 +241,8 @@ namespace RCC.Automata
 
                     foreach (var name in readText)
                     {
-                        _namesToAdd.Enqueue(name);
+                        if (name.Trim() != string.Empty && !_friendNames.ContainsValue(name) && !_namesToAdd.Contains(name))
+                            _namesToAdd.Enqueue(name);
                     }
 
                     return "";

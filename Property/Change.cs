@@ -6,25 +6,13 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Entity
+namespace RCC.Property
 {
     /// <summary>
     /// A property change
     /// </summary>
     public class Change
     {
-        internal enum Prop
-        {
-            /*
-             * DO LEAVE ENOUGH ROOM FOR FUTURE PROPERTIES !
-             */
-            AddNewEntity = 32,
-            RemoveOldEntity,
-            ConnectionReady,
-            LagDetected,
-            ProbeReceived
-        };
-
         /// <summary>
         /// Constructor
         /// </summary>

@@ -3,6 +3,7 @@ using System.Reflection;
 using RCC.Automata.Internal;
 using RCC.Database;
 using RCC.Entity;
+using RCC.Property;
 
 namespace RCC.Automata
 {

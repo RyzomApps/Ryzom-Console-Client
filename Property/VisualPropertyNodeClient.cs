@@ -8,25 +8,18 @@
 
 using RCC.Network;
 
-namespace RCC.Entity
+namespace RCC.Property
 {
-    internal class VpNodeClient : VpNodeBase
+    internal class VisualPropertyNodeClient : VisualPropertyNode
     {
-        internal class TSlotContext
-        {
-            internal NetworkConnection NetworkConnection;
-            internal byte Slot;
-            internal uint Timestamp;
-        }
+        /// <summary>Static data</summary>
+        internal static readonly SlotContext SlotContext = new SlotContext();
 
-        // Static data
-        internal static readonly TSlotContext SlotContext = new TSlotContext();
+        internal VisualPropertyNodeClient A() { return (VisualPropertyNodeClient)VpA; }
 
-        internal VpNodeClient() : base() { }
+        internal VisualPropertyNodeClient B() { return (VisualPropertyNodeClient)VpB; }
 
-        internal VpNodeClient A() { return (VpNodeClient)VpA; }
-        internal VpNodeClient B() { return (VpNodeClient)VpB; }
-        internal VpNodeClient Parent() { return (VpNodeClient)VpParent; }
+        internal VisualPropertyNodeClient Parent() { return (VisualPropertyNodeClient)VpParent; }
 
         internal void DecodeDiscreetProperties(BitMemoryStream msgin)
         {
@@ -51,24 +44,20 @@ namespace RCC.Entity
             DeleteB();
         }
 
-        void DeleteA()
+        private void DeleteA()
         {
-            if (A() != null)
-            {
-                A().DeleteBranches();
-                VpA = null;
-                //delete a();
-            }
+            if (A() == null) return;
+
+            A().DeleteBranches();
+            VpA = null;
         }
 
-        void DeleteB()
+        private void DeleteB()
         {
-            if (B() != null)
-            {
-                B().DeleteBranches();
-                VpB = null;
-                //delete b();
-            }
+            if (B() == null) return;
+
+            B().DeleteBranches();
+            VpB = null;
         }
     }
 }

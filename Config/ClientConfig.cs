@@ -10,6 +10,7 @@ using RCC.Helper;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -47,9 +48,12 @@ namespace RCC.Config
 
         //public static int SBSPortOffset = 1000;
 
+        public static bool UseDatabase;
+        public static bool DecodeVisualProperties;
+
         // === NON RYZOM STUFF
 
-        public static bool DebugEnabled = false;
+        public static bool DebugEnabled;
 
         // Custom app variables 
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
@@ -84,9 +88,7 @@ namespace RCC.Config
             // NEW System Info Categories
             {"SYS", "255 255 255 255 normal"}, // Default system messages
             {"BC", "255 255 255 255 centeraround"}, // Broadcast messages
-            {
-                "TAGBC", "255 255 255 255 centeraround"
-            }, // Taged broadcast messages : color should remain white as some word are tagged
+            {"TAGBC", "255 255 255 255 centeraround"}, // Taged broadcast messages : color should remain white as some word are tagged
             {"XP", "255 255 64  255 over"}, // XP Gain
             {"SP", "255 255 64  255 over"}, // SP Gain
             {"TTL", "255 255 64  255 over"}, // Title
@@ -107,16 +109,12 @@ namespace RCC.Config
             {"MTD", "255 255 0   255 over"}, // Message Of The Day
             {"FORLD", "64  255 64  255 overonly"}, // Forage Locate Deposit
             {"CHK", "255 120 60  255 center"}, // Tous ce qui ne remplit pas une condition
-            {
-                "CHKCB", "255 255  0  255 center"
-            }, // Tous ce qui ne remplit pas une condition en combat (trop loin, cible invalide, pas assez de mana, etc.)
+            {"CHKCB", "255 255  0  255 center"}, // Tous ce qui ne remplit pas une condition en combat (trop loin, cible invalide, pas assez de mana, etc.)
             {"PVPTM", "255 120 60  255 overonly"}, // PVP timer
             {"THM", "255 255 64  255 over misc_levelup.ps"}, // Thema finished
             {"AMB", "255 255 64  255 center"}, // Ambiance
             {"ISE", "192 208 255 255 normal"}, // Item special effect
-            {
-                "ISE2", "192 208 255 255 center"
-            }, // Item special effect with center text (for effects without flying text)
+            {"ISE2", "192 208 255 255 center"}, // Item special effect with center text (for effects without flying text)
             {"OSM", "128 160 255 255 center"}, // Outpost state message
             {"AROUND", "255 255 0 255 around"}, // Only in around channel
             {"R2_INVITE", "0 255 0 255 around"} // Ring invitation
@@ -297,6 +295,14 @@ namespace RCC.Config
                 case "discordwebhook":
                     DiscordWebhook = argValue;
                     return;
+
+                case "usedatabase":
+                    UseDatabase = bool.Parse(argValue);
+                    break;
+
+                case "decodevisualproperties":
+                    DecodeVisualProperties = bool.Parse(argValue);
+                    break;
 
                 default:
                     RyzomClient.GetInstance().GetLogger().Warn($"Could not parse setting {argName} with value '{argValue}'.");

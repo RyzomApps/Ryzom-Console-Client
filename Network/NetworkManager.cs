@@ -17,6 +17,7 @@ using RCC.Database;
 using RCC.Entity;
 using RCC.Helper;
 using RCC.Messages;
+using RCC.Property;
 
 namespace RCC.Network
 {
@@ -50,6 +51,8 @@ namespace RCC.Network
         /// </remarks>
         private const int FillNbitsWithNbBitsForCdbbank = 3;
 
+        const int CdbPlayer = 0;
+
         /// <summary>
         /// client is ready for the selection of the character - non ryzom variable (for workarounds)
         /// </summary>
@@ -82,7 +85,7 @@ namespace RCC.Network
         /// <summary>
         /// Constructor
         /// </summary>
-        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, Database.DatabaseManager databaseManager)
+        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, DatabaseManager databaseManager)
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
             _chatManager = new ChatManager(this, stringManager);
@@ -136,56 +139,55 @@ namespace RCC.Network
         /// <returns>'true' if data were sent/received.</returns>
         public bool Update()
         {
-            //ConsoleIO.WriteLineFormatted($"§e{GetType().Name}.{MethodBase.GetCurrentMethod()?.Name}() {DateTimeOffset.Now.ToUnixTimeMilliseconds()}");
-
-            // Update the base class.
+            // Update the base class
             var result = _networkConnection.Update();
 
-            // TODO: Get and manage changes with the netmgr update
-            List<Change> changes = _networkConnection.GetChanges();
+            // Get changes with the update
+            var changes = _networkConnection.GetChanges();
 
+            // Manage changes
             foreach (var change in changes)
             {
-                // Update a property.
-                if (change.Property < (byte)Change.Prop.AddNewEntity)
+                // Update a property
+                if (change.Property < (byte)PropertyType.AddNewEntity)
                 {
-                    // Update the visual property for the slot.
+                    // Update the visual property for the slot
                     _entitiesManager.UpdateVisualProperty(change.GameCycle, change.ShortId, change.Property, change.PositionInfo.PredictedInterval);
                 }
-                // Add New Entity (and remove the old one in the slot).
-                else if (change.Property == (byte)Change.Prop.AddNewEntity)
+                // Add New Entity (and remove the old one in the slot)
+                else if (change.Property == (byte)PropertyType.AddNewEntity)
                 {
-                    // Remove the old entity.
+                    // Remove the old entity
                     _entitiesManager.Remove(change.ShortId, false);
 
-                    // Create the new entity.
+                    // Create the new entity
                     if (_entitiesManager.Create(change.ShortId, _networkConnection.GetPropertyDecoder().GetSheetFromEntity(change.ShortId), change.NewEntityInfo) == null)
                     {
                         _client.GetLogger().Warn($"CNetManager::update : entity in the slot '{change.ShortId}' has not been created.");
                     }
                 }
                 // Delete an entity
-                else if (change.Property == (byte)Change.Prop.RemoveOldEntity)
+                else if (change.Property == (byte)PropertyType.RemoveOldEntity)
                 {
-                    // Remove the old entity.
+                    // Remove the old entity
                     _entitiesManager.Remove(change.ShortId, true);
                 }
-                // Lag detected.
-                else if (change.Property == (byte)Change.Prop.LagDetected)
+                // Lag detected
+                else if (change.Property == (byte)PropertyType.LagDetected)
                 {
                     _client.GetLogger().Debug("CNetManager::update : Lag detected.");
                 }
-                // Probe received.
-                else if (change.Property == (byte)Change.Prop.ProbeReceived)
+                // Probe received
+                else if (change.Property == (byte)PropertyType.ProbeReceived)
                 {
                     _client.GetLogger().Debug("CNetManager::update : Probe Received.");
                 }
-                // Connection ready.
-                else if (change.Property == (byte)Change.Prop.ConnectionReady)
+                // Connection ready
+                else if (change.Property == (byte)PropertyType.ConnectionReady)
                 {
                     _client.GetLogger().Debug("CNetManager::update : Connection Ready.");
                 }
-                // Property unknown.
+                // Property unknown
                 else
                 {
                     _client.GetLogger().Warn("CNetManager::update : The property '" + change.Property + "' is unknown.");
@@ -805,8 +807,6 @@ namespace RCC.Network
         /// </summary>
         private void ImpulseTeamContactInit(BitMemoryStream impulse)
         {
-            var vIgnoreListName = new List<string>();
-
             var len = 0;
             impulse.Serial(ref len);
 
@@ -831,7 +831,17 @@ namespace RCC.Network
                 vFriendListOnline.Add((CharConnectionState)state);
             }
 
-            //impulse.SerialCont(vIgnoreListName); TODO: ignore list - do we need them?
+            len = 0;
+            impulse.Serial(ref len);
+
+            var vIgnoreListName = new List<string>();
+
+            for (var i = 0; i < len; i++)
+            {
+                var value = "";
+                impulse.Serial(ref value);
+                vIgnoreListName.Add(value);
+            }
 
             _client.Automata.OnTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
         }
@@ -1026,17 +1036,17 @@ namespace RCC.Network
 
             if (_entitiesManager.UserEntity != null)
             {
-                UserEntity.Pos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
-                UserEntity.Front = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
-                UserEntity.Dir = UserEntity.Front;
-                UserEntity.SetHeadPitch(0);
+                _entitiesManager.UserEntity.Pos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
+                _entitiesManager.UserEntity.Front = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
+                _entitiesManager.UserEntity.Dir = _entitiesManager.UserEntity.Front;
+                _entitiesManager.UserEntity.SetHeadPitch(0);
 
-                _client.GetLogger().Info($"Received Char Position: {UserEntity.Pos} Heading: {heading:0.000} Front: {UserEntity.Front:0.000}");
+                _client.GetLogger().Info($"Received Char Position: {_entitiesManager.UserEntity.Pos} Heading: {heading:0.000} Front: {_entitiesManager.UserEntity.Front:0.000}");
 
                 // Update the position for the vision.
-                _networkConnection.SetReferencePosition(UserEntity.Pos);
+                _networkConnection.SetReferencePosition(_entitiesManager.UserEntity.Pos);
 
-                _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, UserEntity.Pos, UserEntity.Front, season, userRole, isInRingSession);
+                _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, _entitiesManager.UserEntity.Pos, _entitiesManager.UserEntity.Front, season, userRole, isInRingSession);
             }
             else
             {
@@ -1057,12 +1067,10 @@ namespace RCC.Network
         /// <summary>
         /// decode server client message for the character information at the beginning
         /// </summary>
-        /// <author>PUZIN Guillaume(GUIGUI)</author>
+        /// <author>PUZIN Guillaume (GUIGUI)</author>
         /// <author>Nevrax France</author>
         /// <date>2002</date>
-        private static int UserCharMsgRead(BitMemoryStream impulse, out int y, out int z, out float heading, out short season,
-            out int userRole, out bool isInRingSession, out int highestMainlandSessionId, out int firstConnectedTime,
-            out int playedTime)
+        private static int UserCharMsgRead(BitMemoryStream impulse, out int y, out int z, out float heading, out short season, out int userRole, out bool isInRingSession, out int highestMainlandSessionId, out int firstConnectedTime, out int playedTime)
         {
             var x = 0;
             y = 0;
@@ -1151,6 +1159,8 @@ namespace RCC.Network
                 impulse.Serial(ref bank, nbits);
 
                 // reset the bank
+                if (_databaseManager == null) return;
+
                 _databaseManager.ResetBank(serverTick, bank);
 
                 _client.Automata.OnDatabaseResetBank(serverTick, bank, _databaseManager);
@@ -1181,6 +1191,8 @@ namespace RCC.Network
                 impulse.Serial(ref bank, nbits);
 
                 // read delta
+                if (_databaseManager == null) return;
+
                 _databaseManager.ReadDelta(serverTick, impulse, bank);
 
                 _client.Automata.OnDatabaseInitBank(serverTick, bank, _databaseManager);
@@ -1208,6 +1220,8 @@ namespace RCC.Network
                 impulse.Serial(ref bank, nbits);
 
                 // read delta
+                if (_databaseManager == null) return;
+
                 _databaseManager.ReadDelta(serverTick, impulse, bank);
 
                 _client.Automata.OnDatabaseUpdateBank(serverTick, bank, _databaseManager);
@@ -1237,8 +1251,6 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        const int CDBPlayer = 0;
-
         /// <summary>
         /// ImpulseDatabaseInitPlayer
         /// </summary>
@@ -1255,7 +1267,9 @@ namespace RCC.Network
                 impulse.Serial(ref serverTick);
 
                 // read delta
-                _databaseManager.ReadDelta(serverTick, impulse, CDBPlayer);
+                if (_databaseManager == null) return;
+
+                _databaseManager.ReadDelta(serverTick, impulse, CdbPlayer);
                 _databaseManager.SetInitPacketReceived();
                 _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
 
@@ -1281,7 +1295,10 @@ namespace RCC.Network
                 impulse.Serial(ref serverTick);
 
                 // read delta
-                _databaseManager.ReadDelta(serverTick, impulse, CDBPlayer); // unlike on the server, here there is only one unified CCDBSynchronized object
+                if (_databaseManager == null) return;
+
+                _databaseManager.ReadDelta(serverTick, impulse,
+                    CdbPlayer); // unlike on the server, here there is only one unified CCDBSynchronized object
 
                 _client.Automata.OnDatabaseUpdatePlayer(serverTick);
             }
