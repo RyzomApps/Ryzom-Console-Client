@@ -83,7 +83,7 @@ namespace RCC
             get => _channel;
             set
             {
-                Log?.Info($"Channel changed to {value}");
+                Log?.Info($"Chat channel changed to {value}");
                 _channel = value;
             }
         }
@@ -670,20 +670,21 @@ namespace RCC
         private void TimeoutDetector()
         {
             // TODO: TimeoutDetector
-            //UpdateKeepAlive();
-            //do
-            //{
-            //    Thread.Sleep(TimeSpan.FromSeconds(15));
-            //    lock (lastKeepAliveLock)
-            //    {
-            //        if (lastKeepAlive.AddSeconds(30) < DateTime.Now)
-            //        {
-            //            OnConnectionLost(AutomatonBase.DisconnectReason.ConnectionLost, Translations.Get("error.timeout"));
-            //            return;
-            //        }
-            //    }
-            //}
-            //while (true);
+            do
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(15));
+
+                if (_networkConnection.ConnectionState == ConnectionState.NotInitialized)
+                    continue;
+
+                if (_networkConnection.GetCurrentServerTick() + 30 * 1000 < DateTime.Now.Ticks)
+                {
+                    Automata.OnConnectionLost(AutomatonBase.DisconnectReason.ConnectionLost, "error.timeout");
+                    return;
+                }
+
+            }
+            while (true);
         }
 
         /// <summary>

@@ -15,7 +15,6 @@ using System.Numerics;
 using System.Threading;
 using RCC.Config;
 using RCC.Database;
-using RCC.Entity;
 using RCC.Helper;
 using RCC.Network.Action;
 using RCC.Property;
@@ -43,7 +42,7 @@ namespace RCC.Network
         /// <summary>
         /// The current state of the connection
         /// </summary>
-        private ConnectionState _connectionState = ConnectionState.NotInitialized;
+        private ConnectionState _connectionState;
 
         /// <summary>
         /// Generic action multipart handling structures
@@ -121,7 +120,7 @@ namespace RCC.Network
 
         private int _totalMessages;
 
-        VisualPropertyNodeClient _VisualPropertyTreeRoot;
+        VisualPropertyNodeClient _visualPropertyTreeRoot;
 
         /// <summary>
         /// the time currently played at this frame (in the past)
@@ -165,7 +164,7 @@ namespace RCC.Network
         private readonly List<int> _latestProbes = new List<int>();
         private int _latestProbe;
 
-        uint _quitId = 0;
+        private uint _quitId;
 
         private const int NumBitsInLongAck = 512;
         private bool[] _longAckBitField = new bool[NumBitsInLongAck * 2];
@@ -187,9 +186,7 @@ namespace RCC.Network
         private long _latestQuitTime;
         private bool _receivedAckQuit;
 
-        const bool IgnoreEntityDbUpdates = false;
-
-        readonly Dictionary<uint, byte> _IdMap = new Dictionary<uint, byte>();
+        readonly Dictionary<uint, byte> _idMap = new Dictionary<uint, byte>();
 
         /// <summary>
         /// /// Mean download (payload bytes)
@@ -295,8 +292,8 @@ namespace RCC.Network
             InitCookie(cookie, addr);
 
             // Init visual property tree
-            _VisualPropertyTreeRoot = new VisualPropertyNodeClient();
-            _VisualPropertyTreeRoot.BuildTree();
+            _visualPropertyTreeRoot = new VisualPropertyNodeClient();
+            _visualPropertyTreeRoot.BuildTree();
 
             // get md5 hashes
             _msgXmlMD5 = Misc.GetFileMD5("data\\msg.xml"); // c9728a56c6852972e52b88a37b48fd8b
@@ -1028,8 +1025,8 @@ namespace RCC.Network
                         {
                             var sheet = _propertyDecoder.Sheet(slot);
 
-                            if (!_IdMap.ContainsKey(sheet))
-                                _IdMap.Remove(sheet);
+                            if (!_idMap.ContainsKey(sheet))
+                                _idMap.Remove(sheet);
 
                             _propertyDecoder.RemoveEntity(slot);
 
@@ -1062,7 +1059,7 @@ namespace RCC.Network
                     //_client.Log.Info($"slot {slot} AB: {associationBits} timestamp: {timestamp}");
 
                     // Tree
-                    var currentNode = _VisualPropertyTreeRoot;
+                    var currentNode = _visualPropertyTreeRoot;
 
                     msgin.Serial(ref currentNode.A().BranchHasPayload);
 
@@ -1155,7 +1152,7 @@ namespace RCC.Network
             catch (Exception e)
             {
                 // End of stream (saves useless bits)
-                _client.Log.Debug("End of stream (saves useless bits) " + e.Message);
+                _client.Log.Debug("End of stream (saves useless bits) " + e.Message + " " + msgin);
             }
         }
 
@@ -1850,14 +1847,14 @@ namespace RCC.Network
                     {
                         var sheet = _propertyDecoder.Sheet(slot);
 
-                        if (_IdMap.ContainsKey(sheet)) { _IdMap.Remove(sheet); }
+                        if (_idMap.ContainsKey(sheet)) { _idMap.Remove(sheet); }
 
                         _propertyDecoder.RemoveEntity(slot);
                     }
 
                     var newSheetId = (uint)(ac.GetValue() & 0xffffffff);
-                    if (_IdMap.ContainsKey(newSheetId)) _IdMap.Remove(newSheetId);
-                    _IdMap.Add(newSheetId, slot);
+                    if (_idMap.ContainsKey(newSheetId)) _idMap.Remove(newSheetId);
+                    _idMap.Add(newSheetId, slot);
 
                     _propertyDecoder.AddEntity(slot, newSheetId);
 
@@ -1977,7 +1974,7 @@ namespace RCC.Network
                     {
                         if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
                         {
-                            DatabaseNodeLeaf node = nodeRoot.GetNode(slot).GetNode(propIndex) as DatabaseNodeLeaf;
+                            var node = nodeRoot.GetNode(slot).GetNode(propIndex) as DatabaseNodeLeaf;
                             Debug.Assert(node != null);
                             node.SetValue64(ac.GetValue());
                         }

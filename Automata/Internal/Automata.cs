@@ -133,6 +133,17 @@ namespace RCC.Automata.Internal
         }
 
         /// <summary>
+        /// Called after the connection was unrecoverable lost
+        /// </summary>
+        public void OnConnectionLost(AutomatonBase.DisconnectReason reason, string message)
+        {
+            DispatchAutomatonEvent(automaton => automaton.OnDisconnect(reason, message));
+
+            _automataOnHold.Clear();
+            _automataOnHold.AddRange(_automata);
+        }
+
+        /// <summary>
         /// Called after an internal command has been performed
         /// </summary>
         public void OnInternalCommand(string commandName, string command, string responseMsg)
@@ -413,5 +424,6 @@ namespace RCC.Automata.Internal
         }
 
         #endregion
+
     }
 }

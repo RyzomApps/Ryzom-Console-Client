@@ -717,7 +717,7 @@ namespace RCC.Network
         private void ImpulseStringResp(BitMemoryStream impulse)
         {
             uint stringId = 0;
-            string strUtf8 = "";
+            var strUtf8 = "";
             impulse.Serial(ref stringId);
             impulse.Serial(ref strUtf8, false);
 
