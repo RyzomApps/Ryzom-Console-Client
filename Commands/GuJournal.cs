@@ -4,6 +4,7 @@ using RCC.Network;
 
 namespace RCC.Commands
 {
+    // TODO: not in msg.xml :(
     public class GuJournal : CommandBase
     {
         public override string CmdName => "GUJournal";

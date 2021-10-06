@@ -4,26 +4,27 @@ using RCC.Network;
 
 namespace RCC.Commands
 {
-    // TODO: not in msg.xml :(
-    public class GuFriendAccept : CommandBase
+    public class Sit : CommandBase
     {
-        public override string CmdName => "GUFriendAccept";
-
+        public override string CmdName => "sit";
         public override string CmdUsage => "";
-
-        public override string CmdDesc => "accept to be a friend of a guild that invited you";
+        public override string CmdDesc => "client send to the server the sitting state";
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
-            var args = GetArgs(command);
+            bool s = true; // sit state
 
-            if (args.Length != 0) return "";
-
-            const string msgName = "GUILD:ACCEPT_FRIEND_INVITATION";
-            var out2 = new BitMemoryStream();
-
+            // send afk state
+            string msgName = "COMMAND:SIT";
+            BitMemoryStream out2 = new BitMemoryStream();
             if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            {
+                out2.Serial(ref s);
                 handler.GetNetworkManager().Push(out2);
+            }
+            else
+                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+
             return "";
         }
 
