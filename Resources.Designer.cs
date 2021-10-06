@@ -61,15 +61,30 @@ namespace RCC {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 06.10.2021  9:13:31,02 
+        ///.
+        /// </summary>
+        internal static string BuildDate {
+            get {
+                return ResourceManager.GetString("BuildDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to StartupHost = &quot;shard.ryzom.com:40916&quot;;
         ///StartupPage = &quot;/login/r2_login.php&quot;;
         ///LanguageCode = &quot;en&quot;;		// english
         ///Application = { &quot;ryzom_live&quot;, &quot;./client_ryzom_r.exe&quot;, &quot;./&quot; };
         ///Username = &quot;&quot;;
         ///Password = &quot;&quot;;
-        ///SelectCharacter = &quot;0&quot;;
+        ///SelectCharacter = &quot;-1&quot;;
         ///OnlinePlayersLogger = false;
-        ///OnlinePlayersAPI = &quot;&quot;;.
+        ///OnlinePlayersAPI = &quot;&quot;;
+        ///AutoJoinTeam = false;
+        ///ImpulseDebugger = false;
+        ///Debug = false;
+        ///UseDatabase = false;
+        ///DecodeVisualProperties = false;.
         /// </summary>
         internal static string client {
             get {
@@ -82,15 +97,15 @@ namespace RCC {
         ///  &lt;!-- Define bank superclass --&gt;
         ///  &lt;bank_superclass&gt;
         ///    &lt;bank name=&quot;PLR&quot;
-        ///      class=&quot;CCDBSynchronised&quot; /&gt;
+        ///          class=&quot;CCDBSynchronised&quot; /&gt;
         ///    &lt;bank name=&quot;GUILD&quot;
-        ///      class=&quot;CCDBGroup&quot;
-        ///      dbAccessor=&quot;.Database&quot;&gt;
-        ///  &lt;include file=&quot;game_share/far_position.h&quot; /&gt;
-        ///  &lt;verbatime&gt;inline void _setProp(CCDBSynchronised &amp;amp;db,
-        ///  ICDBStructNode *node, TCharConnectionState value, bool
-        ///  forceSending = false) { db.x_setProp(node, uint64(value),
-        ///  forceSending); } inline void _getProp(const C [rest of string was truncated]&quot;;.
+        ///          class=&quot;CCDBGroup&quot;
+        ///          dbAccessor=&quot;.Database&quot;&gt;
+        ///      &lt;include file=&quot;game_share/far_position.h&quot; /&gt;
+        ///      &lt;verbatime&gt;inline void _setProp(CCDBSynchronised &amp;amp;db,
+        ///      ICDBStructNode *node, TCharConnectionState value, bool
+        ///      forceSending = false) { db.x_setProp(node, uint64(value),
+        ///      forceSending); } inline void _getProp(const C [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string database {
             get {
@@ -104,19 +119,18 @@ namespace RCC {
         ///    &lt;leaf name=&quot;PARTY&quot; /&gt;
         ///    &lt;leaf name=&quot;INVENTORY&quot; /&gt;
         ///    &lt;leaf name=&quot;FOLLOW&quot;
-        ///      sendto=&quot;AIS&quot;
-        ///      format=&quot;&quot;
-        ///      description=&quot;The client follows its target&quot; /&gt;
+        ///          sendto=&quot;AIS&quot;
+        ///          format=&quot;&quot;
+        ///          description=&quot;The client follows its target&quot; /&gt;
         ///    &lt;leaf name=&quot;NO_FOLLOW&quot;
-        ///      sendto=&quot;AIS&quot;
-        ///      format=&quot;&quot;
-        ///      description=&quot;The client stop following its target&quot; /&gt;
+        ///          sendto=&quot;AIS&quot;
+        ///          format=&quot;&quot;
+        ///          description=&quot;The client stop following its target&quot; /&gt;
         ///  &lt;/branch&gt;
         ///  &lt;branch name=&quot;CONNECTION&quot;&gt;
         ///    &lt;leaf name=&quot;USER_CHAR&quot; /&gt;
         ///    &lt;leaf name=&quot;NO_USER_CHAR&quot; /&gt;
-        ///    &lt;leaf name=&quot;USER_CHARS&quot;
-        ///      d [rest of string was truncated]&quot;;.
+        ///    &lt;leaf name=&quot;USER_CH [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string msg {
             get {

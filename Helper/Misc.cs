@@ -35,7 +35,7 @@ namespace RCC.Helper
         /// </summary>
         public static unsafe float Int32BitsToSingle(int value)
         {
-            return *(float*) &value;
+            return *(float*)&value;
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace RCC.Helper
             index |= c.R > 64 ? 4 : 0; // Red bit
             index |= c.G > 64 ? 2 : 0; // Green bit
             index |= c.B > 64 ? 1 : 0; // Blue bit
-            return (ConsoleColor) index;
+            return (ConsoleColor)index;
         }
 
         /// <summary>
@@ -153,6 +153,28 @@ namespace RCC.Helper
         public static void Resize<T>(this List<T> list, int sz) where T : new()
         {
             Resize(list, sz, new T());
+        }
+
+        public static string ToHumanReadableString(this TimeSpan t)
+        {
+            if (t.TotalSeconds <= 1)
+            {
+                return $@"{t:s\.ff}s";
+            }
+            if (t.TotalMinutes <= 1)
+            {
+                return $@"{t:%s}s";
+            }
+            if (t.TotalHours <= 1)
+            {
+                return $@"{t:%m}m";
+            }
+            if (t.TotalDays <= 1)
+            {
+                return $@"{t:%h}h";
+            }
+
+            return $@"{t:%d}d";
         }
     }
 }

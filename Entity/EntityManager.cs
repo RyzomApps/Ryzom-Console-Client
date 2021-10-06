@@ -8,6 +8,8 @@
 
 using RCC.Helper;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using RCC.Property;
 
 namespace RCC.Entity
@@ -203,6 +205,33 @@ namespace RCC.Entity
         public Entity GetEntityByName(string name, bool caseSensitive, bool complete)
         {
             throw new System.NotImplementedException();
+        }
+
+        /// <summary>
+        /// Write a file with the position of all entities.
+        /// </summary>
+        public void WriteEntities()
+        {
+            using var file = new StreamWriter("entities.txt");
+
+            var strTmp = "StartCommands = {\n";
+            file.Write(strTmp);
+
+            var nb = _entities.Count();
+
+            for (var i = 1; i < nb; ++i)
+            {
+                if (_entities[i] == null) continue;
+
+                strTmp = $"\"{_entities[i].SheetId()}\",\t\"{_entities[i].Pos.X}\", \"{_entities[i].Pos.Y}\", \"{_entities[i].Pos.Z}\", \"{_entities[i].Front.X}\", \"{_entities[i].Front.Y}\", \"{_entities[i].Front.Z}\",\t// {i}\n";
+                file.Write(strTmp);
+            }
+
+            strTmp = "};\n";
+            file.Write(strTmp);
+
+            // Close the File.
+            file.Close();
         }
     }
 }

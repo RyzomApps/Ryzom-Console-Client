@@ -77,6 +77,11 @@ namespace RCC.Network
         /// </summary>
         private readonly EntityManager _entitiesManager;
 
+        /// <summary>
+        /// char play time in seconds
+        /// </summary>
+        public int CharPlayedTime;
+
         public GenericMessageHeaderManager GetMessageHeaderManager() => _messageHeaderManager;
 
         public EntityManager GetEntityManager() => _entitiesManager;
@@ -1030,7 +1035,7 @@ namespace RCC.Network
             // received USER_CHAR
             _client.GetLogger().Debug("ImpulseCallBack : Received CONNECTION:USER_CHAR");
 
-            var x = UserCharMsgRead(impulse, out var y, out var z, out var heading, out var season, out var userRole, out var isInRingSession, out var highestMainlandSessionId, out var firstConnectedTime, out var playedTime);
+            UserCharMsgRead(impulse, out var x, out var y, out var z, out var heading, out var season, out var userRole, out var isInRingSession, out var highestMainlandSessionId, out var firstConnectedTime, out CharPlayedTime);
 
             ServerSeasonReceived = true; // set the season that will be used when selecting the continent from the position
 
@@ -1046,7 +1051,7 @@ namespace RCC.Network
                 // Update the position for the vision.
                 _networkConnection.SetReferencePosition(_entitiesManager.UserEntity.Pos);
 
-                _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, _entitiesManager.UserEntity.Pos, _entitiesManager.UserEntity.Front, season, userRole, isInRingSession);
+                _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, _entitiesManager.UserEntity.Pos, _entitiesManager.UserEntity.Front, season, userRole, isInRingSession);
             }
             else
             {
@@ -1058,7 +1063,7 @@ namespace RCC.Network
                 // Update the position for the vision.
                 _networkConnection.SetReferencePosition(userEntityInitPos);
 
-                _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, userEntityInitPos, userEntityInitFront, season, userRole, isInRingSession);
+                _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, userEntityInitPos, userEntityInitFront, season, userRole, isInRingSession);
             }
 
             _client.UserCharPosReceived = true;
@@ -1070,9 +1075,9 @@ namespace RCC.Network
         /// <author>PUZIN Guillaume (GUIGUI)</author>
         /// <author>Nevrax France</author>
         /// <date>2002</date>
-        private static int UserCharMsgRead(BitMemoryStream impulse, out int y, out int z, out float heading, out short season, out int userRole, out bool isInRingSession, out int highestMainlandSessionId, out int firstConnectedTime, out int playedTime)
+        private static void UserCharMsgRead(BitMemoryStream impulse, out int x, out int y, out int z, out float heading, out short season, out int userRole, out bool isInRingSession, out int highestMainlandSessionId, out int firstConnectedTime, out int playedTime)
         {
-            var x = 0;
+            x = 0;
             y = 0;
             z = 0;
 
@@ -1103,7 +1108,6 @@ namespace RCC.Network
             s.Serial(ref highestMainlandSessionId);
             s.Serial(ref firstConnectedTime);
             s.Serial(ref playedTime);
-            return x;
         }
 
         private void ImpulseUserChars(BitMemoryStream impulse)
