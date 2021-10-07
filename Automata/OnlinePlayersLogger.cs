@@ -307,7 +307,7 @@ namespace RCC.Automata
 
                 json += "]";
 
-                Debug.Print(json);
+                //Debug.Print(json);
 
                 using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                 {

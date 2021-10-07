@@ -22,7 +22,9 @@ namespace RCC.Network
         private int _bitPos;
         private bool[] _contentBits;
         private bool _inputStream;
-        private readonly List<BitMemoryStreamSerialInfo> _dbgData = new List<BitMemoryStreamSerialInfo>();
+        private readonly List<BitMemoryStreamSerialInfo> _debugData = new List<BitMemoryStreamSerialInfo>();
+
+        private const bool DebugEnabled = false;
 
         /// <summary>
         /// constructor differentiating between input and output stream and specifying the size of the stream
@@ -54,6 +56,14 @@ namespace RCC.Network
                     return (int)(_contentBits.Length / 8d); // (_contentBits.Length - 1) / 8 + 1;
 
                 return (int)((_bitPos - 1) / 8d) + 1;
+            }
+        }
+
+        public string DebugData
+        {
+            get
+            {
+                return _debugData.Aggregate("", (current, data) => current + $"{data}\r\n");
             }
         }
 
@@ -90,7 +100,7 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, 8, BitMemoryStreamSerialInfo.SerialType.Byte, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 8, BitMemoryStreamSerialInfo.SerialType.Byte, new StackTrace(true)));
                 var newBits = ReadFromArray(8);
                 obj = ConvertBoolArrayToByteArray(newBits)[0];
             }
@@ -108,7 +118,7 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.Int, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.Int, new StackTrace(true)));
                 var newBits = ReadFromArray(32);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToInt32(reversed);
@@ -127,7 +137,7 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.UInt, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.UInt, new StackTrace(true)));
                 var newBits = ReadFromArray(32);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToUInt32(reversed);
@@ -146,7 +156,7 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, 16, BitMemoryStreamSerialInfo.SerialType.UShort, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 16, BitMemoryStreamSerialInfo.SerialType.UShort, new StackTrace(true)));
                 var newBits = ReadFromArray(16);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToUInt16(reversed);
@@ -165,7 +175,7 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.Short, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.Short, new StackTrace(true)));
 
                 var bits = ReadFromArray(nbits);
 
@@ -191,7 +201,7 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.UInt, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.UInt, new StackTrace(true)));
 
                 var bits = ReadFromArray(nbits);
 
@@ -243,7 +253,7 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.ULong, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.ULong, new StackTrace(true)));
 
                 var bits = ReadFromArray(nbits);
 
@@ -267,7 +277,7 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, 64, BitMemoryStreamSerialInfo.SerialType.Long, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 64, BitMemoryStreamSerialInfo.SerialType.Long, new StackTrace(true)));
 
                 var newBits = ReadFromArray(64);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
@@ -287,7 +297,7 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, obj.Length * 8, BitMemoryStreamSerialInfo.SerialType.ByteArray, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, obj.Length * 8, BitMemoryStreamSerialInfo.SerialType.ByteArray, new StackTrace(true)));
 
                 var newBits = ReadFromArray(obj.Length * 8);
 
@@ -310,7 +320,7 @@ namespace RCC.Network
         {
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, 1, BitMemoryStreamSerialInfo.SerialType.Bool, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 1, BitMemoryStreamSerialInfo.SerialType.Bool, new StackTrace(true)));
 
                 // direct read
                 obj = _contentBits[_bitPos];
@@ -337,7 +347,7 @@ namespace RCC.Network
                 int len = 0;
                 Serial(ref len);
 
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * (isUnicode ? 2 : 1) * 8, BitMemoryStreamSerialInfo.SerialType.String, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * (isUnicode ? 2 : 1) * 8, BitMemoryStreamSerialInfo.SerialType.String, new StackTrace(true)));
 
                 byte[] b = new byte[len * (isUnicode ? 2 : 1)];
 
@@ -385,7 +395,7 @@ namespace RCC.Network
                 var len = obj.Length;
                 List<byte> bytefield = new List<byte>();
 
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, len, BitMemoryStreamSerialInfo.SerialType.BoolArray, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len, BitMemoryStreamSerialInfo.SerialType.BoolArray, new StackTrace(true)));
 
                 uint v = 0;
                 uint i = 0;
@@ -427,7 +437,7 @@ namespace RCC.Network
 
             if (IsReading())
             {
-                _dbgData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * 8, BitMemoryStreamSerialInfo.SerialType.Buffer, new StackTrace()));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * 8, BitMemoryStreamSerialInfo.SerialType.Buffer, new StackTrace(true)));
 
                 for (i = 0; i != len; ++i)
                 {

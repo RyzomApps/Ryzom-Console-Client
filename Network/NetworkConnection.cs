@@ -289,6 +289,9 @@ namespace RCC.Network
                 _registered = true;
             }
 
+            // Register property nbbits
+            ActionLong.RegisterNumericPropertiesRyzom();
+
             InitCookie(cookie, addr);
 
             // Init visual property tree
@@ -901,7 +904,7 @@ namespace RCC.Network
 
                             case SystemMessageType.SystemAckQuitCode:
                                 // receive ack quit -> reset connection state
-                                ReceiveSystemAckQuit(msgin);
+                                ReceiveSystemAckQuit();
                                 break;
 
                             default:
@@ -929,7 +932,7 @@ namespace RCC.Network
         /// <summary>
         /// Quit state
         /// </summary>
-        private void ReceiveSystemAckQuit(BitMemoryStream _)
+        private void ReceiveSystemAckQuit()
         {
             _client.GetLogger().Debug("CNET: received ACK_QUIT");
             _receivedAckQuit = true;
@@ -1005,16 +1008,16 @@ namespace RCC.Network
             {
                 while (true)
                 {
-                    // Check if there is a new block to read
-                    if (msgin.GetPosInBit() + (sizeof(byte) * 8) > msgin.Length * 8) // TODO Check DecodeVisualProperties - Check if there is a new block to read is working
+                    // Check if there is a new block to read - sizeof(TCLEntityId)
+                    if (msgin.GetPosInBit() + 8 * 8 > msgin.Length * 8)
                         return;
 
                     // Header
                     byte slot = 0;
-                    msgin.Serial(ref slot);
+                    msgin.Serial(ref slot); // 8
 
                     uint associationBits = 0;
-                    msgin.Serial(ref associationBits, 2);
+                    msgin.Serial(ref associationBits, 2); // 2
 
                     if (AssociationBitsHaveChanged(slot, associationBits))
                     {
@@ -1042,7 +1045,7 @@ namespace RCC.Network
                     // Read the timestamp delta if there's one (otherwise take _CurrentServerTick)
                     uint timestamp;
                     var timestampIsThere = false;
-                    msgin.Serial(ref timestampIsThere);
+                    msgin.Serial(ref timestampIsThere); // 1
 
                     if (timestampIsThere)
                     {
@@ -1061,13 +1064,13 @@ namespace RCC.Network
                     // Tree
                     var currentNode = _visualPropertyTreeRoot;
 
-                    msgin.Serial(ref currentNode.A().BranchHasPayload);
+                    msgin.Serial(ref currentNode.A().BranchHasPayload); // 1
 
                     if (currentNode.A().BranchHasPayload)
                     {
                         var ap = (ActionPosition)ActionFactory.Create(slot, ActionCode.ActionPositionCode);
 
-                        ap.Unpack(msgin);
+                        ap.Unpack(msgin); // TODO: ap unpack
                         _propertyDecoder.Receive(_currentReceivedNumber, ap);
 
                         // Set into property database
@@ -1110,16 +1113,16 @@ namespace RCC.Network
                     }
 
                     currentNode = currentNode.B();
-                    msgin.Serial(ref currentNode.BranchHasPayload);
+                    msgin.Serial(ref currentNode.BranchHasPayload); // 1
 
                     if (currentNode.BranchHasPayload)
                     {
-                        msgin.Serial(ref currentNode.A().BranchHasPayload);
+                        msgin.Serial(ref currentNode.A().BranchHasPayload); // 1
 
                         if (currentNode.A().BranchHasPayload)
                         {
                             var ac = (ActionLong)ActionFactory.CreateByPropIndex(slot, (byte)PropertyType.Orientation);
-                            ac.Unpack(msgin);
+                            ac.Unpack(msgin); // TODO: ap unpack
 
                             // Process orientation
                             var thechange = new Change(slot, (byte)PropertyType.Orientation, timestamp);
@@ -1152,7 +1155,7 @@ namespace RCC.Network
             catch (Exception e)
             {
                 // End of stream (saves useless bits)
-                _client.Log.Debug("End of stream (saves useless bits) " + e.Message + " " + msgin);
+                Debug.Print($"End of stream (saves useless bits) {e.Message}:\r\n{msgin.DebugData}");
             }
         }
 
@@ -1911,7 +1914,7 @@ namespace RCC.Network
                         {
                             if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
                             {
-                                DatabaseNodeLeaf node = nodeRoot.GetNode(slot).GetNode((byte)PropertyType.Orientation) as DatabaseNodeLeaf;
+                                var node = nodeRoot.GetNode(slot).GetNode((byte)PropertyType.Orientation) as DatabaseNodeLeaf;
                                 Debug.Assert(node != null);
                                 node.SetValue64(mode44 >> 12);
                             }

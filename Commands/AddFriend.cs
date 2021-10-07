@@ -33,7 +33,7 @@ namespace RCC.Commands
                 out2.Serial(ref temp);
                 out2.Serial(ref list);
 
-                Debug.Print(out2.ToString());
+                //Debug.Print(out2.ToString());
 
                 handler.GetNetworkManager().Push(out2);
             }

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using RCC.Entity;
 using RCC.Property;
 
@@ -42,15 +43,6 @@ namespace RCC.Network.Action
         public static ActionBase Create()
         {
             return new ActionLong();
-        }
-
-        /// <summary>
-        /// Register a property to set the number of bits
-		/// that must be transmitted.
-		/// </summary>
-        public static void RegisterNumericProperty(byte propIndex, uint nbbits)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -133,6 +125,49 @@ namespace RCC.Network.Action
         {
             _value = 0;
             _nbBits = 0;
+        }
+
+        private const int UserDefinedPropertyNbBits = 32;
+        private const int PvpModeNbBits = 10;
+
+        // <summary>
+        // Register all of properties to set the number of bits
+        // that must be transmitted.
+        // </summary>
+        public static void RegisterNumericPropertiesRyzom()
+        {
+            RegisterNumericProperty(PropertyType.Orientation, 32); // overridden in fillOutBox
+            RegisterNumericProperty(PropertyType.Sheet, 52); // 32(sheet) + 20(row)
+            RegisterNumericProperty(PropertyType.Behaviour, 48);
+            RegisterNumericProperty(PropertyType.NameStringID, 32); // please do not lower it (or tell Olivier, used for forage sources)
+            RegisterNumericProperty(PropertyType.TargetID, 8); // slot
+            RegisterNumericProperty(PropertyType.Mode, 44);
+            RegisterNumericProperty(PropertyType.Vpa, 64);
+            RegisterNumericProperty(PropertyType.Vpb, 47);
+            RegisterNumericProperty(PropertyType.Vpc, 58);
+            RegisterNumericProperty(PropertyType.EntityMountedID, 8); // slot
+            RegisterNumericProperty(PropertyType.RiderEntityID, 8); // slot
+            RegisterNumericProperty(PropertyType.Contextual, 16);
+            RegisterNumericProperty(PropertyType.Bars, 32); // please do not lower it (or tell Olivier, used for forage sources)
+            RegisterNumericProperty(PropertyType.TargetList, UserDefinedPropertyNbBits);
+            RegisterNumericProperty(PropertyType.VisualFx, 11); // please do not lower it (or tell Olivier, used for forage sources)
+            RegisterNumericProperty(PropertyType.GuildSymbol, 60);
+            RegisterNumericProperty(PropertyType.GuildNameID, 32);
+            RegisterNumericProperty(PropertyType.EventFactionID, 32);
+            RegisterNumericProperty(PropertyType.PvpMode, PvpModeNbBits);
+            RegisterNumericProperty(PropertyType.PvpClan, 32);
+            RegisterNumericProperty(PropertyType.OwnerPeople, 3); // 4 races and unknow
+            RegisterNumericProperty(PropertyType.OutpostInfos, 16); // 15+1
+        }
+
+        // <summary>
+        // Register a property to set the number of bits
+        // that must be transmitted.
+        // </summary>
+        public static void RegisterNumericProperty(PropertyType propIndex, int nbbits)
+        {
+            Debug.Assert(nbbits > 0 && nbbits <= 64);
+            PropertyToNbBit[(int)propIndex] = nbbits;
         }
     }
 }

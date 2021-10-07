@@ -41,7 +41,7 @@ namespace RCC.Network
 
         public override string ToString()
         {
-            return $"{BitPos} {BitSize} {Type} {Trace.GetFrame(1)?.GetMethod()?.Name}";
+            return $"{BitPos} {BitSize} {Type} {Trace.GetFrame(1)?.GetMethod()?.Name}:{Trace.GetFrame(1)?.GetFileLineNumber()}";
         }
     }
 }
