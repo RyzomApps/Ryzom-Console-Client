@@ -42,8 +42,8 @@ namespace RCC.Client
         /// <summary>
         /// Callback for string value from the server
         /// </summary>
-        private readonly Dictionary<uint, StringWaitCallback> StringsCallbacks =
-            new Dictionary<uint, StringWaitCallback>();
+        private readonly Dictionary<uint, Action<uint, string>> StringsCallbacks =
+            new Dictionary<uint, Action<uint, string>>();
 
         /// <summary>
         /// Callback for dyn string value from the server
@@ -257,7 +257,7 @@ namespace RCC.Client
                 }
             }
             else
-                if(!WaitingDynStrings.ContainsKey(dynId)) WaitingDynStrings.Add(dynId, dynInfo);
+                if (!WaitingDynStrings.ContainsKey(dynId)) WaitingDynStrings.Add(dynId, dynInfo);
 
             // Fire an Event
             _client.Automata.OnPhraseSend(dynInfo);
@@ -710,7 +710,7 @@ namespace RCC.Client
             // callback the waiter
             if (StringsCallbacks.ContainsKey(stringId))
             {
-                StringsCallbacks[stringId].OnStringAvailable(stringId, str);
+                StringsCallbacks[stringId](stringId, str);
                 StringsCallbacks.Remove(stringId);
             }
 
@@ -739,6 +739,29 @@ namespace RCC.Client
 
                         restartLoop = true;
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Wait for a string or fire the action if the string is already present
+        /// </summary>
+        public void WaitString(in uint stringId, Action<uint, string> pcallback, NetworkManager networkManager)
+        {
+            if (GetString(stringId, out var value, networkManager))
+            {
+                pcallback(stringId, value);
+            }
+            else
+            {
+                // wait for the string
+                if (StringsCallbacks.ContainsKey(stringId))
+                {
+                    StringsCallbacks[stringId] = pcallback;
+                }
+                else
+                {
+                    StringsCallbacks.Add(stringId, pcallback);
                 }
             }
         }

@@ -285,6 +285,7 @@ namespace RCC.Network
                 ActionFactory.RegisterAction(ActionCode.ActionGenericMultiPartCode, typeof(ActionGenericMultiPart));
                 ActionFactory.RegisterAction(ActionCode.ActionPositionCode, typeof(ActionPosition));
                 ActionFactory.RegisterAction(ActionCode.ActionSint64, typeof(ActionLong));
+                ActionFactory.RegisterAction(ActionCode.ActionTargetSlotCode, typeof(ActionTargetSlot));
 
                 _registered = true;
             }
@@ -1987,6 +1988,29 @@ namespace RCC.Network
             }
 
             ActionFactory.Remove(ac);
+        }
+
+
+        public void PushTarget(in byte slot, TargettingType targetOrPickup)
+        {
+            ActionTargetSlot ats = (ActionTargetSlot)ActionFactory.Create(InvalidSlot, ActionCode.ActionTargetSlotCode);
+            Debug.Assert(ats != null);
+            ats.Slot = slot;
+            switch (targetOrPickup) // ensure the value is good for the FE
+            {
+                case TargettingType.None:
+                    ats.TargetOrPickup = 0;
+                    break;
+                case TargettingType.Lootable:
+                    ats.TargetOrPickup = 1;
+                    break;
+                case TargettingType.Harvestable:
+                    ats.TargetOrPickup = 2;
+                    break;
+            }
+
+            ats.TargetOrPickup = (uint)targetOrPickup;
+            Push(ats);
         }
     }
 }

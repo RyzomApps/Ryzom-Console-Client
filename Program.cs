@@ -71,6 +71,8 @@ namespace RCC
         /// </summary>
         private static void Main(string[] args)
         {
+            //Console.OutputEncoding = Encoding.Unicode;
+
             Banner();
 
             Console.Title = $@"[RCC] {Version}";
@@ -100,7 +102,7 @@ namespace RCC
             // Take advantage of Windows 10 / Mac / Linux UTF-8 console
             if (IsUsingMono || WindowsVersion.WinMajorVersion >= 10)
             {
-                Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
+                Console.OutputEncoding = Console.InputEncoding = Encoding.Unicode;
             }
 
             // Process ini configuration file

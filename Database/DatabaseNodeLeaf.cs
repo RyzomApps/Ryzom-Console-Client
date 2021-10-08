@@ -244,7 +244,7 @@ namespace RCC.Database
         }
 
         /// <summary>Return the value of the property.</summary>
-        private long GetValue64() { return _property; }
+        public long GetValue64() { return _property; }
 
         public void NotifyObservers()
         {

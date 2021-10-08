@@ -18,7 +18,6 @@ namespace RCC.Commands
 
             if (args.Length != 1) return "";
 
-
             const string msgName = "GUILD:SET_SUCCESSOR";
             var out2 = new BitMemoryStream();
 

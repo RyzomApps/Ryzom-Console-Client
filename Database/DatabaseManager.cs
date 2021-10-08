@@ -205,12 +205,33 @@ namespace RCC.Database
 
         private void WriteInitInProgressIntoUIDB()
         {
-            //TODO: implementation of WriteInitInProgressIntoUIDB
+            //TODO: implementation of WriteInitInProgressIntoUIDB -> UI:VARIABLES:CDB_INIT_IN_PROGRESS
         }
 
+        /// <summary>
+		/// Resets the specified bank.
+		/// </summary>
+		/// <param name="gc"> GameCycle ( no idea what it is exactly, probably some time value)</param>
+		/// <param name="bank"> The banks we want to reset</param>
         public void ResetBank(in uint gc, in uint bank)
         {
             _database.ResetNode(gc, BankHandler.GetUidForBank(bank));
+        }
+
+        /// <summary>
+	    /// Return the value of a property (the update flag is set to false)
+	    /// </summary>
+	    /// <param name="name">is the name of the property</param>
+	    /// <returns>the value of the property</returns>
+        public long GetProp(string name)
+        {
+            if (_database != null)
+            {
+                var txtId = new TextId(name);
+                return _database.GetProp(txtId);
+            }
+
+            throw new Exception("EDBNotInit");
         }
     }
 }

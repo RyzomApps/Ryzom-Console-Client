@@ -1,5 +1,4 @@
 ﻿using RCC.Commands.Internal;
-using RCC.Network;
 using System.Collections.Generic;
 
 namespace RCC.Commands
@@ -14,16 +13,25 @@ namespace RCC.Commands
         {
             var args = GetArgs(command);
 
-            //var entityName = "";
+            var entityName = "";
 
             if (args.Length != 0)
             {
-                //entityName = string.Join(" ", args);
+                entityName = string.Join(" ", args);
             }
 
-            //Entity.Entity entity = handler.GetNetworkManager().GetEntityManager().GetEntityByName(entityName, false, true);
+            // Try to get the entity with complete match first
+            var entity = handler.GetNetworkManager().GetEntityManager().GetEntityByName(entityName, false, true);
 
-            return "not implemented!";
+            if (entity == null)
+            {
+                handler.GetLogger().Warn($"Could not find '{entityName}'.");
+                return "";
+            }
+
+            handler.GetNetworkManager().GetEntityManager().UserEntity.Selection(entity.Slot(), handler);
+
+            return "";
         }
 
         public override IEnumerable<string> GetCmdAliases()

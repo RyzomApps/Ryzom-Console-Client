@@ -56,7 +56,7 @@ namespace RCC.Helper.Tasks
         /// <summary>
         /// Get the exception thrown by the inner delegate, if any
         /// </summary>
-        public Exception Exception { get; private set; } = null;
+        public Exception Exception { get; private set; }
 
         /// <summary>
         /// Execute the task in the current thread and set the <see cref="Result" /> property or to the returned

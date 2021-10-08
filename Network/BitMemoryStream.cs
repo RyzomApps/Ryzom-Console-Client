@@ -11,6 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace RCC.Network
 {
@@ -24,7 +25,11 @@ namespace RCC.Network
         private bool _inputStream;
         private readonly List<BitMemoryStreamSerialInfo> _debugData = new List<BitMemoryStreamSerialInfo>();
 
+#if DEBUG
+        private const bool DebugEnabled = true;
+#else
         private const bool DebugEnabled = false;
+#endif
 
         /// <summary>
         /// constructor differentiating between input and output stream and specifying the size of the stream
@@ -122,6 +127,22 @@ namespace RCC.Network
                 var newBits = ReadFromArray(32);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToInt32(reversed);
+            }
+            else
+            {
+                var bytes = BitConverter.GetBytes(obj);
+                AddToArray(bytes);
+            }
+        }
+
+        /// <summary>
+        /// serializes type float
+        /// </summary>
+        public void Serial(ref float obj)
+        {
+            if (IsReading())
+            {
+                throw new NotImplementedException();
             }
             else
             {
@@ -340,45 +361,44 @@ namespace RCC.Network
         /// <summary>
         /// serializes type string (see ucstring)
         /// </summary>
-        public void Serial(ref string obj, bool isUnicode = true)
+        public void Serial(ref string obj, bool isUtf16 = true)
         {
             if (IsReading())
             {
                 int len = 0;
                 Serial(ref len);
 
-                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * (isUnicode ? 2 : 1) * 8, BitMemoryStreamSerialInfo.SerialType.String, new StackTrace(true)));
+                if (DebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * (isUtf16 ? 2 : 1) * 8, BitMemoryStreamSerialInfo.SerialType.String, new StackTrace(true)));
 
-                byte[] b = new byte[len * (isUnicode ? 2 : 1)];
+                var b = new byte[len * (isUtf16 ? 2 : 1)];
 
                 // Read the string.
-                for (uint i = 0; i != len * (isUnicode ? 2 : 1); ++i)
+                for (uint i = 0; i != len * (isUtf16 ? 2 : 1); ++i)
                     Serial(ref b[i]);
 
-                obj = Program.Enc1252.GetString(b).Replace("\0", "");
+                obj = isUtf16 ? Encoding.BigEndianUnicode.GetString(b) : Encoding.UTF8.GetString(b);
             }
             else
             {
                 obj = new string(obj.Reverse().ToArray());
-                var str8 = new byte[obj.Length * (isUnicode ? 2 : 1)];
-                int index2 = 0;
+                var str8 = new byte[obj.Length * (isUtf16 ? 2 : 1)];
+                var index2 = 0;
 
-                int len = obj.Length;
+                var len = obj.Length;
                 Serial(ref len);
 
-                for (var index = 0; index < obj.ToCharArray().Length; index++)
+                for (var i = 0; i < obj.ToCharArray().Length; ++i)
                 {
-                    var c = obj.ToCharArray()[index];
-                    var bytes = BitConverter.GetBytes(c);
+                    var c = obj.ToCharArray()[i];
+                    var bytes = BitConverter.GetBytes(c); // TODO use right encoding
 
                     str8[index2] = bytes[0];
                     index2++;
 
-                    if (isUnicode)
-                    {
-                        str8[index2] = 0;
-                        index2++;
-                    }
+                    if (!isUtf16) continue;
+
+                    str8[index2] = 0;
+                    index2++;
                 }
 
                 AddToArray(str8);

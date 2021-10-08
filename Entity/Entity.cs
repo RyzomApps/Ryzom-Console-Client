@@ -6,7 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System;
+using System.Diagnostics;
 using System.Numerics;
+using RCC.Database;
+using RCC.Property;
 
 namespace RCC.Entity
 {
@@ -18,6 +22,9 @@ namespace RCC.Entity
     /// <date>2001</date>
     public class Entity
     {
+        public const byte INVALID_SLOT = 255;
+        public const uint INVALID_CLIENT_DATASET_INDEX = 0xFFFFF;
+
         /// <summary>
         /// Entity Id (CLFECOMMON::INVALID_CLIENT_DATASET_INDEX for an invalid one)
         /// </summary>
@@ -43,6 +50,31 @@ namespace RCC.Entity
         /// </summary>
         private readonly int _gmTitle;
 
+        /// <summary>
+        /// Current Name for the entity
+        /// </summary>
+        private string _entityName;
+
+        /// <summary>
+        /// Current guild name of the entity
+        /// </summary>
+        private string _entityGuildName;
+
+        /// <summary>
+        /// Slot of the entity.
+        /// </summary>
+        private byte _slot;
+
+        /// <summary>
+        /// Slot of the target or CLFECOMMON::INVALID_SLOT if there is no target.
+        /// </summary>
+        private byte _targetSlot;
+
+        private DatabaseNodeBranch _dbEntry;
+
+        private uint _NameId;
+        private uint _GuildNameId;
+
         public Vector3 Pos { get; set; }
 
         public Vector3 Front { get; set; }
@@ -53,6 +85,59 @@ namespace RCC.Entity
         {
         }
 
+        public void SetName(uint id, string value)
+        {
+            RyzomClient.GetInstance().GetLogger().Info($"{_slot} received a name: {value} ({id})");
+
+            _entityName = value;
+        }
+
+        private void SetGuildName(uint id, string value)
+        {
+            RyzomClient.GetInstance().GetLogger().Info($"{_slot} received a guild name: {value} ({id})");
+
+            _entityGuildName = value;
+        }
+
+        #region Static Methods
+        public static string RemoveTitleFromName(string name)
+        {
+            var p1 = name.IndexOf('$');
+
+            if (p1 == -1)
+            {
+                return name;
+            }
+
+            var p2 = name.IndexOf('$', p1 + 1);
+
+            if (p2 != -1)
+            {
+                return name.Substring(0, p1) + name[(p2 + 1)..];
+            }
+
+            return name.Substring(0, p1);
+        }
+
+        public static string RemoveShardFromName(string name)
+        {
+            // The string must contains a '(' and a ')'
+            var p0 = name.IndexOf('(');
+            var p1 = name.IndexOf(')');
+
+            if (p0 == -1 || p1 == -1 || p1 <= p0)
+                return name;
+
+            // Remove all shard names (hack)
+            return name.Substring(0, p0) + name[(p1 + 1)..];
+        }
+
+        public static string RemoveTitleAndShardFromName(string name)
+        {
+            return RemoveTitleFromName(RemoveShardFromName(name));
+        }
+        #endregion
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -61,6 +146,11 @@ namespace RCC.Entity
             // Initialize the object.
             _type = EntityType.Entity;
             _gmTitle = 0xFF;
+
+            _dataSetId = INVALID_CLIENT_DATASET_INDEX;
+
+            _slot = INVALID_SLOT;
+            _targetSlot = INVALID_SLOT;
 
             Init();
         }
@@ -100,6 +190,50 @@ namespace RCC.Entity
             //
             //_HasMoved = false;
             //_IsInTeam = false;
+        }
+
+        /// <summary>
+        /// Return a displayable name
+        /// </summary>
+        public string GetDisplayName()
+        {
+            return _entityName == null ? "" : RemoveTitleAndShardFromName(_entityName);
+        }
+
+        /// <summary>
+        /// Return the current slot for the entity or CLFECOMMON::INVALID_SLOT if the entity is not in any slot.
+        /// </summary>
+        public byte Slot()
+        {
+            return _slot;
+        }
+
+        /// <summary>
+        /// Return the current target of the entity or CLFECOMMON::INVALID_SLOT
+        /// </summary>
+        public byte TargetSlot()
+        {
+            return _targetSlot;
+        }
+
+        /// <summary>
+        /// Set the slot.
+        /// </summary>
+        public void SetSlot(in byte slot, DatabaseManager _databaseManager)
+        {
+            _slot = slot;
+
+            // Get the DB Entry - from CCharacterCL::build
+            if (_databaseManager.GetNodePtr() != null)
+            {
+                DatabaseNodeBranch nodeRoot = (DatabaseNodeBranch)(_databaseManager.GetNodePtr().GetNode(0));
+                if (nodeRoot != null)
+                {
+                    _dbEntry = (DatabaseNodeBranch)(nodeRoot.GetNode(_slot));
+                    if (_dbEntry == null)
+                        throw new Exception("Cannot get a pointer on the DB entry.");
+                }
+            }
         }
 
         /// <summary>
@@ -156,48 +290,231 @@ namespace RCC.Entity
         /// <param name="gameCycle">when this was sent</param>
         /// <param name="prop">the property to udapte</param>
         /// <param name="predictedInterval">prediction</param>
-        public void UpdateVisualProperty(uint gameCycle, uint prop, uint predictedInterval)
+        /// <param name="client">Main client</param>
+        public void UpdateVisualProperty(uint gameCycle, uint prop, uint predictedInterval, RyzomClient client)
         {
+            if (client == null)
+                throw new Exception("Update a visual property nees a client.");
 
+            var nodePtr = client.GetDatabaseManager().GetNodePtr();
+
+            if (nodePtr != null)
+            {
+                if (!(nodePtr.GetNode(0) is DatabaseNodeBranch nodeRoot))
+                {
+                    client.GetLogger().Warn($"CEntityCL::UpdateVisualProperty : There is no entry in the DB for entities (current slot {_slot}).");
+                    return;
+                }
+
+                if (!(nodeRoot.GetNode(_slot) is DatabaseNodeBranch nodGrp))
+                {
+                    client.GetLogger().Warn($"CEntityCL::UpdateVisualProperty : Cannot find the entity '{_slot}' in the database.");
+                    return;
+                }
+
+                // Get The property ptr.
+                if (!(nodGrp.GetNode((ushort)prop) is DatabaseNodeLeaf nodeProp))
+                {
+                    client.GetLogger().Warn($"CEntityCL::UpdateVisualProperty : Cannot find the property '{prop}' for the slot {_slot}.");
+                    return;
+                }
+
+                switch ((PropertyType)prop)
+                {
+                    case PropertyType.Position:
+                        UpdateVisualPropertyPos(gameCycle, nodeProp.GetValue64(), predictedInterval);
+                        break;
+
+                    case PropertyType.Orientation:
+                        //UpdateVisualPropertyOrient(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.Behaviour:
+                        //UpdateVisualPropertyBehaviour(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.NameStringID:
+                        UpdateVisualPropertyName(gameCycle, nodeProp.GetValue64(), client);
+                        break;
+
+                    case PropertyType.TargetID:
+                        //UpdateVisualPropertyTarget(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.Mode:
+                        //UpdateVisualPropertyMode(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.Vpa:
+                        //UpdateVisualPropertyVpa(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.Vpb:
+                        //UpdateVisualPropertyVpb(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.Vpc:
+                        //UpdateVisualPropertyVpc(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.EntityMountedID:
+                        //UpdateVisualPropertyEntityMounted(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.RiderEntityID:
+                        //UpdateVisualPropertyRiderEntity(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.TargetList:
+                        //case PropertyType.TargetList1:
+                        //case PropertyType.TargetList2:
+                        //case PropertyType.TargetList3:
+                        //    //UpdateVisualPropertyTargetList(gameCycle, nodeProp.GetValue64(), prop - PropertyType.TargetList0);
+                        break;
+
+                    case PropertyType.VisualFx:
+                        //UpdateVisualPropertyVisualFX(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    // Property to update the contextual menu, and some important status
+                    case PropertyType.Contextual:
+                        //UpdateVisualPropertyContextual(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.Bars:
+                        //UpdateVisualPropertyBars(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.GuildSymbol:
+                        //UpdateVisualPropertyGuildSymbol(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.GuildNameID:
+                        UpdateVisualPropertyGuildNameID(gameCycle, nodeProp.GetValue64(), client);
+                        break;
+
+                    case PropertyType.EventFactionID:
+                        //UpdateVisualPropertyEventFactionID(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.PvpMode:
+                        //UpdateVisualPropertyPvpMode(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.PvpClan:
+                        //UpdateVisualPropertyPvpClan(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.OwnerPeople:
+                        //UpdateVisualPropertyOwnerPeople(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    case PropertyType.OutpostInfos:
+                        //UpdateVisualPropertyOutpostInfos(gameCycle, nodeProp.GetValue64());
+                        break;
+
+                    default:
+                        client.GetLogger().Warn($"CEntityCL::UpdateVisualProperty : Unknown Property '{(PropertyType)prop}' for the entity in the slot '{_slot}'.");
+                        break;
+                }
+            }
         }
 
-        #region Static Methods
-        public static string RemoveTitleFromName(string name)
+        /// <summary>
+        /// Received the guild name Id.
+        /// </summary>
+        private void UpdateVisualPropertyGuildNameID(in uint _, long prop, RyzomClient client)
         {
-            var p1 = name.IndexOf('$');
+            // Update the entity guild name
+            uint guildNameId = (uint)prop;
 
-            if (p1 == -1)
+            // Store the guild name Id
+            _GuildNameId = guildNameId;
+
+            client.GetStringManager().WaitString(guildNameId, SetGuildName, client.GetNetworkManager());
+        }
+
+        /// <summary>
+        /// Received the name Id.
+        /// </summary>
+        private void UpdateVisualPropertyName(uint _, long prop, RyzomClient client)
+        {
+            // Update the entity name (do not need to be managed with LCT).
+            uint nameId = (uint)prop;
+
+            // Store the name Id
+            _NameId = nameId;
+
+            //	STRING_MANAGER::CStringManagerClient::instance()->waitString(nameId, this, &_Name);
+            client.GetStringManager().WaitString(nameId, SetName, client.GetNetworkManager());
+
+            //if(!getEntityName().empty())
+            //	nlwarning("CH::updateVPName:%d: name Id '%d' received but no name allocated.", _Slot, nameId);
+            //else if(verboseVP(this))
+            //	nlinfo("(%05d,%03d) CH::updateVPName:%d: name '%s(%d)' received.", sint32(T1%100000), NetMngr.getCurrentServerTick(), _Slot, getEntityName().toString().c_str(), nameId);
+            //updateMissionTarget();
+        }
+
+        private const int PropertyPosY = 1;
+        private const int PropertyPosZ = 2;
+
+        /// <summary>Received a new position for the entity.</summary>
+        /// <remarks>Do not send position for the user</remarks> 
+        private void UpdateVisualPropertyPos(in uint gameCycle, object prop, in uint pI)
+        {
+            // Check the DB entry (the warning is already done in the build method).
+            if (_dbEntry == null)
             {
-                return name;
+                return;
             }
 
-            var p2 = name.IndexOf('$', p1 + 1);
-
-            if (p2 != -1)
+            // Get The property 'Y'.
+            if (!(_dbEntry.GetNode(PropertyPosY) is DatabaseNodeLeaf nodeY))
             {
-                return name.Substring(0, p1) + name[(p2 + 1)..];
+                Debug.Print("CH::updtVPPos:" + _slot + ": Cannot find the property 'PROPERTY_POSY(" + PropertyPosY + ")'.");
+                return;
             }
 
-            return name.Substring(0, p1);
+            // Get The property 'Z'.
+            if (!(_dbEntry.GetNode(PropertyPosZ) is DatabaseNodeLeaf nodeZ))
+            {
+                Debug.Print("CH::updtVPPos:" + _slot + ": Cannot find the property 'PROPERTY_POSZ(" + PropertyPosZ + ")'.");
+                return;
+            }
+
+            // Convert Database into a Position
+            var x = (float)(Convert.ToDouble(prop) / 1000.0f);
+            var y = nodeY.GetValue64() / 1000.0f;
+            var z = nodeZ.GetValue64() / 1000.0f;
+
+            Pos = new Vector3(x, y, z);
+
+            //RyzomClient.GetInstance().GetLogger().Info(_slot + " moved to " + Pos);
+
+            //// First position Managed -> set the PACS Position
+            //if (_FirstPosManaged)
+            //{
+            //    pacsPos(CVectorD(x, y, z));
+            //    _FirstPosManaged = false;
+            //    return;
+            //}
+            //
+            //// Wait for the entity to be spawned
+            //if (_First_Pos)
+            //{
+            //    return;
+            //}
+            //
+            //// Stock the position (except if this is the user mount because it's the user that control him not the server)
+            //if (!isRiding() || _Rider != 0)
+            //{
+            //    // Adjust the Predicted Interval to fix some "bug" into the Prediction Algo.
+            //    NLMISC.TGameCycle adjustedPI = adjustPI(x, y, z, pI);
+            //    // Add Stage.
+            //    _Stages.addStage(gameCycle, PROPERTY_POSX, prop, adjustedPI);
+            //    _Stages.addStage(gameCycle, PROPERTY_POSY, nodeY.getValue64());
+            //    _Stages.addStage(gameCycle, PROPERTY_POSZ, nodeZ.getValue64());
+            //}
         }
-
-        public static string RemoveShardFromName(string name)
-        {
-            // The string must contains a '(' and a ')'
-            var p0 = name.IndexOf('(');
-            var p1 = name.IndexOf(')');
-
-            if (p0 == -1 || p1 == -1 || p1 <= p0)
-                return name;
-
-            // Remove all shard names (hack)
-            return name.Substring(0, p0) + name[(p1 + 1)..];
-        }
-
-        public static string RemoveTitleAndShardFromName(string name)
-        {
-            return RemoveTitleFromName(RemoveShardFromName(name));
-        }
-        #endregion
     }
 }

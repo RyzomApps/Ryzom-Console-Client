@@ -17,11 +17,15 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using RCC.Commands.Internal;
 using RCC.Helper.Tasks;
 using RCC.Database;
+using RCC.Entity;
+using RCC.Messages;
+using RCC.Property;
 
 namespace RCC
 {
@@ -77,6 +81,8 @@ namespace RCC
         /// Automata class that holds the loaded automata from the Automata directory
         /// </summary>
         public Automata.Internal.Automata Automata;
+
+        public bool ReadyToPing = true;
 
         public ChatGroupType Channel
         {
@@ -355,6 +361,16 @@ namespace RCC
                 _databaseManager?.FlushObserverCalls();
             }
 
+            // Get the sheet for the user from the CFG.
+            // Initialize the user and add him into the entity manager.
+            // DO IT AFTER: Database, Collision Manager, PACS, scene, animations loaded.
+            const uint userSheetId = 0;
+            //CSheetId userSheet = new CSheetId(ClientCfg.UserSheet);
+            var emptyEntityInfo = new Change.TNewEntityInfo();
+            emptyEntityInfo.Reset();
+            GetNetworkManager().GetEntityManager().Create(0, userSheetId, emptyEntityInfo);
+            Log.Info("Created the user with the sheet " + userSheetId);
+
             // Create the message for the server that the client is ready
             var out2 = new BitMemoryStream();
 
@@ -620,9 +636,40 @@ namespace RCC
                 // Send new data Only when server tick changed.
                 if (_networkConnection.GetCurrentServerTick() > _lastGameCycle)
                 {
-                    // TODO: Update the server with our position and orientation.
-                    // TODO: Give information to the server about the combat position (ability to strike).
-                    // TODO: Create the message for the server to move the user (except in combat mode).
+                    // Update the server with our position and orientation.
+                    var out2 = new BitMemoryStream();
+
+                    if (_networkManager.GetEntityManager().UserEntity.SendToServer(out2, _networkManager.GetMessageHeaderManager()))
+                    {
+                        _networkManager.Push(out2);
+                    }
+
+                    // Give information to the server about the combat position (ability to strike).
+                    out2 = new BitMemoryStream();
+                    if (_networkManager.GetEntityManager().UserEntity.MsgForCombatPos(out2, _networkManager.GetMessageHeaderManager()))
+                    {
+                        _networkManager.Push(out2);
+                    }
+
+                    // Create the message for the server to move the user (except in combat mode).
+                    if (ReadyToPing)
+                    {
+                        out2 = new BitMemoryStream();
+
+                        if (_networkManager.GetMessageHeaderManager().PushNameToStream("DEBUG:PING", out2))
+                        {
+                            const long mask = 0xFFFFFFFF;
+                            var localTime = (uint)(mask & Misc.GetLocalTime());
+                            out2.Serial(ref localTime);
+                            _networkManager.Push(out2);
+
+                            ReadyToPing = false;
+                        }
+                        else
+                        {
+                            GetLogger().Warn("mainloop: unknown message named 'DEBUG:PING'.");
+                        }
+                    }
 
                     // Send the Packet.
                     _networkManager.Send(_networkConnection.GetCurrentServerTick());
@@ -692,17 +739,18 @@ namespace RCC
         /// </summary>
         private void CommandPrompt()
         {
-            try
+            Thread.Sleep(500);
+            while (true /*_networkConnection._ConnectionState == ConnectionState.Connected*/)
             {
-                Thread.Sleep(500);
-                while (true /*_networkConnection._ConnectionState == ConnectionState.Connected*/)
+                try
                 {
                     var text = ConsoleIO.ReadLine();
                     InvokeOnMainThread(() => HandleCommandPromptText(text));
+
                 }
+                catch (IOException) { }
+                catch (NullReferenceException) { }
             }
-            catch (IOException) { }
-            catch (NullReferenceException) { }
         }
 
         #endregion

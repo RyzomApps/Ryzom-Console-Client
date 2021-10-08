@@ -17,6 +17,7 @@ using RCC.Database;
 using RCC.Entity;
 using RCC.Helper;
 using RCC.Messages;
+using RCC.Network.Action;
 using RCC.Property;
 
 namespace RCC.Network
@@ -896,9 +897,48 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// Message from the server to correct the user position because he is not at the same position on the server..
+        /// </summary>
         private void ImpulseCorrectPos(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // TP:CORRECT
+
+            var x = new int();
+            var y = new int();
+            var z = new int();
+
+            impulse.Serial(ref x);
+            impulse.Serial(ref y);
+            impulse.Serial(ref z);
+
+            //if (UserEntity.mode() != MBEHAV.COMBAT_FLOAT)
+            //{
+            if (x == 0) // Get SpeedAdjustement
+            {
+                //UserEntity.SetSpeedServerAdjust(-0.2f);
+
+                _client.GetLogger().Warn($"impulseCorrectPos: SetSpeedServerAdjust");
+            }
+            else
+            {
+                // Compute the destination.
+                var dest = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
+
+                _client.GetLogger().Warn($"impulseCorrectPos: new user position {dest}");
+
+                // Update the position for the vision.
+                _client.GetNetworkManager().SetReferencePosition(dest);
+
+                // Change the user poisition.
+                _entitiesManager.UserEntity.CorrectPos(dest);
+            }
+            //}
+        }
+
+        private void SetReferencePosition(Vector3 dest)
+        {
+            _networkConnection.GetPropertyDecoder().SetReferencePosition(dest);
         }
 
         private void ImpulseTpWithSeason(BitMemoryStream impulse)
@@ -1347,6 +1387,13 @@ namespace RCC.Network
             {
                 _client.GetLogger().Warn($"Unknown message named '{sMsg}'.");
             }
+        }
+        /// <summary>
+        /// Buffers a target action
+        /// </summary>
+        public void PushTarget(in byte slot)
+        {
+            _networkConnection.PushTarget(slot, TargettingType.None);
         }
     }
 }

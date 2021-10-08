@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Helper;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,8 +49,8 @@ namespace RCC.Entity
 
             if (_nbMaxEntity > 0)
             {
-                _entities.Resize((int)_nbMaxEntity);
-                //_EntityGroundFXHandle.resize(_nbMaxEntity);
+                for (var i = 0; i < _nbMaxEntity; i++)
+                    _entities.Add(null);
             }
 
             // TODO: Add an observer on the mission database
@@ -90,21 +90,27 @@ namespace RCC.Entity
             }
 
             // Remove the old one (except the user).
-            _entities[slot] = null;
+            if (slot != 0) _entities[slot] = null;
 
-            // TODO CEntitySheet *entitySheet = SheetMngr.get((CSheetId)form);
+            // TODO CEntitySheet *entitySheet = SheetMngr.get((CSheetId)form); USE SHEET TO CREATE ENTITY
 
             // Create the entity according to the type.
-            _entities[slot] = new Entity();
+            if (slot != 0)
+                _entities[slot] = new Entity();
+            else
+            {
+                UserEntity = new UserEntity();
+                _entities[0] = UserEntity;
+            }
 
             // If the entity has been right created.
             if (_entities[slot] != null)
             {
                 // Set the sheet Id.
-                //_Entities[slot].sheetId((CSheetId)form);
+                _entities[slot].SheetId(form);
 
                 // Set the slot.
-                //_entities[slot].slot(slot);
+                _entities[slot].SetSlot(slot, _client.GetDatabaseManager());
 
                 // Set the DataSet Index. AFTER slot(), so bar manager is correctly init
                 _entities[slot].DataSetId(newEntityInfo.DataSetIndex);
@@ -152,11 +158,10 @@ namespace RCC.Entity
             // Entity still not allocated -> backup values received for the entity.
             if (_entities[slot] == null)
             {
-                //string propName = "SERVER:Entities:E"+ slot + ":P"+ prop;
-                //Property propty = new Property {GameCycle = gameCycle, Value = 0};
+                var propName = $"SERVER:Entities:E{slot}:P{prop}";
+                var propty = new Property { GameCycle = gameCycle, Value = 0 };
 
-                // propty.Value = IngameDbMngr.getProp(propName);
-
+                propty.Value = _client.GetDatabaseManager().GetProp(propName);
 
                 //TBackupedChanges.iterator it = _BackupedChanges.find(slot);
                 //// Entity does not have any changes backuped for the time.
@@ -188,7 +193,7 @@ namespace RCC.Entity
             else
             {
                 // Call the method from the entity to update the visual property.
-                _entities[slot].UpdateVisualProperty(gameCycle, prop, predictedInterval);
+                _entities[slot].UpdateVisualProperty(gameCycle, prop, predictedInterval, _client);
             }
 
             _client.Automata.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval);
@@ -204,7 +209,15 @@ namespace RCC.Entity
         /// <param name="complete">if true, the name must match the full name of the entity</param>
         public Entity GetEntityByName(string name, bool caseSensitive, bool complete)
         {
-            throw new System.NotImplementedException();
+            foreach (var entity in _entities)
+            {
+                if (entity != null && entity.GetDisplayName().Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return entity;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
