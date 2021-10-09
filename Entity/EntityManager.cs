@@ -99,7 +99,10 @@ namespace RCC.Entity
                 _entities[slot] = new Entity();
             else
             {
-                UserEntity = new UserEntity();
+                UserEntity = new UserEntity
+                {
+                    Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition()
+                };
                 _entities[0] = UserEntity;
             }
 
@@ -218,6 +221,11 @@ namespace RCC.Entity
             }
 
             return null;
+        }
+
+        public Entity GetEntity(byte slot)
+        {
+            return _entities[slot];
         }
 
         /// <summary>

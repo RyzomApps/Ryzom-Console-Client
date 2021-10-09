@@ -159,5 +159,10 @@ namespace RCC.Property
             _refBitsY = (ushort)((_refPosY >> 4) & 0xffff);
             //_RefBitsZ = (uint16)(_RefPosZ >> 4);
         }
+
+        public Vector3 GetReferencePosition()
+        {
+            return new Vector3(_refPosX / 1000f, _refPosY / 1000f, 0);
+        }
     }
 }

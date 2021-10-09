@@ -40,6 +40,7 @@ namespace RCC.Automata.Internal
                 if (ClientConfig.OnlinePlayersLoggerEnabled) { LoadAutomaton(new OnlinePlayersLogger()); }
                 if (ClientConfig.AutoJoinTeamEnabled) { LoadAutomaton(new AutoTeamJoiner()); }
                 if (ClientConfig.ImpulseDebuggerEnabled) { LoadAutomaton(new ImpulseDebugger()); }
+                LoadAutomaton(new Follower());
             }
 
             foreach (var automata in _automataOnHold)

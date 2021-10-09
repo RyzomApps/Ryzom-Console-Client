@@ -74,6 +74,7 @@ namespace RCC.Entity
 
         private uint _NameId;
         private uint _GuildNameId;
+        private double _HeadPitch;
 
         public Vector3 Pos { get; set; }
 
@@ -81,8 +82,11 @@ namespace RCC.Entity
 
         public Vector3 Dir { get; set; }
 
-        public void SetHeadPitch(int _)
+        public void SetHeadPitch(double hp)
         {
+            _HeadPitch = hp;
+            const double bound = Math.PI / 2 - 0.01; //  epsilon to avoid gimbal lock
+            _HeadPitch = Math.Min(Math.Max(_HeadPitch, -bound), bound);
         }
 
         public void SetName(uint id, string value)
@@ -216,6 +220,11 @@ namespace RCC.Entity
             return _targetSlot;
         }
 
+        public void SetTargetSlot(byte value)
+        {
+            _targetSlot = value;
+        }
+
         /// <summary>
         /// Set the slot.
         /// </summary>
@@ -224,7 +233,7 @@ namespace RCC.Entity
             _slot = slot;
 
             // Get the DB Entry - from CCharacterCL::build
-            if (_databaseManager.GetNodePtr() != null)
+            if (_databaseManager != null && _databaseManager?.GetNodePtr() != null)
             {
                 DatabaseNodeBranch nodeRoot = (DatabaseNodeBranch)(_databaseManager.GetNodePtr().GetNode(0));
                 if (nodeRoot != null)

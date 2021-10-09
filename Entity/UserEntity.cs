@@ -187,6 +187,8 @@ namespace RCC.Entity
             //pIM.incLocalSyncActionCounter();
         }
 
+        float FrontYaw() { return (float)Math.Atan2(Front.Y, Front.X); }
+
         /// <summary>
         /// Send the position and orientation to the server.
         /// </summary>
@@ -205,7 +207,7 @@ namespace RCC.Entity
             var x = (int)(Pos.X * 1000);
             var y = (int)(Pos.Y * 1000);
             var z = (int)(Pos.Z * 1000);
-            var heading = 0f;
+            var heading = FrontYaw();
 
             out2.Serial(ref x);
             out2.Serial(ref y);

@@ -18,7 +18,7 @@ namespace RCC.Commands
                 // Create the message and send.
                 const string msgName = "TARGET:FOLLOW";
                 var out2 = new BitMemoryStream();
-
+                
                 if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
                 {
                     handler.GetNetworkManager().Push(out2);

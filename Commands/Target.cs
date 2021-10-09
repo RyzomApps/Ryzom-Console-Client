@@ -30,6 +30,7 @@ namespace RCC.Commands
             }
 
             handler.GetNetworkManager().GetEntityManager().UserEntity.Selection(entity.Slot(), handler);
+            handler.GetNetworkManager().GetEntityManager().UserEntity.SetTargetSlot(entity.Slot());
 
             return "";
         }

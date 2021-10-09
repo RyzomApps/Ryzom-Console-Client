@@ -26,6 +26,7 @@ using RCC.Database;
 using RCC.Entity;
 using RCC.Messages;
 using RCC.Property;
+using System.Numerics;
 
 namespace RCC
 {
@@ -112,6 +113,8 @@ namespace RCC
         public StringManager GetStringManager() { return _stringManager; }
 
         public DatabaseManager GetDatabaseManager() { return _databaseManager; }
+
+        public NetworkConnection GetNetworkConnection() { return _networkConnection; }
 
         #region Initialization
 
