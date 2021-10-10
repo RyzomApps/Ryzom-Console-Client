@@ -87,6 +87,7 @@ namespace RCC.Network
 
         public EntityManager GetEntityManager() => _entitiesManager;
 
+        public ChatManager GetChatManager() => _chatManager;
 
         /// <summary>
         /// Constructor
@@ -94,7 +95,7 @@ namespace RCC.Network
         public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, DatabaseManager databaseManager)
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
-            _chatManager = new ChatManager(this, stringManager);
+            _chatManager = new ChatManager(this, stringManager, databaseManager);
             _entitiesManager = new EntityManager(client);
 
             _networkConnection = networkConnection;

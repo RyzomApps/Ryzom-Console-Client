@@ -9,6 +9,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using RCC.Client;
+using RCC.Database;
 using RCC.Network;
 
 namespace RCC.Chat
@@ -16,9 +17,8 @@ namespace RCC.Chat
     /// <summary>
     /// Class for management of incoming and outgoing chat messages
     /// </summary>
-    internal class ChatManager
+    public class ChatManager
     {
-
         public const uint InvalidDatasetIndex = 0x00FFFFFF;
 
         private const int PreTagSize = 5;
@@ -26,11 +26,56 @@ namespace RCC.Chat
 
         private readonly NetworkManager _networkManager;
         private readonly StringManager _stringManager;
+        private readonly DatabaseManager _databaseManager;
 
-        public ChatManager(NetworkManager networkManager, StringManager stringManager)
+        const int MaxDynChanPerPlayer = 8;
+        private readonly List<DatabaseNodeLeaf> _DynamicChannelIdLeaf = new List<DatabaseNodeLeaf>(new DatabaseNodeLeaf[MaxDynChanPerPlayer]);
+        private readonly List<DatabaseNodeLeaf> _DynamicChannelNameLeaf = new List<DatabaseNodeLeaf>(new DatabaseNodeLeaf[MaxDynChanPerPlayer]);
+
+        public ChatManager(NetworkManager networkManager, StringManager stringManager, DatabaseManager databaseManager)
         {
             _networkManager = networkManager;
             _stringManager = stringManager;
+            _databaseManager = databaseManager;
+
+            //_ChatMode = (uint8)CChatGroup::nbChatMode;
+            //_ChatDynamicChannelId = 0;
+            //_NumTellPeople = 0;
+            //_MaxNumTellPeople = 5;
+
+            // default to NULL
+            for (int i = 0; i < MaxDynChanPerPlayer; i++)
+            {
+                _DynamicChannelNameLeaf[i] = null;
+                _DynamicChannelIdLeaf[i] = null;
+                //_DynamicChannelIdCache[i] = DynamicChannelEmptyId;
+            }
+        }
+
+        /// <summary>
+        /// InGame init/release. call init after init of database
+        /// </summary>
+        public void InitInGame()
+        {
+            //CInterfaceManager pIM = CInterfaceManager.getInstance();
+
+            for (int i = 0; i < MaxDynChanPerPlayer; i++)
+            {
+                // default
+                _DynamicChannelNameLeaf[i] = null;
+                _DynamicChannelIdLeaf[i] = null;
+                //_DynamicChannelIdCache[i] = DynamicChannelEmptyId;
+
+                // get
+                DatabaseNodeLeaf name = _databaseManager.GetDbProp($"SERVER:DYN_CHAT:CHANNEL{i}:NAME", false);
+                DatabaseNodeLeaf id = _databaseManager.GetDbProp($"SERVER:DYN_CHAT:CHANNEL{i}:ID", false);
+
+                if (name != null && id != null)
+                {
+                    _DynamicChannelNameLeaf[i] = name;
+                    _DynamicChannelIdLeaf[i] = id;
+                }
+            }
         }
 
         /// <summary>
@@ -69,6 +114,7 @@ namespace RCC.Chat
         {
             // before displaying anything, must ensure dynamic channels are up to date
             // NB: only processChatString() have to do this. Other methods cannot be in dyn_chat mode
+
             // TODO updateDynamicChatChannels(chatDisplayer); // in ProcessChatString
 
             // serial
@@ -81,11 +127,11 @@ namespace RCC.Chat
 
             if (type == ChatGroupType.DynChat)
             {
-                //// TODO retrieve the DBIndex from the dynamic chat id
-                //sint32 dbIndex = ChatManager.getDynamicChannelDbIndexFromId(chatMsg.DynChatChanID); 
-                //// if the client database is not yet up to date, put the chat message in buffer
-                //if (dbIndex < 0)
-                //    complete = false;
+                // TODO retrieve the DBIndex from the dynamic chat id
+                int dbIndex = getDynamicChannelDbIndexFromId(chatMsg.DynChatChanID);
+                // if the client database is not yet up to date, put the chat message in buffer
+                if (dbIndex < 0)
+                    complete = false;
             }
 
             // if !complete, wait
@@ -101,6 +147,28 @@ namespace RCC.Chat
                 senderStr);
         }
 
+        /// <summary>
+        /// Use info from DB SERVER:DYN_CHAT. return -1 if fails
+        /// </summary>
+        private int getDynamicChannelDbIndexFromId(uint channelId)
+        {
+            for (int i = 0; i < MaxDynChanPerPlayer; i++)
+            {
+                if (_DynamicChannelIdLeaf[i] != null)
+                {
+                    if ((ulong)_DynamicChannelIdLeaf[i].GetValue64() == channelId)
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Extract and decode the chat string from the stream.
+        /// the stream here is only a iunt32 for the id of the dynamic string
+        /// </summary>
+        /// <param name="type">where do you want this string to go (dyn_chat is not allowed)</param>
         internal void ProcessChatStringWithNoSender(BitMemoryStream bms, ChatGroupType type, IChatDisplayer chatDisplayer)
         {
             Debug.Assert(type != ChatGroupType.DynChat);
@@ -156,11 +224,11 @@ namespace RCC.Chat
 
                 if (type == ChatGroupType.DynChat)
                 {
-                    //// TODO retrieve the DBIndex from the dynamic chat id
-                    //int dbIndex = ChatMngr.getDynamicChannelDbIndexFromId(itMsg->DynChatChanID);
-                    //// if the client database is not yet up to date, leave the chat message in buffer
-                    //if (dbIndex < 0)
-                    //    complete = false;
+                    // retrieve the DBIndex from the dynamic chat id
+                    int dbIndex = getDynamicChannelDbIndexFromId(itMsg.DynChatChanID);
+                    // if the client database is not yet up to date, leave the chat message in buffer
+                    if (dbIndex < 0)
+                        complete = false;
                 }
 
                 // if complete, process
@@ -190,6 +258,9 @@ namespace RCC.Chat
             }
         }
 
+        /// <summary>
+        /// build a sentence to be displayed in the tell
+        /// </summary>
         private static void BuildTellSentence(string sender, string msg, out string result)
         {
             // If no sender name was provided, show only the msg
@@ -208,6 +279,9 @@ namespace RCC.Chat
             }
         }
 
+        /// <summary>
+        /// build a sentence to be displayed in the chat (e.g add "you say", "you shout", "[user name] says" or "[user name] shout")
+        /// </summary>
         private static void BuildChatSentence(string sender, string msg, ChatGroupType type,
             out string result)
         {
@@ -258,6 +332,10 @@ namespace RCC.Chat
             };
         }
 
+        /// <summary>
+        /// get the category if any. Note, in some case (chat from other player), there is not categories
+        /// and we do not want getStringCategory to return 'SYS' category.
+        /// </summary>
         public static string GetStringCategory(string src, out string dest, bool alwaysAddSysByDefault = false)
         {
             var str = GetStringCategoryIfAny(src, out dest);
@@ -268,6 +346,9 @@ namespace RCC.Chat
             return str;
         }
 
+        /// <summary>
+        /// Get the category from the string (src="&SYS&Who are you?" and dest="Who are you?" and return "SYS"), if no category, return ""
+        /// </summary>
         public static string GetStringCategoryIfAny(string src, out string dest)
         {
             var colorCode = new char[0];

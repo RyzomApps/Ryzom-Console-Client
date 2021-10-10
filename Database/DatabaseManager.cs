@@ -233,5 +233,31 @@ namespace RCC.Database
 
             throw new Exception("EDBNotInit");
         }
+
+        /// <summary>
+        /// Retrieves a leaf node from the database.
+        /// </summary>
+        /// <param name="name">name of the data leaf node we are querying.</param>
+        /// <param name="create">when true if a node cannot be found it is created.</param>
+        public DatabaseNodeLeaf GetDbProp(string name, bool create)
+        {
+            return GetDbLeaf(name, create);
+        }
+
+        /// <summary>
+        /// Returns the specified leaf node from the database.
+        /// </summary>
+        /// <param name="name">The name of the leaf node.</param>
+        /// <param name="create">Specifies if the node should be created if it doesn't exist yet.</param>
+        public DatabaseNodeLeaf GetDbLeaf(string name, bool create)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+
+            DatabaseNodeLeaf leaf = GetNodePtr().GetNode(new TextId(name), create) as DatabaseNodeLeaf;
+            return leaf;
+        }
     }
 }

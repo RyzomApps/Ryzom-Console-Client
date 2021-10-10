@@ -351,8 +351,20 @@ namespace RCC
                 InterfaceManager.CreateLocalBranch("local_database.xml");
             }
 
+            // Initialize Sound System
+
             // Initializing Entities Manager
             _networkManager.GetEntityManager().Initialize(256);
+
+            // Creating Scene.
+
+            // Initialize automatic animation
+
+            // Initialize the timer.
+
+            // Parse the interface InGame
+            // pIM->initInGame();
+            _networkManager.GetChatManager().InitInGame();
 
             // Update Network till current tick increase.
             _lastGameCycle = _networkConnection.GetCurrentServerTick();
