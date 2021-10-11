@@ -393,7 +393,7 @@ namespace RCC.Automata.Internal
         /// <summary>
         /// called when the server upload the phrases.
         /// </summary>
-        public virtual void OnPhraseDownLoad() { }
+        public virtual void OnPhraseDownLoad(List<Phrase.PhraseSlot> phrases, List<Phrase.PhraseMemorySlot> memorizedPhrases) { }
 
         /// <summary>
         /// called when the server block/unblock some reserved titles

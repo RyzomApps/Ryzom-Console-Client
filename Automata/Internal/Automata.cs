@@ -258,9 +258,9 @@ namespace RCC.Automata.Internal
         /// <summary>
         /// called when the server upload the phrases.
         /// </summary>
-        public void OnPhraseDownLoad()
+        public void OnPhraseDownLoad(List<Phrase.PhraseSlot> phrases, List<Phrase.PhraseMemorySlot> memorizedPhrases)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnPhraseDownLoad());
+            DispatchAutomatonEvent(automaton => automaton.OnPhraseDownLoad(phrases, memorizedPhrases));
         }
 
         /// <summary>

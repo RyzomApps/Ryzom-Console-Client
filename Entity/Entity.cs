@@ -83,14 +83,14 @@ namespace RCC.Entity
 
         public void SetName(uint id, string value)
         {
-            RyzomClient.GetInstance().GetLogger().Info($"{_slot} received a name: {value} ({id})");
+            //RyzomClient.GetInstance().GetLogger().Info($"{_slot} received a name: {value} ({id})");
 
             _entityName = value;
         }
 
         private void SetGuildName(uint id, string value)
         {
-            RyzomClient.GetInstance().GetLogger().Info($"{_slot} received a guild name: {value} ({id})");
+            //RyzomClient.GetInstance().GetLogger().Info($"{_slot} received a guild name: {value} ({id})");
 
             _entityGuildName = value;
         }

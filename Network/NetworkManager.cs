@@ -18,6 +18,7 @@ using RCC.Entity;
 using RCC.Helper;
 using RCC.Messages;
 using RCC.Network.Action;
+using RCC.Phrase;
 using RCC.Property;
 
 namespace RCC.Network
@@ -56,10 +57,10 @@ namespace RCC.Network
         private readonly StringManager _stringManager;
         private readonly DatabaseManager _databaseManager;
         private readonly RyzomClient _client;
-
         private readonly GenericMessageHeaderManager _messageHeaderManager;
-
         private readonly ChatManager _chatManager;
+
+        private readonly PhraseManager _phraseManager = new PhraseManager();
 
         /// <summary>
         /// was the inital server season received
@@ -578,9 +579,61 @@ namespace RCC.Network
         /// </summary>
         private void ImpulsePhraseDownLoad(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Read Known Phrases
+            //impulse.SerialCont(phrases);
+            int len = 0;
+            impulse.Serial(ref len);
+            var phrases = new List<PhraseSlot>(len);
 
-            _client.Automata.OnPhraseDownLoad();
+            for (var i = 0; i < len; i++)
+            {
+                var value = PhraseSlot.Serial(impulse);
+                phrases.Add(value);
+            }
+
+            //PhraseManager pPM = PhraseManager.getInstance();
+
+            for (var i = 0; i < phrases.Count; ++i)
+            {
+            //    if (phrases[i].PhraseSheetId != CSheetId.Unknown)
+            //    {
+            //        PhraseCom phraseCom = new PhraseCom();
+            //        _phraseManager.buildPhraseFromSheet(phraseCom, phrases[i].PhraseSheetId.AsInt());
+            //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phraseCom);
+            //    }
+            //    else
+            //    {
+            //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phrases[i].Phrase);
+            //    }
+            }
+            
+            // must update the DB (NB: if initInGameDone) after all phrase set.
+            //pPM.updateBookDB();
+
+            // Then Read Memorized Phrases
+            //impulse.SerialCont(memorizedPhrases);
+            len = 0;
+            impulse.Serial(ref len);
+            var memorizedPhrases = new List<PhraseMemorySlot>(len);
+
+            for (var i = 0; i < len; i++)
+            {
+                var value = PhraseMemorySlot.Serial(impulse);
+                memorizedPhrases.Add(value);
+            }
+
+            for (var i = 0; i < memorizedPhrases.Count; ++i)
+            {
+            //    pPM.memorizePhrase(memorizedPhrases[i].MemoryLineId, memorizedPhrases[i].MemorySlotId, memorizedPhrases[i].PhraseId);
+            }
+            
+            // OK.
+            _client.SabrinaPhraseBookLoaded = true;
+            
+            // update gray state, if game inited.
+            //pPM.updateMemoryBar();
+
+            _client.Automata.OnPhraseDownLoad(phrases, memorizedPhrases);
         }
 
         private void ImpulseRemoteAdmin(BitMemoryStream impulse)

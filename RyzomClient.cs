@@ -70,7 +70,10 @@ namespace RCC
         private DateTime _nextMessageSendTime = DateTime.MinValue;
         private ChatGroupType _channel = ChatGroupType.Around;
         private uint _lastGameCycle;
+
+        // Network Walls
         public bool UserCharPosReceived = false;
+        public bool SabrinaPhraseBookLoaded = false;
 
         public ILogger Log;
 
