@@ -35,6 +35,7 @@ namespace RCC.Automata
 
         private string _playerName;
 
+        /// <inheritdoc />
         public override void OnInitialize()
         {
             Handler.GetLogger().Info("Automaton 'OnlinePlayersLogger' initialized.");
@@ -46,7 +47,8 @@ namespace RCC.Automata
                 Handler.GetLogger().Info("No server for player online status updates set: Not using this feature.");
         }
 
-        /// <remarks>nach einer aktion jeweils abbrechen, da noch ein problem mit mehreren actions in einem action block beim senden besteht -> disco</remarks>
+        /// <inheritdoc />
+        /// <remarks>cancel after each action, because there is still a problem with multiple actions in one action block when sending -> disco</remarks>
         public override void OnUpdate()
         {
             if (!_initialized)
@@ -95,11 +97,12 @@ namespace RCC.Automata
                 {
                     _lastApiServerUpdate = DateTime.Now + _intervalApiServer;
 
-                    Task.Factory.StartNew(SendUpdate);
+                    Task.Factory.StartNew(SendApiUpdate);
                 }
             }
         }
 
+        /// <inheritdoc />
         public override void OnTeamContactStatus(uint contactId, CharConnectionState online)
         {
             var (key, _) = _friendOnline.ElementAt((int)contactId);
@@ -115,6 +118,7 @@ namespace RCC.Automata
             Handler.GetLogger().Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
         }
 
+        /// <inheritdoc />
         public override void OnTeamContactRemove(uint contactId, byte nList)
         {
             if (nList != 0) return;
@@ -127,6 +131,7 @@ namespace RCC.Automata
             _friendNames.Remove(key);
         }
 
+        /// <inheritdoc />
         public override void OnTeamContactInit(List<uint> friendListNames, List<CharConnectionState> friendListOnline, List<string> ignoreListNames)
         {
             for (var i = 0; i < friendListNames.Count; i++)
@@ -145,9 +150,12 @@ namespace RCC.Automata
             _initialized = true;
         }
 
+        /// <inheritdoc />
         public override void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList)
         {
             if (nList != 0) return;
+
+            if (_friendOnline.ContainsKey(nameId) || _friendNames.ContainsKey(nameId)) return;
 
             _friendOnline.Add(nameId, online);
             _friendNames.Add(nameId, Handler.GetStringManager().GetString(nameId, out var name, Handler.GetNetworkManager()) ? Entity.Entity.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
@@ -155,8 +163,8 @@ namespace RCC.Automata
             Handler.GetLogger().Info($"Added {(_friendNames[nameId] != string.Empty ? _friendNames[nameId] : $"{nameId}")} to the friend list.");
         }
 
-        public override void OnChat(in uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, in uint dynChatId,
-            string senderName, in uint bubbleTimer)
+        /// <inheritdoc />
+        public override void OnChat(in uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, in uint dynChatId, string senderName, in uint bubbleTimer)
         {
             // Try to add player from who command
             if (mode == ChatGroupType.System)
@@ -279,7 +287,7 @@ namespace RCC.Automata
                     Handler.GetLogger()?.Info("Sending Player Array to API");
                     _lastApiServerUpdate = DateTime.Now + _intervalApiServer;
 
-                    Task.Factory.StartNew(SendUpdate);
+                    Task.Factory.StartNew(SendApiUpdate);
                     return "";
 
 
@@ -289,7 +297,10 @@ namespace RCC.Automata
             }
         }
 
-        public void SendUpdate()
+        /// <summary>
+        /// sends a list of online players to the api
+        /// </summary>
+        public void SendApiUpdate()
         {
             // there are friends that have not received a name
             if (_friendNames.Keys.Count(id => _friendNames[id] == string.Empty) > 0)

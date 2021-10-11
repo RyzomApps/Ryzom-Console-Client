@@ -32,7 +32,7 @@ namespace RCC.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new string[] { };
+            return new[] { "invite" };
         }
     }
 }

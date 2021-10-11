@@ -13,19 +13,18 @@ namespace RCC.Commands
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
             // Check parameters.
-            if (!HasArg(command))
-            {
-                // Create the message and send.
-                const string msgName = "TARGET:FOLLOW";
-                var out2 = new BitMemoryStream();
+            if (HasArg(command)) return "";
+
+            // Create the message and send.
+            const string msgName = "TARGET:FOLLOW";
+            var out2 = new BitMemoryStream();
                 
-                if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
-                {
-                    handler.GetNetworkManager().Push(out2);
-                }
-                else
-                    handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            {
+                handler.GetNetworkManager().Push(out2);
             }
+            else
+                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
 
             return "";
         }

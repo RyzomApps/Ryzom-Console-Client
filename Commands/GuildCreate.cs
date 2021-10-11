@@ -4,28 +4,27 @@ using RCC.Network;
 
 namespace RCC.Commands
 {
-    public class BuildingTeleport : CommandBase
+    public class GuildCreate : CommandBase
     {
-        public override string CmdName => "buildingTeleport";
+        public override string CmdName => "GuildCreate";
 
-        public override string CmdUsage => "building index";
+        public override string CmdUsage => "<name> <icon> <description>";
 
-        public override string CmdDesc => "teleport to a building";
+        public override string CmdDesc => "client wants to create a guild (name of new guild, guild icon descriptor, description of the guild)";
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
             var args = GetArgs(command);
 
-            if (args.Length != 1) return "";
+            if (args.Length != 1) return ""; // TODO: guild create
 
-            if (!ushort.TryParse(args[0], out var index)) return "";
-
-            const string msgName = "GUILD:TELEPORT";
+            const string msgName = "GUILD:CREATE";
             var out2 = new BitMemoryStream();
 
             if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                out2.Serial(ref index);
+                var buf = args[0];
+                out2.Serial(ref buf);
                 handler.GetNetworkManager().Push(out2);
             }
 

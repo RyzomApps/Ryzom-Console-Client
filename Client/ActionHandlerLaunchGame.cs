@@ -42,8 +42,7 @@ namespace RCC.Client
             out2.Serial(ref c);
             networkManager.Push(out2);
 
-            RyzomClient.GetInstance().GetLogger().Info("Selection of the character in slot " + networkManager.PlayerSelectedSlot +
-                                  " sent...");
+            RyzomClient.GetInstance().GetLogger().Info("Selection of the character in slot " + networkManager.PlayerSelectedSlot + " sent...");
 
             networkManager.WaitServerAnswer = true;
         }

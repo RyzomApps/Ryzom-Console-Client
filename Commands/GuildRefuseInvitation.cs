@@ -4,13 +4,13 @@ using RCC.Network;
 
 namespace RCC.Commands
 {
-    public class GuLeaveOfficerTitle : CommandBase
+    public class GuildRefuseInvitation : CommandBase
     {
-        public override string CmdName => "GULeaveOfficerTitle";
+        public override string CmdName => "GuildRefuseInvitation";
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "abandon officer title";
+        public override string CmdDesc => "refuse an invitation";
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -18,7 +18,7 @@ namespace RCC.Commands
 
             if (args.Length != 0) return "";
 
-            const string msgName = "GUILD:ABANDON_OFFICER_TITLE";
+            const string msgName = "GUILD:REFUSE_INVITATION";
             var out2 = new BitMemoryStream();
 
             if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))

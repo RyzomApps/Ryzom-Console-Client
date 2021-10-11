@@ -17,8 +17,7 @@ namespace RCC.Commands
         {
             var msg = "You played with this character for %time.";
 
-            var secondsHumanReadable =
-                TimeSpan.FromSeconds(handler.GetNetworkManager().CharPlayedTime).ToHumanReadableString();
+            var secondsHumanReadable = TimeSpan.FromSeconds(handler.GetNetworkManager().CharPlayedTime).ToHumanReadableString();
 
             msg = msg.Replace("%time", secondsHumanReadable);
 

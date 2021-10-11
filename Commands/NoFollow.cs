@@ -4,29 +4,27 @@ using RCC.Network;
 
 namespace RCC.Commands
 {
-    public class GuFriend : CommandBase
+    public class NoFollow : CommandBase
     {
-        public override string CmdName => "GUFriend";
-
-        public override string CmdUsage => "<player name>";
-
-        public override string CmdDesc => "invite a player to become a friend of the guild";
+        public override string CmdName => "noFollow";
+        public override string CmdUsage => "";
+        public override string CmdDesc => "Stop following the target";
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
-            var args = GetArgs(command);
+            // Check parameters.
+            if (HasArg(command)) return "";
 
-            if (args.Length != 1) return "";
-
-            const string msgName = "GUILD:FRIEND_INVITATION";
+            // Create the message and send.
+            const string msgName = "TARGET:NO_FOLLOW";
             var out2 = new BitMemoryStream();
-
+                
             if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                var buf = args[0];
-                out2.Serial(ref buf);
                 handler.GetNetworkManager().Push(out2);
             }
+            else
+                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
 
             return "";
         }
