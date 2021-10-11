@@ -58,6 +58,7 @@ namespace RCC.Config
         // === NON RYZOM STUFF
 
         public static bool DebugEnabled;
+        public static bool SendPosition;
 
         // Custom app variables 
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
@@ -74,9 +75,10 @@ namespace RCC.Config
         public static char InternalCmdChar = '/';
 
         // Automata
-        public static bool OnlinePlayersLoggerEnabled = false;
-        public static bool AutoJoinTeamEnabled = false;
-        public static bool ImpulseDebuggerEnabled = false;
+        public static bool OnlinePlayersLoggerEnabled;
+        public static bool AutoJoinTeamEnabled;
+        public static bool ImpulseDebuggerEnabled;
+        public static bool FollowerEnabled;
 
         // Read : "ID", "R G B A MODE [FX]"
         public static Dictionary<string, string> SystemInfoColors = new Dictionary<string, string>
@@ -235,6 +237,7 @@ namespace RCC.Config
         /// <param name="argName">Setting name</param>
         /// <param name="argValue">Setting value</param>
         /// <returns>TRUE if setting was valid</returns>
+        /// <remarks>lowercase cases</remarks>
         private static void LoadSingleSetting(string argName, string argValue)
         {
             argName = argName.Trim();
@@ -306,6 +309,14 @@ namespace RCC.Config
 
                 case "decodevisualproperties":
                     DecodeVisualProperties = bool.Parse(argValue);
+                    break;
+
+                case "followerenabled":
+                    FollowerEnabled= bool.Parse(argValue);
+                    break;
+
+                case "sendposition":
+                    SendPosition= bool.Parse(argValue);
                     break;
 
                 default:

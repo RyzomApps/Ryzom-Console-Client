@@ -646,19 +646,26 @@ namespace RCC
                 // Send new data Only when server tick changed.
                 if (_networkConnection.GetCurrentServerTick() > _lastGameCycle)
                 {
-                    // Update the server with our position and orientation.
-                    var out2 = new BitMemoryStream();
+                    BitMemoryStream out2;
 
-                    if (_networkManager.GetEntityManager().UserEntity.SendToServer(out2, _networkManager.GetMessageHeaderManager()))
+                    if (ClientConfig.SendPosition)
                     {
-                        _networkManager.Push(out2);
-                    }
+                        // Update the server with our position and orientation.
+                        out2 = new BitMemoryStream();
 
-                    // Give information to the server about the combat position (ability to strike).
-                    out2 = new BitMemoryStream();
-                    if (_networkManager.GetEntityManager().UserEntity.MsgForCombatPos(out2, _networkManager.GetMessageHeaderManager()))
-                    {
-                        _networkManager.Push(out2);
+                        if (_networkManager.GetEntityManager().UserEntity
+                            .SendToServer(out2, _networkManager.GetMessageHeaderManager()))
+                        {
+                            _networkManager.Push(out2);
+                        }
+
+                        // Give information to the server about the combat position (ability to strike).
+                        out2 = new BitMemoryStream();
+                        if (_networkManager.GetEntityManager().UserEntity
+                            .MsgForCombatPos(out2, _networkManager.GetMessageHeaderManager()))
+                        {
+                            _networkManager.Push(out2);
+                        }
                     }
 
                     // Create the message for the server to move the user (except in combat mode).
@@ -734,12 +741,10 @@ namespace RCC
                 if (_networkConnection.ConnectionState == ConnectionState.NotInitialized)
                     continue;
 
-                if (_networkConnection.GetCurrentServerTick() + 30 * 1000 < DateTime.Now.Ticks)
-                {
-                    Automata.OnConnectionLost(AutomatonBase.DisconnectReason.ConnectionLost, "error.timeout");
-                    return;
-                }
+                if (_networkConnection.GetCurrentServerTick() + 30 * 1000 >= DateTime.Now.Ticks) continue;
 
+                Automata.OnConnectionLost(AutomatonBase.DisconnectReason.ConnectionLost, "error.timeout");
+                return;
             }
             while (true);
         }
