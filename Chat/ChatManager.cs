@@ -20,14 +20,11 @@ namespace RCC.Chat
     /// </summary>
     public class ChatManager
     {
-
-
         private readonly List<ChatMsgNode> _chatBuffer = new List<ChatMsgNode>();
 
         private readonly NetworkManager _networkManager;
         private readonly StringManager _stringManager;
         private readonly DatabaseManager _databaseManager;
-
 
         private readonly List<DatabaseNodeLeaf> _dynamicChannelIdLeaf = new List<DatabaseNodeLeaf>(new DatabaseNodeLeaf[Constants.MaxDynChanPerPlayer]);
         private readonly List<DatabaseNodeLeaf> _dynamicChannelNameLeaf = new List<DatabaseNodeLeaf>(new DatabaseNodeLeaf[Constants.MaxDynChanPerPlayer]);
@@ -59,7 +56,7 @@ namespace RCC.Chat
         {
             //CInterfaceManager pIM = CInterfaceManager.getInstance();
 
-            for (int i = 0; i < Constants.MaxDynChanPerPlayer; i++)
+            for (var i = 0; i < Constants.MaxDynChanPerPlayer; i++)
             {
                 // default
                 _dynamicChannelNameLeaf[i] = null;
@@ -67,8 +64,8 @@ namespace RCC.Chat
                 //_DynamicChannelIdCache[i] = DynamicChannelEmptyId;
 
                 // get
-                DatabaseNodeLeaf name = _databaseManager.GetDbProp($"SERVER:DYN_CHAT:CHANNEL{i}:NAME", false);
-                DatabaseNodeLeaf id = _databaseManager.GetDbProp($"SERVER:DYN_CHAT:CHANNEL{i}:ID", false);
+                var name = _databaseManager?.GetDbProp($"SERVER:DYN_CHAT:CHANNEL{i}:NAME", false);
+                var id = _databaseManager?.GetDbProp($"SERVER:DYN_CHAT:CHANNEL{i}:ID", false);
 
                 if (name != null && id != null)
                 {
