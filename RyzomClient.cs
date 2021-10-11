@@ -296,8 +296,7 @@ namespace RCC
         /// </summary>
         private void PostlogInit()
         {
-            const string msgXmlPath = "./data/msg.xml";
-            _networkManager.GetMessageHeaderManager().Init(msgXmlPath);
+            _networkManager.GetMessageHeaderManager().Init(Constants.MsgXmlPath);
 
             // OnInitialize the Generic Message Header Manager.
             _networkManager.InitializeNetwork();
@@ -375,12 +374,12 @@ namespace RCC
             // Get the sheet for the user from the CFG.
             // Initialize the user and add him into the entity manager.
             // DO IT AFTER: Database, Collision Manager, PACS, scene, animations loaded.
-            const uint userSheetId = 0;
+
             //CSheetId userSheet = new CSheetId(ClientCfg.UserSheet);
             var emptyEntityInfo = new Change.TNewEntityInfo();
             emptyEntityInfo.Reset();
-            GetNetworkManager().GetEntityManager().Create(0, userSheetId, emptyEntityInfo);
-            Log.Info("Created the user with the sheet " + userSheetId);
+            GetNetworkManager().GetEntityManager().Create(0, Constants.UserSheetId, emptyEntityInfo);
+            Log.Info("Created the user with the sheet " + Constants.UserSheetId);
 
             // Create the message for the server that the client is ready
             var out2 = new BitMemoryStream();

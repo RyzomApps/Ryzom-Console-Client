@@ -22,9 +22,6 @@ namespace RCC.Entity
     /// <date>2001</date>
     public class Entity
     {
-        public const byte INVALID_SLOT = 255;
-        public const uint INVALID_CLIENT_DATASET_INDEX = 0xFFFFF;
-
         /// <summary>
         /// Entity Id (CLFECOMMON::INVALID_CLIENT_DATASET_INDEX for an invalid one)
         /// </summary>
@@ -44,11 +41,6 @@ namespace RCC.Entity
         /// Primitive type
         /// </summary>
         private readonly EntityType _type;
-
-        /// <summary>
-        /// gamemaster title code of the entity, if any
-        /// </summary>
-        private readonly int _gmTitle;
 
         /// <summary>
         /// Current Name for the entity
@@ -149,12 +141,11 @@ namespace RCC.Entity
         {
             // Initialize the object.
             _type = EntityType.Entity;
-            _gmTitle = 0xFF;
 
-            _dataSetId = INVALID_CLIENT_DATASET_INDEX;
+            _dataSetId = Constants.InvalidClientDatasetIndex;
 
-            _slot = INVALID_SLOT;
-            _targetSlot = INVALID_SLOT;
+            _slot = Constants.InvalidSlot;
+            _targetSlot = Constants.InvalidSlot;
 
             Init();
         }
@@ -464,8 +455,6 @@ namespace RCC.Entity
             //updateMissionTarget();
         }
 
-        private const int PropertyPosY = 1;
-        private const int PropertyPosZ = 2;
 
         /// <summary>Received a new position for the entity.</summary>
         /// <remarks>Do not send position for the user</remarks> 
@@ -478,16 +467,16 @@ namespace RCC.Entity
             }
 
             // Get The property 'Y'.
-            if (!(_dbEntry.GetNode(PropertyPosY) is DatabaseNodeLeaf nodeY))
+            if (!(_dbEntry.GetNode((byte)PropertyType.PositionY) is DatabaseNodeLeaf nodeY))
             {
-                Debug.Print("CH::updtVPPos:" + _slot + ": Cannot find the property 'PROPERTY_POSY(" + PropertyPosY + ")'.");
+                Debug.Print($"CH::updtVPPos:{_slot}: Cannot find the property 'PROPERTY_POSY({PropertyType.PositionY})'.");
                 return;
             }
 
             // Get The property 'Z'.
-            if (!(_dbEntry.GetNode(PropertyPosZ) is DatabaseNodeLeaf nodeZ))
+            if (!(_dbEntry.GetNode((byte)PropertyType.PositionZ) is DatabaseNodeLeaf nodeZ))
             {
-                Debug.Print("CH::updtVPPos:" + _slot + ": Cannot find the property 'PROPERTY_POSZ(" + PropertyPosZ + ")'.");
+                Debug.Print($"CH::updtVPPos:{_slot}: Cannot find the property 'PROPERTY_POSZ({PropertyType.PositionZ})'.");
                 return;
             }
 

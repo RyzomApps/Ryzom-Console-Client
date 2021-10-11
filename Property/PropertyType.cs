@@ -16,6 +16,9 @@ namespace RCC.Property
     {
         // main root
         Position = 0,
+        PositionY = 1,
+        PositionZ = 2,
+
         Orientation = 3,
 
         // discrete root

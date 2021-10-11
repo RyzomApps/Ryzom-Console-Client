@@ -21,7 +21,7 @@ namespace RCC.Network.Action
     public class ActionLong : ActionBase
     {
         /// <summary>Number of visual properties</summary>
-        private const uint MaxPropertiesPerEntity = VisualPropertyNode.NbVisualProperties;
+        private const uint MaxPropertiesPerEntity = Constants.NbVisualProperties;
 
         private ulong _value;
         private int _nbBits;

@@ -11,6 +11,7 @@ using System.Diagnostics;
 using RCC.Client;
 using RCC.Database;
 using RCC.Network;
+using RCC;
 
 namespace RCC.Chat
 {
@@ -19,18 +20,17 @@ namespace RCC.Chat
     /// </summary>
     public class ChatManager
     {
-        public const uint InvalidDatasetIndex = 0x00FFFFFF;
 
-        private const int PreTagSize = 5;
+
         private readonly List<ChatMsgNode> _chatBuffer = new List<ChatMsgNode>();
 
         private readonly NetworkManager _networkManager;
         private readonly StringManager _stringManager;
         private readonly DatabaseManager _databaseManager;
 
-        const int MaxDynChanPerPlayer = 8;
-        private readonly List<DatabaseNodeLeaf> _DynamicChannelIdLeaf = new List<DatabaseNodeLeaf>(new DatabaseNodeLeaf[MaxDynChanPerPlayer]);
-        private readonly List<DatabaseNodeLeaf> _DynamicChannelNameLeaf = new List<DatabaseNodeLeaf>(new DatabaseNodeLeaf[MaxDynChanPerPlayer]);
+
+        private readonly List<DatabaseNodeLeaf> _dynamicChannelIdLeaf = new List<DatabaseNodeLeaf>(new DatabaseNodeLeaf[Constants.MaxDynChanPerPlayer]);
+        private readonly List<DatabaseNodeLeaf> _dynamicChannelNameLeaf = new List<DatabaseNodeLeaf>(new DatabaseNodeLeaf[Constants.MaxDynChanPerPlayer]);
 
         public ChatManager(NetworkManager networkManager, StringManager stringManager, DatabaseManager databaseManager)
         {
@@ -44,10 +44,10 @@ namespace RCC.Chat
             //_MaxNumTellPeople = 5;
 
             // default to NULL
-            for (int i = 0; i < MaxDynChanPerPlayer; i++)
+            for (int i = 0; i < Constants.MaxDynChanPerPlayer; i++)
             {
-                _DynamicChannelNameLeaf[i] = null;
-                _DynamicChannelIdLeaf[i] = null;
+                _dynamicChannelNameLeaf[i] = null;
+                _dynamicChannelIdLeaf[i] = null;
                 //_DynamicChannelIdCache[i] = DynamicChannelEmptyId;
             }
         }
@@ -59,11 +59,11 @@ namespace RCC.Chat
         {
             //CInterfaceManager pIM = CInterfaceManager.getInstance();
 
-            for (int i = 0; i < MaxDynChanPerPlayer; i++)
+            for (int i = 0; i < Constants.MaxDynChanPerPlayer; i++)
             {
                 // default
-                _DynamicChannelNameLeaf[i] = null;
-                _DynamicChannelIdLeaf[i] = null;
+                _dynamicChannelNameLeaf[i] = null;
+                _dynamicChannelIdLeaf[i] = null;
                 //_DynamicChannelIdCache[i] = DynamicChannelEmptyId;
 
                 // get
@@ -72,8 +72,8 @@ namespace RCC.Chat
 
                 if (name != null && id != null)
                 {
-                    _DynamicChannelNameLeaf[i] = name;
-                    _DynamicChannelIdLeaf[i] = id;
+                    _dynamicChannelNameLeaf[i] = name;
+                    _dynamicChannelIdLeaf[i] = id;
                 }
             }
         }
@@ -128,7 +128,7 @@ namespace RCC.Chat
             if (type == ChatGroupType.DynChat)
             {
                 // TODO retrieve the DBIndex from the dynamic chat id
-                int dbIndex = getDynamicChannelDbIndexFromId(chatMsg.DynChatChanID);
+                int dbIndex = GetDynamicChannelDbIndexFromId(chatMsg.DynChatChanID);
                 // if the client database is not yet up to date, put the chat message in buffer
                 if (dbIndex < 0)
                     complete = false;
@@ -150,13 +150,13 @@ namespace RCC.Chat
         /// <summary>
         /// Use info from DB SERVER:DYN_CHAT. return -1 if fails
         /// </summary>
-        private int getDynamicChannelDbIndexFromId(uint channelId)
+        private int GetDynamicChannelDbIndexFromId(uint channelId)
         {
-            for (int i = 0; i < MaxDynChanPerPlayer; i++)
+            for (int i = 0; i < Constants.MaxDynChanPerPlayer; i++)
             {
-                if (_DynamicChannelIdLeaf[i] != null)
+                if (_dynamicChannelIdLeaf[i] != null)
                 {
-                    if ((ulong)_DynamicChannelIdLeaf[i].GetValue64() == channelId)
+                    if ((ulong)_dynamicChannelIdLeaf[i].GetValue64() == channelId)
                         return i;
                 }
             }
@@ -178,7 +178,7 @@ namespace RCC.Chat
             uint phraseID = 0;
             bms.Serial(ref phraseID);
 
-            chatMsg.CompressedIndex = InvalidDatasetIndex;
+            chatMsg.CompressedIndex = Constants.InvalidDatasetIndex;
             chatMsg.SenderNameId = 0;
             chatMsg.ChatMode = type;
             chatMsg.PhraseId = phraseID;
@@ -192,9 +192,9 @@ namespace RCC.Chat
                 return;
             }
 
-            // diplay
+            // display
             const string senderName = "";
-            chatDisplayer.DisplayChat(InvalidDatasetIndex, ucstr, ucstr, type, 0, senderName);
+            chatDisplayer.DisplayChat(Constants.InvalidDatasetIndex, ucstr, ucstr, type, 0, senderName);
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace RCC.Chat
                 if (type == ChatGroupType.DynChat)
                 {
                     // retrieve the DBIndex from the dynamic chat id
-                    int dbIndex = getDynamicChannelDbIndexFromId(itMsg.DynChatChanID);
+                    int dbIndex = GetDynamicChannelDbIndexFromId(itMsg.DynChatChanID);
                     // if the client database is not yet up to date, leave the chat message in buffer
                     if (dbIndex < 0)
                         complete = false;
@@ -351,6 +351,8 @@ namespace RCC.Chat
         /// </summary>
         public static string GetStringCategoryIfAny(string src, out string dest)
         {
+            const int PreTagSize = 5;
+
             var colorCode = new char[0];
 
             if (src.Length >= 3)

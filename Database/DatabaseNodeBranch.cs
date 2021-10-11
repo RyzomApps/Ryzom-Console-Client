@@ -40,8 +40,6 @@ namespace RCC.Database
 
         private bool _sorted;
 
-        private const bool VerboseDatabase = false;
-
         /// <summary>
         /// default constructor
         /// </summary>
@@ -380,11 +378,6 @@ namespace RCC.Database
                 _nodes[i].ResetData(gc, forceReset);
             }
         }
-
-        /// <summary>
-        ///	Destructor
-        /// </summary>
-        ~DatabaseNodeBranch() { Clear(); }
 
         /// <summary>
         /// Count the leaves

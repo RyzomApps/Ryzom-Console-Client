@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using RCC.Property;
 
 namespace RCC.Network.Action
 {
@@ -16,8 +17,6 @@ namespace RCC.Network.Action
     /// </summary>
     public static class ActionFactory
     {
-        private const byte InvalidSlot = 0xFF;
-
         public static Dictionary<ActionCode, KeyValuePair<Type, ActionBase>> RegisteredAction =
             new Dictionary<ActionCode, KeyValuePair<Type, ActionBase>>();
 
@@ -48,7 +47,7 @@ namespace RCC.Network.Action
                     code = (ActionCode)val;
                 }
 
-                action = Create(InvalidSlot, code);
+                action = Create(Constants.InvalidSlot, code);
 
                 if (action == null)
                 {
@@ -184,8 +183,6 @@ namespace RCC.Network.Action
             action.Pack(message);
         }
 
-        const byte PROPERTY_POSITION = 0;
-
         // <summary>
         // Create the action from a property code, fills property index and fill the internal propindex if needed
         // (it assumes the frontend and the client have the same mapping property/propindex).
@@ -194,9 +191,9 @@ namespace RCC.Network.Action
         {
             ActionBase action;
 
-            switch (propIndex)
+            switch ((PropertyType)propIndex)
             {
-                case PROPERTY_POSITION: // same as propertyId
+                case PropertyType.Position: // same as propertyId
                     {
                         action = Create(slot, ActionCode.ActionPositionCode);
                         break;

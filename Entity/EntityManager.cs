@@ -23,7 +23,6 @@ namespace RCC.Entity
     /// 
     public class EntityManager
     {
-        private const uint InvalidClientDatasetIndex = 0xFFFFF;
 
         private readonly RyzomClient _client;
 
@@ -76,7 +75,7 @@ namespace RCC.Entity
             // Slot 0 is for the user and so should be allocated only once (at beginning of main loop).
             if (slot == 0 && _entities[0] != null)
             {
-                if (newEntityInfo.DataSetIndex != InvalidClientDatasetIndex)
+                if (newEntityInfo.DataSetIndex != Constants.InvalidClientDatasetIndex)
                 {
                     // Store the dataSetId received
                     _entities[0].DataSetId(newEntityInfo.DataSetIndex);
@@ -214,7 +213,7 @@ namespace RCC.Entity
         {
             foreach (var entity in _entities)
             {
-                if (entity != null && entity.GetDisplayName().Equals(name, StringComparison.OrdinalIgnoreCase))
+                if (entity != null && entity.GetDisplayName().Contains(name, StringComparison.OrdinalIgnoreCase))
                 {
                     return entity;
                 }

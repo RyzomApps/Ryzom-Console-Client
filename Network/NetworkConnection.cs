@@ -166,8 +166,7 @@ namespace RCC.Network
 
         private uint _quitId;
 
-        private const int NumBitsInLongAck = 512;
-        private bool[] _longAckBitField = new bool[NumBitsInLongAck * 2];
+        private bool[] _longAckBitField = new bool[Constants.NumBitsInLongAck * 2];
 
         /// <summary>
         /// MD5 hash keys of msg.xml
@@ -336,7 +335,7 @@ namespace RCC.Network
 
             _propertyDecoder.Init(256);
 
-            _longAckBitField = new bool[NumBitsInLongAck * 2];
+            _longAckBitField = new bool[Constants.NumBitsInLongAck * 2];
 
             _lastAckInLongAck = 0;
             LastSentCycle = 0;
@@ -1339,13 +1338,13 @@ namespace RCC.Network
 
             // encode long ack bitfield
             for (var i = _lastReceivedNumber + 1; i < _currentReceivedNumber; ++i)
-                _longAckBitField[i & (NumBitsInLongAck - 1)] = false;
+                _longAckBitField[i & (Constants.NumBitsInLongAck - 1)] = false;
 
-            _longAckBitField[_currentReceivedNumber & (NumBitsInLongAck - 1)] = ackBool;
+            _longAckBitField[_currentReceivedNumber & (Constants.NumBitsInLongAck - 1)] = ackBool;
 
             // no more than NumBitsInLongAck ack in field
-            if (_lastAckInLongAck <= _currentReceivedNumber - NumBitsInLongAck)
-                _lastAckInLongAck = _currentReceivedNumber - NumBitsInLongAck + 1;
+            if (_lastAckInLongAck <= _currentReceivedNumber - Constants.NumBitsInLongAck)
+                _lastAckInLongAck = _currentReceivedNumber - Constants.NumBitsInLongAck + 1;
 
             _lastReceivedNumber = _currentReceivedNumber;
 
@@ -1556,8 +1555,7 @@ namespace RCC.Network
 
                     if (i < block.Actions.Count)
                     {
-                        throw new NotImplementedException(
-                            "Send: ActionBlock size is bigger than 480 bit. Thats not implemented yet.");
+                        throw new NotImplementedException("Send: ActionBlock size is bigger than 480 bit. Thats not implemented yet.");
                     }
                 }
 
@@ -1677,9 +1675,8 @@ namespace RCC.Network
         public void Push(BitMemoryStream msg)
         {
             const int maxImpulseBitSize = 230 * 8;
-            const byte invalidSlot = 0xFF;
 
-            var ag = (ActionGeneric)ActionFactory.Create(invalidSlot, ActionCode.ActionGenericCode);
+            var ag = (ActionGeneric)ActionFactory.Create(Constants.InvalidSlot, ActionCode.ActionGenericCode);
 
             if (ag == null) //TODO: ryzom: see that with oliver...
                 return;
@@ -1754,8 +1751,6 @@ namespace RCC.Network
             _propertyDecoder.SetReferencePosition(position);
         }
 
-        private const byte InvalidSlot = 255;
-
         private static List<byte> _targetSlotsList = new List<byte>(256);
 
         public void DecodeDiscreetProperty(BitMemoryStream msgin, byte propIndex)
@@ -1793,7 +1788,7 @@ namespace RCC.Network
                         }
                         else
                         {
-                            _targetSlotsList.Add(InvalidSlot);
+                            _targetSlotsList.Add(Constants.InvalidSlot);
                             ++listSize;
                         }
 
@@ -1963,9 +1958,7 @@ namespace RCC.Network
                         ENTITY_MOUNTED_ID,RIDER_ENTITY_ID,BEHAVIOUR,TARGET_LIST,TARGET_ID,VISUAL_FX
                         But bars timestamp accuracy is very important (else could take DB property with falsly newer timestamp)
                     */
-                    const int propertyBars = 15;
-
-                    if (propIndex == propertyBars)
+                    if (propIndex == (byte)PropertyType.Bars)
                     {
                         timeStamp = _currentServerTick;
                     }
@@ -1993,7 +1986,7 @@ namespace RCC.Network
 
         public void PushTarget(in byte slot, TargettingType targetOrPickup)
         {
-            ActionTargetSlot ats = (ActionTargetSlot)ActionFactory.Create(InvalidSlot, ActionCode.ActionTargetSlotCode);
+            ActionTargetSlot ats = (ActionTargetSlot)ActionFactory.Create(Constants.InvalidSlot, ActionCode.ActionTargetSlotCode);
             Debug.Assert(ats != null);
             ats.Slot = slot;
             switch (targetOrPickup) // ensure the value is good for the FE

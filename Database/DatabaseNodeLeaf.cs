@@ -16,8 +16,6 @@ namespace RCC.Database
 {
     public class DatabaseNodeLeaf : DatabaseNodeBase
     {
-        private const bool VerboseDatabase = false;
-
         /// <summary>property type</summary>
         private EPropType _type;
 
@@ -249,7 +247,6 @@ namespace RCC.Database
         public void NotifyObservers()
         {
             //Debug.Print("NotifyObservers");
-            //throw new NotImplementedException();
         }
 
         /// <summary>

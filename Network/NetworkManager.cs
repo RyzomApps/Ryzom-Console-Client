@@ -47,13 +47,6 @@ namespace RCC.Network
         public bool CreateInterf;
         public bool CharacterInterf;
 
-        /// <remarks>
-        /// This must be changed when cdbank bits in the client change
-        /// </remarks>
-        private const int FillNbitsWithNbBitsForCdbbank = 3;
-
-        const int CdbPlayer = 0;
-
         /// <summary>
         /// client is ready for the selection of the character - non ryzom variable (for workarounds)
         /// </summary>
@@ -1209,7 +1202,7 @@ namespace RCC.Network
                 impulse.Serial(ref serverTick);
 
                 // read the bank to reset
-                const int nbits = FillNbitsWithNbBitsForCdbbank;
+                const int nbits = Constants.FillNbitsWithNbBitsForCdbbank;
                 impulse.Serial(ref bank, nbits);
 
                 // reset the bank
@@ -1241,7 +1234,7 @@ namespace RCC.Network
                 impulse.Serial(ref serverTick);
 
                 // decode bank
-                const int nbits = FillNbitsWithNbBitsForCdbbank;
+                const int nbits = Constants.FillNbitsWithNbBitsForCdbbank;
                 impulse.Serial(ref bank, nbits);
 
                 // read delta
@@ -1270,7 +1263,7 @@ namespace RCC.Network
                 impulse.Serial(ref serverTick);
 
                 // decode bank
-                const int nbits = FillNbitsWithNbBitsForCdbbank;
+                const int nbits = Constants.FillNbitsWithNbBitsForCdbbank;
                 impulse.Serial(ref bank, nbits);
 
                 // read delta
@@ -1323,7 +1316,7 @@ namespace RCC.Network
                 // read delta
                 if (_databaseManager == null) return;
 
-                _databaseManager.ReadDelta(serverTick, impulse, CdbPlayer);
+                _databaseManager.ReadDelta(serverTick, impulse, Constants.CdbPlayer);
                 _databaseManager.SetInitPacketReceived();
                 _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
 
@@ -1351,8 +1344,7 @@ namespace RCC.Network
                 // read delta
                 if (_databaseManager == null) return;
 
-                _databaseManager.ReadDelta(serverTick, impulse,
-                    CdbPlayer); // unlike on the server, here there is only one unified CCDBSynchronized object
+                _databaseManager.ReadDelta(serverTick, impulse, Constants.CdbPlayer); // unlike on the server, here there is only one unified CCDBSynchronized object
 
                 _client.Automata.OnDatabaseUpdatePlayer(serverTick);
             }

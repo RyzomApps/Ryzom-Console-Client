@@ -20,7 +20,7 @@ namespace RCC.Chat
 
         public ChatMsg()
         {
-            CompressedIndex = ChatManager.InvalidDatasetIndex;
+            CompressedIndex = Constants.InvalidDatasetIndex;
             SenderNameId = 0;
             ChatMode = 0;
             DynChatChanID = 0;

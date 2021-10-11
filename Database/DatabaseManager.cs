@@ -21,8 +21,6 @@ namespace RCC.Database
     /// <date>2002</date>
     public class DatabaseManager
     {
-        private const bool IsDatabaseVerbose = true;
-
         /// <summary>
         /// Database bank identifiers (please change BankNames in cpp accordingly)
         /// </summary>
@@ -68,11 +66,6 @@ namespace RCC.Database
         }
 
         /// <summary>
-        /// Destructor
-        /// </summary>
-        ~DatabaseManager() { Clear(); }
-
-        /// <summary>
         /// Return a ptr on the database node
         /// </summary>
         /// <returns>ptr on the database node</returns>
@@ -116,12 +109,6 @@ namespace RCC.Database
         }
 
         /// <summary>
-        /// Load a backup of the database
-        /// </summary>
-        /// <params name="fileName">is the name of the backup file</params>
-        public void Read(string fileName) { throw new NotImplementedException(); }
-
-        /// <summary>
         /// Save a backup of the database
         /// </summary>
         /// <params name="fileName">is the name of the backup file</params>
@@ -157,7 +144,7 @@ namespace RCC.Database
             uint propertyCount = 0;
             s.Serial(ref propertyCount, 16);
 
-            if (IsDatabaseVerbose)
+            if (Constants.VerboseDatabase)
                 _client.GetLogger().Debug($"CDB: Reading delta ({propertyCount} changes)");
 
 
@@ -165,14 +152,6 @@ namespace RCC.Database
             {
                 _serverDatabase.ReadAndMapDelta(gc, s, bank, BankHandler);
             }
-        }
-
-        /// <summary>
-        /// Clear the database
-        /// </summary>
-        public void Clear()
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>Return true while the first database packet has not been completely received</summary>

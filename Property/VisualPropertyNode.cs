@@ -36,11 +36,6 @@ namespace RCC.Property
             return PropIndex != byte.MaxValue;
         }
 
-        /// <summary>
-        /// Number of visual properties
-        /// </summary>
-        public const uint NbVisualProperties = 28;
-
         // From the main root
         private VisualPropertyNode GetPositionNode() { return VpA; }
         private VisualPropertyNode GetOrientationNode() { return VpB.VpA; }
@@ -128,7 +123,7 @@ namespace RCC.Property
             SetNodePropIndex(discreetRoot.GetGuildSymbolNode(), (byte)PropertyType.GuildSymbol);
             SetNodePropIndex(discreetRoot.GetGuildNameIdNode(), (byte)PropertyType.GuildNameID);
 
-            return NbVisualProperties;
+            return Constants.NbVisualProperties;
         }
 
         private static void SetNodePropIndex(VisualPropertyNode node, byte property)
