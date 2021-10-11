@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using RCC.Commands.Internal;
+﻿using RCC.Commands.Internal;
 using RCC.Network;
+using System.Collections.Generic;
 
 namespace RCC.Commands
 {

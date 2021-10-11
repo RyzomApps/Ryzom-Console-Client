@@ -6,7 +6,6 @@
 // Copyright 2021 N4T4NM
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Discord;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

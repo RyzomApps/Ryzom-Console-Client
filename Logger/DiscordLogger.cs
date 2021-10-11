@@ -11,12 +11,7 @@ namespace RCC.Logger
         /// <summary>
         /// Discord Webhook class for sending messages
         /// </summary>
-        readonly DiscordWebhook _hook;
-
-        /// <summary>
-        /// thread that handles sending of queued messages
-        /// </summary>
-        private readonly Thread _messageFlusher;
+        private readonly DiscordWebhook _hook;
 
         /// <summary>
         /// Queue of outgoing messages to respect the rate limit
@@ -33,8 +28,8 @@ namespace RCC.Logger
                 Url = webhookUrl
             };
 
-            _messageFlusher = new Thread(FlushMessages) { Name = "RCC DiscordLogger MessageFlusher" };
-            _messageFlusher.Start();
+            var messageFlusher = new Thread(FlushMessages) { Name = "RCC DiscordLogger MessageFlusher" };
+            messageFlusher.Start();
 
             QueueMessage("### Log started at " + FileLogLogger.GetTimestamp() + " ###");
         }
@@ -42,27 +37,28 @@ namespace RCC.Logger
         /// <summary>
         /// Sends all pending messages to the discord guild
         /// </summary>
+        /// <remarks>rate limit for sending messages is 5 messages per 5 seconds per channel</remarks>
         private void FlushMessages()
         {
             while (true)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(1200); // 1 message per 1 second + tolerance
 
                 try
                 {
                     if (_messageQueue.Count == 0)
                         continue;
 
-                    string text = "";
+                    var text = "";
 
-                    while (_messageQueue.Count > 0 && text.Length < (2000 - 256))
+                    while (_messageQueue.Count > 0 && text.Length < 2000 - 256)
                     {
                         text += _messageQueue.Dequeue() + "\r\n";
                     }
 
                     text = text[..^2];
 
-                    DiscordMessage message = new DiscordMessage
+                    var message = new DiscordMessage
                     {
                         Content = text,
                         Username = "RCC",

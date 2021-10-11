@@ -6,19 +6,18 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
+using RCC.Chat;
+using RCC.Client;
+using RCC.Database;
+using RCC.Helper.Tasks;
+using RCC.Network;
+using RCC.Property;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using RCC.Chat;
-using RCC.Client;
-using RCC.Database;
-using RCC.Entity;
-using RCC.Helper.Tasks;
-using RCC.Network;
-using RCC.Property;
 
 namespace RCC.Automata.Internal
 {
@@ -359,7 +358,7 @@ namespace RCC.Automata.Internal
         /// <summary>
         /// called when the friend list contact changes its online status
         /// </summary>
-        public virtual void OnTeamContactStatus(uint contactIndex, CharConnectionState online) { }
+        public virtual void OnTeamContactStatus(uint contactId, CharConnectionState online) { }
 
         /// <summary>
         /// called when the friend list gets initialized
@@ -370,6 +369,11 @@ namespace RCC.Automata.Internal
         /// called when a friend list contact was created
         /// </summary>
         public virtual void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList) { }
+
+        /// <summary>
+        /// Remove a contact by the server
+        /// </summary>
+        public virtual void OnTeamContactRemove(uint contactId, byte nList) { }
 
         /// <summary>
         /// Called when a chat message arrives

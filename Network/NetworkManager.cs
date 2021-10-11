@@ -764,9 +764,18 @@ namespace RCC.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>
+        /// Remove a contact by the server
+        /// </summary>
         private void ImpulseTeamContactRemove(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            uint contactId = 0;
+            byte nList = 0;
+
+            impulse.Serial(ref contactId);
+            impulse.Serial(ref nList);
+
+            _client.Automata.OnTeamContactRemove(contactId, nList);
         }
 
         /// <summary>

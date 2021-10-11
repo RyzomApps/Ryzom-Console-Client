@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using RCC.Automata.Internal;
+﻿using RCC.Automata.Internal;
 using RCC.Chat;
 using RCC.Commands;
 using RCC.Config;
 using RCC.Helper;
 using RCC.Network;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using RCC.Property;
 
 namespace RCC.Automata
 {
@@ -100,19 +100,31 @@ namespace RCC.Automata
             }
         }
 
-        public override void OnTeamContactStatus(uint contactIndex, CharConnectionState online)
+        public override void OnTeamContactStatus(uint contactId, CharConnectionState online)
         {
-            var (key, _) = _friendOnline.ElementAt((int)contactIndex);
+            var (key, _) = _friendOnline.ElementAt((int)contactId);
 
             // if friend already has that status return
             if (_friendOnline[key] == online)
                 return;
 
             _friendOnline[key] = online;
-            var name = _friendNames[key] != string.Empty ? _friendNames[key] : $"{contactIndex}";
+            var name = _friendNames[key] != string.Empty ? _friendNames[key] : $"{contactId}";
 
 
             Handler.GetLogger().Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
+        }
+
+        public override void OnTeamContactRemove(uint contactId, byte nList)
+        {
+            if (nList != 0) return;
+
+            var (key, _) = _friendOnline.ElementAt((int)contactId);
+
+            Handler.GetLogger().Info($"Removing {(_friendNames[key] != string.Empty ? _friendNames[key] : $"{key}")} from the friend list.");
+
+            _friendOnline.Remove(key);
+            _friendNames.Remove(key);
         }
 
         public override void OnTeamContactInit(List<uint> friendListNames, List<CharConnectionState> friendListOnline, List<string> ignoreListNames)
@@ -123,7 +135,6 @@ namespace RCC.Automata
                 var state = friendListOnline[i];
 
                 _friendOnline.Add(id, state);
-
                 _friendNames.Add(id, /*StringManager.GetString(id, out string name) ? name :*/ string.Empty);
             }
 
@@ -136,15 +147,12 @@ namespace RCC.Automata
 
         public override void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList)
         {
+            if (nList != 0) return;
+
             _friendOnline.Add(nameId, online);
             _friendNames.Add(nameId, Handler.GetStringManager().GetString(nameId, out var name, Handler.GetNetworkManager()) ? Entity.Entity.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
 
             Handler.GetLogger().Info($"Added {(_friendNames[nameId] != string.Empty ? _friendNames[nameId] : $"{nameId}")} to the friend list.");
-        }
-
-        public override bool OnDisconnect(DisconnectReason reason, string message)
-        {
-            return false;
         }
 
         public override void OnChat(in uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, in uint dynChatId,

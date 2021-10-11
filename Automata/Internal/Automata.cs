@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Threading;
-using RCC.Chat;
+﻿using RCC.Chat;
 using RCC.Client;
 using RCC.Commands.Internal;
 using RCC.Config;
 using RCC.Database;
-using RCC.Entity;
 using RCC.Network;
 using RCC.Property;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Threading;
 
 namespace RCC.Automata.Internal
 {
@@ -225,6 +224,14 @@ namespace RCC.Automata.Internal
         }
 
         /// <summary>
+        /// Remove a contact by the server
+        /// </summary>
+        internal void OnTeamContactRemove(uint contactId, byte nList)
+        {
+            DispatchAutomatonEvent(automaton => automaton.OnTeamContactRemove(contactId, nList));
+        }
+
+        /// <summary>
         /// Any chat will arrive here 
         /// </summary>
         internal void OnChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, uint dynChatId, string senderName, uint bubbleTimer)
@@ -425,6 +432,5 @@ namespace RCC.Automata.Internal
         }
 
         #endregion
-
     }
 }

@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
-using RCC.Automata.Internal;
+﻿using RCC.Automata.Internal;
 using RCC.Database;
-using RCC.Entity;
 using RCC.Property;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace RCC.Automata
 {
