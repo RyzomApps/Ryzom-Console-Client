@@ -58,6 +58,11 @@
         public const uint UserSheetId = 0;
 
         /// <summary>
+        /// Timeout for the connection if not uninitialized or connected in ticks
+        /// </summary>
+        public static int ConnectionTimeout = 5 * 60; // [s] 5 minutes
+
+        /// <summary>
         /// Debugging for the memory stream
         /// </summary>
 #if DEBUG

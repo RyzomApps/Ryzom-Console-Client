@@ -736,20 +736,28 @@ namespace RCC
         /// </summary>
         private void TimeoutDetector()
         {
-            // TODO: TimeoutDetector
-            do
-            {
-                Thread.Sleep(TimeSpan.FromSeconds(15));
+            var lastAck = DateTime.Now;
 
-                if (_networkConnection.ConnectionState == ConnectionState.NotInitialized)
+            while (true)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(10));
+
+                if (_networkConnection.ConnectionState == ConnectionState.NotInitialized ||
+                    _networkConnection.ConnectionState == ConnectionState.Connected)
+                {
+                    lastAck = DateTime.Now;
+                    continue;
+                }
+
+                if (lastAck.AddSeconds(Constants.ConnectionTimeout) >= DateTime.Now)
                     continue;
 
-                if (_networkConnection.GetCurrentServerTick() + 30 * 1000 >= DateTime.Now.Ticks) continue;
-
+                GetLogger().Error($"Connection timeout of {Constants.ConnectionTimeout} seconds reached.");
                 Automata.OnConnectionLost(AutomatonBase.DisconnectReason.ConnectionLost, "error.timeout");
+                GetNetworkManager().GameExit = true;
+
                 return;
             }
-            while (true);
         }
 
         /// <summary>
