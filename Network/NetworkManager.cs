@@ -42,12 +42,6 @@ namespace RCC.Network
 
         public bool GameExit;
 
-        public bool UserChar;
-        public bool NoUserChar;
-        public bool ConnectInterf;
-        public bool CreateInterf;
-        public bool CharacterInterf;
-
         /// <summary>
         /// client is ready for the selection of the character - non ryzom variable (for workarounds)
         /// </summary>

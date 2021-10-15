@@ -3,6 +3,11 @@
     public static class Constants
     {
         /// <summary>
+        /// Number of shortcut
+        /// </summary>
+        public const int RyzomMaxShortcut = 20;
+
+        /// <summary>
         /// misc cdb
         /// </summary>
         public const bool VerboseDatabase = true;

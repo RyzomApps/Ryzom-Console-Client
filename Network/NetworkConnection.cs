@@ -6,6 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using RCC.Config;
+using RCC.Database;
+using RCC.Helper;
+using RCC.Network.Action;
+using RCC.Property;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,11 +18,6 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
-using RCC.Config;
-using RCC.Database;
-using RCC.Helper;
-using RCC.Network.Action;
-using RCC.Property;
 
 namespace RCC.Network
 {
@@ -281,6 +281,7 @@ namespace RCC.Network
             if (!_registered)
             {
                 ActionFactory.RegisterAction(ActionCode.ActionGenericCode, typeof(ActionGeneric));
+                ActionFactory.RegisterAction(ActionCode.ActionDisconnectionCode, typeof(ActionDisconnection));
                 ActionFactory.RegisterAction(ActionCode.ActionGenericMultiPartCode, typeof(ActionGenericMultiPart));
                 ActionFactory.RegisterAction(ActionCode.ActionPositionCode, typeof(ActionPosition));
                 ActionFactory.RegisterAction(ActionCode.ActionSint64, typeof(ActionLong));

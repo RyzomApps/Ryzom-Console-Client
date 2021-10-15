@@ -6,11 +6,45 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using RCC.Phrase;
+
 namespace RCC.Client
 {
-    internal static class InterfaceManager
+    /// <summary>
+    /// class managing the interface
+    /// </summary>
+    /// <author>Matthieu 'TrapII' Besson</author>
+    /// <author>Nevrax France</author>
+    /// <date>2002</date>
+    internal class InterfaceManager
     {
-        public static void CreateLocalBranch(string fileName)
+        private readonly PhraseManager _phraseManager;
+
+        public PhraseManager GetPhraseManager => _phraseManager;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public InterfaceManager()
+        {
+            _phraseManager = new PhraseManager();
+        }
+
+        /// <summary>
+        /// initialize the whole in game interface
+        /// </summary>
+        public void InitInGame()
+        {
+            // Skill Manager Init
+
+
+            // SBrick Manager Init
+
+            // SPhrase Manager DB Init (BEFORE loading). Must be init AFTER skill and brick init
+            _phraseManager.InitInGame();
+        }
+
+        public void CreateLocalBranch(string fileName)
         {
             //try
             //{

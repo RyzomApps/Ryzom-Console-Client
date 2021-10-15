@@ -10,5 +10,18 @@ namespace RCC.Sheet
 {
     public class SheetId
     {
+        public static SheetId Unknown = new SheetId(0);
+
+        private uint _id;
+
+        public SheetId()
+        {
+
+        }
+
+        public SheetId(uint sheetRef)
+        {
+            _id = sheetRef;
+        }
     }
 }

@@ -31,11 +31,14 @@ namespace RCC
     /// </summary>
     public class RyzomClient : IChatDisplayer
     {
+        #region Variables
+
         private static RyzomClient _instance;
         private readonly NetworkConnection _networkConnection;
         private readonly NetworkManager _networkManager;
         private readonly StringManager _stringManager;
         private readonly DatabaseManager _databaseManager;
+        private readonly InterfaceManager _interfaceManager;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -84,6 +87,10 @@ namespace RCC
 
         public bool ReadyToPing = true;
 
+        #endregion
+
+        #region Properties
+
         public ChatGroupType Channel
         {
             get => _channel;
@@ -115,7 +122,9 @@ namespace RCC
 
         public NetworkConnection GetNetworkConnection() { return _networkConnection; }
 
-        #region Initialization
+        #endregion
+
+        #region Console Client - Initialization
 
         /// <summary>
         /// Starts the main chat client
@@ -129,6 +138,7 @@ namespace RCC
             _networkConnection = new NetworkConnection(this, _databaseManager);
             _stringManager = new StringManager(this);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager);
+            _interfaceManager = new InterfaceManager();
 
             Automata = new Automata.Internal.Automata(this);
 
@@ -141,7 +151,7 @@ namespace RCC
             // copy database.xml from resources
             if (!File.Exists("./data/database.xml")) Misc.WriteResourceToFile("database", "./data/database.xml");
 
-            StartClient();
+            StartConsoleClient();
 
             Program.Exit();
         }
@@ -149,7 +159,7 @@ namespace RCC
         /// <summary>
         /// Starts the main chat client, wich will login to the server.
         /// </summary>
-        private void StartClient()
+        private void StartConsoleClient()
         {
             if (ClientConfig.DiscordWebhook.Trim() != "")
             {
@@ -178,7 +188,7 @@ namespace RCC
             _cmdprompt = new Thread(CommandPrompt) { Name = "RCC CommandBase prompt" };
             _cmdprompt.Start();
 
-            Main();
+            StartRyzomClient();
         }
 
         #endregion
@@ -237,15 +247,15 @@ namespace RCC
 
         #endregion IChatDisplayer
 
-        #region Ryzom Game Loop
+        #region Ryzom Client - Initialization and Game Loop
 
         /// <summary>
-        /// OnInitialize the application. Login to the server. Main loop.
+        /// Initialize the application. Login to the server. Main loop.
         /// </summary>
-        private void Main()
+        private void StartRyzomClient()
         {
             // Initialize the application
-            PrelogInit();
+            PreLoginInit();
 
             // Log the client and choose from shard
             if (!Login())
@@ -255,7 +265,7 @@ namespace RCC
             }
 
             // init message database
-            PostlogInit();
+            PostLoginInit();
 
             var ok = true;
 
@@ -283,120 +293,15 @@ namespace RCC
         }
 
         /// <summary>
-        /// Initialize the application before login
+        /// Initialize the application before loginmeine
         /// </summary>
-        private static void PrelogInit()
+        private static void PreLoginInit()
         {
             // create the save dir
             if (!Directory.Exists("save")) Directory.CreateDirectory("save");
 
             // create the user dir
             if (!Directory.Exists("user")) Directory.CreateDirectory("user");
-        }
-
-        /// <summary>
-        /// OnInitialize the application after login
-        /// </summary>
-        private void PostlogInit()
-        {
-            _networkManager.GetMessageHeaderManager().Init(Constants.MsgXmlPath);
-
-            // OnInitialize the Generic Message Header Manager.
-            _networkManager.InitializeNetwork();
-
-            // TODO: init the chat manager
-            // ChatManager.init(CPath::lookup("chat_static.cdb"));
-        }
-
-        /// <summary>
-        /// OnInitialize the main loop.
-        /// If you add something in this function, check CFarTP,
-        /// some kind of reinitialization might be useful over there.
-        /// </summary>
-        private void InitMainLoop()
-        {
-            // Create the game interface database
-
-            // Initialize the Database.
-            if (_databaseManager != null)
-            {
-                Log.Info("Initializing XML Database ...");
-                _databaseManager.Init(@"data\database.xml", null);
-
-                var textId = new TextId("SERVER");
-
-                if (DatabaseManager.GetDb().GetNode(textId, false) != null)
-                {
-                    DatabaseManager.GetDb().RemoveNode(textId);
-                }
-
-                DatabaseManager.GetDb().AttachChild(_databaseManager.GetNodePtr(), "SERVER");
-
-                // Set the database
-                //_networkManager.SetDataBase(_databaseManager.GetNodePtr());
-
-                // Create interface database
-                Log.Info("Initializing Interface Database ...");
-
-                // Add the LOCAL branch
-                textId = new TextId("LOCAL");
-
-                if (DatabaseManager.GetDb().GetNode(textId, false) != null)
-                {
-                    DatabaseManager.GetDb().RemoveNode(textId);
-                }
-
-                InterfaceManager.CreateLocalBranch("local_database.xml");
-            }
-
-            // Initialize Sound System
-
-            // Initializing Entities Manager
-            _networkManager.GetEntityManager().Initialize(256);
-
-            // Creating Scene.
-
-            // Initialize automatic animation
-
-            // Initialize the timer.
-
-            // Parse the interface InGame
-            // pIM->initInGame();
-            _networkManager.GetChatManager().InitInGame();
-
-            // Update Network till current tick increase.
-            _lastGameCycle = _networkConnection.GetCurrentServerTick();
-
-            while (_lastGameCycle == _networkConnection.GetCurrentServerTick())
-            {
-                // Update Network.
-                _networkManager.Update();
-                _databaseManager?.FlushObserverCalls();
-            }
-
-            // Get the sheet for the user from the CFG.
-            // Initialize the user and add him into the entity manager.
-            // DO IT AFTER: Database, Collision Manager, PACS, scene, animations loaded.
-
-            //CSheetId userSheet = new CSheetId(ClientCfg.UserSheet);
-            var emptyEntityInfo = new Change.TNewEntityInfo();
-            emptyEntityInfo.Reset();
-            GetNetworkManager().GetEntityManager().Create(0, Constants.UserSheetId, emptyEntityInfo);
-            Log.Info("Created the user with the sheet " + Constants.UserSheetId);
-
-            // Create the message for the server that the client is ready
-            var out2 = new BitMemoryStream();
-
-            if (_networkManager.GetMessageHeaderManager().PushNameToStream("CONNECTION:READY", out2))
-            {
-                out2.Serial(ref ClientConfig.LanguageCode);
-                _networkManager.Push(out2);
-                _networkManager.Send(_networkConnection.GetCurrentServerTick());
-            }
-            else
-            {
-                Log?.Info("initMainLoop : unknown message name : 'CONNECTION:READY'.");
-            }
         }
 
         /// <summary>
@@ -442,6 +347,20 @@ namespace RCC
         }
 
         /// <summary>
+        /// OnInitialize the application after login
+        /// </summary>
+        private void PostLoginInit()
+        {
+            _networkManager.GetMessageHeaderManager().Init(Constants.MsgXmlPath);
+
+            // OnInitialize the Generic Message Header Manager.
+            _networkManager.InitializeNetwork();
+
+            // TODO: init the chat manager
+            // ChatManager.init(CPath::lookup("chat_static.cdb"));
+        }
+
+        /// <summary>
         /// New version of the menu after the server connection
         /// If you add something in this function, check CFarTP,
         /// some kind of reinitialization might be useful over there.
@@ -451,11 +370,11 @@ namespace RCC
             _networkManager.GameExit = false;
 
             // Init global variables
-            _networkManager.UserChar = false;
-            _networkManager.NoUserChar = false;
-            _networkManager.ConnectInterf = true;
-            _networkManager.CreateInterf = true;
-            _networkManager.CharacterInterf = true;
+            //_networkManager.UserChar = false;
+            //_networkManager.NoUserChar = false;
+            //_networkManager.ConnectInterf = true;
+            //_networkManager.CreateInterf = true;
+            //_networkManager.CharacterInterf = true;
             _networkManager.WaitServerAnswer = false;
 
             // Start the finite state machine
@@ -620,6 +539,97 @@ namespace RCC
         }
 
         /// <summary>
+        /// OnInitialize the main loop.
+        /// If you add something in this function, check CFarTP,
+        /// some kind of reinitialization might be useful over there.
+        /// </summary>
+        private void InitMainLoop()
+        {
+            // Create the game interface database
+
+            // Initialize the Database.
+            if (_databaseManager != null)
+            {
+                Log.Info("Initializing XML Database ...");
+                _databaseManager.Init(@"data\database.xml", null);
+
+                var textId = new TextId("SERVER");
+
+                if (DatabaseManager.GetDb().GetNode(textId, false) != null)
+                {
+                    DatabaseManager.GetDb().RemoveNode(textId);
+                }
+
+                DatabaseManager.GetDb().AttachChild(_databaseManager.GetNodePtr(), "SERVER");
+
+                // Set the database
+                //_networkManager.SetDataBase(_databaseManager.GetNodePtr());
+
+                // Create interface database
+                Log.Info("Initializing Interface Database ...");
+
+                // Add the LOCAL branch
+                textId = new TextId("LOCAL");
+
+                if (DatabaseManager.GetDb().GetNode(textId, false) != null)
+                {
+                    DatabaseManager.GetDb().RemoveNode(textId);
+                }
+
+                _interfaceManager.CreateLocalBranch("local_database.xml");
+            }
+
+            // Initialize Sound System
+
+            // Initializing Entities Manager
+            _networkManager.GetEntityManager().Initialize(256);
+
+            // Creating Scene.
+
+            // Initialize automatic animation
+
+            // Initialize the timer.
+
+            // Parse the interface InGame
+            _interfaceManager.InitInGame(); // must be called after waitForUserCharReceived() because Ring information is used by initInGame()
+            _networkManager.GetChatManager().InitInGame();
+
+            // Update Network till current tick increase.
+            _lastGameCycle = _networkConnection.GetCurrentServerTick();
+
+            while (_lastGameCycle == _networkConnection.GetCurrentServerTick())
+            {
+                // Update Network.
+                _networkManager.Update();
+                _databaseManager?.FlushObserverCalls();
+            }
+
+            // Get the sheet for the user from the CFG.
+            // Initialize the user and add him into the entity manager.
+            // DO IT AFTER: Database, Collision Manager, PACS, scene, animations loaded.
+
+            //CSheetId userSheet = new CSheetId(ClientCfg.UserSheet);
+            var emptyEntityInfo = new Change.TNewEntityInfo();
+            emptyEntityInfo.Reset();
+            GetNetworkManager().GetEntityManager().Create(0, Constants.UserSheetId, emptyEntityInfo);
+            Log.Info("Created the user with the sheet " + Constants.UserSheetId);
+
+            // Create the message for the server that the client is ready
+            var out2 = new BitMemoryStream();
+
+            if (_networkManager.GetMessageHeaderManager().PushNameToStream("CONNECTION:READY", out2))
+            {
+                out2.Serial(ref ClientConfig.LanguageCode);
+                _networkManager.Push(out2);
+                _networkManager.Send(_networkConnection.GetCurrentServerTick());
+            }
+            else
+            {
+                Log?.Info("initMainLoop : unknown message name : 'CONNECTION:READY'.");
+            }
+        }
+
+        /// <summary>
         /// Main ryzom game loop
         /// </summary>
         private bool MainLoop()
@@ -636,9 +646,10 @@ namespace RCC
                 if (_databaseManager != null)
                 {
                     _databaseManager.FlushObserverCalls();
-                    bool prevDatabaseInitStatus = _databaseManager.InitInProgress();
+
+                    var prevDatabaseInitStatus = _databaseManager.InitInProgress();
                     _databaseManager.SetChangesProcessed();
-                    bool newDatabaseInitStatus = _databaseManager.InitInProgress();
+                    var newDatabaseInitStatus = _databaseManager.InitInProgress();
 
                     if (!newDatabaseInitStatus && prevDatabaseInitStatus)
                     {
@@ -714,11 +725,11 @@ namespace RCC
                 // Get the Connection State.
                 var connectionState = _networkConnection.ConnectionState;
 
-                if (connectionState == ConnectionState.Disconnect || connectionState == ConnectionState.Quit)
-                {
-                    _networkManager.GameExit = true;
-                    break;
-                }
+                // loop while connected
+                if (connectionState != ConnectionState.Disconnect && connectionState != ConnectionState.Quit) continue;
+
+                _networkManager.GameExit = true;
+                break;
             } // end of main loop
 
             _databaseManager?.ResetInitState();
@@ -731,8 +742,8 @@ namespace RCC
         #region Watchdogs
 
         /// <summary>
-        /// Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive
-        /// is too old.
+        /// Periodically checks for server keepalives and consider that connection has been lost
+        /// if the last received keepalive is too old.
         /// </summary>
         private void TimeoutDetector()
         {
@@ -766,13 +777,13 @@ namespace RCC
         private void CommandPrompt()
         {
             Thread.Sleep(500);
-            while (true /*_networkConnection._ConnectionState == ConnectionState.Connected*/)
+
+            while (true)
             {
                 try
                 {
                     var text = ConsoleIO.ReadLine();
                     InvokeOnMainThread(() => HandleCommandPromptText(text));
-
                 }
                 catch (IOException) { }
                 catch (NullReferenceException) { }
