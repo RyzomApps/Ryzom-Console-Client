@@ -28,13 +28,23 @@ namespace RCC.Automata
                 return;
 
             var entityManager = Handler.GetNetworkManager().GetEntityManager();
-            if (entityManager == null) return;
+            if (entityManager == null)
+            {
+                _active = false;
+                Handler.GetLogger().Warn("[Follower] Entity manager is not initialized.");
+                return;
+            }
 
             var user = entityManager.UserEntity;
             if (user == null) return;
 
             var target = entityManager.GetEntity(user.TargetSlot());
-            if (target == null) return;
+            if (target == null)
+            {
+                _active = false;
+                Handler.GetLogger().Info("[Follower] No target. Stopping.");
+                return;
+            }
 
             if (target.Pos == Vector3.Zero || user.Pos == Vector3.Zero)
                 return;
@@ -62,13 +72,21 @@ namespace RCC.Automata
                 cmd = cmd.Substring(0, cmd.IndexOf(" ", StringComparison.Ordinal));
             }
 
+            if (!_initialized)
+            {
+                Handler.GetLogger().Warn("[Follower] Not initialized.");
+                return "";
+            }
+
             switch (cmd.ToLower())
             {
                 case "goto":
+                    Handler.GetLogger().Info("[Follower] Starting.");
                     _active = true;
                     return "";
 
                 case "stop":
+                    Handler.GetLogger().Info("[Follower] Stopping.");
                     _active = false;
                     return "";
 
