@@ -13,10 +13,36 @@ namespace RCC.Automata
 
         public override void OnInitialize()
         {
+            if (!ClientConfig.SendPosition)
+            {
+                Handler.GetLogger().Warn("You need to enable 'SendPosition' to use Automaton 'Follower'.");
+                return;
+            }
+
             Handler.GetLogger().Info("Automaton 'Follower' initialized.");
 
             RegisterAutomatonCommand("goto", "Move to an entity", "", Command);
             RegisterAutomatonCommand("stop", "Stop the movement", "", Command);
+        }
+
+        public override void OnEntityUpdateBars(uint gameCycle, long prop, byte slot, byte hitPoints, byte stamina, byte sap, byte focus)
+        {
+            var entityManager = Handler.GetNetworkManager().GetEntityManager();
+            if (entityManager == null)
+                return;
+
+            var user = entityManager.UserEntity;
+            if (user == null)
+                return;
+
+            if (user.TargetSlot() != slot)
+                return;
+
+            var entity = entityManager.GetEntity(slot);
+            if (entity == null)
+                return;
+
+            Handler.GetLogger().Info($"{entity.GetDisplayName()} hp: {hitPoints} sta: {stamina} sap: {sap} foc: {focus}");
         }
 
         public override void OnUpdate()
@@ -39,6 +65,7 @@ namespace RCC.Automata
             if (user == null) return;
 
             var target = entityManager.GetEntity(user.TargetSlot());
+
             if (target == null)
             {
                 _active = false;
@@ -51,7 +78,7 @@ namespace RCC.Automata
 
             var dist = Vector3.Distance(target.Pos, user.Pos);
 
-            if (dist > 250 || dist < 0.5f)
+            if (dist > 250 || dist < 4.5f)
                 return;
 
             user.Dir = Vector3.Normalize(target.Pos - user.Pos);

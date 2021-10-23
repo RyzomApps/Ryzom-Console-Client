@@ -217,6 +217,37 @@ namespace RCC.Entity
             return true;
         }
 
+        /// <summary>
+        /// the entity target in the slot become the target of your current one.
+        /// </summary>
+        public void Assist(byte slot, RyzomClient client)
+        {
+            // Check the current target
+            if (slot == Constants.InvalidSlot || slot == _slot)
+            {
+                return;
+            }
+
+            // Check the target
+            Entity target = client.GetNetworkManager().GetEntityManager().GetEntity(slot);
+
+            if (target == null)
+            {
+                return;
+            }
+
+            // Check the new slot.
+            byte newSlot = target.TargetSlot();
+
+            if (newSlot == Constants.InvalidSlot || newSlot == _slot)
+            {
+                return;
+            }
+
+            // Select the new target.
+            Selection(newSlot, client);
+        }
+
         //private static bool wellPosition = false;
         //private bool wellP = false;
 

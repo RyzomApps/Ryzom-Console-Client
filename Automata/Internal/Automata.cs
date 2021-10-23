@@ -39,7 +39,7 @@ namespace RCC.Automata.Internal
                 if (ClientConfig.OnlinePlayersLoggerEnabled) { LoadAutomaton(new OnlinePlayersLogger()); }
                 if (ClientConfig.AutoJoinTeamEnabled) { LoadAutomaton(new AutoTeamJoiner()); }
                 if (ClientConfig.ImpulseDebuggerEnabled) { LoadAutomaton(new ImpulseDebugger()); }
-                if (ClientConfig.FollowerEnabled) {LoadAutomaton(new Follower());}
+                if (ClientConfig.FollowerEnabled) { LoadAutomaton(new Follower()); }
             }
 
             foreach (var automata in _automataOnHold)
@@ -397,6 +397,14 @@ namespace RCC.Automata.Internal
         public void OnShardID(uint shardId, string webHost)
         {
             DispatchAutomatonEvent(automaton => automaton.OnShardID(shardId, webHost));
+        }
+
+        /// <summary>
+        /// called when an entity health, sap, stamina or focus value changes
+        /// </summary>
+        public void OnEntityUpdateBars(uint gameCycle, long prop, byte slot, byte hitPoints, byte stamina, byte sap, byte focus)
+        {
+            DispatchAutomatonEvent(automaton => automaton.OnEntityUpdateBars(gameCycle, prop, slot, hitPoints, stamina, sap, focus));
         }
 
         /// <summary>

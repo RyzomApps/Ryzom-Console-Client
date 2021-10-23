@@ -55,7 +55,7 @@ namespace RCC.Entity
         /// <summary>
         /// Slot of the entity.
         /// </summary>
-        private byte _slot;
+        internal byte _slot;
 
         /// <summary>
         /// Slot of the target or CLFECOMMON::INVALID_SLOT if there is no target.
@@ -338,7 +338,7 @@ namespace RCC.Entity
                         break;
 
                     case PropertyType.TargetID:
-                        //UpdateVisualPropertyTarget(gameCycle, nodeProp.GetValue64());
+                        UpdateVisualPropertyTarget(gameCycle, nodeProp.GetValue64());
                         break;
 
                     case PropertyType.Mode:
@@ -382,7 +382,7 @@ namespace RCC.Entity
                         break;
 
                     case PropertyType.Bars:
-                        //UpdateVisualPropertyBars(gameCycle, nodeProp.GetValue64());
+                        UpdateVisualPropertyBars(gameCycle, nodeProp.GetValue64(), client);
                         break;
 
                     case PropertyType.GuildSymbol:
@@ -418,6 +418,35 @@ namespace RCC.Entity
                         break;
                 }
             }
+        }
+
+        private void UpdateVisualPropertyBars(uint gameCycle, long prop, RyzomClient client)
+        {
+            //// Encode HP to 7 bits
+            //barInfo.Score[SCORES::hit_points]
+            var hitPoints = (byte)((prop & 0x7ff) * 127 / 1023);
+            //// NB: barInfo are sint8, but no problem, since anything following is 7 bits.
+            //barInfo.Score[SCORES::stamina]
+            var stamina = (byte)((prop >> 11) & 0x7f);
+            //barInfo.Score[SCORES::sap]
+            var sap = (byte)((prop >> 18) & 0x7f);
+            //barInfo.Score[SCORES::focus]
+            var focus = (byte)((prop >> 25) & 0x7f);
+
+            //client.GetLogger().Info($"{_entityName} {hitPoints} {stamina} {sap} {focus}");
+            client.Automata.OnEntityUpdateBars(gameCycle, prop, _slot, hitPoints, stamina, sap, focus);
+        }
+
+        /// <summary>
+        /// Received the new target for the entity.
+        /// </summary>
+        private void UpdateVisualPropertyTarget(uint gameCycle, long prop)
+        {
+            // New target Received.
+            int targ = (int)prop;
+
+            // TODO: Workaround without stages
+            _targetSlot = (byte)targ;
         }
 
         /// <summary>
