@@ -8,17 +8,35 @@ namespace RCC.Commands
     {
         public override string CmdName => "executePhrase";
         public override string CmdUsage => "<[memoryId] [slotId]>";
-        public override string CmdDesc => "Command to send the execution msg for a phrase to the server";
+        public override string CmdDesc => "Command to send the execution message for a phrase to the server.";
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
             var args = GetArgs(command);
 
-            if (args.Length > 0)
+            if (args.Length < 1)
                 return "";
 
-            //TODO : ARGS
+            byte memoryId = 0;
+            byte slotId = 0;
 
+            if (args.Length == 2)
+            {
+                bool worked = byte.TryParse(args[0], out memoryId);
+                worked &= byte.TryParse(args[1], out slotId);
+
+                if (!worked)
+                {
+                    handler.GetLogger().Warn($"One of the arguments could not be parsed.");
+                }
+            }
+            else if (args.Length == 1 || args.Length > 2)
+            {
+                handler.GetLogger().Warn($"Please specify zero or two arguments.");
+                return "";
+            }
+
+            //TODO : ARGS
             var cyclic = true;
 
             // before, append the execution counter to the list of ACK to wait
@@ -39,8 +57,6 @@ namespace RCC.Commands
             if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 //serial the sentence memorized index
-                byte memoryId = 0;
-                byte slotId = 0;
                 out2.Serial(ref memoryId);
                 out2.Serial(ref slotId);
                 handler.GetNetworkManager().Push(out2);
