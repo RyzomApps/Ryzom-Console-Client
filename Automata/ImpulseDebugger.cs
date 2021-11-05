@@ -50,7 +50,7 @@ namespace RCC.Automata
 
         public override void OnUserBars(byte msgNumber, int hp, int sap, int sta, int focus)
         {
-            Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} msgNumber: {msgNumber} hp: {hp} sap: {sap} sta: {sta} focus: {focus}");
+            //Handler.GetLogger().Info($"§eImpulse on {MethodBase.GetCurrentMethod()?.Name} msgNumber: {msgNumber} hp: {hp} sap: {sap} sta: {sta} focus: {focus}");
         }
 
         public override void OnDatabaseInitBank(in uint serverTick, in uint bank, DatabaseManager databaseManager)

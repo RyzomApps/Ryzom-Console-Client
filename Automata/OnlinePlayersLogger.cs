@@ -11,14 +11,17 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using RCC.Property;
+using System.Threading;
 
 namespace RCC.Automata
 {
     public class OnlinePlayersLogger : AutomatonBase
     {
+        readonly Mutex mutex = new Mutex();
+
         private readonly Dictionary<uint, string> _friendNames = new Dictionary<uint, string>();
         private readonly Dictionary<uint, CharConnectionState> _friendOnline = new Dictionary<uint, CharConnectionState>();
+
         private bool _initialized;
 
         private DateTime _lastApiServerUpdate = DateTime.MinValue;
@@ -65,7 +68,7 @@ namespace RCC.Automata
                 return;
             }
 
-            // add new names to the friends list
+            // Add new names to the friends list
             if (!_friendNames.ContainsValue(string.Empty) && _namesToAdd.Count > 0)
             {
                 var name = _namesToAdd.Dequeue();
@@ -82,7 +85,7 @@ namespace RCC.Automata
                 return;
             }
 
-            // do the who
+            // Do the who
             if (!_friendNames.ContainsValue(string.Empty) && DateTime.Now > _lastWhoCommand + _intervalWhoCommand)
             {
                 _lastWhoCommand = DateTime.Now + _intervalWhoCommand;
@@ -90,7 +93,7 @@ namespace RCC.Automata
                 new Who().Run(Handler, "who ", null);
             }
 
-            // update the api
+            // Update the API
             if (!_friendNames.ContainsValue(string.Empty) && !ClientConfig.OnlinePlayersApi.Trim().Equals(string.Empty))
             {
                 if (DateTime.Now > _lastApiServerUpdate + _intervalApiServer)
@@ -103,32 +106,35 @@ namespace RCC.Automata
         }
 
         /// <inheritdoc />
-        public override void OnTeamContactStatus(uint contactId, CharConnectionState online)
+        public override void OnTeamContactStatus(uint contactListIndex, CharConnectionState online)
         {
-            var (key, _) = _friendOnline.ElementAt((int)contactId);
+            var (key, _) = _friendOnline.ElementAt((int)contactListIndex);
 
             // if friend already has that status return
             if (_friendOnline[key] == online)
                 return;
 
             _friendOnline[key] = online;
-            var name = _friendNames[key] != string.Empty ? _friendNames[key] : $"{contactId}";
+            var name = _friendNames[key] != string.Empty ? _friendNames[key] : $"{contactListIndex}";
 
 
             Handler.GetLogger().Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
         }
 
         /// <inheritdoc />
-        public override void OnTeamContactRemove(uint contactId, byte nList)
+        public override void OnTeamContactRemove(uint contactListIndex, byte nList)
         {
+            // 0 is friendlist - 1 ignore list
             if (nList != 0) return;
 
-            var (key, _) = _friendOnline.ElementAt((int)contactId);
+            var (key, _) = _friendOnline.ElementAt((int)contactListIndex);
 
             Handler.GetLogger().Info($"Removing {(_friendNames[key] != string.Empty ? _friendNames[key] : $"{key}")} from the friend list.");
 
+            mutex.WaitOne();
             _friendOnline.Remove(key);
             _friendNames.Remove(key);
+            mutex.ReleaseMutex();
         }
 
         /// <inheritdoc />
@@ -139,8 +145,10 @@ namespace RCC.Automata
                 var id = friendListNames[i];
                 var state = friendListOnline[i];
 
+                mutex.WaitOne();
                 _friendOnline.Add(id, state);
-                _friendNames.Add(id, /*StringManager.GetString(id, out string name) ? name :*/ string.Empty);
+                _friendNames.Add(id, /*Handler.GetStringManager().GetString(id, out string name, Handler.GetNetworkManager()) ? name :*/ string.Empty);
+                mutex.ReleaseMutex();
             }
 
             Handler.GetLogger().Info($"Initialized friend list with {friendListNames.Count} contacts.");
@@ -157,8 +165,10 @@ namespace RCC.Automata
 
             if (_friendOnline.ContainsKey(nameId) || _friendNames.ContainsKey(nameId)) return;
 
+            mutex.WaitOne();
             _friendOnline.Add(nameId, online);
             _friendNames.Add(nameId, Handler.GetStringManager().GetString(nameId, out var name, Handler.GetNetworkManager()) ? Entity.Entity.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
+            mutex.ReleaseMutex();
 
             Handler.GetLogger().Info($"Added {(_friendNames[nameId] != string.Empty ? _friendNames[nameId] : $"{nameId}")} to the friend list.");
         }
@@ -192,7 +202,7 @@ namespace RCC.Automata
                 }
             }
 
-            // try to add players from the chat
+            // Try to add players from the chat
             var name = Entity.Entity.RemoveTitleAndShardFromName(senderName).ToLower();
 
             if (name.StartsWith("~"))
@@ -290,7 +300,6 @@ namespace RCC.Automata
                     Task.Factory.StartNew(SendApiUpdate);
                     return "";
 
-
                 default:
                     Handler.GetLogger()?.Warn("CommandBase unknown: " + cmd);
                     return "";
@@ -298,12 +307,12 @@ namespace RCC.Automata
         }
 
         /// <summary>
-        /// sends a list of online players to the api
+        /// Sends a list of online players to the API
         /// </summary>
         public void SendApiUpdate()
         {
             // there are friends that have not received a name
-            if (_friendNames.Keys.Count(id => _friendNames[id] == string.Empty) > 0)
+            if (_friendNames.Keys.Any(id => _friendNames[id] == string.Empty))
                 return;
 
             try
@@ -312,7 +321,6 @@ namespace RCC.Automata
                 httpWebRequest.ContentType = "application/json";
                 httpWebRequest.Method = "POST";
 
-                //using var md5 = MD5.Create();
                 var hash = Misc.GetMD5(DateTime.Now.ToString("ddMMyyyy")).ToLower();
 
                 var json = "[";

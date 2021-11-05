@@ -366,6 +366,11 @@ namespace RCC.Automata.Internal
         public virtual void OnTeamContactInit(List<uint> friendListNames, List<CharConnectionState> friendListOnline, List<string> ignoreListNames) { }
 
         /// <summary>
+        /// called when an entity health, sap, stamina or focus value changes
+        /// </summary>
+        public virtual void OnEntityUpdateBars(uint gameCycle, long prop, byte slot, byte hitPoints, byte stamina, byte sap, byte focus) { }
+
+        /// <summary>
         /// called when a friend list contact was created
         /// </summary>
         public virtual void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList) { }

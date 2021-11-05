@@ -50,7 +50,7 @@ namespace RCC.Config
         public static bool UseDatabase;
         public static bool DecodeVisualProperties;
 
-        /// <summary> Default Velocity for the Walk.</summary>
+        /// <summary>Default Velocity for the Walk.</summary>
         public static float Walk = 1.66f;
         /// <summary>Default Velocity for the Run.</summary>
         public static float Run = 6.0f;
@@ -71,7 +71,7 @@ namespace RCC.Config
         public static string OnlinePlayersApi = "";
         public static string DiscordWebhook = "";
 
-        //Other Settings
+        // Other Settings
         public static char InternalCmdChar = '/';
 
         // Automata
