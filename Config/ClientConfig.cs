@@ -81,7 +81,7 @@ namespace RCC.Config
         public static bool FollowerEnabled;
         public static bool AutoRelogEnabled;
         public static int AutoRelogSeconds;
-        public static bool HealerEnabled = true;
+        public static bool HealerEnabled;
 
         // Read : "ID", "R G B A MODE [FX]"
         public static Dictionary<string, string> SystemInfoColors = new Dictionary<string, string>
@@ -328,6 +328,10 @@ namespace RCC.Config
 
                 case "autorelogseconds":
                     AutoRelogSeconds = int.Parse(argValue);
+                    break;
+
+                case "healerenabled":
+                    HealerEnabled = bool.Parse(argValue);
                     break;
 
                 default:
