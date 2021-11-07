@@ -79,6 +79,7 @@ namespace RCC.Config
         public static bool AutoJoinTeamEnabled;
         public static bool ImpulseDebuggerEnabled;
         public static bool FollowerEnabled;
+        public static bool HealerEnabled = true;
 
         // Read : "ID", "R G B A MODE [FX]"
         public static Dictionary<string, string> SystemInfoColors = new Dictionary<string, string>

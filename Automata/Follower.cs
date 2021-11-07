@@ -10,6 +10,7 @@ namespace RCC.Automata
         private bool _initialized;
         private bool _active;
         private DateTime _lastMove = DateTime.Now;
+        private string _targetName = "";
 
         public override void OnInitialize()
         {
@@ -25,32 +26,12 @@ namespace RCC.Automata
             RegisterAutomatonCommand("stop", "Stop the movement", "", Command);
         }
 
-        public override void OnEntityUpdateBars(uint gameCycle, long prop, byte slot, byte hitPoints, byte stamina, byte sap, byte focus)
-        {
-            var entityManager = Handler.GetNetworkManager().GetEntityManager();
-            if (entityManager == null)
-                return;
-
-            var user = entityManager.UserEntity;
-            if (user == null)
-                return;
-
-            if (user.TargetSlot() != slot)
-                return;
-
-            var entity = entityManager.GetEntity(slot);
-            if (entity == null)
-                return;
-
-            Handler.GetLogger().Info($"{entity.GetDisplayName()} hp: {hitPoints} sta: {stamina} sap: {sap} foc: {focus}");
-        }
-
         public override void OnUpdate()
         {
             float duration = (float)Math.Min((DateTime.Now - _lastMove).TotalMilliseconds, 1000);
             _lastMove = DateTime.Now;
 
-            if (!_initialized || !_active)
+            if (!_initialized || !_active || _targetName == "")
                 return;
 
             var entityManager = Handler.GetNetworkManager().GetEntityManager();
@@ -64,14 +45,8 @@ namespace RCC.Automata
             var user = entityManager.UserEntity;
             if (user == null) return;
 
-            var target = entityManager.GetEntity(user.TargetSlot());
-
-            if (target == null)
-            {
-                _active = false;
-                Handler.GetLogger().Info("[Follower] No target. Stopping.");
-                return;
-            }
+            var target = entityManager.GetEntityByName(_targetName, false, false);
+            if (target == null) return;
 
             if (target.Pos == Vector3.Zero || user.Pos == Vector3.Zero)
                 return;
@@ -109,6 +84,36 @@ namespace RCC.Automata
             {
                 case "goto":
                     Handler.GetLogger().Info("[Follower] Starting.");
+
+                    if (args.Length == 0)
+                    {
+                        var entityManager = Handler.GetNetworkManager().GetEntityManager();
+                        if (entityManager == null)
+                        {
+                            _active = false;
+                            Handler.GetLogger().Warn("[Follower] Entity manager is not initialized.");
+                            return "";
+                        }
+
+                        var user = entityManager.UserEntity;
+                        if (user == null) return "";
+
+                        var target = entityManager.GetEntity(user.TargetSlot());
+
+                        if (target == null)
+                        {
+                            _active = false;
+                            Handler.GetLogger().Info("[Follower] No target. Stopping.");
+                            return "";
+                        }
+
+                        _targetName = target.GetDisplayName();
+                    }
+                    else
+                    {
+                        _targetName = string.Join(" ", args);
+                    }
+
                     _active = true;
                     return "";
 
