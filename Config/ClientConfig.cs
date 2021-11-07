@@ -70,6 +70,8 @@ namespace RCC.Config
         public static bool PrependTimestamp = false;
         public static string OnlinePlayersApi = "";
         public static string DiscordWebhook = "";
+        public static int OnlinePlayersApiInterval = 60;
+        public static int OnlinePlayersWhoInterval = 60 * 10;
 
         // Other Settings
         public static char InternalCmdChar = '/';
@@ -332,6 +334,14 @@ namespace RCC.Config
 
                 case "healerenabled":
                     HealerEnabled = bool.Parse(argValue);
+                    break;
+
+                case "onlineplayersapiinterval":
+                    OnlinePlayersApiInterval = int.Parse(argValue);
+                    break;
+
+                case "onlineplayerswhointerval":
+                    OnlinePlayersWhoInterval = int.Parse(argValue);
                     break;
 
                 default:

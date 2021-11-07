@@ -324,10 +324,12 @@ namespace RCC.Automata
                 var hash = Misc.GetMD5(DateTime.Now.ToString("ddMMyyyy")).ToLower();
 
                 var json = "[";
+                var first = true;
 
                 foreach (var id in _friendNames.Keys.Where(id => _friendNames[id] != string.Empty))
                 {
-                    json += $"{{\"auth\":\"{hash}\",\"name\":\"{_friendNames[id]}\",\"status\":\"{(_friendOnline[id] == CharConnectionState.CcsOnline ? "online" : "offline")}\"}},";
+                    json += $"{{" + (first ? $"\"auth\":\"{hash}\"," : "") + $"\"name\":\"{_friendNames[id]}\",\"status\":\"{(_friendOnline[id] == CharConnectionState.CcsOnline ? "online" : "offline")}\"}},";
+                    if (first) first = false;
                 }
 
                 json = json[..^1];
