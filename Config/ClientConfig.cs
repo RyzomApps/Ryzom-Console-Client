@@ -79,6 +79,8 @@ namespace RCC.Config
         public static bool AutoJoinTeamEnabled;
         public static bool ImpulseDebuggerEnabled;
         public static bool FollowerEnabled;
+        public static bool AutoRelogEnabled;
+        public static int AutoRelogSeconds;
         public static bool HealerEnabled = true;
 
         // Read : "ID", "R G B A MODE [FX]"
@@ -313,11 +315,19 @@ namespace RCC.Config
                     break;
 
                 case "followerenabled":
-                    FollowerEnabled= bool.Parse(argValue);
+                    FollowerEnabled = bool.Parse(argValue);
                     break;
 
                 case "sendposition":
-                    SendPosition= bool.Parse(argValue);
+                    SendPosition = bool.Parse(argValue);
+                    break;
+
+                case "autorelogenabled":
+                    AutoRelogEnabled = bool.Parse(argValue);
+                    break;
+
+                case "autorelogseconds":
+                    AutoRelogSeconds = int.Parse(argValue);
                     break;
 
                 default:
