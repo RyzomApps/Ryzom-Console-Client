@@ -89,7 +89,12 @@ namespace RCC.Logger
         /// </summary>
         private void QueueMessage(string text)
         {
-            _messageQueue.Enqueue(text);
+            while (text.Length > 1000)
+            {
+                var subText = text[..1000];
+                _messageQueue.Enqueue(subText);
+                text = text[1000..];
+            }
         }
 
         /// <inheritdoc />

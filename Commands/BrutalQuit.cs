@@ -17,7 +17,7 @@ namespace RCC.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new string[] { "ragequit" };
+            return new[] { "ragequit", "forcequit" };
         }
     }
 }
