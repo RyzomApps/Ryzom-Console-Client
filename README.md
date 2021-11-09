@@ -14,6 +14,9 @@ Use an automaton that inherits from RCC.Automata.Internal.AutomatonBase. It has 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 Please make sure to update tests as appropriate.
 
+## License ##
+See the [LICENSE](LICENSE.md) file for license rights and limitations (McRae General Public License).
+
 ## Sources
 
 ### Minecraft Console Client (https://github.com/ORelio/Minecraft-Console-Client)
