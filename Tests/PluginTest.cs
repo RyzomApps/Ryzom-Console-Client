@@ -1,7 +1,5 @@
 ﻿using System.IO;
-using API.Logger;
 using API.Plugins;
-using Client;
 using Client.Logger;
 using Xunit;
 

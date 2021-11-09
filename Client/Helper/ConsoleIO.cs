@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using static System.String;
 
 namespace Client.Helper
 {
@@ -175,7 +174,7 @@ namespace Client.Helper
                                 GoRight();
                                 break;
                             case ConsoleKey.Home:
-                                while (!IsNullOrEmpty(_buffer))
+                                while (!string.IsNullOrEmpty(_buffer))
                                 {
                                     GoLeft();
                                 }
@@ -230,9 +229,9 @@ namespace Client.Helper
                                     AutocompleteWords.AddLast(wordAutocomplete);
                                 }
 
-                                if (!IsNullOrEmpty(wordAutocomplete) && wordAutocomplete != _buffer)
+                                if (!string.IsNullOrEmpty(wordAutocomplete) && wordAutocomplete != _buffer)
                                 {
-                                    while (!IsNullOrEmpty(_buffer) && _buffer[^1] != ' ')
+                                    while (!string.IsNullOrEmpty(_buffer) && _buffer[^1] != ' ')
                                     {
                                         RemoveOneChar();
                                     }
@@ -360,7 +359,7 @@ namespace Client.Helper
         /// </param>
         public static void WriteLineFormatted(string str, bool acceptnewlines = true, bool? displayTimestamp = null)
         {
-            if (!IsNullOrEmpty(str))
+            if (!string.IsNullOrEmpty(str))
             {
                 if (!acceptnewlines)
                 {
