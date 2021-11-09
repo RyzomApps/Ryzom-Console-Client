@@ -6,10 +6,10 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
-namespace API.Plugins
+namespace API.Plugins.Interfaces
 {
-    public class PluginLoader
-    {
-        public IClient Server { get; set; }
-    }
+    /// <summary>
+    /// Simple interface for tagging all EventListeners
+    /// </summary>
+    public interface IListener { }
 }

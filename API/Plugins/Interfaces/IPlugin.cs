@@ -9,7 +9,7 @@
 using System.IO;
 using API.Logger;
 
-namespace API.Plugins
+namespace API.Plugins.Interfaces
 {
     public interface IPlugin : ICommandExecuter
     {
@@ -77,7 +77,7 @@ namespace API.Plugins
         /// Gets the associated PluginLoader responsible for this plugin
         /// </summary>
         /// <returns>PluginLoader that controls this plugin</returns>
-        public PluginLoader GetPluginLoader();
+        public IPluginLoader GetPluginLoader();
 
         /// <summary>
         /// Returns the Server instance currently running this plugin

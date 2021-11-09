@@ -8,7 +8,7 @@ namespace Tests
         [Fact]
         public void ClientInstanceTest()
         {
-            var client = new RyzomClient();
+            var client = new RyzomClient(false);
 
             Assert.True(client != null);
         }

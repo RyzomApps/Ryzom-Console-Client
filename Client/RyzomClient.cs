@@ -14,6 +14,7 @@ using System.Net.Sockets;
 using System.Threading;
 using API;
 using API.Logger;
+using API.Plugins;
 using Client.Automata.Internal;
 using Client.Chat;
 using Client.Client;
@@ -124,6 +125,8 @@ namespace Client
 
         public NetworkConnection GetNetworkConnection() { return _networkConnection; }
 
+        public IPluginManager GetPluginManager() { return null; }
+
         #endregion
 
         #region Console Client - Initialization
@@ -131,7 +134,7 @@ namespace Client
         /// <summary>
         /// Starts the main chat client
         /// </summary>
-        public RyzomClient()
+        public RyzomClient(bool autoStart = true)
         {
             _instance = this;
             _clientThread = Thread.CurrentThread;
@@ -147,13 +150,24 @@ namespace Client
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");
 
+            // create the plugins dir
+            if (!Directory.Exists("plugins")) Directory.CreateDirectory("plugins");
+
             // copy msg.xml from resources
             if (!File.Exists("./data/msg.xml")) Misc.WriteResourceToFile("msg", "./data/msg.xml");
 
             // copy database.xml from resources
             if (!File.Exists("./data/database.xml")) Misc.WriteResourceToFile("database", "./data/database.xml");
 
-            StartConsoleClient();
+            // Start the main client
+            if (autoStart)
+            {
+                StartConsoleClient();
+            }
+            else
+            {
+                Log = new FilteredLogger();
+            }
 
             Program.Exit();
         }

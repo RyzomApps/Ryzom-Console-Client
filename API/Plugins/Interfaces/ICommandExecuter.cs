@@ -8,7 +8,7 @@
 
 using API.Commands;
 
-namespace API.Plugins
+namespace API.Plugins.Interfaces
 {
     public interface ICommandExecuter
     {

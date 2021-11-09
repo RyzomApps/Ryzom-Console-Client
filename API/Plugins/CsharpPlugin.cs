@@ -9,16 +9,19 @@
 using System.IO;
 using API.Commands;
 using API.Logger;
+using API.Plugins.Interfaces;
 
 namespace API.Plugins
 {
     /// <summary>
     /// Represents a plugin
     /// </summary>
-    public abstract class Plugin : IPlugin
+    public abstract class CsharpPlugin : IPlugin
     {
+        //public PluginClassLoader ClassLoader { get; set; }
+
         private bool _isEnabled = false;
-        private PluginLoader _loader = null;
+        private IPluginLoader _loader = null;
         private IClient _server = null;
         private FileInfo _file = null;
         private PluginDescriptionFile _description = null;
@@ -27,10 +30,15 @@ namespace API.Plugins
         private FileInfo _configFile = null;
         private PluginLoggerWrapper _logger = null;
 
-        protected Plugin(PluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder,
+        protected CsharpPlugin()
+        {
+            //ClassLoader.Initialize(this);
+        }
+
+        protected CsharpPlugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder,
             FileInfo file, ILogger logger)
         {
-            Init(loader, loader.Server, description, dataFolder, file, logger);
+            Init(loader, loader.Handler, description, dataFolder, file, logger);
         }
 
         /// <inheritdoc />
@@ -40,7 +48,7 @@ namespace API.Plugins
         }
 
         /// <inheritdoc />
-        public PluginLoader GetPluginLoader()
+        public IPluginLoader GetPluginLoader()
         {
             return _loader;
         }
@@ -129,7 +137,7 @@ namespace API.Plugins
         /// Sets the enabled state of this plugin
         /// </summary>
         /// <param name="enabled">true if enabled, otherwise false</param>  
-        protected void SetEnabled(bool enabled)
+        public void SetEnabled(bool enabled)
         {
             if (_isEnabled == enabled) return;
 
@@ -145,7 +153,7 @@ namespace API.Plugins
             }
         }
 
-        private void Init(PluginLoader loader, IClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file, ILogger logger)
+        public void Init(IPluginLoader loader, IClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file, ILogger logger)
         {
             _loader = loader;
             _server = server;
@@ -195,7 +203,7 @@ namespace API.Plugins
             {
                 return false;
             }
-            return obj is Plugin plugin && GetName().Equals(plugin.GetName());
+            return obj is CsharpPlugin plugin && GetName().Equals(plugin.GetName());
         }
 
         /// <inheritdoc />

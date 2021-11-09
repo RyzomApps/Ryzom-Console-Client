@@ -17,7 +17,7 @@ namespace Client.Automata
 {
     public class OnlinePlayersLogger : AutomatonBase
     {
-        readonly Mutex mutex = new Mutex();
+        readonly Mutex _mutex = new Mutex();
 
         private readonly Dictionary<uint, string> _friendNames = new Dictionary<uint, string>();
         private readonly Dictionary<uint, CharConnectionState> _friendOnline = new Dictionary<uint, CharConnectionState>();
@@ -131,10 +131,10 @@ namespace Client.Automata
 
             Handler.GetLogger().Info($"Removing {(_friendNames[key] != string.Empty ? _friendNames[key] : $"{key}")} from the friend list.");
 
-            mutex.WaitOne();
+            _mutex.WaitOne();
             _friendOnline.Remove(key);
             _friendNames.Remove(key);
-            mutex.ReleaseMutex();
+            _mutex.ReleaseMutex();
         }
 
         /// <inheritdoc />
@@ -145,10 +145,10 @@ namespace Client.Automata
                 var id = friendListNames[i];
                 var state = friendListOnline[i];
 
-                mutex.WaitOne();
+                _mutex.WaitOne();
                 _friendOnline.Add(id, state);
                 _friendNames.Add(id, /*Handler.GetStringManager().GetString(id, out string name, Handler.GetNetworkManager()) ? name :*/ string.Empty);
-                mutex.ReleaseMutex();
+                _mutex.ReleaseMutex();
             }
 
             Handler.GetLogger().Info($"Initialized friend list with {friendListNames.Count} contacts.");
@@ -165,10 +165,10 @@ namespace Client.Automata
 
             if (_friendOnline.ContainsKey(nameId) || _friendNames.ContainsKey(nameId)) return;
 
-            mutex.WaitOne();
+            _mutex.WaitOne();
             _friendOnline.Add(nameId, online);
             _friendNames.Add(nameId, Handler.GetStringManager().GetString(nameId, out var name, Handler.GetNetworkManager()) ? Entity.Entity.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
-            mutex.ReleaseMutex();
+            _mutex.ReleaseMutex();
 
             Handler.GetLogger().Info($"Added {(_friendNames[nameId] != string.Empty ? _friendNames[nameId] : $"{nameId}")} to the friend list.");
         }
@@ -324,7 +324,7 @@ namespace Client.Automata
 
                 var hash = Misc.GetMD5(DateTime.Now.ToString("ddMMyyyy")).ToLower();
 
-                var json = $"[{{\"auth\":\"{hash}\",\"players\":[";
+                var json = $"{{\"auth\":\"{hash}\",\"players\":[";
 
                 foreach (var id in _friendNames.Keys.Where(id => _friendNames[id] != string.Empty))
                 {
@@ -333,7 +333,7 @@ namespace Client.Automata
 
                 json = json[..^1];
 
-                json += $"]}}]";
+                json += $"]}}";
 
                 using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                 {

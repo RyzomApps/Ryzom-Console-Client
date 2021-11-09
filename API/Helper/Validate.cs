@@ -6,15 +6,20 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
-using API.Logger;
-using API.Plugins;
-
-namespace API
+namespace API.Helper
 {
-    public interface IClient
+    public class Validate
     {
-        ILogger GetLogger();
+        public static void IsTrue(bool test, string text)
+        {
+            if(!test)
+                throw new System.Exception(text);
+        }
 
-        IPluginManager GetPluginManager();
+        public static void NotNull(object test, string text)
+        {
+            if(test == null)
+                throw new System.Exception(text);
+        }
     }
 }

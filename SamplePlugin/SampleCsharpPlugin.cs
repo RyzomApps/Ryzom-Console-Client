@@ -9,14 +9,20 @@
 using System.IO;
 using API.Logger;
 using API.Plugins;
+using API.Plugins.Interfaces;
 
 namespace SamplePlugin
 {
-    public class SamplePlugin : Plugin
+    public class SampleCsharpPlugin : CsharpPlugin
     {
         //private final SamplePlayerListener playerListener = new SamplePlayerListener(this);
         //private final SampleBlockListener blockListener = new SampleBlockListener();
         //private final HashMap<Player, Boolean> debugees = new HashMap<Player, Boolean>();
+
+        public SampleCsharpPlugin()
+        {
+
+        }
 
         public override void OnDisable()
         {
@@ -33,7 +39,7 @@ namespace SamplePlugin
             // TODO: Place any custom enable code here including the registration of any events
 
             // Register our events
-            //PluginManager pm = GetServer().GetPluginManager();
+            //IPluginManager pm = GetServer().GetPluginManager();
             //pm.registerEvents(playerListener, this);
             //pm.registerEvents(blockListener, this);
             //
@@ -58,6 +64,6 @@ namespace SamplePlugin
         //    debugees.put(player, value);
         //}
 
-        public SamplePlugin(PluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file, ILogger logger) : base(loader, description, dataFolder, file, logger) { }
+        public SampleCsharpPlugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file, ILogger logger) : base(loader, description, dataFolder, file, logger) { }
     }
 }
