@@ -1,7 +1,7 @@
-﻿using RCC.Commands.Internal;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Client.Commands.Internal;
 
-namespace RCC.Commands
+namespace Client.Commands
 {
     /// <summary>
     /// Create a file with the current state of the client (good to report a bug)

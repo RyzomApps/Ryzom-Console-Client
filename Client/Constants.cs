@@ -1,4 +1,4 @@
-﻿namespace RCC
+﻿namespace Client
 {
     public static class Constants
     {

@@ -6,12 +6,12 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Network;
 using System;
 using System.IO;
 using System.Xml;
+using Client.Network;
 
-namespace RCC.Database
+namespace Client.Database
 {
     /// <summary>
 	/// Class to manage a database of properties
@@ -83,7 +83,7 @@ namespace RCC.Database
         /// <summary>
         /// Build the structure of the database from a file
         /// </summary>
-        /// <params name="fileName">is the name of file containing the database structure</params>
+        /// <param name="fileName">is the name of file containing the database structure</param>
         public void Init(string fileName, Action progressCallBack)
         {
             try
@@ -111,7 +111,7 @@ namespace RCC.Database
         /// <summary>
         /// Save a backup of the database
         /// </summary>
-        /// <params name="fileName">is the name of the backup file</params>
+        /// <param name="fileName">is the name of the backup file</param>
         public void Write(string fileName)
         {
             if (_database != null)
@@ -130,7 +130,7 @@ namespace RCC.Database
         /// <summary>
         /// Update the database from a stream coming from the FE
         /// </summary>
-        /// <params name="f">the stream</params>
+        /// <param name="f">the stream</param>
         public void ReadDelta(uint gc, BitMemoryStream s, uint bank)
         {
             _client.GetLogger().Debug("Update DB");

@@ -8,7 +8,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace RCC.Discord.Classes
+namespace Client.Discord.Classes
 {
     public class EmbedAuthor
     {

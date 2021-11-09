@@ -6,7 +6,7 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Logger
+namespace API.Logger
 {
     public interface ILogger
     {

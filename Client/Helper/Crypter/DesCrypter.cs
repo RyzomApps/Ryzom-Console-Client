@@ -6,7 +6,7 @@
 
 using System;
 
-namespace RCC.Helper.Crypter
+namespace Client.Helper.Crypter
 {
     /// <summary>
     /// A performant .NET implementation of crypt(3) that leverages Span

@@ -5,9 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using RCC.Chat;
+using Client.Chat;
 
-namespace RCC.Helper
+namespace Client.Helper
 {
     public static class Misc
     {

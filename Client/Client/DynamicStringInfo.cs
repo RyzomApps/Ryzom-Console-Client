@@ -7,9 +7,9 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using RCC.Network;
+using Client.Network;
 
-namespace RCC.Client
+namespace Client.Client
 {
     /// <summary>
     /// Info about a dynamically generated string from the server

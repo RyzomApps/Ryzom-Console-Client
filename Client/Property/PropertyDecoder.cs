@@ -6,13 +6,13 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Helper;
-using RCC.Network.Action;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using Client.Helper;
+using Client.Network.Action;
 
-namespace RCC.Property
+namespace Client.Property
 {
     /// <summary>An engine that allows to encode/decode continuous properties using delta values.</summary>
     /// <author>Benjamin Legros</author>

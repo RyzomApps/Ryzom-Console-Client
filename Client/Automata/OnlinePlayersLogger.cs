@@ -1,20 +1,19 @@
-﻿using RCC.Automata.Internal;
-using RCC.Chat;
-using RCC.Commands;
-using RCC.Config;
-using RCC.Helper;
-using RCC.Network;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Threading;
-using System.Diagnostics;
+using System.Threading.Tasks;
+using Client.Automata.Internal;
+using Client.Chat;
+using Client.Commands;
+using Client.Config;
+using Client.Helper;
+using Client.Network;
 
-namespace RCC.Automata
+namespace Client.Automata
 {
     public class OnlinePlayersLogger : AutomatonBase
     {

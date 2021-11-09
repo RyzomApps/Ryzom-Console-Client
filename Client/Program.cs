@@ -10,11 +10,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using RCC.Config;
-using RCC.Helper;
-using RCC.WinAPI;
+using Client.Config;
+using Client.Helper;
+using Client.WinAPI;
 
-namespace RCC
+namespace Client
 {
     /// <summary>
     /// Ryzom Console Client by bierdosenhalter and Contributors (c) 2021.

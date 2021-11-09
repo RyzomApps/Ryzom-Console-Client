@@ -1,7 +1,7 @@
-﻿using RCC.Commands.Internal;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Client.Commands.Internal;
 
-namespace RCC.Commands
+namespace Client.Commands
 {
     public class BrutalQuit : CommandBase
     {

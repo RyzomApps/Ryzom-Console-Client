@@ -1,10 +1,10 @@
-﻿using RCC.Discord;
-using RCC.Discord.Classes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Client.Discord;
+using Client.Discord.Classes;
 
-namespace RCC.Logger
+namespace Client.Logger
 {
     internal class DiscordLogger : FilteredLogger
     {

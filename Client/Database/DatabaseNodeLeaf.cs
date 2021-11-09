@@ -10,9 +10,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
-using RCC.Network;
+using Client.Network;
 
-namespace RCC.Database
+namespace Client.Database
 {
     public class DatabaseNodeLeaf : DatabaseNodeBase
     {

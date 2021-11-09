@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Chat
+namespace Client.Chat
 {
     public interface IChatDisplayer
     {

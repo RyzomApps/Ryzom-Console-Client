@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RCC.Network.Action
+namespace Client.Network.Action
 {
     /// <summary>
     /// a block of actions for sending and receiving

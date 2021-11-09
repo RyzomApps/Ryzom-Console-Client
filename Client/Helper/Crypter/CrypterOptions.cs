@@ -20,9 +20,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using RCC.Helper.Crypter.Internal;
+using Client.Helper.Crypter.Internal;
 
-namespace RCC.Helper.Crypter
+namespace Client.Helper.Crypter
 {
     /// <summary>
     /// Stores options for the crypt operation.

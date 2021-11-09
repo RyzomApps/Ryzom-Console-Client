@@ -13,7 +13,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace RCC.Network
+namespace Client.Network
 {
     /// <summary>
     /// (de)serializes data for server communication

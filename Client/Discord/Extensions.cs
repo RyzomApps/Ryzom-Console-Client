@@ -10,7 +10,7 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 
-namespace RCC.Discord
+namespace Client.Discord
 {
     public static class Extensions
     {

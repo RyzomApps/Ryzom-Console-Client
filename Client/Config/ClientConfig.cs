@@ -6,14 +6,14 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Helper;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using Client.Helper;
 
-namespace RCC.Config
+namespace Client.Config
 {
     /// <summary>
     /// Contains main settings for Ryzom Console Client

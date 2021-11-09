@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace RCC.Network.Action
+namespace Client.Network.Action
 {
     /// <summary>
     /// temporary multipart holder until the generic action is complete

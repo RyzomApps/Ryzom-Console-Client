@@ -6,10 +6,10 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Config;
-using RCC.Network;
+using Client.Config;
+using Client.Network;
 
-namespace RCC.Client
+namespace Client.Client
 {
     /// <summary>
     /// Launch the game given a slot (slot is reference to the character summaries)

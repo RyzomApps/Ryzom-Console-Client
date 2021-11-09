@@ -1,17 +1,17 @@
-﻿using RCC.Chat;
-using RCC.Client;
-using RCC.Commands.Internal;
-using RCC.Config;
-using RCC.Database;
-using RCC.Network;
-using RCC.Property;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
+using Client.Chat;
+using Client.Client;
+using Client.Commands.Internal;
+using Client.Config;
+using Client.Database;
+using Client.Network;
+using Client.Property;
 
-namespace RCC.Automata.Internal
+namespace Client.Automata.Internal
 {
     /// <summary>
     /// Class that handles all automata events

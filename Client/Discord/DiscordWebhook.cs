@@ -6,13 +6,13 @@
 // Copyright 2021 N4T4NM
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Discord.Classes;
 using System;
 using System.IO;
 using System.Net;
 using System.Text.Json;
+using Client.Discord.Classes;
 
-namespace RCC.Discord
+namespace Client.Discord
 {
     public class DiscordWebhook
     {

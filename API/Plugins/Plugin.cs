@@ -6,11 +6,11 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Commands.Internal;
-using RCC.Logger;
 using System.IO;
+using API.Commands;
+using API.Logger;
 
-namespace RCC.Plugins
+namespace API.Plugins
 {
     /// <summary>
     /// Represents a plugin
@@ -19,17 +19,18 @@ namespace RCC.Plugins
     {
         private bool _isEnabled = false;
         private PluginLoader _loader = null;
-        private RyzomClient _server = null;
+        private IClient _server = null;
         private FileInfo _file = null;
         private PluginDescriptionFile _description = null;
         private DirectoryInfo _dataFolder = null;
         private readonly FileConfiguration _newConfig = null;
         private FileInfo _configFile = null;
-        private PluginLogger _logger = null;
+        private PluginLoggerWrapper _logger = null;
 
-        protected void JavaPlugin(PluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
+        protected Plugin(PluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder,
+            FileInfo file, ILogger logger)
         {
-            Init(loader, loader.Server, description, dataFolder, file);
+            Init(loader, loader.Server, description, dataFolder, file, logger);
         }
 
         /// <inheritdoc />
@@ -45,7 +46,7 @@ namespace RCC.Plugins
         }
 
         /// <inheritdoc />
-        public RyzomClient GetServer()
+        public IClient GetServer()
         {
             return _server;
         }
@@ -144,7 +145,7 @@ namespace RCC.Plugins
             }
         }
 
-        private void Init(PluginLoader loader, RyzomClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file /*, object classLoader*/)
+        private void Init(PluginLoader loader, IClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file, ILogger logger)
         {
             _loader = loader;
             _server = server;
@@ -153,26 +154,26 @@ namespace RCC.Plugins
             _dataFolder = dataFolder;
             //this.classLoader = classLoader;
             _configFile = new FileInfo(dataFolder + "config.yml");
-            _logger = new PluginLogger(this);
+            _logger = new PluginLoggerWrapper(this, logger);
         }
 
         /// <inheritdoc />
-        public bool OnCommand(object sender, CommandBase command, string label, string[] args)
+        public virtual bool OnCommand(object sender, ICommand command, string label, string[] args)
         {
             return false;
         }
 
         /// <inheritdoc />
-        public void OnLoad() { }
+        public virtual void OnLoad() { }
 
         /// <inheritdoc />
-        public void OnDisable() { }
+        public virtual void OnDisable() { }
 
         /// <inheritdoc />
-        public void OnEnable() { }
+        public virtual void OnEnable() { }
 
         /// <inheritdoc />
-        public ILogger GetLogger()
+        public virtual ILogger GetLogger()
         {
             return _logger;
         }

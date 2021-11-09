@@ -1,4 +1,4 @@
-﻿namespace RCC.Automata.Helper
+﻿namespace Client.Automata.Helper
 {
     class EntityBars
     {

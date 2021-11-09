@@ -20,9 +20,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Text;
-using RCC.Helper.Crypter.Internal;
+using Client.Helper.Crypter.Internal;
 
-namespace RCC.Helper.Crypter.Utility
+namespace Client.Helper.Crypter.Utility
 {
     /// <summary>
     /// Performs generic binary-to-text encoding.

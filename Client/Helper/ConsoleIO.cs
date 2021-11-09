@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using static System.String;
 
-namespace RCC.Helper
+namespace Client.Helper
 {
     /// <summary>
     /// Allows simultaneous console input and output without breaking user input

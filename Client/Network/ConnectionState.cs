@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Network
+namespace Client.Network
 {
     /// <summary>
     /// The states of the connection to the server (if you change them, change ConnectionStateCStr)

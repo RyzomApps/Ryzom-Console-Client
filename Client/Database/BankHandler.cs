@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using static System.String;
 
-namespace RCC.Database
+namespace Client.Database
 {
     /// <summary>
     /// Manages the bank names and mappings of the CDB it's associated with

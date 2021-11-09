@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace RCC.Network
+namespace Client.Network
 {
     /// <summary>
     /// Item of CBMSDbgInfo

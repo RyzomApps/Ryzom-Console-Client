@@ -1,10 +1,10 @@
-﻿using RCC.Automata.Internal;
-using RCC.Database;
-using RCC.Property;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
+using Client.Automata.Internal;
+using Client.Database;
+using Client.Property;
 
-namespace RCC.Automata
+namespace Client.Automata
 {
     internal class ImpulseDebugger : AutomatonBase
     {

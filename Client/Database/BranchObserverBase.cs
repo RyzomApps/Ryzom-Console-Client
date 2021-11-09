@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Database
+namespace Client.Database
 {
     public abstract class BranchObserverBase
     {

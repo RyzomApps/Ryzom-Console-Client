@@ -9,10 +9,10 @@
 using System;
 using System.Diagnostics;
 using System.Numerics;
-using RCC.Messages;
-using RCC.Network;
+using Client.Messages;
+using Client.Network;
 
-namespace RCC.Entity
+namespace Client.Entity
 {
     public class UserEntity : Entity
     {

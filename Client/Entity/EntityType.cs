@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Entity
+namespace Client.Entity
 {
     /// <summary>Primitive type</summary>
     enum EntityType

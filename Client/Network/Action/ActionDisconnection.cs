@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Network.Action
+namespace Client.Network.Action
 {
     /// <summary>
     /// This action means the entity Id has left the game.

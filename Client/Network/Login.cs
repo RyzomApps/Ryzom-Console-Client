@@ -6,14 +6,14 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Config;
-using RCC.Helper.Crypter;
 using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using Client.Config;
+using Client.Helper.Crypter;
 
-namespace RCC.Network
+namespace Client.Network
 {
     /// <summary>
     /// http login process prior to the udp connection to the ryzom server

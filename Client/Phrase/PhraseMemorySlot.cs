@@ -6,9 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Network;
+using Client.Network;
 
-namespace RCC.Phrase
+namespace Client.Phrase
 {
     public class PhraseMemorySlot
     {

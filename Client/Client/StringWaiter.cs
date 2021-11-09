@@ -1,4 +1,4 @@
-﻿namespace RCC.Client
+﻿namespace Client.Client
 {
     public class StringWaiter
     {

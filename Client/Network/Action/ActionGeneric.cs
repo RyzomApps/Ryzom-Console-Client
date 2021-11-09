@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Network.Action
+namespace Client.Network.Action
 {
     /// <summary>
     /// generic action that was sent over the network connection

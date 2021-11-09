@@ -9,10 +9,10 @@
 using System;
 using System.Collections.Generic;
 using System.Xml;
-using RCC.Helper;
-using RCC.Network;
+using Client.Helper;
+using Client.Network;
 
-namespace RCC.Messages
+namespace Client.Messages
 {
     /// <summary>
     /// Node Leafs in a tree storing server message information (callbacks, bit sizes, names, ...)

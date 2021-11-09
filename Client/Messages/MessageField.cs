@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Messages
+namespace Client.Messages
 {
     /// <summary>
     /// A message field - TMessageFormat with message type and bit size

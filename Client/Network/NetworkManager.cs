@@ -11,17 +11,17 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
 using System.Threading;
-using RCC.Chat;
-using RCC.Client;
-using RCC.Database;
-using RCC.Entity;
-using RCC.Helper;
-using RCC.Messages;
-using RCC.Network.Action;
-using RCC.Phrase;
-using RCC.Property;
+using Client.Chat;
+using Client.Client;
+using Client.Database;
+using Client.Entity;
+using Client.Helper;
+using Client.Messages;
+using Client.Network.Action;
+using Client.Phrase;
+using Client.Property;
 
-namespace RCC.Network
+namespace Client.Network
 {
     /// <summary>
     /// used to control the connection and implements the impulse callbacks from the connection

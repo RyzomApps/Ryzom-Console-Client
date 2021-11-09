@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using RCC.Property;
+using Client.Property;
 
-namespace RCC.Entity
+namespace Client.Entity
 {
     /// <summary>
     /// Class to manage entities and shapes instances.

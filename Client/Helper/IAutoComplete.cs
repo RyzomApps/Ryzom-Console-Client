@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace RCC.Helper
+namespace Client.Helper
 {
     /// <summary>
     /// Interface for TAB autocompletion

@@ -18,9 +18,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endregion
 
 using System.Text;
-using RCC.Helper.Crypter.Internal;
+using Client.Helper.Crypter.Internal;
 
-namespace RCC.Helper.Crypter
+namespace Client.Helper.Crypter
 {
     /// <summary>
     /// Crypts and verifies passwords. The main class for most uses of this library.

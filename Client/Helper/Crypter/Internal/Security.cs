@@ -20,7 +20,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 using System;
 using System.Security.Cryptography;
 
-namespace RCC.Helper.Crypter.Internal
+namespace Client.Helper.Crypter.Internal
 {
     internal static class Security
     {

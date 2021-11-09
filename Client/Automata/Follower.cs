@@ -1,9 +1,9 @@
-﻿using RCC.Automata.Internal;
-using RCC.Config;
-using System;
+﻿using System;
 using System.Numerics;
+using Client.Automata.Internal;
+using Client.Config;
 
-namespace RCC.Automata
+namespace Client.Automata
 {
     class Follower : AutomatonBase
     {

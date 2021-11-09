@@ -1,11 +1,11 @@
-﻿using RCC.Automata.Helper;
-using RCC.Automata.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Client.Automata.Helper;
+using Client.Automata.Internal;
 
-namespace RCC.Automata
+namespace Client.Automata
 {
     class Healer : AutomatonBase
     {
@@ -208,29 +208,6 @@ namespace RCC.Automata
                     Handler.GetLogger()?.Warn("CommandBase unknown: " + cmd);
                     return "";
             }
-        }
-    }
-
-    public static class EnumerableExtensions
-    {
-        public static T Random<T>(this IEnumerable<T> input)
-        {
-            return EnumerableHelper<T>.Random(input);
-        }
-    }
-
-    public static class EnumerableHelper<E>
-    {
-        private static readonly Random r;
-
-        static EnumerableHelper()
-        {
-            r = new Random();
-        }
-
-        public static T Random<T>(IEnumerable<T> input)
-        {
-            return input.ElementAt(r.Next(input.Count()));
         }
     }
 }

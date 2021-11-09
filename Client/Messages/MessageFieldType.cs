@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Messages
+namespace Client.Messages
 {
     /// <summary>
     /// type of the variable used in MessageField of the MessageNode

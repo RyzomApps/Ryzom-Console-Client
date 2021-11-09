@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Property
+namespace Client.Property
 {
     /// <summary>
     /// An entity entry, containing properties for this entity

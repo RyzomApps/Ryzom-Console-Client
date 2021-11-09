@@ -11,9 +11,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
-using RCC.Network;
+using Client.Network;
 
-namespace RCC.Database
+namespace Client.Database
 {
     /// <summary>
     /// Database DatabaseNode which contains a set of properties
@@ -54,7 +54,7 @@ namespace RCC.Database
         /// <summary>
         /// Build the structure of the database from a file
         /// </summary>
-        /// <params id="f">is the stream</params>
+        /// <param id="f">is the stream</param>
         internal override void Init(XmlElement node, Action progressCallBack, bool mapBanks = false, BankHandler bankHandler = null)
         {
             _sorted = false;
@@ -176,7 +176,7 @@ namespace RCC.Database
         /// <summary>
         /// Get a database node. Create it if it does not exist yet
         /// </summary>
-        /// <params id="id">the TextId identifying the database node</params>
+        /// <param id="id">the TextId identifying the database node</param>
         internal override DatabaseNodeBase GetNode(TextId id, bool bCreate = true)
         {
             // lookup next element from textid in my index => idx
@@ -222,8 +222,8 @@ namespace RCC.Database
         /// <summary>
         /// Add a new sub database node
         /// </summary>
-        /// <params id="databaseNode">is the new subnode</params>
-        /// <params id="nodeName">is the name of the database node</params>
+        /// <param id="databaseNode">is the new subnode</param>
+        /// <param id="nodeName">is the name of the database node</param>
         internal override void AttachChild(DatabaseNodeBase node, string nodeName)
         {
             Debug.Assert(Parent == null);
@@ -242,7 +242,7 @@ namespace RCC.Database
         /// <summary>
         /// Get a database node. Return null if out of bounds (no warning)
         /// </summary>
-        /// <params id="idx">is the database node index</params>
+        /// <param id="idx">is the database node index</param>
         internal override DatabaseNodeBase GetNode(ushort idx)
         {
             return idx < _nodes.Count ? _nodes[idx] : null;
@@ -251,7 +251,7 @@ namespace RCC.Database
         /// <summary>
         /// Get a database node index
         /// </summary>
-        /// <params id="databaseNode">is a pointer to the database node</params>
+        /// <param id="databaseNode">is a pointer to the database node</param>
         internal override bool GetNodeIndex(DatabaseNodeBase databaseNode, ref uint index)
         {
             foreach (var it in _nodes)

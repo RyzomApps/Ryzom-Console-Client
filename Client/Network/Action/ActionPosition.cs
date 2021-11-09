@@ -8,7 +8,7 @@
 
 using System;
 
-namespace RCC.Network.Action
+namespace Client.Network.Action
 {
     internal class ActionPosition : ActionBase
     {

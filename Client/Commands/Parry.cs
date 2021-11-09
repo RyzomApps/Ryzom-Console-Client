@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using RCC.Commands.Internal;
+using Client.Commands.Internal;
 
-namespace RCC.Commands
+namespace Client.Commands
 {
     public class Parry : CommandBase
     {

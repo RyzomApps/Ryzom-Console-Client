@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text.Json.Serialization;
 
-namespace RCC.Discord.Classes
+namespace Client.Discord.Classes
 {
     public class DiscordEmbed
     {

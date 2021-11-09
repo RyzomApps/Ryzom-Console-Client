@@ -7,9 +7,9 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.Diagnostics;
-using RCC.Property;
+using Client.Property;
 
-namespace RCC.Network.Action
+namespace Client.Network.Action
 {
     /// <summary>
 	/// Action containing a SInt64 value.

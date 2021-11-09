@@ -8,7 +8,7 @@
 
 using System;
 
-namespace RCC.Network.Action
+namespace Client.Network.Action
 {
     /// <summary>
     /// represents an action that is splitted into serveral parts for transport

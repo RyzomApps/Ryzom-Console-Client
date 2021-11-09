@@ -6,20 +6,20 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Chat;
-using RCC.Client;
-using RCC.Database;
-using RCC.Helper.Tasks;
-using RCC.Network;
-using RCC.Property;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Client.Chat;
+using Client.Client;
+using Client.Database;
+using Client.Helper.Tasks;
+using Client.Network;
+using Client.Property;
 
-namespace RCC.Automata.Internal
+namespace Client.Automata.Internal
 {
     ///
     /// Welcome to the automaton API file !

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using RCC.Commands.Internal;
-using RCC.Helper;
+using Client.Commands.Internal;
+using Client.Helper;
 
-namespace RCC.Commands
+namespace Client.Commands
 {
     public class PlayedTime : CommandBase
     {

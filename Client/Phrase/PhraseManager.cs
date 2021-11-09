@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Phrase
+namespace Client.Phrase
 {
     /// <summary>
     /// Singleton to Get/Set Sabrina Phrase in SpellBook / Memory.

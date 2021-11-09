@@ -6,10 +6,10 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Plugins
+namespace API.Plugins
 {
     public class PluginLoader
     {
-        public RyzomClient Server { get; set; }
+        public IClient Server { get; set; }
     }
 }

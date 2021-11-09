@@ -7,10 +7,10 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.Text.RegularExpressions;
-using RCC.Helper;
-using static RCC.Config.ClientConfig;
+using Client.Helper;
+using static Client.Config.ClientConfig;
 
-namespace RCC.Logger
+namespace Client.Logger
 {
     public class FilteredLogger : LoggerBase
     {

@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace RCC.Database
+namespace Client.Database
 {
     /// <summary>
     /// Text id

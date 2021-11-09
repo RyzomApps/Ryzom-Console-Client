@@ -7,9 +7,9 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using RCC.Commands.Internal;
+using Client.Commands.Internal;
 
-namespace RCC.Automata.Internal
+namespace Client.Automata.Internal
 {
     /// <summary>
     /// CommandBase class with constructor for creating command for automata.

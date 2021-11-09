@@ -8,12 +8,11 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using RCC.Client;
-using RCC.Database;
-using RCC.Network;
-using RCC;
+using Client.Client;
+using Client.Database;
+using Client.Network;
 
-namespace RCC.Chat
+namespace Client.Chat
 {
     /// <summary>
     /// Class for management of incoming and outgoing chat messages

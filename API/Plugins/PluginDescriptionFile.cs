@@ -6,15 +6,23 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
-using System.IO;
-
-namespace RCC.Plugins
+namespace API.Plugins
 {
-    public class FileConfiguration
+    public class PluginDescriptionFile
     {
-        public void Save(FileInfo configFile)
+        public string GetName()
         {
-            throw new System.NotImplementedException();
+            return "noname";
+        }
+
+        public string GetPrefix()
+        {
+            return "blubb";
+        }
+
+        public string GetVersion()
+        {
+            return "v1.0";
         }
     }
 }

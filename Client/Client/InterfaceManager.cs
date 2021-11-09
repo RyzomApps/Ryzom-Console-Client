@@ -6,9 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Phrase;
+using Client.Phrase;
 
-namespace RCC.Client
+namespace Client.Client
 {
     /// <summary>
     /// class managing the interface

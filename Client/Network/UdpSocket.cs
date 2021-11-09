@@ -10,7 +10,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace RCC.Network
+namespace Client.Network
 {
     /// <summary>
     /// wrapper for the udpclient class to have a synch connection the the server

@@ -8,11 +8,11 @@
 
 using System;
 using System.Collections.Generic;
-using RCC.Helper;
-using RCC.Network;
-using RCC.Sheet;
+using Client.Helper;
+using Client.Network;
+using Client.Sheet;
 
-namespace RCC.Phrase
+namespace Client.Phrase
 {
     public class PhraseCom
     {

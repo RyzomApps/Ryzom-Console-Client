@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using RCC.Network;
-using static RCC.Client.DynamicStringInfo;
+using Client.Network;
+using static Client.Client.DynamicStringInfo;
 
-namespace RCC.Client
+namespace Client.Client
 {
     /// <summary>
     /// Management for dynamically generated text from servers

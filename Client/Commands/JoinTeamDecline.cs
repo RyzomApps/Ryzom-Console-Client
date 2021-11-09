@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using RCC.Commands.Internal;
-using RCC.Network;
+using Client.Commands.Internal;
+using Client.Network;
 
-namespace RCC.Commands
+namespace Client.Commands
 {
     public class JoinTeamDecline : CommandBase
     {

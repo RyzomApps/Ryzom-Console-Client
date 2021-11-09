@@ -1,8 +1,8 @@
-﻿using RCC.Commands.Internal;
-using RCC.Network;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Client.Commands.Internal;
+using Client.Network;
 
-namespace RCC.Commands
+namespace Client.Commands
 {
     /// <summary>
     /// This command is use to do all admin execution commands on you

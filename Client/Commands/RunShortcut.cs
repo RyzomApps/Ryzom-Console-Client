@@ -1,8 +1,7 @@
-﻿using RCC.Commands.Internal;
-using RCC.Network;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Client.Commands.Internal;
 
-namespace RCC.Commands
+namespace Client.Commands
 {
     /// <summary>
     /// Called when user hit the 1.2.3.4.5..... key

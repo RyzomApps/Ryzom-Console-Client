@@ -1,4 +1,4 @@
-﻿namespace RCC.Client
+﻿namespace Client.Client
 {
     /// <summary>
     /// Implement this class if you want to wait for

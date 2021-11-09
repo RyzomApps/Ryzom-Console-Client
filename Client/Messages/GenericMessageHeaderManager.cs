@@ -8,9 +8,9 @@
 
 using System;
 using System.Xml;
-using RCC.Network;
+using Client.Network;
 
-namespace RCC.Messages
+namespace Client.Messages
 {
     public class GenericMessageHeaderManager
     {

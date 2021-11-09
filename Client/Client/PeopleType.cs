@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Client
+namespace Client.Client
 {
     /// <summary>
     /// Entity type specification

@@ -7,9 +7,9 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using RCC.Network.Action;
+using Client.Network.Action;
 
-namespace RCC.Network
+namespace Client.Network
 {
     /// <summary>
     /// Interpretation of actions deserialized from a stream

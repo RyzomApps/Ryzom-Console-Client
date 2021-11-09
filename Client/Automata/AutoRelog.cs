@@ -1,7 +1,7 @@
 ﻿using System;
-using RCC.Automata.Internal;
+using Client.Automata.Internal;
 
-namespace RCC.Automata
+namespace Client.Automata
 {
     class AutoRelog : AutomatonBase
     {

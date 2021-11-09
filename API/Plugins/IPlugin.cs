@@ -7,9 +7,9 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.IO;
-using RCC.Logger;
+using API.Logger;
 
-namespace RCC.Plugins
+namespace API.Plugins
 {
     public interface IPlugin : ICommandExecuter
     {
@@ -83,7 +83,7 @@ namespace RCC.Plugins
         /// Returns the Server instance currently running this plugin
         /// </summary>
         /// <returns>Server running this plugin</returns>
-        public RyzomClient GetServer();
+        public IClient GetServer();
 
         /// <summary>
         /// Returns a value indicating whether or not this plugin is currently

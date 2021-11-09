@@ -6,9 +6,9 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Commands.Internal;
+using API.Commands;
 
-namespace RCC.Plugins
+namespace API.Plugins
 {
     public interface ICommandExecuter
     {
@@ -20,6 +20,6 @@ namespace RCC.Plugins
         /// <param name="label">Alias of the command which was used</param>
         /// <param name="args">Passed command arguments</param>
         /// <returns>true if a valid command, otherwise false</returns>
-        public bool OnCommand(object sender, CommandBase command, string label, string[] args);
+        public bool OnCommand(object sender, ICommand command, string label, string[] args);
     }
 }

@@ -18,9 +18,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endregion
 
 using System;
-using RCC.Helper.Crypter.Internal;
+using Client.Helper.Crypter.Internal;
 
-namespace RCC.Helper.Crypter
+namespace Client.Helper.Crypter
 {
     /// <summary>
     /// The key type for options.

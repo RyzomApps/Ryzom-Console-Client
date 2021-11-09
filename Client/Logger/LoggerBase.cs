@@ -6,9 +6,10 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Helper;
+using API.Logger;
+using Client.Helper;
 
-namespace RCC.Logger
+namespace Client.Logger
 {
     /// <summary>
     /// Abstract class providing basic implementation of the ILogger interface

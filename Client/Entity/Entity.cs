@@ -9,10 +9,10 @@
 using System;
 using System.Diagnostics;
 using System.Numerics;
-using RCC.Database;
-using RCC.Property;
+using Client.Database;
+using Client.Property;
 
-namespace RCC.Entity
+namespace Client.Entity
 {
     /// <summary>
     /// Interface to manage an Entity in the client side.

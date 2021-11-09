@@ -8,7 +8,7 @@
 
 using Microsoft.Win32;
 
-namespace RCC.WinAPI
+namespace Client.WinAPI
 {
     /// <summary>
     /// Retrieve information about the current Windows version

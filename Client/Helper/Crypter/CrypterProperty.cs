@@ -17,7 +17,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 #endregion
 
-namespace RCC.Helper.Crypter
+namespace Client.Helper.Crypter
 {
     /// <summary>
     /// Properties inherent to particular crypt algorithms. 

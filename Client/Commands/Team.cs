@@ -1,8 +1,8 @@
-﻿using RCC.Chat;
-using System.Collections.Generic;
-using RCC.Commands.Internal;
+﻿using System.Collections.Generic;
+using Client.Chat;
+using Client.Commands.Internal;
 
-namespace RCC.Commands
+namespace Client.Commands
 {
     public class Team : CommandBase
     {

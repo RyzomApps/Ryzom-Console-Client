@@ -7,8 +7,9 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using API.Commands;
 
-namespace RCC.Commands.Internal
+namespace Client.Commands.Internal
 {
     /// <summary>
     /// Represents an internal RCC command: CommandBase name, source code and usage message
@@ -16,7 +17,7 @@ namespace RCC.Commands.Internal
     /// If inheriting from the 'CommandBase' class and placed in the 'Commands' namespace, the command will be
     /// automatically loaded and available in main chat prompt, scripts, remote control and command help.
     /// </summary>
-    public abstract class CommandBase
+    public abstract class CommandBase : ICommand
     {
         /// <summary>
         /// The command name

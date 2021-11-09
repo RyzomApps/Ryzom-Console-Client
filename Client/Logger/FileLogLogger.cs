@@ -9,7 +9,7 @@
 using System;
 using System.IO;
 
-namespace RCC.Logger
+namespace Client.Logger
 {
     public class FileLogLogger : FilteredLogger
     {

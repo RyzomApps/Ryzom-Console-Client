@@ -6,9 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Network;
+using Client.Network;
 
-namespace RCC.Client
+namespace Client.Client
 {
     /// <summary>
     /// Holds information about the character such as name, sheetid and title.

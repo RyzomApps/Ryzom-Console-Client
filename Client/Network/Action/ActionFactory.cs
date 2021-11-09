@@ -8,9 +8,9 @@
 
 using System;
 using System.Collections.Generic;
-using RCC.Property;
+using Client.Property;
 
-namespace RCC.Network.Action
+namespace Client.Network.Action
 {
     /// <summary>
     /// Factory for actions - unpacking actions from streams and registering them

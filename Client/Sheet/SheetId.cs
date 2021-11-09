@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace RCC.Sheet
+namespace Client.Sheet
 {
     public class SheetId
     {

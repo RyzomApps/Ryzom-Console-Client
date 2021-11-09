@@ -9,9 +9,9 @@
 using System;
 using System.IO;
 using System.Xml;
-using RCC.Network;
+using Client.Network;
 
-namespace RCC.Database
+namespace Client.Database
 {
     public abstract class DatabaseNodeBase
     {
@@ -105,14 +105,14 @@ namespace RCC.Database
         /// <summary>
         /// Get a database node . Create it if it does not exist yet
         /// </summary>
-        /// <params id="id">the TextId identifying the database node</params>
+        /// <param id="id">the TextId identifying the database node</param>
         internal abstract DatabaseNodeBase GetNode(TextId id, bool bCreate = true);
 
         /// <summary>
         /// Add a new sub node
         /// </summary>
-        /// <params id="node">is the new subnode</params>
-        /// <params id="nodeName">is the name of the node</params>
+        /// <param id="node">is the new subnode</param>
+        /// <param id="nodeName">is the name of the node</param>
         internal abstract void AttachChild(DatabaseNodeBase node, string nodeName);
 
         /// <summary>

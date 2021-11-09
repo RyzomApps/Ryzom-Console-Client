@@ -6,11 +6,6 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Config;
-using RCC.Database;
-using RCC.Helper;
-using RCC.Network.Action;
-using RCC.Property;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,8 +13,13 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
+using Client.Config;
+using Client.Database;
+using Client.Helper;
+using Client.Network.Action;
+using Client.Property;
 
-namespace RCC.Network
+namespace Client.Network
 {
     /// <summary>
     /// Abstracts the connection client towards front-end

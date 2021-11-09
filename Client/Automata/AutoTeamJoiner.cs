@@ -1,6 +1,6 @@
-﻿using RCC.Automata.Internal;
+﻿using Client.Automata.Internal;
 
-namespace RCC.Automata
+namespace Client.Automata
 {
     internal class AutoTeamJoiner : AutomatonBase
     {

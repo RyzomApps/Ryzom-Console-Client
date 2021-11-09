@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace RCC.WinAPI
+namespace Client.WinAPI
 {
     /// <summary>
     /// Perform clean up before quitting application

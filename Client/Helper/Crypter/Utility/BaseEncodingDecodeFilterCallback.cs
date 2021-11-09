@@ -1,4 +1,4 @@
-﻿namespace RCC.Helper.Crypter.Utility
+﻿namespace Client.Helper.Crypter.Utility
 {
     /// <summary>
     /// A callback to map arbitrary characters onto the characters that can be decoded.

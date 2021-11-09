@@ -6,30 +6,32 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
-using RCC.Automata.Internal;
-using RCC.Chat;
-using RCC.Client;
-using RCC.Commands.Internal;
-using RCC.Config;
-using RCC.Database;
-using RCC.Helper;
-using RCC.Helper.Tasks;
-using RCC.Logger;
-using RCC.Network;
-using RCC.Property;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using API;
+using API.Logger;
+using Client.Automata.Internal;
+using Client.Chat;
+using Client.Client;
+using Client.Commands.Internal;
+using Client.Config;
+using Client.Database;
+using Client.Helper;
+using Client.Helper.Tasks;
+using Client.Logger;
+using Client.Network;
+using Client.Property;
 
-namespace RCC
+namespace Client
 {
     /// <summary>
     /// The main client class, used to connect to a Ryzom server
     /// </summary>
-    public class RyzomClient : IChatDisplayer
+    public class RyzomClient : IChatDisplayer, IClient
     {
         #region Variables
 
@@ -887,7 +889,7 @@ namespace RCC
         {
             if (_commandsLoaded) return;
 
-            var cmdsClasses = Program.GetTypesInNamespace("RCC.Commands");
+            var cmdsClasses = Program.GetTypesInNamespace("Client.Commands");
             foreach (var type in cmdsClasses)
             {
                 if (!type.IsSubclassOf(typeof(CommandBase))) continue;

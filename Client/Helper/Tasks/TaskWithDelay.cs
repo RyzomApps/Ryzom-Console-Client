@@ -8,7 +8,7 @@
 
 using System;
 
-namespace RCC.Helper.Tasks
+namespace Client.Helper.Tasks
 {
     /// <summary>
     /// Holds a task with delay

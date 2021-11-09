@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace RCC.Network
+namespace Client.Network
 {
     /// <summary>
     /// Network statistics

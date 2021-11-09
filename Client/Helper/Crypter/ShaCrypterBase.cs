@@ -21,10 +21,10 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using RCC.Helper.Crypter.Internal;
-using RCC.Helper.Crypter.Utility;
+using Client.Helper.Crypter.Internal;
+using Client.Helper.Crypter.Utility;
 
-namespace RCC.Helper.Crypter
+namespace Client.Helper.Crypter
 {
     // See http://www.akkadia.org/drepper/SHA-crypt.txt for algorithm details.
     /// <summary>
