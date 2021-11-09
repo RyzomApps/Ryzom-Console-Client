@@ -29,6 +29,11 @@ released under GNU Affero General Public License http://www.gnu.org/licenses/
 
 Copyright 2010 Winch Gate Property Limited
 
+### Bukkit - A Minecraft Server API (https://github.com/Bukkit/Bukkit)
+released under GNU General Public License v3.0 https://www.gnu.org/licenses/gpl-3.0.en.html
+
+Copyright 2021 Bukkit Team
+
 ### CryptSharp DES (https://gist.github.com/aannenko/d47c90b0f92177286bb9814850888920)
 Copyright 2019 by aannenko
 
