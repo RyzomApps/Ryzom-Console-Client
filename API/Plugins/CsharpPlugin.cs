@@ -30,15 +30,11 @@ namespace API.Plugins
         private FileInfo _configFile = null;
         private PluginLoggerWrapper _logger = null;
 
-        protected CsharpPlugin()
-        {
-            //ClassLoader.Initialize(this);
-        }
+        protected CsharpPlugin() { }
 
-        protected CsharpPlugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder,
-            FileInfo file, ILogger logger)
+        protected CsharpPlugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
         {
-            Init(loader, loader.Handler, description, dataFolder, file, logger);
+            Init(loader, loader.Handler, description, dataFolder, file);
         }
 
         /// <inheritdoc />
@@ -153,7 +149,7 @@ namespace API.Plugins
             }
         }
 
-        public void Init(IPluginLoader loader, IClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file, ILogger logger)
+        public void Init(IPluginLoader loader, IClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
         {
             _loader = loader;
             _server = server;
@@ -162,7 +158,7 @@ namespace API.Plugins
             _dataFolder = dataFolder;
             //this.classLoader = classLoader;
             _configFile = new FileInfo(dataFolder + "config.yml");
-            _logger = new PluginLoggerWrapper(this, logger);
+            _logger = new PluginLoggerWrapper(this, server.GetLogger());
         }
 
         /// <inheritdoc />

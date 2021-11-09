@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,19 +11,17 @@ using API.Plugins.Interfaces;
 
 namespace Client.Plugins
 {
-    public sealed class CsharpPluginLoader : IPluginLoader
+    public sealed class DotNetPluginLoader : IPluginLoader
     {
         public IClient Handler { get; set; }
 
-        //private Pattern[] fileFilters = new Pattern[][][] {Pattern.compile("\\\\.jar$")};
-        //
-        //private Map<String, Class> classes = new HashMap<String, Class>();
+        private readonly List<string> fileFilters = new List<string> { @"^\\.dll$" };
 
-        //private readonly Dictionary<string, PluginClassLoader> _loaders = new Dictionary<string, PluginClassLoader>();
+        private static readonly Dictionary<string, PluginClassLoader> _loaders = new Dictionary<string, PluginClassLoader>();
 
-        public CsharpPluginLoader(IClient instance)
+        public DotNetPluginLoader(IClient instance)
         {
-            //Validate.NotNull(instance, "Server cannot be null");
+            Validate.NotNull(instance, "Server cannot be null");
             Handler = instance;
         }
 
@@ -54,7 +53,7 @@ namespace Client.Plugins
             {
                 //  They are equal -- nothing needs to be done!
             }
-            else if ((dataFolder.Exists && oldDataFolder.Exists))
+            else if (dataFolder.Exists && oldDataFolder.Exists)
             {
                 Handler.GetLogger().Warn(string.Format("While loading %s (%s) found old-data folder: `%s\' next to the new one `%s\'", description.GetFullName(), file, oldDataFolder, dataFolder));
             }
@@ -66,13 +65,13 @@ namespace Client.Plugins
                 }
                 catch
                 {
-                    throw new InvalidPluginException(("Unable to rename old data folder: `" + (oldDataFolder + ("\' to: `" + (dataFolder + "\'")))));
+                    throw new InvalidPluginException("Unable to rename old data folder: `" + (oldDataFolder + ("\' to: `" + (dataFolder + "\'"))));
                 }
 
                 Handler.GetLogger().Info(string.Format("While loading %s (%s) renamed data folder: `%s\' to `%s\'", description.GetFullName(), file, oldDataFolder, dataFolder));
             }
 
-            if ((dataFolder.Exists && !Directory.Exists(dataFolder.Name)))
+            if (dataFolder.Exists && !Directory.Exists(dataFolder.Name))
             {
                 throw new InvalidPluginException(string.Format("Projected datafolder: `%s\' for %s (%s) exists and is not a directory", dataFolder, description.GetFullName(), file));
             }
@@ -92,7 +91,7 @@ namespace Client.Plugins
             //    }
             //
             //}
-            //
+
             PluginClassLoader loader;
 
             try
@@ -111,13 +110,22 @@ namespace Client.Plugins
             return loader.Plugin;
         }
 
+        /// <summary>
+        /// Iterate all types within the specified assembly.<br/>
+        /// Check whether that's the shortest so far.<br/>
+        /// If it's, set it to the ns.
+        /// </summary>
+        /// <param name="asm">Assembly to check</param>
+        /// <returns>Return the shortest namespace of the assembly</returns>
         public string GetAssemblyNamespace(Assembly asm)
         {
-            var ns = @"";
-            foreach (var tp in asm.Modules.First().GetTypes()) //Iterate all types within the specified assembly.
-                if (tp.Namespace != null && (ns.Length == 0 || tp.Namespace.Length < ns.Length)) //Check whether that's the shortest so far.
-                    ns = tp.Namespace; //If it's, set it to the variable.
-            return ns; //Now it is the namespace of the assembly.
+            var ns = "";
+
+            foreach (var tp in asm.Modules.First().GetTypes())
+                if (tp.Namespace != null && (ns.Length == 0 || tp.Namespace.Length < ns.Length))
+                    ns = tp.Namespace; 
+
+            return ns; 
         }
 
         string GetResourceFile(string assemblyPath, string fileName)
@@ -138,62 +146,21 @@ namespace Client.Plugins
         {
             Validate.NotNull(file, "File cannot be null");
 
-            var content = GetResourceFile(file.FullName, "plugin.yml");
-
-            return PluginDescriptionFile.Load(content);
-
-            //JarFile jar = null;
-            //InputStream stream = null;
-            //
-            //try {
-            //    jar = new JarFile(file);
-            //    JarEntry entry = jar.getJarEntry("plugin.yml");
-            //
-            //    if ((entry == null)) {
-            //        throw new InvalidDescriptionException(new FileNotFoundException("Jar does not contain plugin.yml"));
-            //    }
-            //
-            //    stream = jar.getInputStream(entry);
-            //    return new PluginDescriptionFile(stream);
-            //}
-            //catch (IOException ex) {
-            //    throw new InvalidDescriptionException(ex);
-            //}
-            //catch (YAMLException ex) {
-            //    throw new InvalidDescriptionException(ex);
-            //}
-            //finally {
-            //    if (jar != null) {
-            //        try {
-            //            jar.close();
-            //        }
-            //        catch (IOException e) {
-            //        
-            //        }
-            //    
-            //    }
-            //
-            //    if (stream != null) {
-            //        try {
-            //            stream.close();
-            //        }
-            //        catch (IOException e) {
-            //        
-            //        }
-            //    
-            //    }
-            //
-            //}
-
+            try
+            {
+                var content = GetResourceFile(file.FullName, "plugin.yml");
+                return PluginDescriptionFile.Load(content);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidDescriptionException(ex);
+            }
         }
 
         public object[] GetPluginFileFilters()
         {
-            //return this.fileFilters.clone();
-            return null;
+            return fileFilters.ToArray();
         }
-
-
 
         //Class GetClassByName(String name) {
         //    Class cachedClass = this.classes.get(name);
@@ -337,11 +304,11 @@ namespace Client.Plugins
 
             plugin.GetLogger().Info("Enabling " + plugin.GetDescription().GetFullName());
             var jPlugin = (CsharpPlugin)(plugin);
-            var pluginName = jPlugin.GetDescription().GetName();
+            //var pluginName = jPlugin.GetDescription().GetName();
 
             //if (!_loaders.ContainsKey(pluginName))
             //{
-            //    //loaders.Add(pluginName, ((PluginClassLoader)(jPlugin.GetClassLoader())));
+            //    loaders.Add(pluginName, ((PluginClassLoader)(jPlugin.GetClassLoader())));
             //}
 
             try

@@ -25,6 +25,7 @@ using Client.Helper;
 using Client.Helper.Tasks;
 using Client.Logger;
 using Client.Network;
+using Client.Plugins;
 using Client.Property;
 
 namespace Client
@@ -42,6 +43,7 @@ namespace Client
         private readonly StringManager _stringManager;
         private readonly DatabaseManager _databaseManager;
         private readonly InterfaceManager _interfaceManager;
+        private readonly SimplePluginManager _pluginManager;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -125,7 +127,7 @@ namespace Client
 
         public NetworkConnection GetNetworkConnection() { return _networkConnection; }
 
-        public IPluginManager GetPluginManager() { return null; }
+        public IPluginManager GetPluginManager() { return _pluginManager; }
 
         #endregion
 
@@ -144,6 +146,7 @@ namespace Client
             _stringManager = new StringManager(this);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager);
             _interfaceManager = new InterfaceManager();
+            _pluginManager = new SimplePluginManager(this, _cmds);
 
             Automata = new Automata.Internal.Automata(this);
 
@@ -163,13 +166,12 @@ namespace Client
             if (autoStart)
             {
                 StartConsoleClient();
+                Program.Exit();
             }
             else
             {
                 Log = new FilteredLogger();
             }
-
-            Program.Exit();
         }
 
         /// <summary>
@@ -195,8 +197,11 @@ namespace Client
             // Load commands from Commands namespace
             LoadCommands();
 
-            // Load commands from Commands namespace
+            // Load automatons
             Automata.LoadAutomata();
+
+            // Load plugin manager
+            _pluginManager.loadPlugins(new DirectoryInfo(@".\plugins\"));
 
             _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
             _timeoutdetector.Start();
@@ -904,6 +909,7 @@ namespace Client
             if (_commandsLoaded) return;
 
             var cmdsClasses = Program.GetTypesInNamespace("Client.Commands");
+
             foreach (var type in cmdsClasses)
             {
                 if (!type.IsSubclassOf(typeof(CommandBase))) continue;
