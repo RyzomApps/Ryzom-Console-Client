@@ -12,6 +12,8 @@ namespace RCC.Commands
 
         public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
         {
+            var cyclic = false;
+
             var args = GetArgs(command);
 
             if (args.Length < 1)
@@ -28,6 +30,7 @@ namespace RCC.Commands
                 if (!worked)
                 {
                     handler.GetLogger().Warn($"One of the arguments could not be parsed.");
+                    return "";
                 }
             }
             else if (args.Length == 1 || args.Length > 2)
@@ -35,9 +38,6 @@ namespace RCC.Commands
                 handler.GetLogger().Warn($"Please specify zero or two arguments.");
                 return "";
             }
-
-            //TODO : ARGS
-            var cyclic = true;
 
             // before, append the execution counter to the list of ACK to wait
             //appendCurrentToAckExecute(cyclic);

@@ -39,7 +39,8 @@ namespace RCC.Automata.Internal
                 if (ClientConfig.OnlinePlayersLoggerEnabled) { LoadAutomaton(new OnlinePlayersLogger()); }
                 if (ClientConfig.AutoJoinTeamEnabled) { LoadAutomaton(new AutoTeamJoiner()); }
                 if (ClientConfig.ImpulseDebuggerEnabled) { LoadAutomaton(new ImpulseDebugger()); }
-                if (ClientConfig.FollowerEnabled) {LoadAutomaton(new Follower());}
+                if (ClientConfig.FollowerEnabled) { LoadAutomaton(new Follower()); }
+                if (ClientConfig.HealerEnabled) { LoadAutomaton(new Healer()); }
             }
 
             foreach (var automata in _automataOnHold)

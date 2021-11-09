@@ -573,6 +573,8 @@ namespace RCC.Network
         /// </summary>
         private void ImpulsePhraseDownLoad(BitMemoryStream impulse)
         {
+            return;
+
             // Read Known Phrases
             //impulse.SerialCont(phrases);
             int len = 0;

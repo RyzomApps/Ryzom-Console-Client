@@ -1556,7 +1556,8 @@ namespace RCC.Network
 
                     if (i < block.Actions.Count)
                     {
-                        throw new NotImplementedException("Send: ActionBlock size is bigger than 480 bit. Thats not implemented yet.");
+                        _client.GetLogger().Error("Send: ActionBlock size is bigger than 480 bit. Thats not implemented yet.");
+                        //throw new NotImplementedException
                     }
                 }
 

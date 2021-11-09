@@ -12,6 +12,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Diagnostics;
 
 namespace RCC.Automata
 {
@@ -320,21 +321,20 @@ namespace RCC.Automata
                 var httpWebRequest = (HttpWebRequest)WebRequest.Create(ClientConfig.OnlinePlayersApi);
                 httpWebRequest.ContentType = "application/json";
                 httpWebRequest.Method = "POST";
+                httpWebRequest.AllowWriteStreamBuffering = false;
 
                 var hash = Misc.GetMD5(DateTime.Now.ToString("ddMMyyyy")).ToLower();
 
-                var json = "[";
+                var json = $"[{{\"auth\":\"{hash}\",\"players\":[";
 
                 foreach (var id in _friendNames.Keys.Where(id => _friendNames[id] != string.Empty))
                 {
-                    json += $"{{\"auth\":\"{hash}\",\"name\":\"{_friendNames[id]}\",\"status\":\"{(_friendOnline[id] == CharConnectionState.CcsOnline ? "online" : "offline")}\"}},";
+                    json += $"{{\"name\":\"{_friendNames[id]}\",\"status\":\"{(_friendOnline[id] == CharConnectionState.CcsOnline ? "1" : "0")}\"}},";
                 }
 
                 json = json[..^1];
 
-                json += "]";
-
-                //Debug.Print(json);
+                json += $"]}}]";
 
                 using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                 {
