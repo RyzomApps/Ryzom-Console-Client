@@ -13,7 +13,7 @@ using API.Plugins.Interfaces;
 
 namespace SamplePlugin
 {
-    public class SampleCsharpPlugin : CsharpPlugin
+    public class SampleCsharpPlugin : Plugin
     {
         //private final SamplePlayerListener playerListener = new SamplePlayerListener(this);
         //private final SampleBlockListener blockListener = new SampleBlockListener();

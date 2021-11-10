@@ -8,6 +8,9 @@ using API.Plugins.Interfaces;
 
 namespace API.Plugins
 {
+    /// <summary>
+    /// A ClassLoader for plugins, to allow shared classes across multiple plugins (but not yet)
+    /// </summary>
     public class PluginClassLoader
     {
         private readonly IPluginLoader _csharpPluginLoader;
@@ -15,8 +18,8 @@ namespace API.Plugins
         private readonly DirectoryInfo _dataFolder;
         private readonly FileInfo _file;
 
-        public CsharpPlugin Plugin { get; set; }
-        private CsharpPlugin _pluginInit;
+        public Plugin Plugin { get; set; }
+        private Plugin _pluginInit;
 
         public PluginClassLoader(IPluginLoader csharpPluginLoader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
         {
@@ -29,24 +32,25 @@ namespace API.Plugins
 
             var type = asm.GetType(description.GetMain());
 
-            if(type==null)
+            if (type == null)
                 throw new InvalidPluginException($"Cannot find main class `{description.GetMain()}'");
 
-            if (type.BaseType == typeof(CsharpPlugin))
-                Plugin = Activator.CreateInstance(type) as CsharpPlugin;
+            if (type.BaseType == typeof(Plugin))
+                Plugin = Activator.CreateInstance(type) as Plugin;
             else
                 throw new InvalidPluginException($"main class `{description.GetMain()}' does not extend CsharpPlugin");
 
+            // Initialize it directly since there are no other class loaders used
             Initialize(Plugin);
-
-            //if (Plugin != null) Plugin.ClassLoader = this;
         }
 
-        public void Initialize(CsharpPlugin javaPlugin) {
+        public void Initialize(Plugin javaPlugin)
+        {
             Validate.NotNull(javaPlugin, "Initializing plugin cannot be null");
             //Validate.IsTrue(javaPlugin.GetClassLoader() == this, "Cannot initialize plugin outside of this class loader");
-            
-            if (_pluginInit != null) {
+
+            if (_pluginInit != null)
+            {
                 throw new ArgumentException("Plugin already initialized!", new Exception("Initial initialization"));
             }
 

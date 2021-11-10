@@ -16,26 +16,25 @@ namespace API.Plugins
     /// <summary>
     /// Represents a plugin
     /// </summary>
-    public abstract class CsharpPlugin : IPlugin
+    public abstract class Plugin : IPlugin
     {
         //public PluginClassLoader ClassLoader { get; set; }
 
-        private bool _isEnabled = false;
-        private IPluginLoader _loader = null;
-        private IClient _server = null;
-        private FileInfo _file = null;
-        private PluginDescriptionFile _description = null;
-        private DirectoryInfo _dataFolder = null;
+        private bool _isEnabled;
+        private IPluginLoader _loader;
+        private IClient _server;
+        private FileInfo _file;
+        private PluginDescriptionFile _description;
+        private DirectoryInfo _dataFolder;
         private readonly FileConfiguration _newConfig = null;
-        private FileInfo _configFile = null;
-        private PluginLoggerWrapper _logger = null;
+        private FileInfo _configFile;
+        private PluginLoggerWrapper _logger;
 
-        protected CsharpPlugin()
-        {
-            //ClassLoader.Initialize(this);
-        }
 
-        protected CsharpPlugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder,
+        // ReSharper disable once UnusedMember.Global
+        protected Plugin() { }
+
+        protected Plugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder,
             FileInfo file, ILogger logger)
         {
             Init(loader, loader.Handler, description, dataFolder, file, logger);
@@ -203,7 +202,7 @@ namespace API.Plugins
             {
                 return false;
             }
-            return obj is CsharpPlugin plugin && GetName().Equals(plugin.GetName());
+            return obj is Plugin plugin && GetName().Equals(plugin.GetName());
         }
 
         /// <inheritdoc />

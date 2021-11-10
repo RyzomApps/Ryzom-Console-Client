@@ -7,14 +7,25 @@
 ///////////////////////////////////////////////////////////////////
 
 using API.Logger;
-using API.Plugins;
+using API.Plugins.Interfaces;
 
 namespace API
 {
+    /// <summary>
+    /// Represents a client implementation.
+    /// </summary>
     public interface IClient
     {
+        /// <summary>
+        /// Returns the primary logger associated with this client instance.
+        /// </summary>
+        /// <returns>Logger associated with this client</returns>
         ILogger GetLogger();
 
+        /// <summary>
+        /// Gets the plugin manager for interfacing with plugins.
+        /// </summary>
+        /// <returns>a plugin manager for this client instance</returns>
         IPluginManager GetPluginManager();
     }
 }

@@ -9,37 +9,39 @@ using API.Plugins.Interfaces;
 
 namespace Client.Plugins
 {
-    public sealed class SimplePluginManager : IPluginManager {
-    
-        private IClient server;
-    
+    public sealed class SimplePluginManager : IPluginManager
+    {
+
+        private readonly IClient server;
+
         private Dictionary<string, IPluginLoader> fileAssociations = new Dictionary<string, IPluginLoader>();
-    
+
         private Dictionary<string, IPlugin> plugins = new Dictionary<string, IPlugin>();
-    
+
         private Dictionary<string, IPlugin> lookupNames = new Dictionary<string, IPlugin>();
-    
+
         private static DirectoryInfo updateDirectory = null;
-    
+
         //private SimpleCommandMap commandMap;
-    
-       //private Dictionary<string, Permission> permissions = new Dictionary<string, Permission>();
-       //
-       //private Dictionary<Boolean, List<Permission>> defaultPerms = new LinkedDictionary<Boolean, List<Permission>>();
-       //
-       //private Dictionary<string, Dictionary<Permissible, Boolean>> permSubs = new Dictionary<string, Dictionary<Permissible, Boolean>>();
-       //
-       //private Dictionary<Boolean, Dictionary<Permissible, Boolean>> defSubs = new Dictionary<Boolean, Dictionary<Permissible, Boolean>>();
-    
+
+        //private Dictionary<string, Permission> permissions = new Dictionary<string, Permission>();
+        //
+        //private Dictionary<Boolean, List<Permission>> defaultPerms = new LinkedDictionary<Boolean, List<Permission>>();
+        //
+        //private Dictionary<string, Dictionary<Permissible, Boolean>> permSubs = new Dictionary<string, Dictionary<Permissible, Boolean>>();
+        //
+        //private Dictionary<Boolean, Dictionary<Permissible, Boolean>> defSubs = new Dictionary<Boolean, Dictionary<Permissible, Boolean>>();
+
         private bool _useTimings = false;
-    
-        public SimplePluginManager(IClient instance, object commandMap) {
+
+        public SimplePluginManager(IClient instance, object commandMap)
+        {
             server = instance;
             ///this.commandMap = this.commandMap;
             ///this.defaultPerms.Add(true, new List<Permission>());
             ///this.defaultPerms.Add(false, new List<Permission>());
         }
-    
+
         //public void registerInterface(IPluginLoader loader) {
         //    IPluginLoader instance;
         //    if (PluginLoader.class.isAssignableFrom(loader)) {
@@ -69,37 +71,45 @@ namespace Client.Plugins
         //
         //}
 
-        public void registerInterface(IPluginLoader loader)
+        /// <inheritdoc/>
+        public void RegisterInterface(IPluginLoader loader)
         {
             throw new NotImplementedException();
         }
 
-        public IPlugin getPlugin(string name)
+        /// <inheritdoc/>
+        public IPlugin GetPlugin(string name)
         {
             throw new NotImplementedException();
         }
 
-        public IPlugin[] getPlugins()
+        /// <inheritdoc/>
+        public IPlugin[] GetPlugins()
         {
             throw new NotImplementedException();
         }
 
-        public bool isPluginEnabled(string name)
+        /// <inheritdoc/>
+        public bool IsPluginEnabled(string name)
         {
             throw new NotImplementedException();
         }
 
-        public bool isPluginEnabled(IPlugin plugin)
+        /// <inheritdoc/>
+        public bool IsPluginEnabled(IPlugin plugin)
         {
             throw new NotImplementedException();
         }
 
-        public IPlugin loadPlugin(FileInfo file)
+        /// <inheritdoc/>
+        public IPlugin LoadPlugin(FileInfo file)
         {
             throw new NotImplementedException();
         }
 
-        public IPlugin[] loadPlugins(DirectoryInfo directory) {
+        /// <inheritdoc/>
+        public IPlugin[] LoadPlugins(DirectoryInfo directory)
+        {
             Validate.NotNull(directory, "Directory cannot be null");
             Validate.IsTrue(directory.Exists, "Directory must be a directory");
             var result = new List<IPlugin>();
@@ -109,14 +119,15 @@ namespace Client.Plugins
             //if (!this.server.getUpdateFolder().equals("")) {
             //    updateDirectory = new File(directory, this.server.getUpdateFolder());
             //}
-        
+
             var _plugins = new Dictionary<string, FileInfo>();
             var loadedPlugins = new List<string>();
             var dependencies = new Dictionary<string, List<string>>();
             var softDependencies = new Dictionary<string, List<string>>();
 
             //  This is where it figures out all possible plugins
-            foreach (FileInfo file in directory.GetFiles()) {
+            foreach (FileInfo file in directory.GetFiles())
+            {
                 IPluginLoader loader = new CsharpPluginLoader(server);
 
                 //foreach (Pattern filter in filters) {
@@ -127,13 +138,15 @@ namespace Client.Plugins
                 //}
                 //
 
-                if ((loader == null)) {
+                if ((loader == null))
+                {
                     // TODO: Warning!!! continue If
                 }
-            
+
                 PluginDescriptionFile description = null;
 
-                try {
+                try
+                {
                     description = loader.GetPluginDescription(file);
                     string name = description.GetName();
                     //if ((name.Equals("bukkit") 
@@ -144,24 +157,27 @@ namespace Client.Plugins
                     //    // TODO: Warning!!! continue If
                     //}
                     //else
-                    if ((description.RawName.IndexOf(' ') != -1)) {
+                    if ((description.RawName.IndexOf(' ') != -1))
+                    {
                         server.GetLogger().Warn(string.Format("Plugin `%s\' uses the space-character (0x20) in its name `%s\' - this is discouraged", description.GetFullName(), description.RawName));
                     }
                 }
-                catch (InvalidDescriptionException ex) {
-                    server.GetLogger().Error( ("Could not load \'" 
-                                                               + (file.FullName + ("\' in folder \'" 
+                catch (InvalidDescriptionException ex)
+                {
+                    server.GetLogger().Error(("Could not load \'"
+                                                               + (file.FullName + ("\' in folder \'"
                                                                    + (directory.FullName + "\'")))), ex);
                     // TODO: Warning!!! continue Catch
                 }
-            
+
                 _plugins.Add(description.GetName(), file);
                 FileInfo replacedFile = file;
 
-                if ((replacedFile != null)) {
+                if ((replacedFile != null))
+                {
                     this.server.GetLogger().Error(string.Format("Ambiguous plugin name `%s\' for files `%s\' and `%s\' in `%s\'", description.GetName(), file.FullName, replacedFile.FullName, directory.FullName));
                 }
-            
+
                 //Collection<string> softDependencySet = description.GetSoftDepend();
                 //
                 //if (((softDependencySet != null) 
@@ -199,9 +215,9 @@ namespace Client.Plugins
                 //    }
                 //
                 //}
-            
+
             }
-        
+
             //while (plugins.Count > 0) {
             //    bool missingDependency = true;
             //    var pluginIterator = this.plugins.Keys.GetEnumerator();
@@ -318,26 +334,30 @@ namespace Client.Plugins
             //    }
             //
             //}
-        
+
             return result.ToArray();
         }
 
-        public void disablePlugins()
+        /// <inheritdoc/>
+        public void DisablePlugins()
         {
             throw new NotImplementedException();
         }
 
-        public void clearPlugins()
+        /// <inheritdoc/>
+        public void ClearPlugins()
         {
             throw new NotImplementedException();
         }
 
-        public void enablePlugin(IPlugin plugin)
+        /// <inheritdoc/>
+        public void EnablePlugin(IPlugin plugin)
         {
             throw new NotImplementedException();
         }
 
-        public void disablePlugin(IPlugin plugin)
+        /// <inheritdoc/>
+        public void DisablePlugin(IPlugin plugin)
         {
             throw new NotImplementedException();
         }
@@ -729,12 +749,16 @@ namespace Client.Plugins
         //    return new List<Permission>(this.permissions.values());
         //}
         //
-        public bool useTimings() {
-            return this._useTimings;
+
+        /// <inheritdoc/>
+        public bool UseTimings()
+        {
+            return _useTimings;
         }
-        //
-        //public void useTimings(bool use) {
-        //    this.useTimings = use;
-        //}
+
+        public void UseTimings(bool use)
+        {
+            _useTimings = use;
+        }
     }
 }

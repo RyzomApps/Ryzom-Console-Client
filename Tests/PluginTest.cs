@@ -38,7 +38,7 @@ namespace Tests
         [Fact]
         public void YamlTest()
         {
-            var pdf = new PluginDescriptionFile("");
+            var pdf = new PluginDescriptionFile();
 
             pdf.Save();
 

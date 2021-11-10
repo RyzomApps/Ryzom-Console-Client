@@ -12,6 +12,7 @@ namespace Client.Plugins
 {
     public sealed class CsharpPluginLoader : IPluginLoader
     {
+        /// <inheritdoc/>
         public IClient Handler { get; set; }
 
         //private Pattern[] fileFilters = new Pattern[][][] {Pattern.compile("\\\\.jar$")};
@@ -26,6 +27,7 @@ namespace Client.Plugins
             Handler = instance;
         }
 
+        /// <inheritdoc/>
         public IPlugin LoadPlugin(FileInfo file)
         {
             Validate.NotNull(file, "File cannot be null");
@@ -111,7 +113,7 @@ namespace Client.Plugins
             return loader.Plugin;
         }
 
-        public string GetAssemblyNamespace(Assembly asm)
+        private string GetAssemblyNamespace(Assembly asm)
         {
             var ns = @"";
             foreach (var tp in asm.Modules.First().GetTypes()) //Iterate all types within the specified assembly.
@@ -120,6 +122,7 @@ namespace Client.Plugins
             return ns; //Now it is the namespace of the assembly.
         }
 
+        /// <inheritdoc/>
         string GetResourceFile(string assemblyPath, string fileName)
         {
             // TODO: search for file in every sub namespace
@@ -187,7 +190,7 @@ namespace Client.Plugins
 
         }
 
-        public object[] GetPluginFileFilters()
+        public string[] GetPluginFileFilters()
         {
             //return this.fileFilters.clone();
             return null;
@@ -332,11 +335,11 @@ namespace Client.Plugins
 
         public void EnablePlugin(IPlugin plugin)
         {
-            Validate.IsTrue(plugin is CsharpPlugin, "Plugin is not associated with this PluginLoader");
+            Validate.IsTrue(plugin is Plugin, "Plugin is not associated with this PluginLoader");
             if (plugin.IsEnabled()) return;
 
             plugin.GetLogger().Info("Enabling " + plugin.GetDescription().GetFullName());
-            var jPlugin = (CsharpPlugin)(plugin);
+            var jPlugin = (Plugin)(plugin);
             var pluginName = jPlugin.GetDescription().GetName();
 
             //if (!_loaders.ContainsKey(pluginName))
@@ -360,13 +363,13 @@ namespace Client.Plugins
 
         public void DisablePlugin(IPlugin plugin)
         {
-            Validate.IsTrue(plugin is CsharpPlugin, "Plugin is not associated with this PluginLoader");
+            Validate.IsTrue(plugin is Plugin, "Plugin is not associated with this PluginLoader");
             if (!plugin.IsEnabled()) return;
 
             string message = $"Disabling {plugin.GetDescription().GetFullName()}";
             plugin.GetLogger().Info(message);
             //server.GetPluginManager().CallEvent(new PluginDisableEvent(plugin));
-            var jPlugin = ((CsharpPlugin)(plugin));
+            var jPlugin = ((Plugin)(plugin));
 
             //ClassLoader cloader = jPlugin.GetClassLoader();
 

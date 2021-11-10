@@ -15,6 +15,7 @@ using System.Threading;
 using API;
 using API.Logger;
 using API.Plugins;
+using API.Plugins.Interfaces;
 using Client.Automata.Internal;
 using Client.Chat;
 using Client.Client;
