@@ -7,6 +7,7 @@
 
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <OutDir>$(SolutionDir)\bin\$(Configuration)\$(TargetFramework)\</OutDir>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
