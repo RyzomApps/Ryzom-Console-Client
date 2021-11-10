@@ -28,7 +28,7 @@ jobs:
       - name: Upload
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          automatic_release_tag: "LATEST"
+          automatic_release_tag: "nightly-release"
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
