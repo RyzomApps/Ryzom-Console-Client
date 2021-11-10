@@ -61,6 +61,7 @@ jobs:
         prerelease: true
         files: |
           "/home/runner/work/RCC/RCC/bin/Release/netcoreapp3.1/*"
+          "/home/runner/work/RCC/RCC/bin/Release/netcoreapp3.1/RyzomConsoleClient.dll"
 #          "/home/runner/work/RCC/RCC/bin/Release/netcoreapp3.1/*.dll"
 #          "./Client/bin/Release/netcoreapp3.1/*.exe"
 #          "./Client/bin/Release/netcoreapp3.1/*.dll"
