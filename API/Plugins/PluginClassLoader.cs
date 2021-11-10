@@ -56,9 +56,9 @@ namespace API.Plugins
 
             _pluginInit = javaPlugin;
 
-            var logger = new PluginLoggerWrapper(javaPlugin, _csharpPluginLoader.Handler.GetLogger());
+            //var logger = new PluginLoggerWrapper(javaPlugin, _csharpPluginLoader.Handler.GetLogger());
 
-            javaPlugin.Init(_csharpPluginLoader, _csharpPluginLoader.Handler, _description, _dataFolder, _file, logger);
+            javaPlugin.Init(_csharpPluginLoader, _csharpPluginLoader.Handler, _description, _dataFolder, _file);
         }
     }
 }

@@ -9,13 +9,13 @@ namespace Tests
     public class PluginTest
     {
         [Fact]
-        public void PluginInstanceTest()
+        public void PluginLoaderTest()
         {
             var pluginPath = new FileInfo("SamplePlugin.dll");
             
             var client = new RyzomClient(false);
 
-            var pluginLoader = new CsharpPluginLoader(client);
+            var pluginLoader = new DotNetPluginLoader(client);
 
             var plugin = pluginLoader.LoadPlugin(pluginPath);
 
@@ -23,13 +23,15 @@ namespace Tests
         }
 
         [Fact]
-        public void PluginLoaderTest()
+        public void PluginDescriptionTest()
         {
             var pluginPath = new FileInfo("SamplePlugin.dll");
 
             Assert.True(pluginPath.Exists);
 
-            var pluginLoader = new CsharpPluginLoader(null);
+            var client = new RyzomClient(false);
+
+            var pluginLoader = new DotNetPluginLoader(client);
             var desc = pluginLoader.GetPluginDescription(pluginPath);
 
             Assert.NotNull(desc);

@@ -35,7 +35,7 @@ namespace API.Plugins
         protected Plugin() { }
 
         protected Plugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder,
-            FileInfo file, ILogger logger)
+            FileInfo file)
         {
             Init(loader, loader.Handler, description, dataFolder, file, logger);
         }
@@ -152,7 +152,7 @@ namespace API.Plugins
             }
         }
 
-        public void Init(IPluginLoader loader, IClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file, ILogger logger)
+        public void Init(IPluginLoader loader, IClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
         {
             _loader = loader;
             _server = server;
@@ -161,7 +161,7 @@ namespace API.Plugins
             _dataFolder = dataFolder;
             //this.classLoader = classLoader;
             _configFile = new FileInfo(dataFolder + "config.yml");
-            _logger = new PluginLoggerWrapper(this, logger);
+            _logger = new PluginLoggerWrapper(this, server.GetLogger());
         }
 
         /// <inheritdoc />

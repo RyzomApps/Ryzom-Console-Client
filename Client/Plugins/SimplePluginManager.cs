@@ -16,7 +16,7 @@ namespace Client.Plugins
 
         private Dictionary<string, IPluginLoader> fileAssociations = new Dictionary<string, IPluginLoader>();
 
-        private Dictionary<string, IPlugin> plugins = new Dictionary<string, IPlugin>();
+        private List< IPlugin> plugins = new List< IPlugin>();
 
         private Dictionary<string, IPlugin> lookupNames = new Dictionary<string, IPlugin>();
 
@@ -128,7 +128,7 @@ namespace Client.Plugins
             //  This is where it figures out all possible plugins
             foreach (FileInfo file in directory.GetFiles())
             {
-                IPluginLoader loader = new CsharpPluginLoader(server);
+                IPluginLoader loader = new DotNetPluginLoader(server);
 
                 //foreach (Pattern filter in filters) {
                 //    Matcher match = filter.matcher(file.getName());
@@ -138,7 +138,7 @@ namespace Client.Plugins
                 //}
                 //
 
-                if ((loader == null))
+                if (loader == null)
                 {
                     // TODO: Warning!!! continue If
                 }
@@ -157,7 +157,7 @@ namespace Client.Plugins
                     //    // TODO: Warning!!! continue If
                     //}
                     //else
-                    if ((description.RawName.IndexOf(' ') != -1))
+                    if ((description.GetRawName().IndexOf(' ') != -1))
                     {
                         server.GetLogger().Warn(string.Format("Plugin `%s\' uses the space-character (0x20) in its name `%s\' - this is discouraged", description.GetFullName(), description.RawName));
                     }
@@ -168,15 +168,17 @@ namespace Client.Plugins
                                                                + (file.FullName + ("\' in folder \'"
                                                                    + (directory.FullName + "\'")))), ex);
                     // TODO: Warning!!! continue Catch
+                    continue;
                 }
 
                 _plugins.Add(description.GetName(), file);
-                FileInfo replacedFile = file;
 
-                if ((replacedFile != null))
-                {
-                    this.server.GetLogger().Error(string.Format("Ambiguous plugin name `%s\' for files `%s\' and `%s\' in `%s\'", description.GetName(), file.FullName, replacedFile.FullName, directory.FullName));
-                }
+                //FileInfo replacedFile = file;
+                //
+                //if ((replacedFile != null))
+                //{
+                //    server.GetLogger().Error(string.Format("Ambiguous plugin name `%s\' for files `%s\' and `%s\' in `%s\'", description.GetName(), file.FullName, replacedFile.FullName, directory.FullName));
+                //}
 
                 //Collection<string> softDependencySet = description.GetSoftDepend();
                 //
@@ -218,122 +220,133 @@ namespace Client.Plugins
 
             }
 
-            //while (plugins.Count > 0) {
-            //    bool missingDependency = true;
-            //    var pluginIterator = this.plugins.Keys.GetEnumerator();
-            //    while (pluginIterator.MoveNext()) {
-            //        string plugin = pluginIterator.Current;
-            //        if (dependencies.ContainsKey(plugin)) {
-            //            Iterator<string> dependencyIterator = dependencies.get(plugin).iterator();
-            //            while (dependencyIterator.hasNext()) {
-            //                string dependency = dependencyIterator.next();
-            //                //  Dependency loaded
-            //                if (loadedPlugins.contains(dependency)) {
-            //                    dependencyIterator.Remove();
-            //                    //  We have a dependency not found
-            //                }
-            //                else if (!this.plugins.ContainsKey(dependency)) {
-            //                    missingDependency = false;
-            //                    FileInfo FileInfo = this.plugins.get(plugin);
-            //                    pluginIterator.Remove();
-            //                    softDependencies.Remove(plugin);
-            //                    dependencies.Remove(plugin);
-            //                    this.server.GetLogger().Error( ("Could not load \'" 
-            //                                                               + (file.FullName + ("\' in folder \'" 
-            //                                                                   + (directory.FullName + "\'")))), new UnknownDependencyException(dependency));
-            //                    break;
-            //                }
-            //            
-            //            }
-            //        
-            //            if ((dependencies.ContainsKey(plugin) && dependencies.get(plugin).isEmpty())) {
-            //                dependencies.Remove(plugin);
-            //            }
-            //        
-            //        }
-            //    
-            //        if (softDependencies.ContainsKey(plugin)) {
-            //            Iterator<string> softDependencyIterator = softDependencies.get(plugin).iterator();
-            //            while (softDependencyIterator.hasNext()) {
-            //                string softDependency = softDependencyIterator.next();
-            //                //  Soft depend is no longer around
-            //                if (!this.plugins.ContainsKey(softDependency)) {
-            //                    softDependencyIterator.Remove();
-            //                }
-            //            
-            //            }
-            //        
-            //            if (softDependencies.get(plugin).isEmpty()) {
-            //                softDependencies.Remove(plugin);
-            //            }
-            //        
-            //        }
-            //    
-            //        if ((!(dependencies.ContainsKey(plugin) || softDependencies.ContainsKey(plugin)) 
-            //             && this.plugins.ContainsKey(plugin))) {
-            //            //  We're clear to load, no more soft or hard dependencies left
-            //            FileInfo file = this.plugins[] (plugin);
-            //            pluginIterator.Remove();
-            //            missingDependency = false;
-            //            try {
-            //                result.Add(this.loadPlugin(file));
-            //                loadedPlugins.Add(plugin);
-            //                // TODO: Warning!!! continue Try
-            //            }
-            //            catch (InvalidPluginException ex) {
-            //                this.server.GetLogger().Error( ("Could not load \'" 
-            //                                                           + (file.FullName + ("\' in folder \'" 
-            //                                                               + (directory.FullName + "\'")))), ex);
-            //            }
-            //        
-            //        }
-            //    
-            //    }
-            //
-            //    if (missingDependency) {
-            //        //  We now iterate over plugins until something loads
-            //        //  This loop will ignore soft dependencies
-            //        pluginIterator = this.plugins.GetEnumerator();
-            //        while (pluginIterator.hasNext()) {
-            //            string plugin = pluginIterator.next();
-            //            if (!dependencies.ContainsKey(plugin)) {
-            //                softDependencies.Remove(plugin);
-            //                missingDependency = false;
-            //                FileInfo file = this.plugins[plugin];
-            //                pluginIterator.Remove();
-            //                try {
-            //                    result.Add(this.loadPlugin(file));
-            //                    loadedPlugins.Add(plugin);
-            //                    break;
-            //                }
-            //                catch (InvalidPluginException ex) {
-            //                    this.server.GetLogger().Error( ("Could not load \'" 
-            //                                                               + (file.FullName + ("\' in folder \'" 
-            //                                                                   + (directory.FullName + "\'")))), ex);
-            //                }
-            //            
-            //            }
-            //        
-            //        }
-            //    
-            //        //  We have no plugins left without a depend
-            //        if (missingDependency) {
-            //            softDependencies.Clear();
-            //            dependencies.Clear();
-            //            Enumerator<FileInfo> failedPluginIterator = this.plugins.Values().iterator();
-            //            while (failedPluginIterator.hasNext()) {
-            //                FileInfo file = failedPluginIterator.next();
-            //                failedPluginIterator.Remove();
-            //                this.server.GetLogger().Error( ("Could not load \'" 
-            //                                                           + (file.FullName + ("\' in folder \'" 
-            //                                                               + (directory.FullName + "\': circular dependency detected")))));
-            //            }
-            //        
-            //        }
-            //    
-            //    }
-            //
-            //}
+            while (_plugins.Count > 0)
+            {
+                bool missingDependency = true;
+                List<string> pluginIteratorRemove = new List<string>();
+
+                var pluginIterator = _plugins.Keys.GetEnumerator();
+                while (pluginIterator.MoveNext())
+                {
+                    string plugin = pluginIterator.Current;
+                    //        if (dependencies.ContainsKey(plugin)) {
+                    //            Iterator<string> dependencyIterator = dependencies.get(plugin).iterator();
+                    //            while (dependencyIterator.hasNext()) {
+                    //                string dependency = dependencyIterator.next();
+                    //                //  Dependency loaded
+                    //                if (loadedPlugins.contains(dependency)) {
+                    //                    dependencyIterator.Remove();
+                    //                    //  We have a dependency not found
+                    //                }
+                    //                else if (!this.plugins.ContainsKey(dependency)) {
+                    //                    missingDependency = false;
+                    //                    FileInfo FileInfo = this.plugins.get(plugin);
+                    //                    pluginIterator.Remove();
+                    //                    softDependencies.Remove(plugin);
+                    //                    dependencies.Remove(plugin);
+                    //                    this.server.GetLogger().Error( ("Could not load \'" 
+                    //                                                               + (file.FullName + ("\' in folder \'" 
+                    //                                                                   + (directory.FullName + "\'")))), new UnknownDependencyException(dependency));
+                    //                    break;
+                    //                }
+                    //            
+                    //            }
+                    //        
+                    //            if ((dependencies.ContainsKey(plugin) && dependencies.get(plugin).isEmpty())) {
+                    //                dependencies.Remove(plugin);
+                    //            }
+                    //        
+                    //        }
+                    //    
+                    //        if (softDependencies.ContainsKey(plugin)) {
+                    //            Iterator<string> softDependencyIterator = softDependencies.get(plugin).iterator();
+                    //            while (softDependencyIterator.hasNext()) {
+                    //                string softDependency = softDependencyIterator.next();
+                    //                //  Soft depend is no longer around
+                    //                if (!this.plugins.ContainsKey(softDependency)) {
+                    //                    softDependencyIterator.Remove();
+                    //                }
+                    //            
+                    //            }
+                    //        
+                    //            if (softDependencies.get(plugin).isEmpty()) {
+                    //                softDependencies.Remove(plugin);
+                    //            }
+                    //        
+                    //        }
+                    //    
+                    if ((!(dependencies.ContainsKey(plugin) || softDependencies.ContainsKey(plugin)) && _plugins.ContainsKey(plugin)))
+                    {
+                        //  We're clear to load, no more soft or hard dependencies left
+                        FileInfo file = _plugins[plugin];
+
+                        pluginIteratorRemove.Add(plugin);
+                        //pluginIterator.Remove();
+                        missingDependency = false;
+
+                        try
+                        {
+                            result.Add(loadPlugin(file));
+                            loadedPlugins.Add(plugin);
+                            // TODO: Warning!!! continue Try
+                        }
+                        catch (InvalidPluginException ex)
+                        {
+                            server.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}'", ex);
+                        }
+                    }
+                    //    
+                    //    }
+                    //
+                    //    if (missingDependency) {
+                    //        //  We now iterate over plugins until something loads
+                    //        //  This loop will ignore soft dependencies
+                    //        pluginIterator = this.plugins.GetEnumerator();
+                    //        while (pluginIterator.hasNext()) {
+                    //            string plugin = pluginIterator.next();
+                    //            if (!dependencies.ContainsKey(plugin)) {
+                    //                softDependencies.Remove(plugin);
+                    //                missingDependency = false;
+                    //                FileInfo file = this.plugins[plugin];
+                    //                pluginIterator.Remove();
+                    //                try {
+                    //                    result.Add(this.loadPlugin(file));
+                    //                    loadedPlugins.Add(plugin);
+                    //                    break;
+                    //                }
+                    //                catch (InvalidPluginException ex) {
+                    //                    this.server.GetLogger().Error( ("Could not load \'" 
+                    //                                                               + (file.FullName + ("\' in folder \'" 
+                    //                                                                   + (directory.FullName + "\'")))), ex);
+                    //                }
+                    //            
+                    //            }
+                    //        
+                    //        }
+                    //    
+                    //        //  We have no plugins left without a depend
+                    //        if (missingDependency) {
+                    //            softDependencies.Clear();
+                    //            dependencies.Clear();
+                    //            Enumerator<FileInfo> failedPluginIterator = this.plugins.Values().iterator();
+                    //            while (failedPluginIterator.hasNext()) {
+                    //                FileInfo file = failedPluginIterator.next();
+                    //                failedPluginIterator.Remove();
+                    //                this.server.GetLogger().Error( ("Could not load \'" 
+                    //                                                           + (file.FullName + ("\' in folder \'" 
+                    //                                                               + (directory.FullName + "\': circular dependency detected")))));
+                    //            }
+                    //        
+                    //        }
+                    //    
+                }
+
+                foreach (var plugin in pluginIteratorRemove)
+                {
+                    _plugins.Remove(plugin);
+                }
+
+            }
 
             return result.ToArray();
         }
@@ -362,29 +375,31 @@ namespace Client.Plugins
             throw new NotImplementedException();
         }
 
-        //public Plugin loadPlugin(FileInfo file) {
-        //    Validate.notNull(file, "FileInfo cannot be null");
-        //    this.checkUpdate(file);
-        //    List<Pattern> filters = this.fileAssociations.keySet();
-        //    Plugin result = null;
-        //    foreach (Pattern filter in filters) {
-        //        string name = file.getName();
-        //        Matcher match = filter.matcher(name);
-        //        if (match.find()) {
-        //            PluginLoader loader = this.fileAssociations.get(filter);
-        //            result = loader.loadPlugin(file);
-        //        }
-        //    
-        //    }
-        //
-        //    if ((result != null)) {
-        //        this.plugins.Add(result);
-        //        this.lookupNames.Add(result.getDescription().getName(), result);
-        //    }
-        //
-        //    return result;
-        //}
-        //
+        public IPlugin loadPlugin(FileInfo file) {
+            Validate.NotNull(file, "FileInfo cannot be null");
+            //this.checkUpdate(file);
+            //List<Pattern> filters = this.fileAssociations.keySet();
+            IPlugin result = null;
+            
+            //foreach (Pattern filter in filters) {
+            //    string name = file.getName();
+            //    Matcher match = filter.matcher(name);
+            //    if (match.find()) {
+                    IPluginLoader loader = new DotNetPluginLoader(server); //this.fileAssociations.get(filter);
+            result = loader.LoadPlugin(file);
+                    loader.EnablePlugin(result);
+            //    }
+            //
+            //}
+
+            if (result != null) {
+                plugins.Add(result);
+                lookupNames.Add(result.GetDescription().GetName(), result);
+            }
+        
+            return result;
+        }
+        
         //private void checkUpdate(FileInfo file) {
         //    if (((updateDirectory == null) 
         //         || !updateDirectory.isDirectory())) {

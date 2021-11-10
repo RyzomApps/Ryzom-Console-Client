@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.IO;
-using API.Logger;
 using API.Plugins;
 using API.Plugins.Interfaces;
 
@@ -64,6 +63,6 @@ namespace SamplePlugin
         //    debugees.put(player, value);
         //}
 
-        public SampleCsharpPlugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file, ILogger logger) : base(loader, description, dataFolder, file, logger) { }
+        public SampleCsharpPlugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file) : base(loader, description, dataFolder, file) { }
     }
 }
