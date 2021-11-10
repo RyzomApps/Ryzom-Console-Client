@@ -34,10 +34,9 @@ namespace API.Plugins
         // ReSharper disable once UnusedMember.Global
         protected Plugin() { }
 
-        protected Plugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder,
-            FileInfo file)
+        protected Plugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
         {
-            Init(loader, loader.Handler, description, dataFolder, file, logger);
+            Init(loader, loader.Handler, description, dataFolder, file);
         }
 
         /// <inheritdoc />

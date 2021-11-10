@@ -15,15 +15,14 @@ namespace Tests
             Assert.True(client != null);
         }
 
-
         [Fact]
         public void PluginManagerTest()
         {
             var client = new RyzomClient(false);
 
-            SimplePluginManager loader = new SimplePluginManager(client, null);
+            var loader = new SimplePluginManager(client, null);
 
-            var plugins = loader.loadPlugins(new DirectoryInfo(@".\plugins\"));
+            var plugins = loader.LoadPlugins(new DirectoryInfo(@".\plugins\"));
 
             Assert.True(plugins.Length > 0);
         }

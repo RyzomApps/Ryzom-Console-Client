@@ -202,7 +202,7 @@ namespace Client
             Automata.LoadAutomata();
 
             // Load plugin manager
-            _pluginManager.loadPlugins(new DirectoryInfo(@".\plugins\"));
+            _pluginManager.LoadPlugins(new DirectoryInfo(@".\plugins\"));
 
             _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
             _timeoutdetector.Start();
