@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using API.Plugins;
 using Client.Chat;
@@ -39,7 +38,7 @@ namespace Client.Automata.Internal
     /// <summary>
     /// The virtual class containing anything you need for creating chat automata.
     /// </summary>
-    public abstract class AutomatonBase : Listener
+    public abstract class AutomatonBase : ListenerBase
     {
         public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost, UserLogout };
 

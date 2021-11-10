@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////
 
 using API.Plugins;
-using API.Plugins.Interfaces;
 
 namespace SamplePlugin
 {
@@ -36,10 +35,7 @@ namespace SamplePlugin
 
             // Register our events
             var pm = GetServer().GetPluginManager();
-            GetLogger().Info($"§3{pm}");
-
-            //pm.registerEvents(playerListener, this);
-            //pm.registerEvents(blockListener, this);
+            pm.RegisterListeners(new Listener(this), this, true);
 
             //// Register our commands
             //getCommand("pos").setExecutor(new SamplePosCommand());

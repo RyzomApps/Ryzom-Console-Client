@@ -6,6 +6,7 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 using System.IO;
 
 namespace API.Plugins.Interfaces
@@ -49,7 +50,7 @@ namespace API.Plugins.Interfaces
         /// <param name="listener">The object that will handle the eventual call back</param>
         /// <param name="plugin">The plugin to use when creating registered listeners</param>
         /// <returns>The registered listeners.</returns>
-        object CreateRegisteredListeners(IListener listener, IPlugin plugin);
+        List<IListener> CreateRegisteredListeners(IListener listener, IPlugin plugin);
 
         /// <summary>
         /// Enables the specified plugin <br/>

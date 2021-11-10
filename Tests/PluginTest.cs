@@ -15,7 +15,7 @@ namespace Tests
             
             var client = new RyzomClient(false);
 
-            var pluginLoader = new DotNetPluginLoader(client);
+            var pluginLoader = new PluginLoader(client);
 
             var plugin = pluginLoader.LoadPlugin(pluginPath);
 
@@ -31,7 +31,7 @@ namespace Tests
 
             var client = new RyzomClient(false);
 
-            var pluginLoader = new DotNetPluginLoader(client);
+            var pluginLoader = new PluginLoader(client);
             var desc = pluginLoader.GetPluginDescription(pluginPath);
 
             Assert.NotNull(desc);

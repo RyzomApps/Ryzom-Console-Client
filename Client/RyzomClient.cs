@@ -44,7 +44,7 @@ namespace Client
         private readonly StringManager _stringManager;
         private readonly DatabaseManager _databaseManager;
         private readonly InterfaceManager _interfaceManager;
-        private readonly SimplePluginManager _pluginManager;
+        private readonly PluginManager _pluginManager;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -108,6 +108,7 @@ namespace Client
         }
 
         public string Cookie { get; set; }
+
         public string FsAddr { get; set; }
         public string RingMainURL { get; set; }
         public string FarTpUrlBase { get; set; }
@@ -118,6 +119,7 @@ namespace Client
 
         public ILogger GetLogger() { return Log; }
 
+        /// <inheritdoc />
         public bool IsInGame() => _networkConnection.ConnectionState == ConnectionState.Connected;
 
         public NetworkManager GetNetworkManager() { return _networkManager; }
@@ -147,7 +149,8 @@ namespace Client
             _stringManager = new StringManager(this);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager);
             _interfaceManager = new InterfaceManager();
-            _pluginManager = new SimplePluginManager(this, _cmds);
+            _pluginManager = new PluginManager(this);
+            _pluginManager.RegisterInterface(typeof(PluginLoader));
 
             Automata = new Automata.Internal.Automata(this);
 
@@ -823,6 +826,9 @@ namespace Client
         {
             // execute all the automata scripts
             Automata.OnUpdate();
+
+            // execute all the pluginmanger listener scripts
+            _pluginManager.OnUpdate();
 
             // process the queued chat messages
             lock (_chatQueue)

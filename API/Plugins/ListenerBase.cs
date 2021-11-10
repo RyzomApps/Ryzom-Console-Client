@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using System.Threading;
 using API.Plugins.Interfaces;
 
 namespace API.Plugins
@@ -7,8 +10,49 @@ namespace API.Plugins
     /// <summary>
     /// Simple class for tagging all EventListeners
     /// </summary>
-    public abstract class Listener : IListener
+    public abstract class ListenerBase : IListener
     {
+        /// <summary>
+        /// Dispatch a AutomatonBase event with automatic exception handling
+        /// </summary>
+        /// <example>
+        /// Example for calling SomeEvent() on all automata at once:
+        /// DispatchAutomatonEvent(automaton => automaton.SomeEvent());
+        /// </example>
+        /// <param name="action">ActionBase to execute on each automaton</param>
+        /// <param name="automataList">Only fire the event for the specified automaton list (default: all automata)</param>
+        /// <param name="handler">Client for the pluginmanager</param>
+        public static void DispatchListenerEvent(Action<ListenerBase> action, IEnumerable<ListenerBase> automataList = null, IClient handler = null)
+        {
+            handler?.GetPluginManager().CallEvent(action);
+
+            if (automataList == null)
+                return;
+
+            foreach (var automaton in automataList)
+            {
+                try
+                {
+                    action(automaton);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        //Retrieve parent method name to determine which event caused the exception
+                        var frame = new System.Diagnostics.StackFrame(1);
+                        var method = frame.GetMethod();
+                        var parentMethodName = method?.Name;
+
+                        //Display a meaningful error message to help debugging the AutomatonBase
+                        handler?.GetLogger().Error($"{parentMethodName}: Got error from {automaton}: {e}");
+                    }
+                    //ThreadAbortException should not be caught here as in can happen when disconnecting from server
+                    else throw;
+                }
+            }
+        }
+
         /// <summary>
         /// Anything you want to initialize your automaton, will be called on load
         /// This method is called only once, whereas OnGameJoined() is called once per server join.

@@ -20,7 +20,7 @@ namespace Tests
         {
             var client = new RyzomClient(false);
 
-            var loader = new SimplePluginManager(client, null);
+            var loader = new PluginManager(client);
 
             var plugins = loader.LoadPlugins(new DirectoryInfo(@".\plugins\"));
 

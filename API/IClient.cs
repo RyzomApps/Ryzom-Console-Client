@@ -27,5 +27,11 @@ namespace API
         /// </summary>
         /// <returns>a plugin manager for this client instance</returns>
         IPluginManager GetPluginManager();
+
+        /// <summary>
+        /// Online State
+        /// </summary>
+        /// <returns>true when the client has entered a game and is online</returns>
+        bool IsInGame();
     }
 }

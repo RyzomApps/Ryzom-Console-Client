@@ -144,7 +144,7 @@ namespace API.Plugins
         /// Gives a list of other plugins that the plugin requires.
         /// </summary>
         /// <returns>immutable list of the plugin's dependencies</returns>
-        public IEnumerable<string> GetDepend()
+        public List<string> GetDepend()
         {
             return Depend;
         }

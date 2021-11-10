@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
+using API.Plugins;
 using Client.Chat;
 using Client.Client;
 using Client.Commands.Internal;
@@ -64,9 +65,9 @@ namespace Client.Automata.Internal
             _automata.Add(b);
 
             if (init)
-                DispatchAutomatonEvent(automaton => automaton.OnInitialize(), new[] { b });
+                ListenerBase.DispatchListenerEvent(listener => listener.OnInitialize(), new[] { b });
             if (_handler.IsInGame())
-                DispatchAutomatonEvent(automaton => automaton.OnGameJoined(), new[] { b });
+                ListenerBase.DispatchListenerEvent(listener => listener.OnGameJoined(), new[] { b });
         }
 
         /// <summary>
@@ -195,7 +196,7 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnGameJoined()
         {
-            DispatchAutomatonEvent(automaton => automaton.OnGameJoined());
+            ListenerBase.DispatchListenerEvent(listener => listener.OnGameJoined());
         }
 
         /// <summary>
@@ -229,7 +230,7 @@ namespace Client.Automata.Internal
         /// </summary>
         internal void OnTeamContactRemove(uint contactId, byte nList)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnTeamContactRemove(contactId, nList));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnTeamContactRemove(contactId, nList));
         }
 
         /// <summary>
@@ -245,7 +246,7 @@ namespace Client.Automata.Internal
         /// </summary>
         internal void OnTell(string ucstr, string senderName)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnTell(ucstr, senderName));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnTell(ucstr, senderName));
         }
 
         /// <summary>
@@ -253,7 +254,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnGuildUseFemaleTitles(bool useFemaleTitles)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnGuildUseFemaleTitles(useFemaleTitles));
+            //DispatchAutomatonEvent(automaton => automaton.OnGuildUseFemaleTitles(useFemaleTitles));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnGuildUseFemaleTitles(useFemaleTitles));
         }
 
         /// <summary>
@@ -269,7 +271,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnGuildUpdatePlayerTitle(bool unblock, int len, List<ushort> titles)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnGuildUpdatePlayerTitle(unblock, len, titles));
+            //DispatchAutomatonEvent(automaton => automaton.OnGuildUpdatePlayerTitle(unblock, len, titles));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnGuildUpdatePlayerTitle(unblock, len, titles));
         }
 
         /// <summary>
@@ -277,7 +280,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnDeathRespawnPoint(int x, int y)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnDeathRespawnPoint(x, y));
+            //DispatchAutomatonEvent(automaton => automaton.OnDeathRespawnPoint(x, y));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnDeathRespawnPoint(x, y));
         }
 
         /// <summary>
@@ -285,7 +289,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnEncyclopediaInit()
         {
-            DispatchAutomatonEvent(automaton => automaton.OnEncyclopediaInit());
+            //DispatchAutomatonEvent(automaton => automaton.OnEncyclopediaInit());
+            ListenerBase.DispatchListenerEvent(listener => listener.OnEncyclopediaInit());
         }
 
         /// <summary>
@@ -293,7 +298,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnInitInventory(uint serverTick)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnInitInventory(serverTick));
+            //DispatchAutomatonEvent(automaton => automaton.OnInitInventory(serverTick));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnInitInventory(serverTick));
         }
 
         /// <summary>
@@ -301,7 +307,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnDatabaseInitPlayer(uint serverTick)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnDatabaseInitPlayer(serverTick));
+            //DispatchAutomatonEvent(automaton => automaton.OnDatabaseInitPlayer(serverTick));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnDatabaseInitPlayer(serverTick));
         }
 
         /// <summary>
@@ -309,7 +316,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnDatabaseUpdatePlayer(uint serverTick)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnDatabaseUpdatePlayer(serverTick));
+            //DispatchAutomatonEvent(automaton => automaton.OnDatabaseUpdatePlayer(serverTick));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnDatabaseUpdatePlayer(serverTick));
         }
 
         /// <summary>
@@ -317,7 +325,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnUserBars(byte msgNumber, int hp, int sap, int sta, int focus)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnUserBars(msgNumber, hp, sap, sta, focus));
+            //DispatchAutomatonEvent(automaton => automaton.OnUserBars(msgNumber, hp, sap, sta, focus));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnUserBars(msgNumber, hp, sap, sta, focus));
         }
 
         /// <summary>
@@ -349,7 +358,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnReloadCache(int timestamp)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnReloadCache(timestamp));
+            //DispatchAutomatonEvent(automaton => automaton.OnReloadCache(timestamp));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnReloadCache(timestamp));
         }
 
         /// <summary>
@@ -357,7 +367,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnStringResp(uint stringId, string strUtf8)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnStringResp(stringId, strUtf8));
+            //DispatchAutomatonEvent(automaton => automaton.OnStringResp(stringId, strUtf8));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnStringResp(stringId, strUtf8));
         }
 
         /// <summary>
@@ -373,7 +384,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnTeamInvitation(uint textID)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnTeamInvitation(textID));
+            //DispatchAutomatonEvent(automaton => automaton.OnTeamInvitation(textID));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnTeamInvitation(textID));
         }
 
         /// <summary>
@@ -381,7 +393,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnUserChar(int highestMainlandSessionId, int firstConnectedTime, int playedTime, Vector3 initPos, Vector3 initFront, short season, int role, bool isInRingSession)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, initPos, initFront, season, role, isInRingSession));
+            //DispatchAutomatonEvent(automaton => automaton.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, initPos, initFront, season, role, isInRingSession));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, initPos, initFront, season, role, isInRingSession));
         }
 
         /// <summary>
@@ -389,7 +402,8 @@ namespace Client.Automata.Internal
         /// </summary>
         internal void OnUserChars()
         {
-            DispatchAutomatonEvent(automaton => automaton.OnUserChars());
+            //DispatchAutomatonEvent(automaton => automaton.OnUserChars());
+            ListenerBase.DispatchListenerEvent(listener => listener.OnUserChars());
         }
 
         /// <summary>
@@ -397,7 +411,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnShardID(uint shardId, string webHost)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnShardID(shardId, webHost));
+            //DispatchAutomatonEvent(automaton => automaton.OnShardID(shardId, webHost));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnShardID(shardId, webHost));
         }
 
         /// <summary>
@@ -405,7 +420,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnEntityUpdateBars(uint gameCycle, long prop, byte slot, byte hitPoints, byte stamina, byte sap, byte focus)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnEntityUpdateBars(gameCycle, prop, slot, hitPoints, stamina, sap, focus));
+            //DispatchAutomatonEvent(automaton => automaton.OnEntityUpdateBars(gameCycle, prop, slot, hitPoints, stamina, sap, focus));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnEntityUpdateBars(gameCycle, prop, slot, hitPoints, stamina, sap, focus));
         }
 
         /// <summary>
@@ -413,7 +429,8 @@ namespace Client.Automata.Internal
         /// </summary>
         internal void OnIngameDatabaseInitialized()
         {
-            DispatchAutomatonEvent(automaton => automaton.OnIngameDatabaseInitialized());
+            //DispatchAutomatonEvent(automaton => automaton.OnIngameDatabaseInitialized());
+            ListenerBase.DispatchListenerEvent(listener => listener.OnIngameDatabaseInitialized());
         }
 
         /// <summary>
@@ -429,7 +446,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnEntityRemove(byte slot, bool _)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnEntityRemove(slot));
+            //DispatchAutomatonEvent(automaton => automaton.OnEntityRemove(slot));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnEntityRemove(slot));
         }
 
         /// <summary>
@@ -437,7 +455,8 @@ namespace Client.Automata.Internal
         /// </summary>
         public void OnEntityUpdateVisualProperty(uint gameCycle, byte slot, byte prop, uint predictedInterval)
         {
-            DispatchAutomatonEvent(automaton => automaton.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval));
+            //DispatchAutomatonEvent(automaton => automaton.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval));
+            ListenerBase.DispatchListenerEvent(listener => listener.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval));
         }
 
         #endregion

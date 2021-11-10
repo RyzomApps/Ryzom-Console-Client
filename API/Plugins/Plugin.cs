@@ -18,7 +18,7 @@ namespace API.Plugins
     /// </summary>
     public abstract class Plugin : IPlugin
     {
-        //public PluginClassLoader ClassLoader { get; set; }
+        //public ClassLoader ClassLoader { get; set; }
 
         private bool _isEnabled;
         private IPluginLoader _loader;
@@ -26,6 +26,7 @@ namespace API.Plugins
         private FileInfo _file;
         private PluginDescriptionFile _description;
         private DirectoryInfo _dataFolder;
+        private PluginClassLoader _classLoader = null;
         private readonly FileConfiguration _newConfig = null;
         private FileInfo _configFile;
         private PluginLoggerWrapper _logger;
@@ -34,9 +35,9 @@ namespace API.Plugins
         // ReSharper disable once UnusedMember.Global
         protected Plugin() { }
 
-        protected Plugin(IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
+        protected Plugin(PluginClassLoader classLoader, IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
         {
-            Init(loader, loader.Handler, description, dataFolder, file);
+            Init(loader, loader.Handler, description, dataFolder, file, classLoader);
         }
 
         /// <inheritdoc />
@@ -132,6 +133,15 @@ namespace API.Plugins
         }
 
         /// <summary>
+        /// Returns the ClassLoader which holds this plugin
+        /// </summary>
+        /// <returns>ClassLoader holding this plugin</returns>
+        public PluginClassLoader GetClassLoader()
+        {
+            return _classLoader;
+        }
+
+        /// <summary>
         /// Sets the enabled state of this plugin
         /// </summary>
         /// <param name="enabled">true if enabled, otherwise false</param>  
@@ -151,14 +161,14 @@ namespace API.Plugins
             }
         }
 
-        public void Init(IPluginLoader loader, IClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
+        public void Init(IPluginLoader loader, IClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file, PluginClassLoader classLoader)
         {
             _loader = loader;
             _server = server;
             _file = file;
             _description = description;
             _dataFolder = dataFolder;
-            //this.classLoader = classLoader;
+            _classLoader = classLoader;
             _configFile = new FileInfo(dataFolder + "config.yml");
             _logger = new PluginLoggerWrapper(this, server.GetLogger());
         }

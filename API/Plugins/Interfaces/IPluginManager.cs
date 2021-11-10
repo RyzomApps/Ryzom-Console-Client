@@ -6,6 +6,7 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using System.IO;
 
 namespace API.Plugins.Interfaces
@@ -18,9 +19,9 @@ namespace API.Plugins.Interfaces
         /// <summary>
         /// Registers the specified plugin loader
         /// </summary>
-        /// <param name="loader">Class name of the PluginLoader to register</param>
+        /// <param name="loader">Class of the PluginLoader to register</param>
         /// <throws>IllegalArgumentException Thrown when the given Class is not a valid PluginLoader</throws>
-        void RegisterInterface(IPluginLoader loader);
+        void RegisterInterface(Type loader);
 
         /// <summary>
         /// Checks if the given plugin is loaded and returns it when applicable <br/>
@@ -94,9 +95,15 @@ namespace API.Plugins.Interfaces
         void DisablePlugin(IPlugin plugin);
 
         /// <summary>
-        /// Returns whether or not timing code should be used for event calls
+        /// Register a new ListenerBase in this handler list
         /// </summary>
-        /// <returns>True if event timings are to be used</returns>
-        bool UseTimings();
+        void RegisterListeners(ListenerBase listenerBase, Plugin plugin, bool init = false);
+
+        /// <summary>
+        /// Calls an event with the given details. <br/>
+        /// This method only synchronizes when the event is not asynchronous.
+        /// </summary>
+        /// <param name="action"> Event details</param>
+        void CallEvent(Action<ListenerBase> action);
     }
 }

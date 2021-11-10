@@ -27,10 +27,4 @@
     <ProjectReference Include="..\SamplePlugin\SamplePlugin.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="SamplePlugin.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
