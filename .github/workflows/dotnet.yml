@@ -39,7 +39,7 @@ jobs:
     - name: Build
       run: |
         dotnet build --configuration Release --no-restore
-        dotnet publish -c Release -o ../publish -r linux-x64 --self-contained true /p:UseAppHost=true
+        dotnet publish -f netcoreapp3.1 -r win10-x64 --self-contained false -c Release -o ./publish -p:PublishSingleFile=true
         
 #    - name: Test
 #      run: dotnet test --no-build --verbosity normal
@@ -50,4 +50,4 @@ jobs:
         automatic_release_tag: "${{ env.TAG_NAME }}"
         prerelease: true
         title: "${{ env.RELEASE_NAME }}"
-        files: ../publish/*
+        files: ./publish/*
