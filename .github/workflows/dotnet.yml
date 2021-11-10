@@ -60,5 +60,5 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: true
         files: |
-          "${{ env.GITHUB_WORKSPACE }}/Client/bin/Release/netcoreapp3.1/*.exe"
-          "${{ env.GITHUB_WORKSPACE }}/Client/bin/Release/netcoreapp3.1/*.dll"
+          "./Client/bin/Release/netcoreapp3.1/*.exe"
+          "./Client/bin/Release/netcoreapp3.1/*.dll"
