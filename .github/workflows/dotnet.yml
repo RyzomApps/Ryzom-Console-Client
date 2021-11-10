@@ -37,7 +37,7 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build ./Client/Client.csproj --configuration Release --no-restore
 #      dotnet publish ./Client/Client.csproj
 #        dotnet build --configuration Release --no-restore
 #        dotnet publish ./Client/Client.csproj -f netcoreapp3.1 --runtime win-x64 -c Release -o "{{ env.GITHUB_WORKSPACE }}/publish" --self-contained true /p:UseAppHost=true
@@ -60,8 +60,10 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: true
         files: |
-          "/home/runner/work/RCC/RCC/bin/Release/netcoreapp3.1/*"
-          "/home/runner/work/RCC/RCC/bin/Release/netcoreapp3.1/RyzomConsoleClient.dll"
+          "./bin/Release/netcoreapp3.1/*"
+          "./bin/Release/netcoreapp3.1/RyzomConsoleClient.dll"
+          "./Client/bin/Release/netcoreapp3.1/*"
+          "./Client/bin/Release/netcoreapp3.1/RyzomConsoleClient.dll"
 #          "/home/runner/work/RCC/RCC/bin/Release/netcoreapp3.1/*.dll"
 #          "./Client/bin/Release/netcoreapp3.1/*.exe"
 #          "./Client/bin/Release/netcoreapp3.1/*.dll"
