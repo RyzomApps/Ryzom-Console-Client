@@ -1,3 +1,5 @@
+[![nightly-release](https://github.com/RyzomApps/RCC/actions/workflows/dotnet.yml/badge.svg)](https://github.com/RyzomApps/RCC/actions/workflows/dotnet.yml)
+
 # RCC
 Ryzom Console Client (RCC) is a lightweight application that lets you connect to the server of the MMORPG Ryzom, send commands and receive text messages in a fast and simple way, without having to open the main Ryzom game. It also offers various automations for management and other purposes.
 
