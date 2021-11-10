@@ -37,7 +37,7 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build ./Client/Client.csproj --configuration Release --no-restore
+      run: dotnet build $(SolutionDir)/Client/Client.csproj --configuration Release --no-restore
 #      dotnet publish ./Client/Client.csproj
 #        dotnet build --configuration Release --no-restore
 #        dotnet publish ./Client/Client.csproj -f netcoreapp3.1 --runtime win-x64 -c Release -o "{{ env.GITHUB_WORKSPACE }}/publish" --self-contained true /p:UseAppHost=true
