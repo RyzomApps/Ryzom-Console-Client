@@ -1,4 +1,4 @@
-name: .NET
+name: nightly-release
 
 on:
   push:
@@ -8,30 +8,46 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
+    
     - name: Get current date
       id: date
       run: echo "::set-output name=date::$(date +'%Y-%m-%d-%H-%M')"
+      
     - name: Test with environment variables
       run: echo $TAG_NAME - $RELEASE_NAME
       env:
         TAG_NAME: nightly-tag-${{ steps.date.outputs.date }}
         RELEASE_NAME: nightly-release-${{ steps.date.outputs.date }}
+        
     - name: Create builddate file
       run: |
         mkdir Client/resources
         echo $DEV_ENV_FILE >> ./Client/resources/builddate.txt
-    - name: Setup .NET
+        
+    - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.x
-    - name: Restore dependencies
+        
+    - name: Install dependencies
       run: dotnet restore
+
     - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: |
+        dotnet build --configuration Release --no-restore
+        dotnet publish -c Release -o ../publish -r linux-x64 --self-contained true /p:UseAppHost=true
+        
+#    - name: Test
+#      run: dotnet test --no-build --verbosity normal
+
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "${{ TAG_NAME }}"
+        prerelease: true
+        title: "${{ RELEASE_NAME }}"
+        files: ../publish/*
