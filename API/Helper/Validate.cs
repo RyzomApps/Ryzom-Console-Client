@@ -12,13 +12,13 @@ namespace API.Helper
     {
         public static void IsTrue(bool test, string text)
         {
-            if(!test)
+            if (!test)
                 throw new System.Exception(text);
         }
 
         public static void NotNull(object test, string text)
         {
-            if(test == null)
+            if (test == null)
                 throw new System.Exception(text);
         }
     }

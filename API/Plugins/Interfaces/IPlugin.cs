@@ -11,6 +11,10 @@ using API.Logger;
 
 namespace API.Plugins.Interfaces
 {
+    /// <summary>
+    /// Represents a Plugin<br/>
+    /// The use of <see cref="Plugin"/> is recommended for actual Implementation
+    /// </summary>
     public interface IPlugin : ICommandExecuter
     {
         /// <summary>

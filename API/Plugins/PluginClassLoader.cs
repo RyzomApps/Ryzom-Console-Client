@@ -3,17 +3,17 @@ using System.IO;
 using System.Reflection;
 using API.Exceptions;
 using API.Helper;
-using API.Logger;
 using API.Plugins.Interfaces;
 
 namespace API.Plugins
 {
     /// <summary>
-    /// A ClassLoader for plugins, to allow shared classes across multiple plugins (but not yet)
+    /// A ClassLoader for plugins, to allow shared classes across multiple plugins [bdh: well not rly (yet)]
     /// </summary>
+    /// TODO: Maybe remove the PluginClassLoader (since we dont need shared classes) and add the functionality to the PluginLoader
     public class PluginClassLoader
     {
-        private readonly IPluginLoader _csharpPluginLoader;
+        private readonly IPluginLoader _pluginLoader;
         private readonly PluginDescriptionFile _description;
         private readonly DirectoryInfo _dataFolder;
         private readonly FileInfo _file;
@@ -21,9 +21,9 @@ namespace API.Plugins
         public Plugin Plugin { get; set; }
         private Plugin _pluginInit;
 
-        public PluginClassLoader(IPluginLoader csharpPluginLoader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
+        public PluginClassLoader(IPluginLoader pluginLoader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
         {
-            _csharpPluginLoader = csharpPluginLoader;
+            _pluginLoader = pluginLoader;
             _description = description;
             _dataFolder = dataFolder;
             _file = file;
@@ -38,7 +38,7 @@ namespace API.Plugins
             if (type.BaseType == typeof(Plugin))
                 Plugin = Activator.CreateInstance(type) as Plugin;
             else
-                throw new InvalidPluginException($"main class `{description.GetMain()}' does not extend CsharpPlugin");
+                throw new InvalidPluginException($"main class `{description.GetMain()}' does not extend Plugin");
 
             // Initialize it directly since there are no other class loaders used
             Initialize(Plugin);
@@ -47,7 +47,6 @@ namespace API.Plugins
         public void Initialize(Plugin javaPlugin)
         {
             Validate.NotNull(javaPlugin, "Initializing plugin cannot be null");
-            //Validate.IsTrue(javaPlugin.GetClassLoader() == this, "Cannot initialize plugin outside of this class loader");
 
             if (_pluginInit != null)
             {
@@ -56,9 +55,7 @@ namespace API.Plugins
 
             _pluginInit = javaPlugin;
 
-            //var logger = new PluginLoggerWrapper(javaPlugin, _csharpPluginLoader.Handler.GetLogger());
-
-            javaPlugin.Init(_csharpPluginLoader, _csharpPluginLoader.Handler, _description, _dataFolder, _file);
+            javaPlugin.Init(_pluginLoader, _pluginLoader.Handler, _description, _dataFolder, _file);
         }
     }
 }

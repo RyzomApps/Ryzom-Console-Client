@@ -8,6 +8,9 @@
 
 namespace API.Commands
 {
+    /// <summary>
+    /// Represents a Command, which executes various tasks upon user input
+    /// </summary>
     public interface ICommand
     {
     }

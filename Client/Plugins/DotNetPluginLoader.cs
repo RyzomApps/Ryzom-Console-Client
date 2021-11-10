@@ -220,7 +220,7 @@ namespace Client.Plugins
         //    
         //}
 
-        public object /*Map<Class<Event>, Set<RegisteredListener>>*/ CreateRegisteredListeners(IListener listener, IPlugin csharpPlugin)
+        public object /*Map<Class<Event>, Set<RegisteredListener>>*/ CreateRegisteredListeners(IListener listener, IPlugin plugin)
         {
             //Validate.notNull(plugin, "Plugin can not be null");
             //Validate.notNull(listener, "IListener can not be null");

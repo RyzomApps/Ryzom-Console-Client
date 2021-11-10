@@ -8,6 +8,9 @@
 
 namespace API.Logger
 {
+    /// <summary>
+    /// basic interface for text logging
+    /// </summary>
     public interface ILogger
     {
         bool DebugEnabled { get; set; }

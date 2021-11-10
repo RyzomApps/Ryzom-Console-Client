@@ -10,6 +10,9 @@ using System.IO;
 
 namespace API.Plugins
 {
+    /// <summary>
+    /// This is a base class for all File based source of configurable options and settings
+    /// </summary>
     public class FileConfiguration
     {
         public void Save(FileInfo configFile)

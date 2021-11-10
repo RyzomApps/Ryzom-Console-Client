@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using API.Plugins;
 using API.Plugins.Interfaces;
 
 namespace API.Logger

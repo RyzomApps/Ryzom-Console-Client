@@ -1,6 +1,6 @@
 api: []
 name: SamplePlugin
-main: SamplePlugin.SampleCsharpPlugin
+main: SamplePlugin.Main
 version: 1.0.0.1
 commands:
   pos:

@@ -4,6 +4,9 @@ using API.Plugins.Interfaces;
 
 namespace API.Plugins
 {
+    /// <summary>
+    /// Simple class for tagging all EventListeners
+    /// </summary>
     public abstract class Listener : IListener
     {
         /// <summary>

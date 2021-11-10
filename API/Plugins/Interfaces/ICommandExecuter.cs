@@ -10,6 +10,9 @@ using API.Commands;
 
 namespace API.Plugins.Interfaces
 {
+    /// <summary>
+    /// Represents an interface which contains a single method for executing commands
+    /// </summary>
     public interface ICommandExecuter
     {
         /// <summary>
