@@ -42,6 +42,7 @@ namespace Client.Automata.Internal
                 if (ClientConfig.ImpulseDebuggerEnabled) { LoadAutomaton(new ImpulseDebugger()); }
                 if (ClientConfig.FollowerEnabled) { LoadAutomaton(new Follower()); }
                 if (ClientConfig.HealerEnabled) { LoadAutomaton(new Healer()); }
+                if (ClientConfig.AutoRelogEnabled) { LoadAutomaton(new AutoRelog()); }
             }
 
             foreach (var automata in _automataOnHold)
