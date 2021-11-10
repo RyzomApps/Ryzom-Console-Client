@@ -15,7 +15,6 @@ jobs:
     
     - name: Create builddate file
       run: |
-        mkdir Client\Resources
         echo %date% %time:~0,-3%>"Client\Resources\BuildDate.txt"
         
     - name: Setup .NET Core
