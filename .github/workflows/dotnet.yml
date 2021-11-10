@@ -22,8 +22,7 @@ jobs:
         TAG_NAME: nightly-tag-${{ steps.date.outputs.date }}
         RELEASE_NAME: nightly-release-${{ steps.date.outputs.date }}
     - name: Create builddate file
-#      run: echo $DEV_ENV_FILE >> /home/runner/work/RCC/RCC/Client/resources/builddate.txt
-      run: ls -l
+      run: echo $DEV_ENV_FILE >> ./Client/resources/builddate.txt
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
