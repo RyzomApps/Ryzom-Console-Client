@@ -23,7 +23,7 @@ jobs:
         RELEASE_NAME: nightly-release-${{ steps.date.outputs.date }}
     - name: Create builddate file
       run: |
-        mkdir /Client/resources
+        mkdir Client/resources
         echo $DEV_ENV_FILE >> ./Client/resources/builddate.txt
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
