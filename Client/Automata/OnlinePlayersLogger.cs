@@ -117,7 +117,6 @@ namespace Client.Automata
             _friendOnline[key] = online;
             var name = _friendNames[key] != string.Empty ? _friendNames[key] : $"{contactListIndex}";
 
-
             Handler.GetLogger().Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
         }
 

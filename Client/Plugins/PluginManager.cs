@@ -102,7 +102,7 @@ namespace Client.Plugins
                 }
                 catch (InvalidDescriptionException ex)
                 {
-                    _server.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}'", ex);
+                    _server.GetLogger().Debug($"Could not load '{file.FullName}' in folder '{directory.FullName}'", ex);
                     continue;
                 }
 
@@ -483,7 +483,7 @@ namespace Client.Plugins
 
                 _listenerSlots[plugin].Add((ListenerBase)newListener);
 
-                if(init)
+                if (init)
                     ListenerBase.DispatchListenerEvent(listener => listener.OnInitialize(), new[] { (ListenerBase)newListener });
 
                 if (_server.IsInGame())

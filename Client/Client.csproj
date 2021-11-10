@@ -33,6 +33,9 @@
     <ProjectReference Include="..\API\API.csproj">
       <Private>true</Private>
     </ProjectReference>
+    <ProjectReference Include="..\AutoRelogPlugin\AutoRelogPlugin.csproj">
+      <Private>false</Private>
+    </ProjectReference>
     <ProjectReference Include="..\SamplePlugin\SamplePlugin.csproj">
       <Private>true</Private>
     </ProjectReference>

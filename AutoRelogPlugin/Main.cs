@@ -8,7 +8,7 @@
 
 using API.Plugins;
 
-namespace SamplePlugin
+namespace AutoRelogPlugin
 {
     // ReSharper disable once UnusedMember.Global
     public class Main : Plugin

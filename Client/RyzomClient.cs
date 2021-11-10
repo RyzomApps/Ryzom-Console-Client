@@ -1048,15 +1048,8 @@ namespace Client
             return true;
         }
 
-        /// <summary>
-        /// Perform an internal RCC command (not a server command, use SendText() instead for that!)
-        /// </summary>
-        /// <param name="command">The command</param>
-        /// <param name="responseMsg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
-        /// <param name="localVars">Local variables passed along with the command</param>
-        /// <returns>TRUE if the command was indeed an internal RCC command</returns>
-        public bool PerformInternalCommand(string command, ref string responseMsg,
-            Dictionary<string, object> localVars = null)
+        /// <inheritdoc />
+        public bool PerformInternalCommand(string command, ref string responseMsg, Dictionary<string, object> localVars = null)
         {
             if (responseMsg == null) throw new ArgumentNullException(nameof(responseMsg));
 

@@ -6,6 +6,7 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 using API.Logger;
 using API.Plugins.Interfaces;
 
@@ -33,5 +34,14 @@ namespace API
         /// </summary>
         /// <returns>true when the client has entered a game and is online</returns>
         bool IsInGame();
+
+        /// <summary>
+        /// Perform an internal RCC command (not a server command, use SendText() instead for that!)
+        /// </summary>
+        /// <param name="command">The command</param>
+        /// <param name="responseMsg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <param name="localVars">Local variables passed along with the command</param>
+        /// <returns>true if the command was indeed an internal RCC command</returns>
+        bool PerformInternalCommand(string command, ref string responseMsg, Dictionary<string, object> localVars = null);
     }
 }

@@ -70,33 +70,31 @@ namespace Client.Automata.Internal
         /// Will be called every ~100ms.
         /// </summary>
         /// <remarks>
-        /// <see cref="OnUpdate"/> method can be overridden by child class so need an extra update method
+        /// <see cref="ListenerBase.OnUpdate"/> method can be overridden by child class so need an extra update method
         /// </remarks>
         public void UpdateInternal()
         {
             lock (_delayTasksLock)
             {
-                if (_delayedTasks.Count > 0)
+                if (_delayedTasks.Count <= 0) return;
+
+                var tasksToRemove = new List<int>();
+
+                for (var i = 0; i < _delayedTasks.Count; i++)
                 {
-                    var tasksToRemove = new List<int>();
+                    if (!_delayedTasks[i].Tick()) continue;
 
-                    for (int i = 0; i < _delayedTasks.Count; i++)
-                    {
-                        if (_delayedTasks[i].Tick())
-                        {
-                            _delayedTasks[i].Task();
-                            tasksToRemove.Add(i);
-                        }
-                    }
+                    _delayedTasks[i].Task();
+                    tasksToRemove.Add(i);
+                }
 
-                    if (tasksToRemove.Count > 0)
-                    {
-                        tasksToRemove.Sort((a, b) => b.CompareTo(a)); // descending sort
-                        foreach (int index in tasksToRemove)
-                        {
-                            _delayedTasks.RemoveAt(index);
-                        }
-                    }
+                if (tasksToRemove.Count <= 0) return;
+
+                tasksToRemove.Sort((a, b) => b.CompareTo(a)); // descending sort
+
+                foreach (var index in tasksToRemove)
+                {
+                    _delayedTasks.RemoveAt(index);
                 }
             }
         }
