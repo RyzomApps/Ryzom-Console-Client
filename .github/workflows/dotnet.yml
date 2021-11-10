@@ -59,4 +59,6 @@ jobs:
         automatic_release_tag: "LATEST"
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: true
-        files: "{{ env.GITHUB_WORKSPACE }}/Client/bin/Release/netcoreapp3.1/*.exe"
+        files: |
+          "${{ env.GITHUB_WORKSPACE }}/Client/bin/Release/netcoreapp3.1/*.exe"
+          "${{ env.GITHUB_WORKSPACE }}/Client/bin/Release/netcoreapp3.1/*.dll"
