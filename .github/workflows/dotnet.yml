@@ -45,11 +45,17 @@ jobs:
 #    - name: Test
 #      run: dotnet test --no-build --verbosity normal
 
-    - uses: "marvinpinto/action-automatic-releases@latest"
+#    - uses: "marvinpinto/action-automatic-releases@latest"
+#      with:
+#        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+#        automatic_release_tag: "${{ env.TAG_NAME }}"
+#        prerelease: true
+#        title: "${{ env.RELEASE_NAME }}"
+#       files: ./bin/publish/*.exe
+#        files: "{{ env.GITHUB_WORKSPACE }}/Client/bin/Release/netcoreapp3.1/*.exe"
+    - name: Upload
+      uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "${{ env.TAG_NAME }}"
         prerelease: true
-        title: "${{ env.RELEASE_NAME }}"
-#       files: ./bin/publish/*.exe
         files: "{{ env.GITHUB_WORKSPACE }}/Client/bin/Release/netcoreapp3.1/*.exe"
