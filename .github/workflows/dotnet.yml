@@ -24,7 +24,7 @@ jobs:
         run: dotnet restore
 
       - name: Publish package
-        run: dotnet publish Client\Client.csproj -r win-x64 -c Release -p:PublishSingleFile=true --no-restore -p:UseAppHost=true --self-contained false
+        run: dotnet publish Client\Client.csproj -r win-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true --self-contained true -p:SolutionDir=".."
       - name: Upload
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -32,4 +32,4 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
-            Client/bin/Release/netcoreapp3.1/win-x64/publish/*.exe
+            bin/Publish/netcoreapp3.1/*.exe
