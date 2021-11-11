@@ -46,6 +46,22 @@ namespace Tests
 
             Assert.NotNull(pdf);
         }
+
+        [Fact]
+        public void YamlConfigurationFileTest()
+        {
+            var pluginPath = new FileInfo(@"..\plugins\SamplePlugin.dll");
+            
+            var client = new RyzomClient(false);
+
+            var pluginLoader = new PluginLoader(client);
+
+            var plugin = pluginLoader.LoadPlugin(pluginPath);
+
+            plugin.SaveDefaultConfig();
+
+            var config = plugin.GetConfig();
+        }
     }
 }
 

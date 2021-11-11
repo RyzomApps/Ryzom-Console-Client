@@ -19,18 +19,18 @@ namespace AutoRelogPlugin
 
         public override void OnInitialize()
         {
-            _plugin.GetLogger().Info("Automaton 'AutoRelog' initialized.");
             _timeStart = DateTime.Now;
+            _plugin.GetLogger().Info("Initialized at " + _timeStart.ToShortTimeString());
         }
 
         public override void OnUpdate()
         {
-            if ((DateTime.Now - _timeStart).TotalSeconds <= 30/*Config.ClientConfig.AutoRelogSeconds*/) return;
+            if ((DateTime.Now - _timeStart).TotalSeconds <= _plugin.RelogSeconds) return;
 
             // To avoid restart cancellation
             _timeStart = _timeStart.AddSeconds(60);
 
-            _plugin.GetLogger().Info("[AutoRelog] Restarting client...");
+            _plugin.GetLogger().Info("Restarting client after " + _plugin.RelogSeconds + " seconds...");
             var responseMessage = "";
             _plugin.GetServer().PerformInternalCommand("Quit", ref responseMessage);
         }

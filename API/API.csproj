@@ -3,7 +3,7 @@
   <PropertyGroup>
   	<IntermediateOutputPath>$(SolutionDir)\obj\$(MSBuildProjectName)</IntermediateOutputPath>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Platforms>AnyCPU;x64</Platforms>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

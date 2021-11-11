@@ -21,5 +21,11 @@ namespace API.Helper
             if (test == null)
                 throw new System.Exception(text);
         }
+
+        public static void NotEmpty(string test, string text)
+        {
+            if (string.IsNullOrEmpty(test))
+                throw new System.Exception(text);
+        }
     }
 }

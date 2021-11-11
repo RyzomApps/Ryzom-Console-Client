@@ -47,11 +47,11 @@ namespace Client.Plugins
             }
 
             var parentFile = file.Directory?.Parent;
-            var dataFolder = new DirectoryInfo($"{parentFile}\\{description.GetName()}");
+            var dataFolder = new DirectoryInfo($"{parentFile}\\plugins\\{description.GetName()}");
 
-            if (dataFolder.Exists && !Directory.Exists(dataFolder.Name))
+            if (dataFolder.Exists && (File.GetAttributes(dataFolder.FullName) & FileAttributes.Directory) != FileAttributes.Directory)
             {
-                throw new InvalidPluginException($"Projected datafolder: `{dataFolder}\' for {description.GetFullName()} ({file}) exists and is not a directory");
+                throw new InvalidPluginException($"Projected datafolder: '{dataFolder}' for {description.GetFullName()} ({file}) exists and is not a directory");
             }
 
             foreach (var pluginName in description.GetDepend())
@@ -60,9 +60,9 @@ namespace Client.Plugins
                 {
                     throw new UnknownDependencyException(pluginName);
                 }
-            
+
                 var current = _loaders[pluginName];
-            
+
                 if (current == null)
                 {
                     throw new UnknownDependencyException(pluginName);
@@ -90,32 +90,15 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// Iterate all types within the specified assembly.<br/>
-        /// Check whether that's the shortest so far.<br/>
-        /// If it's, set it to the ns.
-        /// </summary>
-        /// <param name="asm">Assembly to check</param>
-        /// <returns>Return the shortest namespace of the assembly</returns>
-        public string GetAssemblyNamespace(Assembly asm)
-        {
-            var ns = "";
-
-            foreach (var tp in asm.Modules.First().GetTypes())
-                if (tp.Namespace != null && (ns.Length == 0 || tp.Namespace.Length < ns.Length))
-                    ns = tp.Namespace; 
-
-            return ns; 
-        }
-
-        /// <summary>
         /// Extracts a resource file from a different assembly
         /// </summary>
         /// TODO: search for file in every sub namespace
-        private string GetResourceFile(string assemblyPath, string fileName)
+        /// TODO: Move to helper class
+        private static string GetResourceFile(string assemblyPath, string fileName)
         {
             var assembly = Assembly.LoadFrom(assemblyPath);
-            var nameSpace = GetAssemblyNamespace(assembly);
-            var resourceName = nameSpace + "." + fileName;
+            var nameSpace = Plugin.GetAssemblyNamespace(assembly);
+            var resourceName = $"{nameSpace}.{fileName}";
             using var stream = assembly.GetManifestResourceStream(resourceName);
             using var reader = new StreamReader(stream ?? throw new InvalidOperationException());
 
@@ -152,7 +135,7 @@ namespace Client.Plugins
             Validate.NotNull(plugin, "Plugin can not be null");
             Validate.NotNull(listener, "IListener can not be null");
 
-            return  new List<IListener> {listener};
+            return new List<IListener> { listener };
         }
 
         /// <inheritdoc />
@@ -196,7 +179,7 @@ namespace Client.Plugins
             // TODO: Handler.GetPluginManager().CallEvent(new PluginDisableEvent(plugin));
 
             var jPlugin = (Plugin)plugin;
-            IClassLoader cloader = jPlugin.GetClassLoader();
+            //IClassLoader cloader = jPlugin.GetClassLoader();
 
             try
             {
@@ -209,14 +192,15 @@ namespace Client.Plugins
 
             _loaders.Remove(jPlugin.GetDescription().GetName());
 
-            if (cloader == null) return;
+            //if (cloader == null) return;
 
-            var loader = (PluginClassLoader)cloader;
-            var names = loader.GetClasses();
+            //var loader = (PluginClassLoader)cloader;
+            //var names = loader.GetClasses();
 
-            foreach (var name in names) {
-                //this.RemoveClass(name);
-            }
+            //foreach (var name in names)
+            //{
+            //    this.RemoveClass(name);
+            //}
         }
     }
 }

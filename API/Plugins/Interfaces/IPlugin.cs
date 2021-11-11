@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.IO;
+using API.Config;
 using API.Logger;
 
 namespace API.Plugins.Interfaces
@@ -31,14 +32,14 @@ namespace API.Plugins.Interfaces
         public PluginDescriptionFile GetDescription();
 
         /// <summary>
-        /// Gets a <see cref="FileConfiguration"/> for this plugin, read through
+        /// Gets a <see cref="YamlConfiguration"/> for this plugin, read through
         /// "config.yml"
         /// <br/>
         /// If there is a default config.yml embedded in this plugin, it will be
         /// provided as a default for this Configuration.
         /// </summary>
         /// <returns>Plugin configuration</returns>
-        public FileConfiguration GetConfig();
+        public YamlConfiguration GetConfig();
 
         /// <summary>
         /// Gets an embedded resource in this plugin
@@ -48,7 +49,7 @@ namespace API.Plugins.Interfaces
         public Stream GetResource(string filename);
 
         /// <summary>
-        /// Saves the <see cref="FileConfiguration"/> retrievable by <see cref="GetConfig()"/>.
+        /// Saves the <see cref="YamlConfiguration"/> retrievable by <see cref="GetConfig()"/>.
         /// </summary>
         public void SaveConfig();
 
@@ -67,10 +68,10 @@ namespace API.Plugins.Interfaces
         /// The resource is saved into the plugin's data folder using the same
         /// hierarchy as the .jar file (subdirectories are preserved).
         /// </summary>
-        /// <param name="resourcePath">the embedded resource path to look for within the plugin's .jar file. (No preceding slash).</param>  
+        /// <param name="fileName">the embedded resource path to look for within the plugin's .jar file. (No preceding slash).</param>  
         /// <param name="replace">if true, the embedded resource will overwrite the contents of an existing file.</param>  
         /// <remarks>throws IllegalArgumentException if the resource path is null, empty,or points to a nonexistent resource.</remarks>
-        public void SaveResource(string resourcePath, bool replace);
+        public void SaveResource(string fileName, bool replace);
 
         /// <summary>
         /// Discards any data in <see cref="GetConfig()"/> and reloads from disk.

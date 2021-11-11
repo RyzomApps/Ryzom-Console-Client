@@ -6,8 +6,12 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using API.Commands;
+using API.Config;
 using API.Logger;
 using API.Plugins.Interfaces;
 
@@ -18,23 +22,21 @@ namespace API.Plugins
     /// </summary>
     public abstract class Plugin : IPlugin
     {
-        //public ClassLoader ClassLoader { get; set; }
-
         private bool _isEnabled;
         private IPluginLoader _loader;
-        private IClient _server;
+        private IClient _client;
         private FileInfo _file;
         private PluginDescriptionFile _description;
         private DirectoryInfo _dataFolder;
-        private PluginClassLoader _classLoader = null;
-        private readonly FileConfiguration _newConfig = null;
+        private PluginClassLoader _classLoader;
+        private YamlConfiguration _newConfig;
         private FileInfo _configFile;
         private PluginLoggerWrapper _logger;
-
 
         // ReSharper disable once UnusedMember.Global
         protected Plugin() { }
 
+        // ReSharper disable once UnusedMember.Global
         protected Plugin(PluginClassLoader classLoader, IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
         {
             Init(loader, loader.Handler, description, dataFolder, file, classLoader);
@@ -55,7 +57,7 @@ namespace API.Plugins
         /// <inheritdoc />
         public IClient GetServer()
         {
-            return _server;
+            return _client;
         }
 
         /// <inheritdoc />
@@ -80,20 +82,59 @@ namespace API.Plugins
         }
 
         /// <inheritdoc />
-        public FileConfiguration GetConfig()
+        public YamlConfiguration GetConfig()
         {
             if (_newConfig == null)
             {
                 ReloadConfig();
             }
+
             return _newConfig;
+        }
+
+        /// <summary>
+        /// Iterate all types within the specified assembly.<br/>
+        /// Check whether that's the shortest so far.<br/>
+        /// If it's, set it to the ns.
+        /// </summary>
+        /// <param name="asm">Assembly to check</param>
+        /// <returns>Return the shortest namespace of the assembly</returns>
+        /// TODO: Move to helper class
+        public static string GetAssemblyNamespace(Assembly asm)
+        {
+            var ns = "";
+
+            foreach (var tp in asm.Modules.First().GetTypes())
+                if (tp.Namespace != null && (ns.Length == 0 || tp.Namespace.Length < ns.Length))
+                    ns = tp.Namespace;
+
+            return ns;
         }
 
         /// <inheritdoc />
         public void ReloadConfig()
         {
-            // TODO: Implement plugin reload config
-            throw new System.NotImplementedException();
+            _newConfig = YamlConfiguration.LoadConfiguration(_configFile, _client);
+
+            var defConfigStream = GetResource("config.yml");
+
+            if (defConfigStream == null)
+                return;
+
+            using var reader = new StreamReader(defConfigStream);
+
+            var defConfig = new YamlConfiguration();
+
+            try
+            {
+                defConfig.LoadFromString(reader.ReadToEnd());
+            }
+            catch (Exception e)
+            {
+                _client.GetLogger().Error("Cannot load configuration from jar\r\n" + e);
+            }
+
+            _newConfig.SetDefaults(defConfig);
         }
 
         /// <inheritdoc />
@@ -119,17 +160,59 @@ namespace API.Plugins
         }
 
         /// <inheritdoc />
-        public void SaveResource(string resourcePath, bool replace)
+        public void SaveResource(string fileName, bool replace)
         {
-            // TODO: Save files from plugin resources
-            throw new System.NotImplementedException();
+            if (fileName == null || fileName.Equals(""))
+            {
+                throw new ArgumentException("ResourcePath cannot be null or empty");
+            }
+
+            var inputStream = GetResource(fileName);
+
+            if (inputStream == null)
+            {
+                throw new ArgumentException($"The embedded resource '{fileName}' cannot be found in {_file}");
+            }
+
+            var outFile = new FileInfo($"{_dataFolder}\\{fileName}");
+
+            if (!_dataFolder.Exists)
+            {
+                Directory.CreateDirectory(_dataFolder.FullName);
+            }
+
+            try
+            {
+                if (!outFile.Exists || replace)
+                {
+                    using var outputStream = File.Create(outFile.FullName);
+
+                    inputStream.Seek(0, SeekOrigin.Begin);
+                    inputStream.CopyTo(outputStream);
+                }
+                else
+                {
+                    _client.GetLogger().Error($"Could not save {outFile.Name} to {outFile.DirectoryName} because it already exists.");
+                }
+            }
+            catch (IOException ex)
+            {
+                _client.GetLogger().Error($"Could not save {outFile.Name} to {outFile}", ex);
+            }
         }
 
         /// <inheritdoc />
         public Stream GetResource(string filename)
         {
-            // TODO: Get plugin resources
-            throw new System.NotImplementedException();
+            var assembly = Assembly.GetAssembly(GetType());
+
+            if (assembly == null)
+                return null;
+
+            var nameSpace = GetType().Namespace;
+            var resourceName = $"{nameSpace}.{filename}";
+
+            return assembly.GetManifestResourceStream(resourceName);
         }
 
         /// <summary>
@@ -164,12 +247,12 @@ namespace API.Plugins
         public void Init(IPluginLoader loader, IClient server, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file, PluginClassLoader classLoader)
         {
             _loader = loader;
-            _server = server;
+            _client = server;
             _file = file;
             _description = description;
             _dataFolder = dataFolder;
             _classLoader = classLoader;
-            _configFile = new FileInfo(dataFolder + "config.yml");
+            _configFile = new FileInfo($@"{dataFolder}\config.yml");
             _logger = new PluginLoggerWrapper(this, server.GetLogger());
         }
 

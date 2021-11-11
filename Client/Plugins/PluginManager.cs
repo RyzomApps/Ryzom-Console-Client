@@ -72,7 +72,7 @@ namespace Client.Plugins
             //  This is where it figures out all possible plugins
             foreach (var file in directory.GetFiles())
             {
-                IPluginLoader loader = new PluginLoader(_server);
+                IPluginLoader loader = null;
 
                 foreach (var filter in filters)
                 {
@@ -166,7 +166,6 @@ namespace Client.Plugins
 
                 using (var pluginIterator = plugins.Keys.GetEnumerator())
                 {
-
                     while (pluginIterator.MoveNext())
                     {
                         var plugin = pluginIterator.Current;
