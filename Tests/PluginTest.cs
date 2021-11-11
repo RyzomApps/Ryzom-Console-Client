@@ -11,7 +11,7 @@ namespace Tests
         [Fact]
         public void PluginLoaderTest()
         {
-            var pluginPath = new FileInfo("SamplePlugin.dll");
+            var pluginPath = new FileInfo(@"..\plugins\SamplePlugin.dll");
             
             var client = new RyzomClient(false);
 
@@ -25,7 +25,7 @@ namespace Tests
         [Fact]
         public void PluginDescriptionTest()
         {
-            var pluginPath = new FileInfo("SamplePlugin.dll");
+            var pluginPath = new FileInfo(@"..\plugins\SamplePlugin.dll");
 
             Assert.True(pluginPath.Exists);
 

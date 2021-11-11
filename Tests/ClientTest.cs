@@ -22,7 +22,7 @@ namespace Tests
 
             var loader = new PluginManager(client);
 
-            var plugins = loader.LoadPlugins(new DirectoryInfo(@".\plugins\"));
+            var plugins = loader.LoadPlugins(new DirectoryInfo(@"..\plugins\"));
 
             Assert.True(plugins.Length > 0);
         }

@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API\API.csproj", "{74115593-D9A5-4901-A3B9-7A47F4685A6B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamplePlugin", "SamplePlugin\SamplePlugin.csproj", "{EC279BDE-EBF3-4954-B6C2-F321A6C36A34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamplePlugin", "Plugins\SamplePlugin\SamplePlugin.csproj", "{EC279BDE-EBF3-4954-B6C2-F321A6C36A34}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRelogPlugin", "AutoRelogPlugin\AutoRelogPlugin.csproj", "{57AFD186-B7E1-4DAB-B6B0-909883926941}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRelogPlugin", "Plugins\AutoRelogPlugin\AutoRelogPlugin.csproj", "{57AFD186-B7E1-4DAB-B6B0-909883926941}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{F2DD428D-51E2-4349-8258-971D6D3B64DB}"
 EndProject

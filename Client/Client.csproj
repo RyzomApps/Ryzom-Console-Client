@@ -1,19 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <BaseIntermediateOutputPath>$(SolutionDir)\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
+	<IntermediateOutputPath>$(SolutionDir)\obj\$(MSBuildProjectName)</IntermediateOutputPath>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <StartupObject>Client.Program</StartupObject>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Authors>bierdosenhalter</Authors>
-    <Company>IVV</Company>
+    <Authors>bierdosenhalter,lasabo</Authors>
+    <Company>RyzomApps</Company>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
     <AssemblyName>RyzomConsoleClient</AssemblyName>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <OutDir>$(SolutionDir)\bin\$(Configuration)\$(TargetFramework)\</OutDir>
     <Platforms>AnyCPU;x64</Platforms>
+	<PublishTrimmed>true</PublishTrimmed>
+	<TrimUnusedDependencies>true</TrimUnusedDependencies>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -32,12 +36,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\API\API.csproj">
-      <Private>true</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\AutoRelogPlugin\AutoRelogPlugin.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\SamplePlugin\SamplePlugin.csproj">
       <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
