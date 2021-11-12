@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Client.Commands.Internal;
+using API;
+using API.Commands;
 using Client.Helper;
 
 namespace Client.Commands
@@ -13,11 +14,14 @@ namespace Client.Commands
 
         public override string CmdDesc => "Display character played time";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var msg = "You played with this character for %time.";
 
-            var secondsHumanReadable = TimeSpan.FromSeconds(handler.GetNetworkManager().CharPlayedTime).ToHumanReadableString();
+            var secondsHumanReadable = TimeSpan.FromSeconds(ryzomClient.GetNetworkManager().CharPlayedTime).ToHumanReadableString();
 
             msg = msg.Replace("%time", secondsHumanReadable);
 

@@ -6,8 +6,10 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
-using Client.Commands.Internal;
+using API;
+using API.Commands;
 
 namespace Client.Automata.Internal
 {
@@ -22,7 +24,7 @@ namespace Client.Automata.Internal
         public override string CmdUsage { get; }
         public override string CmdDesc { get; }
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
             return Runner(command, GetArgs(command));
         }

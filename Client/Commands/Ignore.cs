@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Network;
 
 namespace Client.Commands
@@ -12,8 +14,11 @@ namespace Client.Commands
 
         public override string CmdDesc => "add or remove a player from the ignore list";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var args = GetArgs(command);
 
             // Check parameters.
@@ -27,14 +32,14 @@ namespace Client.Commands
             const string msgName = "TEAM:CONTACT_ADD";
             var out2 = new BitMemoryStream();
 
-            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 byte list = 1; // IgnoreList
 
                 out2.Serial(ref playerName);
                 out2.Serial(ref list);
 
-                handler.GetNetworkManager().Push(out2);
+                ryzomClient.GetNetworkManager().Push(out2);
             }
             else
             {

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 
 namespace Client.Commands
 {
@@ -9,8 +11,11 @@ namespace Client.Commands
         public override string CmdUsage => "<name>";
         public override string CmdDesc => "Finds the nearest entity whose name contains the given string.";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var args = GetArgs(command);
 
             var entityName = "";
@@ -21,7 +26,7 @@ namespace Client.Commands
             }
 
             // Try to get the entity with complete match first
-            var entity = handler.GetNetworkManager().GetEntityManager().GetEntityByName(entityName, false, true);
+            var entity = ryzomClient.GetNetworkManager().GetEntityManager().GetEntityByName(entityName, false, true);
 
             if (entity == null)
             {
@@ -29,8 +34,8 @@ namespace Client.Commands
                 return "";
             }
 
-            handler.GetNetworkManager().GetEntityManager().UserEntity.Selection(entity.Slot(), handler);
-            handler.GetNetworkManager().GetEntityManager().UserEntity.SetTargetSlot(entity.Slot());
+            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.Selection(entity.Slot(), ryzomClient);
+            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.SetTargetSlot(entity.Slot());
 
             return "";
         }

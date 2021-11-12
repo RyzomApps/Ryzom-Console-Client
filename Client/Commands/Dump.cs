@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 
 namespace Client.Commands
 {
@@ -12,8 +14,11 @@ namespace Client.Commands
         public override string CmdUsage => "<dump name>";
         public override string CmdDesc => "Command to create a file with the current state of the client";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var args = GetArgs(command);
 
             if (args.Length > 1)
@@ -22,7 +27,7 @@ namespace Client.Commands
             var dumpName = args.Length == 1 ? args[0] : "default";
 
             // Write the DB
-            handler.GetDatabaseManager().Write(dumpName + "_db.rec");
+            ryzomClient.GetDatabaseManager().Write(dumpName + "_db.rec");
 
             // TODO: Other dump files
 

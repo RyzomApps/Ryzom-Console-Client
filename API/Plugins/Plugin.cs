@@ -55,7 +55,7 @@ namespace API.Plugins
         }
 
         /// <inheritdoc />
-        public IClient GetServer()
+        public IClient GetClient()
         {
             return _client;
         }

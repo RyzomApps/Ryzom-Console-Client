@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Network;
 
 namespace Client.Commands
@@ -11,8 +13,11 @@ namespace Client.Commands
         public override string CmdDesc => "client wants to respawn somewhere (index of the respawn location wanted)";
         public override IEnumerable<string> GetCmdAliases() { return new[] { "respawn" }; }
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var args = GetArgs(command);
 
             if (args.Length != 1)
@@ -24,10 +29,10 @@ namespace Client.Commands
             var index = ushort.Parse(args[0]);
             var out2 = new BitMemoryStream();
 
-            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 out2.Serial(ref index);
-                handler.GetNetworkManager().Push(out2);
+                ryzomClient.GetNetworkManager().Push(out2);
             }
             else
                 handler.GetLogger().Warn($"Unknown message named '{msgName}'.");

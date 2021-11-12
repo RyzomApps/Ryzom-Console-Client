@@ -18,13 +18,14 @@ namespace AutoRelogPlugin
             // Config
             SaveDefaultConfig();
             ReloadConfig();
-            
-            // TODO: proper load yml config
+
             RelogSeconds = GetConfig().GetInt("relogSeconds");
             if (RelogSeconds < 60) RelogSeconds = 60;
 
+            GetLogger().Info($"After {RelogSeconds} seconds, the client will shut down automatically. Please use a restart script to ensure that the client continues to operate.");
+
             // Register listener
-            var pm = GetServer().GetPluginManager();
+            var pm = GetClient().GetPluginManager();
             pm.RegisterListeners(new Listener(this), this, true);
         }
     }

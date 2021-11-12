@@ -12,7 +12,7 @@ namespace Tests
         public void PluginLoaderTest()
         {
             var pluginPath = new FileInfo(@"..\plugins\SamplePlugin.dll");
-            
+
             var client = new RyzomClient(false);
 
             var pluginLoader = new PluginLoader(client);
@@ -51,7 +51,7 @@ namespace Tests
         public void YamlConfigurationFileTest()
         {
             var pluginPath = new FileInfo(@"..\plugins\SamplePlugin.dll");
-            
+
             var client = new RyzomClient(false);
 
             var pluginLoader = new PluginLoader(client);
@@ -61,6 +61,10 @@ namespace Tests
             plugin.SaveDefaultConfig();
 
             var config = plugin.GetConfig();
+
+            config.AddDefault("test", true);
+
+            Assert.NotNull(config.Get("test"));
         }
     }
 }

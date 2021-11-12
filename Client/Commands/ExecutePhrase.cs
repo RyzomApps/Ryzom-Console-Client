@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Network;
 
 namespace Client.Commands
@@ -10,9 +12,12 @@ namespace Client.Commands
         public override string CmdUsage => "<[memoryId] [slotId]>";
         public override string CmdDesc => "Command to send the execution message for a phrase to the server.";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
-            var cyclic = false;
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
+            const bool cyclic = false;
 
             var args = GetArgs(command);
 
@@ -24,7 +29,7 @@ namespace Client.Commands
 
             if (args.Length == 2)
             {
-                bool worked = byte.TryParse(args[0], out memoryId);
+                var worked = byte.TryParse(args[0], out memoryId);
                 worked &= byte.TryParse(args[1], out slotId);
 
                 if (!worked)
@@ -43,23 +48,15 @@ namespace Client.Commands
             //appendCurrentToAckExecute(cyclic);
 
             // send msg
-            BitMemoryStream out2 = new BitMemoryStream();
-            string msgName;
+            var out2 = new BitMemoryStream();
+            const string msgName = cyclic ? "PHRASE:EXECUTE_CYCLIC" : "PHRASE:EXECUTE";
 
-            if (cyclic)
-            {
-                msgName = "PHRASE:EXECUTE_CYCLIC";
-            }
-            else
-            {
-                msgName = "PHRASE:EXECUTE";
-            }
-            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 //serial the sentence memorized index
                 out2.Serial(ref memoryId);
                 out2.Serial(ref slotId);
-                handler.GetNetworkManager().Push(out2);
+                ryzomClient.GetNetworkManager().Push(out2);
             }
             else
             {

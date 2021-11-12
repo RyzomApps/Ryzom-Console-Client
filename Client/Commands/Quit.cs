@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Network;
 
 namespace Client.Commands
@@ -10,12 +12,15 @@ namespace Client.Commands
         public override string CmdUsage => "";
         public override string CmdDesc => "request to quit the game";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             // If we are not connected, quit now
             if (!handler.IsInGame())
             {
-                handler.GetNetworkManager().GameExit = true;
+                ryzomClient.GetNetworkManager().GameExit = true;
                 handler.GetLogger().Info("User Request to Quit ryzom");
             }
             else
@@ -23,7 +28,7 @@ namespace Client.Commands
                 // Don't quit but wait for server Quit
                 const string msgName = "CONNECTION:CLIENT_QUIT_REQUEST";
                 var out2 = new BitMemoryStream();
-                handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2);
+                ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2);
                 var bypassDisconnectionTimer = false; // no need on a ring shard, as it's very short
                 out2.Serial(ref bypassDisconnectionTimer);
 
@@ -33,7 +38,7 @@ namespace Client.Commands
                 uint asNum = 0; // this has to be short, but thats not implemented
                 out2.Serial(ref asNum);
 
-                handler.GetNetworkManager().Push(out2);
+                ryzomClient.GetNetworkManager().Push(out2);
                 //nlinfo("impulseCallBack : %s sent", msgName.c_str());
 
                 handler.GetLogger().Info("Initiating quit sequence... Please wait 30s for the logout.");

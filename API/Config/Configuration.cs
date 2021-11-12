@@ -11,6 +11,9 @@ using API.Helper;
 
 namespace API.Config
 {
+    /// <summary>
+    /// This is a base class for all File based source of configurable options and settings
+    /// </summary>
     public class Configuration : ConfigurationSection
     {
         private Configuration _defaults;
@@ -52,6 +55,13 @@ namespace API.Config
         }
 
         public void SetDefaults(Configuration defaults)
+        {
+            Validate.NotNull(defaults, "Defaults may not be null");
+
+            _defaults = defaults;
+        }
+
+        public void SetDefaults(YamlConfiguration defaults)
         {
             Validate.NotNull(defaults, "Defaults may not be null");
 

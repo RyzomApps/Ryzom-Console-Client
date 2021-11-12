@@ -88,7 +88,7 @@ namespace API.Plugins.Interfaces
         /// Returns the Server instance currently running this plugin
         /// </summary>
         /// <returns>Server running this plugin</returns>
-        public IClient GetServer();
+        public IClient GetClient();
 
         /// <summary>
         /// Returns a value indicating whether or not this plugin is currently

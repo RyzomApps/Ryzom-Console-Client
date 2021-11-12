@@ -577,6 +577,7 @@ namespace Client.Network
 
             // Read Known Phrases
             //impulse.SerialCont(phrases);
+
             int len = 0;
             impulse.Serial(ref len);
             var phrases = new List<PhraseSlot>(len);

@@ -7,9 +7,8 @@
 ///////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using API.Commands;
 
-namespace Client.Commands.Internal
+namespace API.Commands
 {
     /// <summary>
     /// Represents an internal RCC command: CommandBase name, source code and usage message
@@ -54,7 +53,7 @@ namespace Client.Commands.Internal
         /// <param name="command">The full command, eg: 'mycommand arg1 arg2'</param>
         /// <param name="localVars">Local variables passed along with the command (may be null)</param>
         /// <returns>A confirmation/error message, or "" if no message</returns>
-        public abstract string Run(RyzomClient handler, string command, Dictionary<string, object> localVars);
+        public abstract string Run(IClient handler, string command, Dictionary<string, object> localVars);
 
         /// <summary>
         /// Return a list of aliases for this command.

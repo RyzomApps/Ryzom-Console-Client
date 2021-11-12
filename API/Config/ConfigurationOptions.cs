@@ -8,6 +8,9 @@
 
 namespace API.Config
 {
+    /// <summary>
+    /// Various settings for controlling the input and output of a <see cref="Configuration"/>
+    /// </summary>
     public class ConfigurationOptions
     {
         private char _pathSeparator = '.';

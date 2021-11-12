@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 
 namespace Client.Commands
 {
@@ -9,9 +11,12 @@ namespace Client.Commands
         public override string CmdUsage => "";
         public override string CmdDesc => "";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
-            handler.GetNetworkManager().SendMsgToServer("COMBAT:PARRY");
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
+            ryzomClient.GetNetworkManager().SendMsgToServer("COMBAT:PARRY");
 
             return "";
         }

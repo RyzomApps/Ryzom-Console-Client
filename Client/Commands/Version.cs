@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 
 namespace Client.Commands
 {
@@ -11,7 +13,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Display client version";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
             var sVersion = $"RCC {Program.Version} ({Resources.BuildDate})";
 

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Network;
 
 namespace Client.Commands
@@ -10,9 +12,12 @@ namespace Client.Commands
         public override string CmdUsage => "<[sit state]>";
         public override string CmdDesc => "client send to the server the sitting state";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
-            bool s = true; // sit state
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
+            var s = true; // sit state
             var args = GetArgs(command);
 
             if (args.Length == 1)
@@ -30,12 +35,13 @@ namespace Client.Commands
             }
 
             // send afk state
-            string msgName = "COMMAND:SIT";
-            BitMemoryStream out2 = new BitMemoryStream();
-            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            const string msgName = "COMMAND:SIT";
+            var out2 = new BitMemoryStream();
+
+            if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 out2.Serial(ref s);
-                handler.GetNetworkManager().Push(out2);
+                ryzomClient.GetNetworkManager().Push(out2);
             }
             else
                 handler.GetLogger().Warn($"Unknown message named '{msgName}'.");

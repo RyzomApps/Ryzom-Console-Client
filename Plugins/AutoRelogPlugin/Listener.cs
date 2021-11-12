@@ -20,7 +20,6 @@ namespace AutoRelogPlugin
         public override void OnInitialize()
         {
             _timeStart = DateTime.Now;
-            _plugin.GetLogger().Info("Initialized at " + _timeStart.ToShortTimeString());
         }
 
         public override void OnUpdate()
@@ -32,7 +31,7 @@ namespace AutoRelogPlugin
 
             _plugin.GetLogger().Info("Restarting client after " + _plugin.RelogSeconds + " seconds...");
             var responseMessage = "";
-            _plugin.GetServer().PerformInternalCommand("Quit", ref responseMessage);
+            _plugin.GetClient().PerformInternalCommand("Quit", ref responseMessage);
         }
     }
 }

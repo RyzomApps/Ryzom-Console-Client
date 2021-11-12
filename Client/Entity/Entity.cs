@@ -37,10 +37,10 @@ namespace Client.Entity
         /// </summary>
         private uint _npcAlias;
 
-        /// <summary>
-        /// Primitive type
-        /// </summary>
-        private readonly EntityType _type;
+        ///// <summary>
+        ///// Primitive type
+        ///// </summary>
+        //private readonly EntityType _type;
 
         /// <summary>
         /// Current Name for the entity
@@ -140,7 +140,7 @@ namespace Client.Entity
         public Entity()
         {
             // Initialize the object.
-            _type = EntityType.Entity;
+            //_type = EntityType.Entity;
 
             _dataSetId = Constants.InvalidClientDatasetIndex;
 

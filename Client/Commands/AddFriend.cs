@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Network;
 
 namespace Client.Commands
@@ -10,8 +12,11 @@ namespace Client.Commands
         public override string CmdUsage => "<contactName>";
         public override string CmdDesc => "";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var args = GetArgs(command);
 
             if (args.Length != 1)
@@ -24,17 +29,17 @@ namespace Client.Commands
             const string msgName = "TEAM:CONTACT_ADD";
             var out2 = new BitMemoryStream();
 
-            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 byte list = 0; // friendslist
-                string temp = args[0];
+                var temp = args[0];
 
                 out2.Serial(ref temp);
                 out2.Serial(ref list);
 
                 //Debug.Print(out2.ToString());
 
-                handler.GetNetworkManager().Push(out2);
+                ryzomClient.GetNetworkManager().Push(out2);
             }
             else
                 handler.GetLogger().Warn($"Unknown message named '{msgName}'.");

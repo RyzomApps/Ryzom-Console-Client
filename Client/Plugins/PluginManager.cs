@@ -95,7 +95,9 @@ namespace Client.Plugins
                         throw new InvalidDescriptionException("description is empty");
                     }
 
+#pragma warning disable 618
                     if (description.GetRawName().IndexOf(' ') != -1)
+#pragma warning restore 618
                     {
                         _server.GetLogger().Warn($"Plugin '{description.GetFullName()}' uses the space-character (0x20) in its name '{description.RawName}' - this is discouraged");
                     }

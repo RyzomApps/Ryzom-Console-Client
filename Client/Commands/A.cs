@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Network;
 
 namespace Client.Commands
@@ -16,8 +18,11 @@ namespace Client.Commands
         public override string CmdUsage => "<cmd> <arg>";
         public override string CmdDesc => "Execute an admin command on you";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var args = GetArgs(command);
 
             if (args.Length == 0) { return ""; }
@@ -29,13 +34,13 @@ namespace Client.Commands
             const string msgName = "COMMAND:ADMIN";
 
             var out2 = new BitMemoryStream();
-            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 out2.Serial(ref onTarget);
                 out2.Serial(ref cmd);
                 out2.Serial(ref arg);
 
-                handler.GetNetworkManager().Push(out2);
+                ryzomClient.GetNetworkManager().Push(out2);
             }
             else
                 handler.GetLogger().Warn($"Unknown message named '{msgName}'.");

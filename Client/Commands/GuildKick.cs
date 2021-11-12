@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Network;
 
 namespace Client.Commands
@@ -12,8 +14,11 @@ namespace Client.Commands
 
         public override string CmdDesc => "client (lead,ho,of) wants to kick member specifying its index. Last param is the counter";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var args = GetArgs(command);
 
             if (args.Length != 1) return "";
@@ -21,12 +26,12 @@ namespace Client.Commands
             const string msgName = "GUILD:KICK_MEMBER"; // TODO GUKick right arguments
             var out2 = new BitMemoryStream();
 
-            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
-            {
-                var buf = args[0];
-                out2.Serial(ref buf);
-                handler.GetNetworkManager().Push(out2);
-            }
+            if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+                return "";
+
+            var buf = args[0];
+            out2.Serial(ref buf);
+            ryzomClient.GetNetworkManager().Push(out2);
 
             return "";
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Client.Commands.Internal;
+using API;
+using API.Commands;
 
 namespace Client.Commands
 {
@@ -12,7 +13,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Shows information about the current time";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
             var csLocal = DateTime.Now.ToString("HH:mm:ss");
             var csUtc = DateTime.UtcNow.ToString("HH:mm:ss");

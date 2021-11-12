@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Network;
 
 namespace Client.Commands
@@ -10,8 +12,11 @@ namespace Client.Commands
         public override string CmdUsage => "[<side 0=Owner 1=Attacker>]";
         public override string CmdDesc => "Set the player as 'away from keyboard'";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var bNeutral = false; // neutral state
 
             var args = GetArgs(command);
@@ -21,14 +26,15 @@ namespace Client.Commands
 
             var pvpSide = int.Parse(args[0]);
 
-            string msgName = "OUTPOST:SIDE_CHOSEN";
-            BitMemoryStream out2 = new BitMemoryStream();
-            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            const string msgName = "OUTPOST:SIDE_CHOSEN";
+            var out2 = new BitMemoryStream();
+
+            if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 out2.Serial(ref bNeutral);
-                byte sideAsInt = (byte)pvpSide;
+                var sideAsInt = (byte)pvpSide;
                 out2.Serial(ref sideAsInt);
-                handler.GetNetworkManager().Push(out2);
+                ryzomClient.GetNetworkManager().Push(out2);
             }
             else
                 handler.GetLogger().Warn($"Unknown message named '{msgName}'.");

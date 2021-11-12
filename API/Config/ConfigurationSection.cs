@@ -14,6 +14,9 @@ using API.Helper;
 
 namespace API.Config
 {
+    /// <summary>
+    /// Represents a section of a <see cref="Configuration"/>
+    /// </summary>
     public class ConfigurationSection
     {
         private readonly Dictionary<string, object> _map = new Dictionary<string, object>();
@@ -26,6 +29,9 @@ namespace API.Config
 
         private readonly string _fullPath;
 
+        /// <summary>
+        /// Creates an empty ConfigurationSection for use as a root <see cref="Configuration"/> section.
+        /// </summary>
         protected ConfigurationSection()
         {
             if (!(this is Configuration))
@@ -39,17 +45,30 @@ namespace API.Config
             _root = (Configuration)this;
         }
 
+        /// <summary>
+        /// Creates an empty ConfigurationSection with the specified parent and path.
+        /// </summary>
+        /// <param name="parent">Parent section that contains this own section.</param>
+        /// <param name="path">Path that you may access this section from via the root</param>
         protected ConfigurationSection(ConfigurationSection parent, string path)
         {
-            Validate.NotNull(_parent, "Parent cannot be null");
-            Validate.NotNull(_path, "Path cannot be null");
+            Validate.NotNull(parent, "Parent cannot be null");
+            Validate.NotNull(path, "Path cannot be null");
+
             _path = path;
             _parent = parent;
             _root = _parent.GetRoot();
+
             Validate.NotNull(_root, "Path cannot be orphaned");
+
             _fullPath = CreatePath(_parent, _path);
         }
 
+        /// <summary>
+        /// Gets a set containing all keys in this section.
+        /// </summary>
+        /// <param name="deep"> Whether or not to get a deep list, as opposed to a shallow list.</param>
+        /// <returns>Set of keys contained within this ConfigurationSection.</returns>
         public List<string> GetKeys(bool deep)
         {
             var result = new List<string>();
@@ -66,9 +85,15 @@ namespace API.Config
             }
 
             MapChildrenKeys(result, this, deep);
+
             return result;
         }
 
+        /// <summary>
+        /// Gets a Map containing all keys and their values for this section.
+        /// </summary>
+        /// <param name="deep">Whether or not to get a deep list, as opposed to a shallow list.</param>
+        /// <returns>Map of keys and values of this section.</returns>
         public Dictionary<string, object> GetValues(bool deep)
         {
             var result = new Dictionary<string, object>();
@@ -90,11 +115,21 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Checks if this <see cref="ConfigurationSection"/> contains the given path.
+        /// </summary>
+        /// <param name="path">Path to check for existence.</param>
+        /// <returns>True if this section contains the requested path, either via default or being set.</returns>
         public bool Contains(string path)
         {
             return Get(path) != null;
         }
 
+        /// <summary>
+        /// Checks if this <see cref="ConfigurationSection"/> has a value set for the given path.
+        /// </summary>
+        /// <param name="path">Path to check for existence.</param>
+        /// <returns>True if this section contains the requested path, regardless of having a default.</returns>
         public bool IsSet(string path)
         {
             var root = GetRoot();
@@ -112,56 +147,103 @@ namespace API.Config
             return Get(path, null) != null;
         }
 
+        /// <summary>
+        /// Gets the path of this <see cref="ConfigurationSection"/> from its root <see cref="Configuration"/>
+        /// </summary>
+        /// <returns>Path of this section relative to its root</returns>
         public string GetCurrentPath()
         {
             return _fullPath;
         }
 
+        /// <summary>
+        /// Gets the name of this individual <see cref="ConfigurationSection"/>, in the path.
+        /// </summary>
+        /// <returns>Name of this section</returns>
         public string GetName()
         {
             return _path;
         }
 
+        /// <summary>
+        /// Gets the root <see cref="Configuration"/> that contains this <see cref="ConfigurationSection"/>
+        /// </summary>
+        /// <returns>Root configuration containing this section.</returns>
         public Configuration GetRoot()
         {
             return _root;
         }
 
+        /// <summary>
+        /// Gets the parent <see cref="ConfigurationSection"/> that directly contains this <see cref="ConfigurationSection"/>.
+        /// </summary>
+        /// <returns>Parent section containing this section.</returns>
         public ConfigurationSection GetParent()
         {
             return _parent;
         }
 
-        public void AddDefault(string path, object value)
+        /// <summary>
+        ///  Gets the requested Object by path.
+        /// </summary>
+        /// <param name="path">Path of the Object to get.</param>
+        /// <returns>Requested Object.</returns>
+        public object Get(string path)
+        {
+            return Get(path, GetDefault(path));
+        }
+
+        /// <summary>
+        ///  Gets the requested Object by path, returning a default value if not found.
+        /// </summary>
+        /// <param name="path">Path of the Object to get.</param>
+        /// <param name="def">The default value to return if the path is not found.</param>
+        /// <returns>Requested Object.</returns>
+        public object Get(string path, object def)
         {
             Validate.NotNull(path, "Path cannot be null");
+
+            if (path.Length == 0)
+            {
+                return this;
+            }
 
             var root = GetRoot();
 
             if (root == null)
             {
-                throw new Exception("Cannot add default without root");
+                throw new Exception("Cannot access section without a root");
             }
 
-            if (root == this)
+            var separator = root.Options().PathSeparator();
+            // i1 is the leading (higher) index
+            // i2 is the trailing (lower) index
+            int i1 = -1, i2;
+
+            var section = this;
+
+            while ((i1 = path.IndexOf(separator, i2 = i1 + 1)) != -1)
             {
-                throw new Exception("Unsupported addDefault(String, Object) implementation");
+                section = section.GetConfigurationSection(path.Substring(i2, i1));
+                if (section == null)
+                {
+                    return def;
+                }
             }
 
-            root.AddDefault(CreatePath(this, path), value);
+            var key = path[i2..];
+
+            if (section != this) return section.Get(key, def);
+
+            return _map.ContainsKey(key) ? _map[key] : def;
         }
 
-        public ConfigurationSection GetDefaultSection()
-        {
-            var root = GetRoot();
-
-            var defaults = root?.GetDefaults();
-
-            if (defaults == null) return null;
-
-            return defaults.IsConfigurationSection(GetCurrentPath()) ? defaults.GetConfigurationSection(GetCurrentPath()) : null;
-        }
-
+        /// <summary>
+        /// Sets the specified path to the given value. <br/>
+        /// If value is null, the entry will be removed. Any existing entry will be replaced, regardless of what the new value is.
+        /// </summary>
+        /// <param name="path">Path of the object to set.</param>
+        /// <param name="value">New value to set the path to.</param>
         public void Set(string path, object value)
         {
             Validate.NotEmpty(path, "Cannot set to an empty path");
@@ -204,50 +286,6 @@ namespace API.Config
             {
                 section.Set(key, value);
             }
-        }
-
-        public object Get(string path)
-        {
-            return Get(path, GetDefault(path));
-        }
-
-        public object Get(string path, object def)
-        {
-            Validate.NotNull(path, "Path cannot be null");
-
-            if (path.Length == 0)
-            {
-                return this;
-            }
-
-            var root = GetRoot();
-
-            if (root == null)
-            {
-                throw new Exception("Cannot access section without a root");
-            }
-
-            var separator = root.Options().PathSeparator();
-            // i1 is the leading (higher) index
-            // i2 is the trailing (lower) index
-            int i1 = -1, i2;
-
-            var section = this;
-
-            while ((i1 = path.IndexOf(separator, i2 = i1 + 1)) != -1)
-            {
-                section = section.GetConfigurationSection(path.Substring(i2, i1));
-                if (section == null)
-                {
-                    return def;
-                }
-            }
-
-            var key = path[i2..];
-
-            if (section != this) return section.Get(key, def);
-
-            return _map.ContainsKey(key) ? _map[key] : def;
         }
 
         public ConfigurationSection CreateSection(string path)
@@ -320,13 +358,13 @@ namespace API.Config
         public int GetInt(string path)
         {
             var def = GetDefault(path);
-            return GetInt(path, def is int ? Convert.ToInt32(def) : 0);
+            return GetInt(path, int.TryParse(def.ToString(), out var ret) ? ret : 0);
         }
 
         public int GetInt(string path, int def)
         {
             var val = Get(path, def);
-            return val is int ? Convert.ToInt32(val) : def;
+            return int.TryParse(val.ToString(), out var ret) ? ret : def;
         }
 
         public bool IsInt(string path)
@@ -880,6 +918,36 @@ namespace API.Config
         {
             var val = Get(path);
             return val is ConfigurationSection;
+        }
+
+        public ConfigurationSection GetDefaultSection()
+        {
+            var root = GetRoot();
+
+            var defaults = root?.GetDefaults();
+
+            if (defaults == null) return null;
+
+            return defaults.IsConfigurationSection(GetCurrentPath()) ? defaults.GetConfigurationSection(GetCurrentPath()) : null;
+        }
+
+        public void AddDefault(string path, object value)
+        {
+            Validate.NotNull(path, "Path cannot be null");
+
+            var root = GetRoot();
+
+            if (root == null)
+            {
+                throw new Exception("Cannot add default without root");
+            }
+
+            if (root == this)
+            {
+                throw new Exception("Unsupported addDefault(String, Object) implementation");
+            }
+
+            root.AddDefault(CreatePath(this, path), value);
         }
 
         protected bool IsPrimitiveWrapper(object input)

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 
 namespace Client.Commands
 {
@@ -8,7 +10,6 @@ namespace Client.Commands
     /// </summary>
     public class RunShortcut : CommandBase
     {
-
         public override string CmdName => "RunShortcut";
         public override string CmdUsage => "<shortcut>";
         public override string CmdDesc => "Emulates the user hitting the <shortcut> key.";
@@ -16,8 +17,11 @@ namespace Client.Commands
         const string PhraseMemoryCtrlBase = "ui:interface:gestionsets:shortcuts:s";
         const string PhraseMemoryAltCtrlBase = "ui:interface:gestionsets2:header_closed:shortcuts:s";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var args = GetArgs(command);
 
             if (args.Length != 1 || !int.TryParse(args[0], out int shortcut))

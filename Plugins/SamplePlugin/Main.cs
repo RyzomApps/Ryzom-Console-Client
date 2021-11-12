@@ -35,7 +35,7 @@ namespace SamplePlugin
             // TODO: Place any custom enable code here including the registration of any events
 
             // Register our events
-            var pm = GetServer().GetPluginManager();
+            var pm = GetClient().GetPluginManager();
             pm.RegisterListeners(new Listener(this), this, true);
 
             // TODO: Add the ability

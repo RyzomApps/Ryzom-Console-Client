@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Chat;
-using Client.Commands.Internal;
 
 namespace Client.Commands
 {
@@ -15,18 +17,21 @@ namespace Client.Commands
             return new[] { "s" };
         }
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
             var args = GetArgs(command);
 
-            handler.Channel = ChatGroupType.Around;
+            ryzomClient.Channel = ChatGroupType.Around;
 
             if (args.Length == 0)
                 return "";
 
             var text = string.Join(" ", args);
 
-            handler.SendText(text);
+            ryzomClient.SendText(text);
 
             return "";
         }

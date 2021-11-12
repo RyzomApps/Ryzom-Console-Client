@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Client.Commands.Internal;
+﻿using System;
+using System.Collections.Generic;
+using API;
+using API.Commands;
 using Client.Network;
 
 namespace Client.Commands
@@ -10,35 +12,41 @@ namespace Client.Commands
         public override string CmdUsage => "[<custom text>]";
         public override string CmdDesc => "Set the player as 'away from keyboard'";
 
-        public override string Run(RyzomClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
-            bool b = true; // afk state
+            if (!(handler is RyzomClient ryzomClient))
+                throw new Exception("Command handler is not a Ryzom client.");
+
+            var b = true; // afk state
             var args = GetArgs(command);
 
-            string customText = "";
+            var customText = "";
+
             if (args.Length != 0)
             {
                 customText = string.Join(" ", args);
             }
 
             // send afk state
-            string msgName = "COMMAND:AFK";
-            BitMemoryStream out2 = new BitMemoryStream();
-            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            var msgName = "COMMAND:AFK";
+            var out2 = new BitMemoryStream();
+
+            if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 out2.Serial(ref b);
-                handler.GetNetworkManager().Push(out2);
+                ryzomClient.GetNetworkManager().Push(out2);
             }
             else
                 handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
 
             // custom afk txt
-            BitMemoryStream outTxt = new BitMemoryStream();
+            var outTxt = new BitMemoryStream();
             msgName = "STRING:AFK_TXT";
-            if (handler.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, outTxt))
+
+            if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, outTxt))
             {
                 outTxt.Serial(ref customText);
-                handler.GetNetworkManager().Push(outTxt);
+                ryzomClient.GetNetworkManager().Push(outTxt);
             }
             else
             {
