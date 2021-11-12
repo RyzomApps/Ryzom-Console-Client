@@ -6,6 +6,7 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 using System.IO;
 using API.Config;
 using API.Logger;
@@ -131,5 +132,40 @@ namespace API.Plugins.Interfaces
         /// </summary>
         /// <returns>name of the plugin</returns>
         public string GetName();
+
+        /// <summary>
+        /// Perform an internal RCC command (not a server command, use SendText() instead for that!)
+        /// </summary>
+        /// <param name="command">The command to process</param>
+        /// <param name="localVars">Local variables passed along with the command</param>
+        /// <returns>TRUE if the command was indeed an internal RCC command</returns>
+        public bool PerformInternalCommand(string command, Dictionary<string, object> localVars = null);
+
+        /// <summary>
+        /// Perform an internal RCC command (not a server command, use SendText() instead for that!)
+        /// </summary>
+        /// <param name="command">The command to process</param>
+        /// <param name="responseMsg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <param name="localVars">Local variables passed along with the command</param>
+        /// <returns>TRUE if the command was indeed an internal RCC command</returns>
+        public bool PerformInternalCommand(string command, ref string responseMsg, Dictionary<string, object> localVars = null);
+
+        /// <summary>
+        /// Register a command in command prompt. Command will be automatically unregistered when unloading the Plugin.
+        /// </summary>
+        /// <param name="cmdName">Name of the command</param>
+        /// <param name="cmdDesc">Description/usage of the command</param>
+        /// <param name="cmdUsage">Usage example</param>
+        /// <param name="callback">Method for handling the command</param>
+        /// <returns>True if successfully registered</returns>
+        bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, IClient.CommandRunner callback);
+
+        /// <summary>
+        /// Will be called every ~100ms.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="ListenerBase.OnUpdate"/> method can be overridden by child class so need an extra update method
+        /// </remarks>
+        void UpdateInternal();
     }
 }

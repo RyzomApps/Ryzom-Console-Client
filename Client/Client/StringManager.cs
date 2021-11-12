@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using API.Client;
+using API.Network;
 using Client.Network;
 using static Client.Client.DynamicStringInfo;
 
@@ -18,16 +20,14 @@ namespace Client.Client
     /// <summary>
     /// Management for dynamically generated text from servers
     /// </summary>
-    public class StringManager
+    public class StringManager : IStringManager
     {
         private readonly Dictionary<uint, string> ReceivedStrings = new Dictionary<uint, string>();
         private readonly HashSet<uint> WaitingStrings = new HashSet<uint>();
 
-        private readonly Dictionary<uint, DynamicStringInfo> ReceivedDynStrings =
-            new Dictionary<uint, DynamicStringInfo>();
+        private readonly Dictionary<uint, DynamicStringInfo> ReceivedDynStrings = new Dictionary<uint, DynamicStringInfo>();
 
-        private readonly Dictionary<uint, DynamicStringInfo> WaitingDynStrings =
-            new Dictionary<uint, DynamicStringInfo>();
+        private readonly Dictionary<uint, DynamicStringInfo> WaitingDynStrings = new Dictionary<uint, DynamicStringInfo>();
 
         /// <summary>
         /// String waiting the string value from the server.
@@ -260,7 +260,7 @@ namespace Client.Client
                 if (!WaitingDynStrings.ContainsKey(dynId)) WaitingDynStrings.Add(dynId, dynInfo);
 
             // Fire an Event
-            _client.Automata.OnPhraseSend(dynInfo);
+            _client.Plugins.OnPhraseSend(dynInfo);
         }
 
         /// <summary>
@@ -605,6 +605,15 @@ namespace Client.Client
 
                 return false;
             }
+        }
+
+        /// <inheritdoc cref="GetString(uint, out string, NetworkManager)"/>
+        public bool GetString(uint stringId, out string result, INetworkManager networkManager)
+        {
+            if (networkManager is NetworkManager manager)
+                return GetString(stringId, out result, manager);
+
+            throw new NotImplementedException("GetString can only be executed with a Networkmanager.");
         }
 
         /// <summary>

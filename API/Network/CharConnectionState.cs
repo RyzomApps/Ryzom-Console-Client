@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace Client.Network
+namespace API.Network
 {
     /// <summary>
     /// Define the online state of a character 

@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using Client.Chat;
+using API.Chat;
 
-namespace Client.Helper
+namespace API.Helper
 {
     public static class Misc
     {
@@ -115,12 +116,23 @@ namespace Client.Helper
         }
 
         /// <summary>
-        /// extract a file from an embedded resource and save it to disk
+        /// Remove color codes ("§c") from a text message received from the server
         /// </summary>
-        public static void WriteResourceToFile(string resourceName, string fileName)
+        public static string GetVerbatim(string text)
         {
-            var text = (string)Resources.ResourceManager.GetObject(resourceName);
-            File.WriteAllText(fileName, text);
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
+
+            var idx = 0;
+            var data = new char[text.Length];
+
+            for (var i = 0; i < text.Length; i++)
+                if (text[i] != '§')
+                    data[idx++] = text[i];
+                else
+                    i++;
+
+            return new string(data, 0, idx);
         }
 
         /// <summary>
@@ -135,6 +147,15 @@ namespace Client.Helper
         public static long GetLocalTime()
         {
             return DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        }
+
+        /// <summary>
+        /// Get a Y-M-D h:m:s timestamp representing the current system date and time
+        /// </summary>
+        public static string GetTimestamp()
+        {
+            var time = DateTime.Now;
+            return $"{time.Year:0000}-{time.Month:00}-{time.Day:00} {time.Hour:00}:{time.Minute:00}:{time.Second:00}";
         }
 
         public static void Resize<T>(this List<T> list, int sz, T c)
@@ -175,6 +196,24 @@ namespace Client.Helper
             }
 
             return $@"{t:%d}d";
+        }
+
+        /// <summary>
+        /// Iterate all types within the specified assembly.<br/>
+        /// Check whether that's the shortest so far.<br/>
+        /// If it's, set it to the ns.
+        /// </summary>
+        /// <param name="asm">Assembly to check</param>
+        /// <returns>Return the shortest namespace of the assembly</returns>
+        public static string GetAssemblyNamespace(Assembly asm)
+        {
+            var ns = "";
+
+            foreach (var tp in asm.Modules.First().GetTypes())
+                if (tp.Namespace != null && (ns.Length == 0 || tp.Namespace.Length < ns.Length))
+                    ns = tp.Namespace;
+
+            return ns;
         }
     }
 }

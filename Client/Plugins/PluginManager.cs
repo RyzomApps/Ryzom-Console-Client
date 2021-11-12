@@ -2,18 +2,27 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text.RegularExpressions;
+using System.Threading;
 using API;
+using API.Chat;
+using API.Commands;
 using API.Exceptions;
 using API.Helper;
+using API.Network;
 using API.Plugins;
 using API.Plugins.Interfaces;
+using Client.Client;
+using Client.Database;
+using Client.Phrase;
+using Client.Property;
 
 namespace Client.Plugins
 {
     public sealed class PluginManager : IPluginManager
     {
-        private readonly IClient _server;
+        private readonly IClient _client;
 
         private readonly Dictionary<string, IPluginLoader> _fileAssociations = new Dictionary<string, IPluginLoader>();
 
@@ -25,7 +34,7 @@ namespace Client.Plugins
 
         public PluginManager(IClient instance)
         {
-            _server = instance;
+            _client = instance;
         }
 
         /// <inheritdoc/>
@@ -35,7 +44,7 @@ namespace Client.Plugins
 
             try
             {
-                instance = (IPluginLoader)Activator.CreateInstance(loader, _server);
+                instance = (IPluginLoader)Activator.CreateInstance(loader, _client);
             }
             catch (Exception ex)
             {
@@ -99,18 +108,18 @@ namespace Client.Plugins
                     if (description.GetRawName().IndexOf(' ') != -1)
 #pragma warning restore 618
                     {
-                        _server.GetLogger().Warn($"Plugin '{description.GetFullName()}' uses the space-character (0x20) in its name '{description.RawName}' - this is discouraged");
+                        _client.GetLogger().Warn($"Plugin '{description.GetFullName()}' uses the space-character (0x20) in its name '{description.RawName}' - this is discouraged");
                     }
                 }
                 catch (InvalidDescriptionException ex)
                 {
-                    _server.GetLogger().Debug($"Could not load '{file.FullName}' in folder '{directory.FullName}'", ex);
+                    _client.GetLogger().Debug($"Could not load '{file.FullName}' in folder '{directory.FullName}'", ex);
                     continue;
                 }
 
                 if (plugins.ContainsKey(description.GetName()))
                 {
-                    _server.GetLogger().Error($"Ambiguous plugin name '{description.GetName()}' for files '{file.FullName}' and '{plugins[description.GetName()].FullName}' in '{directory.FullName}'");
+                    _client.GetLogger().Error($"Ambiguous plugin name '{description.GetName()}' for files '{file.FullName}' and '{plugins[description.GetName()].FullName}' in '{directory.FullName}'");
                     continue;
                 }
                 else
@@ -197,12 +206,12 @@ namespace Client.Plugins
 
                                     softDependencies.Remove(plugin);
                                     dependencies.Remove(plugin);
-                                    _server.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}'", new UnknownDependencyException(dependency));
+                                    _client.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}'", new UnknownDependencyException(dependency));
                                     break;
                                 }
                             }
 
-                            if ((dependencies.ContainsKey(plugin) && dependencies[plugin].Count == 0))
+                            if (dependencies.ContainsKey(plugin) && dependencies[plugin].Count == 0)
                             {
                                 dependencies.Remove(plugin);
                             }
@@ -249,7 +258,7 @@ namespace Client.Plugins
                             }
                             catch (InvalidPluginException ex)
                             {
-                                _server.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}'", ex);
+                                _client.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}'", ex);
                             }
                         }
                     }
@@ -282,7 +291,7 @@ namespace Client.Plugins
                             }
                             catch (InvalidPluginException ex)
                             {
-                                _server.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}'", ex);
+                                _client.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}'", ex);
                             }
                         }
                     }
@@ -301,7 +310,7 @@ namespace Client.Plugins
                             //failedPluginIterator.Remove();
                             plugins.Remove(pluginIterator.Current);
 
-                            _server.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}': circular dependency detected");
+                            _client.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}': circular dependency detected");
                         }
                     }
                 }
@@ -382,7 +391,7 @@ namespace Client.Plugins
             }
             catch (Exception ex)
             {
-                _server.GetLogger().Error($"Error occurred (in the plugin loader) while enabling {plugin.GetDescription().GetFullName()} (Is it up to date?)", ex);
+                _client.GetLogger().Error($"Error occurred (in the plugin loader) while enabling {plugin.GetDescription().GetFullName()} (Is it up to date?)", ex);
             }
 
             // TODO: Add listeners again?
@@ -410,7 +419,7 @@ namespace Client.Plugins
             }
             catch (Exception ex)
             {
-                _server.GetLogger().Error($"Error occurred (in the plugin loader) while disabling {plugin.GetDescription().GetFullName()} (Is it up to date?)", ex);
+                _client.GetLogger().Error($"Error occurred (in the plugin loader) while disabling {plugin.GetDescription().GetFullName()} (Is it up to date?)", ex);
             }
 
             // TODO: Remove listeners?
@@ -426,7 +435,7 @@ namespace Client.Plugins
             _fileAssociations.Clear();
         }
 
-        public void CallEvent(Action<ListenerBase> @event)
+        public void CallEvent(Action<ListenerBase> evt)
         {
             //    isAsynchronous();
             //    if (Thread.holdsLock(this)) {
@@ -439,7 +448,8 @@ namespace Client.Plugins
             //
             //    this.fireEvent(event);
             //    this;
-            FireEvent(@event);
+
+            FireEvent(evt);
         }
 
         private void FireEvent(Action<ListenerBase> action)
@@ -454,7 +464,7 @@ namespace Client.Plugins
                     }
                     catch
                     {
-                        _server.GetLogger().Error($"Could not pass event {action.Method.Name} to {plugin.GetDescription().GetFullName()}");
+                        _client.GetLogger().Error($"Could not pass event {action.Method.Name} to {plugin.GetDescription().GetFullName()}");
                     }
                 }
             }
@@ -485,19 +495,382 @@ namespace Client.Plugins
                 _listenerSlots[plugin].Add((ListenerBase)newListener);
 
                 if (init)
-                    ListenerBase.DispatchListenerEvent(listener => listener.OnInitialize(), new[] { (ListenerBase)newListener });
+                    DispatchListenerEvent(listener => listener.OnInitialize(), new[] { (ListenerBase)newListener });
 
-                if (_server.IsInGame())
-                    ListenerBase.DispatchListenerEvent(listener => listener.OnGameJoined(), new[] { (ListenerBase)newListener });
+                if (_client.IsInGame())
+                    DispatchListenerEvent(listener => listener.OnGameJoined(), new[] { (ListenerBase)newListener });
+            }
+        }
+
+        ///// <summary>
+        ///// Called from the main instance to update all the listeners every some ticks
+        ///// </summary>
+        //public void OnUpdate()
+        //{
+        //    ListenerBase.DispatchListenerEvent(listener => listener.OnUpdate(), handler: _client);
+        //}
+
+        #region Event API
+
+        /// <summary>
+        /// Called when the client disconnects from the server
+        /// </summary>
+        public void OnDisconnect()
+        {
+            DispatchListenerEvent(listener => listener.OnDisconnect(ListenerBase.DisconnectReason.UserLogout, ""));
+        }
+
+        /// <summary>
+        /// Called after the connection was unrecoverable lost
+        /// </summary>
+        public void OnConnectionLost(ListenerBase.DisconnectReason reason, string message)
+        {
+            DispatchListenerEvent(listener => listener.OnDisconnect(reason, message));
+        }
+
+        /// <summary>
+        /// Called after an internal command has been performed
+        /// </summary>
+        public void OnInternalCommand(string commandName, string command, string responseMsg)
+        {
+            DispatchListenerEvent(listener => listener.OnInternalCommand(commandName, string.Join(" ", CommandBase.GetArgs(command)), responseMsg));
+        }
+
+        /// <summary>
+        /// Called from the main instance to update all the listener every some ticks
+        /// </summary>
+        public void OnUpdate()
+        {
+            try
+            {
+                DispatchListenerEvent(listener => listener.OnUpdate());
+            }
+            catch (Exception e)
+            {
+                if (!(e is ThreadAbortException))
+                {
+                    _client.GetLogger().Warn($"OnUpdate: Got error: {e}");
+                }
+                else throw; //ThreadAbortException should not be caught
+            }
+
+            foreach (var plugin in _plugins.ToArray())
+            {
+                try
+                {
+                    plugin.UpdateInternal();
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        _client.GetLogger().Warn($"OnUpdate: Got error from {plugin}: {e}");
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
             }
         }
 
         /// <summary>
-        /// Called from the main instance to update all the listeners every some ticks
+        /// Called when a server was successfully joined
         /// </summary>
-        public void OnUpdate()
+        public void OnGameJoined()
         {
-            ListenerBase.DispatchListenerEvent(listener => listener.OnUpdate(), handler: _server);
+            DispatchListenerEvent(listener => listener.OnGameJoined());
+        }
+
+        /// <summary>
+        /// Called when one of the characters from the friend list updates
+        /// </summary>
+        /// <param name="contactId">id</param>
+        /// <param name="online">new status</param>
+        public void OnTeamContactStatus(uint contactId, CharConnectionState online)
+        {
+            DispatchListenerEvent(listener => listener.OnTeamContactStatus(contactId, online));
+        }
+
+        /// <summary>
+        /// Called when friend list and ignore list from the contact list are initialized
+        /// </summary>
+        internal void OnTeamContactInit(List<uint> vFriendListName, List<CharConnectionState> vFriendListOnline, List<string> vIgnoreListName)
+        {
+            DispatchListenerEvent(listener => listener.OnTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName));
+        }
+
+        /// <summary>
+        /// Called when one character from the friend or ignore list is created
+        /// </summary>
+        internal void OnTeamContactCreate(uint contactId, uint nameId, CharConnectionState online, byte nList)
+        {
+            DispatchListenerEvent(listener => listener.OnTeamContactCreate(contactId, nameId, online, nList));
+        }
+
+        /// <summary>
+        /// Remove a contact by the server
+        /// </summary>
+        internal void OnTeamContactRemove(uint contactId, byte nList)
+        {
+            DispatchListenerEvent(listener => listener.OnTeamContactRemove(contactId, nList));
+        }
+
+        /// <summary>
+        /// Any chat will arrive here 
+        /// </summary>
+        internal void OnChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, uint dynChatId, string senderName, uint bubbleTimer)
+        {
+            DispatchListenerEvent(listener => listener.OnChat(compressedSenderIndex, ucstr, rawMessage, mode, dynChatId, senderName, bubbleTimer));
+        }
+
+        /// <summary>
+        /// Any tells will arrive here 
+        /// </summary>
+        internal void OnTell(string ucstr, string senderName)
+        {
+            DispatchListenerEvent(listener => listener.OnTell(ucstr, senderName));
+        }
+
+        /// <summary>
+        /// called when the server activates/deactivates use of female titles
+        /// </summary>
+        public void OnGuildUseFemaleTitles(bool useFemaleTitles)
+        {
+            DispatchListenerEvent(listener => listener.OnGuildUseFemaleTitles(useFemaleTitles));
+        }
+
+        /// <summary>
+        /// called when the server upload the phrases.
+        /// </summary>
+        public void OnPhraseDownLoad(List<PhraseSlot> phrases, List<PhraseMemorySlot> memorizedPhrases)
+        {
+            // TODO: OnPhraseDownLoad
+            //DispatchAutomatonEvent(automaton => automaton.OnPhraseDownLoad(phrases, memorizedPhrases));
+        }
+
+        /// <summary>
+        /// called when the server block/unblock some reserved titles
+        /// </summary>
+        public void OnGuildUpdatePlayerTitle(bool unblock, int len, List<ushort> titles)
+        {
+            DispatchListenerEvent(listener => listener.OnGuildUpdatePlayerTitle(unblock, len, titles));
+        }
+
+        /// <summary>
+        /// called when the server sends a new respawn point
+        /// </summary>
+        public void OnDeathRespawnPoint(int x, int y)
+        {
+            DispatchListenerEvent(listener => listener.OnDeathRespawnPoint(x, y));
+        }
+
+        /// <summary>
+        /// called when the server sends the encyclopedia initialization
+        /// </summary>
+        public void OnEncyclopediaInit()
+        {
+            DispatchListenerEvent(listener => listener.OnEncyclopediaInit());
+        }
+
+        /// <summary>
+        /// called when the server sends the inventory initialization
+        /// </summary>
+        public void OnInitInventory(uint serverTick)
+        {
+            DispatchListenerEvent(listener => listener.OnInitInventory(serverTick));
+        }
+
+        /// <summary>
+        /// called when the server sends the database initialization
+        /// </summary>
+        public void OnDatabaseInitPlayer(uint serverTick)
+        {
+            DispatchListenerEvent(listener => listener.OnDatabaseInitPlayer(serverTick));
+        }
+
+        /// <summary>
+        /// called when the server sends the database updates
+        /// </summary>
+        public void OnDatabaseUpdatePlayer(uint serverTick)
+        {
+            DispatchListenerEvent(listener => listener.OnDatabaseUpdatePlayer(serverTick));
+        }
+
+        /// <summary>
+        /// called when the server updates the user hp, sap, stamina and focus bars/stats
+        /// </summary>
+        public void OnUserBars(byte msgNumber, int hp, int sap, int sta, int focus)
+        {
+            DispatchListenerEvent(listener => listener.OnUserBars(msgNumber, hp, sap, sta, focus));
+        }
+
+        /// <summary>
+        /// called when a database bank gets initialized
+        /// </summary>
+        public void OnDatabaseInitBank(uint serverTick, uint bank, DatabaseManager databaseManager)
+        {
+            // TODO: OnDatabaseInitBank
+            //DispatchAutomatonEvent(automaton => automaton.OnDatabaseInitBank(serverTick, bank, databaseManager));
+        }
+
+        /// <summary>
+        /// called when a database bank gets updated
+        /// </summary>
+        internal void OnDatabaseUpdateBank(uint serverTick, uint bank, DatabaseManager databaseManager)
+        {
+            // TODO: OnDatabaseUpdateBank
+            //DispatchAutomatonEvent(automaton => automaton.OnDatabaseUpdateBank(serverTick, bank, databaseManager));
+        }
+
+        /// <summary>
+        /// called when a database bank gets reset
+        /// </summary>
+        internal void OnDatabaseResetBank(uint serverTick, uint bank, DatabaseManager databaseManager)
+        {
+            // TODO: OnDatabaseResetBank
+            //DispatchAutomatonEvent(automaton => automaton.OnDatabaseResetBank(serverTick, bank, databaseManager));
+        }
+
+        /// <summary>
+        /// called when the string cache reloads
+        /// </summary>
+        public void OnReloadCache(int timestamp)
+        {
+            DispatchListenerEvent(listener => listener.OnReloadCache(timestamp));
+        }
+
+        /// <summary>
+        /// called when the local string set updates
+        /// </summary>
+        public void OnStringResp(uint stringId, string strUtf8)
+        {
+            DispatchListenerEvent(listener => listener.OnStringResp(stringId, strUtf8));
+        }
+
+        /// <summary>
+        /// called on local string set updates
+        /// </summary>
+        public void OnPhraseSend(DynamicStringInfo dynInfo)
+        {
+            // TODO: OnPhraseSend
+            //DispatchAutomatonEvent(automaton => automaton.OnPhraseSend(dynInfo));
+        }
+
+        /// <summary>
+        /// called when the player gets invited to a team
+        /// </summary>
+        public void OnTeamInvitation(uint textID)
+        {
+            DispatchListenerEvent(listener => listener.OnTeamInvitation(textID));
+        }
+
+        /// <summary>
+        /// called when the server sends information about the user char after the login
+        /// </summary>
+        public void OnUserChar(int highestMainlandSessionId, int firstConnectedTime, int playedTime, Vector3 initPos, Vector3 initFront, short season, int role, bool isInRingSession)
+        {
+            DispatchListenerEvent(listener => listener.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, initPos, initFront, season, role, isInRingSession));
+        }
+
+        /// <summary>
+        /// called when the server sends information about the all the user chars
+        /// </summary>
+        internal void OnUserChars()
+        {
+            DispatchListenerEvent(listener => listener.OnUserChars());
+        }
+
+        /// <summary>
+        /// called when the client receives the shard id and the webhost from the server
+        /// </summary>
+        public void OnShardID(uint shardId, string webHost)
+        {
+            DispatchListenerEvent(listener => listener.OnShardID(shardId, webHost));
+        }
+
+        /// <summary>
+        /// called when an entity health, sap, stamina or focus value changes
+        /// </summary>
+        public void OnEntityUpdateBars(uint gameCycle, long prop, byte slot, byte hitPoints, byte stamina, byte sap, byte focus)
+        {
+            DispatchListenerEvent(listener => listener.OnEntityUpdateBars(gameCycle, prop, slot, hitPoints, stamina, sap, focus));
+        }
+
+        /// <summary>
+        /// Called when the ingame database was received
+        /// TODO: we have this two times
+        /// </summary>
+        internal void OnIngameDatabaseInitialized()
+        {
+            DispatchListenerEvent(listener => listener.OnIngameDatabaseInitialized());
+        }
+
+        /// <summary>
+        /// called when an entity is created
+        /// </summary>
+        public void OnEntityCreate(byte slot, uint form, Change.TNewEntityInfo newEntityInfo)
+        {
+            // TODO: OnEntityCreate
+            //DispatchAutomatonEvent(automaton => automaton.OnEntityCreate(slot, form, newEntityInfo));
+        }
+
+        /// <summary>
+        /// called when an entity gets removed
+        /// </summary>
+        public void OnEntityRemove(byte slot, bool _)
+        {
+            DispatchListenerEvent(listener => listener.OnEntityRemove(slot));
+        }
+
+        /// <summary>
+        /// called when visual property is updated
+        /// </summary>
+        public void OnEntityUpdateVisualProperty(uint gameCycle, byte slot, byte prop, uint predictedInterval)
+        {
+            DispatchListenerEvent(listener => listener.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval));
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Dispatch a listener event with automatic exception handling
+        /// </summary>
+        /// <example>
+        /// Example for calling SomeEvent() on all automata at once:
+        /// DispatchAutomatonEvent(listener => listener.SomeEvent());
+        /// </example>
+        /// <param name="action">ActionBase to execute on each listener</param>
+        /// <param name="listenerList">Only fire the event for the specified listener list (default: all listeners)</param>
+        public void DispatchListenerEvent(Action<ListenerBase> action, IEnumerable<ListenerBase> listenerList = null)
+        {
+            if (listenerList == null)
+            {
+                // call for all listeners
+                CallEvent(action);
+                return;
+            }
+
+            // call only for specific listeners
+            foreach (var listener in listenerList)
+            {
+                try
+                {
+                    action(listener);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        //Retrieve parent method name to determine which event caused the exception
+                        var frame = new System.Diagnostics.StackFrame(1);
+                        var method = frame.GetMethod();
+                        var parentMethodName = method?.Name;
+
+                        //Display a meaningful error message to help debugging the listener
+                        _client?.GetLogger().Error($"{parentMethodName}: Got error from {listener}: {e}");
+                    }
+                    //ThreadAbortException should not be caught here as in can happen when disconnecting from server
+                    else throw;
+                }
+            }
         }
     }
 }

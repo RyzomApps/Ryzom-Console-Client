@@ -6,6 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using API.Chat;
 using Client.Network;
 
 namespace Client.Chat

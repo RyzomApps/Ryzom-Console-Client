@@ -13,17 +13,20 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using API;
+using API.Chat;
+using API.Client;
 using API.Commands;
+using API.Helper;
+using API.Helper.Tasks;
 using API.Logger;
+using API.Network;
 using API.Plugins;
 using API.Plugins.Interfaces;
-using Client.Automata.Internal;
 using Client.Chat;
 using Client.Client;
 using Client.Config;
 using Client.Database;
 using Client.Helper;
-using Client.Helper.Tasks;
 using Client.Logger;
 using Client.Network;
 using Client.Plugins;
@@ -44,7 +47,6 @@ namespace Client
         private readonly StringManager _stringManager;
         private readonly DatabaseManager _databaseManager;
         private readonly InterfaceManager _interfaceManager;
-        private readonly PluginManager _pluginManager;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -87,9 +89,9 @@ namespace Client
         public ILogger Log;
 
         /// <summary>
-        /// Automata class that holds the loaded automata from the Automata directory
+        /// Plugins class that holds the loaded plugins from the Plugins directory
         /// </summary>
-        public Automata.Internal.Automata Automata;
+        public PluginManager Plugins { get; }
 
         public bool ReadyToPing = true;
 
@@ -124,13 +126,18 @@ namespace Client
 
         public NetworkManager GetNetworkManager() { return _networkManager; }
 
+        /// <inheritdoc />
+        public INetworkManager GetINetworkManager() { return _networkManager; }
+
         public StringManager GetStringManager() { return _stringManager; }
+
+        public IStringManager GetIStringManager() { return _stringManager; }
 
         public DatabaseManager GetDatabaseManager() { return _databaseManager; }
 
         public NetworkConnection GetNetworkConnection() { return _networkConnection; }
 
-        public IPluginManager GetPluginManager() { return _pluginManager; }
+        public IPluginManager GetPluginManager() { return Plugins; }
 
         #endregion
 
@@ -143,16 +150,16 @@ namespace Client
         {
             _instance = this;
             _clientThread = Thread.CurrentThread;
+            
+            Plugins = new PluginManager(this);
+            Plugins.RegisterInterface(typeof(PluginLoader));
+
             if (ClientConfig.UseDatabase)
                 _databaseManager = new DatabaseManager(this);
             _networkConnection = new NetworkConnection(this, _databaseManager);
             _stringManager = new StringManager(this);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager);
             _interfaceManager = new InterfaceManager();
-            _pluginManager = new PluginManager(this);
-            _pluginManager.RegisterInterface(typeof(PluginLoader));
-
-            Automata = new Automata.Internal.Automata(this);
 
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");
@@ -161,10 +168,10 @@ namespace Client
             if (!Directory.Exists("plugins")) Directory.CreateDirectory("plugins");
 
             // copy msg.xml from resources
-            if (!File.Exists("./data/msg.xml")) Misc.WriteResourceToFile("msg", "./data/msg.xml");
+            if (!File.Exists("./data/msg.xml")) ResourceHelper.WriteResourceToFile("msg", "./data/msg.xml");
 
             // copy database.xml from resources
-            if (!File.Exists("./data/database.xml")) Misc.WriteResourceToFile("database", "./data/database.xml");
+            if (!File.Exists("./data/database.xml")) ResourceHelper.WriteResourceToFile("database", "./data/database.xml");
 
             // Start the main client
             if (autoStart)
@@ -201,11 +208,8 @@ namespace Client
             // Load commands from Commands namespace
             LoadCommands();
 
-            // Load automatons
-            Automata.LoadAutomata();
-
             // Load plugin manager
-            _pluginManager.LoadPlugins(new DirectoryInfo(@".\plugins\"));
+            Plugins.LoadPlugins(new DirectoryInfo(@".\plugins\"));
 
             _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
             _timeoutdetector.Start();
@@ -260,14 +264,14 @@ namespace Client
             Log.Chat(
                 $"[{mode}]{(stringCategory.Length > 0 ? $"[{stringCategory.ToUpper()}]" : "")}{color} {finalString}");
 
-            Automata.OnChat(compressedSenderIndex, ucstr, rawMessage, mode, dynChatId, senderName, bubbleTimer);
+            Plugins.OnChat(compressedSenderIndex, ucstr, rawMessage, mode, dynChatId, senderName, bubbleTimer);
         }
 
         public void DisplayTell(string ucstr, string senderName)
         {
             Log.Chat(ucstr);
 
-            Automata.OnTell(ucstr, senderName);
+            Plugins.OnTell(ucstr, senderName);
         }
 
         #endregion IChatDisplayer
@@ -636,7 +640,7 @@ namespace Client
             //CSheetId userSheet = new CSheetId(ClientCfg.UserSheet);
             var emptyEntityInfo = new Change.TNewEntityInfo();
             emptyEntityInfo.Reset();
-            GetNetworkManager().GetEntityManager().Create(0, Constants.UserSheetId, emptyEntityInfo);
+            _networkManager.GetEntityManager().Create(0, Constants.UserSheetId, emptyEntityInfo);
             Log.Info("Created the user with the sheet " + Constants.UserSheetId);
 
             // Create the message for the server that the client is ready
@@ -678,7 +682,7 @@ namespace Client
 
                     if (!newDatabaseInitStatus && prevDatabaseInitStatus)
                     {
-                        Automata.OnIngameDatabaseInitialized();
+                        Plugins.OnIngameDatabaseInitialized();
                     }
                 }
 
@@ -737,7 +741,7 @@ namespace Client
                 // Stats2Title
                 Console.Title = $@"[RCC] Version: {Program.Version} - State: {_networkConnection.ConnectionState} - Down: {_networkConnection.GetMeanDownload():0.00} kbps - Up: {_networkConnection.GetMeanUpload():0.00} kbps - Loss: {_networkConnection.GetMeanPacketLoss():0.00}";
 
-                // Update Ryzom Client stuff ~10 times per second -> Execute Tasks (like commands and automaton stuff)
+                // Update Ryzom Client stuff ~10 times per second -> Execute Tasks (like commands and listener stuff)
                 if (Math.Abs(Misc.GetLocalTime() - _lastClientUpdate) > 100)
                 {
                     _lastClientUpdate = Misc.GetLocalTime();
@@ -789,8 +793,8 @@ namespace Client
                     continue;
 
                 GetLogger().Error($"Connection timeout of {Constants.ConnectionTimeout} seconds reached.");
-                Automata.OnConnectionLost(AutomatonBase.DisconnectReason.ConnectionLost, "error.timeout");
-                GetNetworkManager().GameExit = true;
+                Plugins.OnConnectionLost(ListenerBase.DisconnectReason.ConnectionLost, "error.timeout");
+                _networkManager.GameExit = true;
 
                 return;
             }
@@ -824,11 +828,8 @@ namespace Client
         /// </summary>
         public void OnUpdate()
         {
-            // execute all the automata scripts
-            Automata.OnUpdate();
-
             // execute all the pluginmanger listener scripts
-            _pluginManager.OnUpdate();
+            Plugins.OnUpdate();
 
             // process the queued chat messages
             lock (_chatQueue)
@@ -1017,14 +1018,14 @@ namespace Client
         /// <param name="cmdUsage">String containing a usage case</param>
         /// <param name="callback">Method for handling the command</param>
         /// <returns>True if successfully registered</returns>
-        public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, AutomatonBase.CommandRunner callback)
+        public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, IClient.CommandRunner callback)
         {
             if (_cmds.ContainsKey(cmdName.ToLower()))
             {
                 return false;
             }
 
-            CommandBase cmd = new AutomatonCommand(cmdName, cmdDesc, cmdUsage, callback);
+            CommandBase cmd = new GenericCommand(cmdName, cmdDesc, cmdUsage, callback);
             _cmds.Add(cmdName.ToLower(), cmd);
             _cmdNames.Add(cmdName.ToLower());
             return true;
@@ -1080,7 +1081,7 @@ namespace Client
             {
                 responseMsg = _cmds[commandName].Run(this, command, localVars);
 
-                Automata.OnInternalCommand(commandName, command, responseMsg);
+                Plugins.OnInternalCommand(commandName, command, responseMsg);
             }
             else
             {
@@ -1096,7 +1097,7 @@ namespace Client
         /// </summary>
         public void Disconnect()
         {
-            Automata.OnDisconnect();
+            Plugins.OnDisconnect();
 
             try
             {

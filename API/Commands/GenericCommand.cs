@@ -6,37 +6,40 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
-using API;
-using API.Commands;
 
-namespace Client.Automata.Internal
+namespace API.Commands
 {
     /// <summary>
-    /// CommandBase class with constructor for creating command for automata.
+    /// CommandBase class with constructor for creating command for plugins.
     /// </summary>
-    public class AutomatonCommand : CommandBase
+    public class GenericCommand : CommandBase
     {
-        public AutomatonBase.CommandRunner Runner;
+        public IClient.CommandRunner Runner;
 
+        /// <inheritdoc/>
         public override string CmdName { get; }
+
+        /// <inheritdoc/>
         public override string CmdUsage { get; }
+
+        /// <inheritdoc/>
         public override string CmdDesc { get; }
 
+        /// <inheritdoc/>
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
             return Runner(command, GetArgs(command));
         }
 
         /// <summary>
-        /// automatonCommand Constructor
+        /// Constructor
         /// </summary>
         /// <param name="cmdName">Name of the command</param>
         /// <param name="cmdDesc">Description of the command. Support tranlation.</param>
         /// <param name="cmdUsage">Usage of the command</param>
         /// <param name="callback">Method for handling the command</param>
-        public AutomatonCommand(string cmdName, string cmdDesc, string cmdUsage, AutomatonBase.CommandRunner callback)
+        public GenericCommand(string cmdName, string cmdDesc, string cmdUsage, IClient.CommandRunner callback)
         {
             CmdName = cmdName;
             CmdDesc = cmdDesc;

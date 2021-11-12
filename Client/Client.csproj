@@ -61,6 +61,10 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Helper\Tasks\" />
+  </ItemGroup>
+
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="echo %25date%25 %25time:~0,-3%25&gt;&quot;$(ProjectDir)\Resources\BuildDate.txt&quot;" />
   </Target>

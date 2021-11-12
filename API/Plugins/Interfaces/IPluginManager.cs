@@ -103,7 +103,7 @@ namespace API.Plugins.Interfaces
         /// Calls an event with the given details. <br/>
         /// This method only synchronizes when the event is not asynchronous.
         /// </summary>
-        /// <param name="action"> Event details</param>
-        void CallEvent(Action<ListenerBase> action);
+        /// <param name="evt"> Event details</param>
+        void CallEvent(Action<ListenerBase> evt);
     }
 }

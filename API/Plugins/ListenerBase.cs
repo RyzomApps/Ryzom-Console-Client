@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
+using API.Chat;
+using API.Network;
 using API.Plugins.Interfaces;
 
 namespace API.Plugins
@@ -11,53 +13,32 @@ namespace API.Plugins
     /// </summary>
     public abstract class ListenerBase : IListener
     {
+        public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost, UserLogout };
+
+
         /// <summary>
-        /// Dispatch a AutomatonBase event with automatic exception handling
+        /// CommandBase runner definition.
+        /// Returned string will be the output of the command
         /// </summary>
-        /// <example>
-        /// Example for calling SomeEvent() on all automata at once:
-        /// DispatchAutomatonEvent(automaton => automaton.SomeEvent());
-        /// </example>
-        /// <param name="action">ActionBase to execute on each automaton</param>
-        /// <param name="automataList">Only fire the event for the specified automaton list (default: all automata)</param>
-        /// <param name="handler">Client for the pluginmanager</param>
-        public static void DispatchListenerEvent(Action<ListenerBase> action, IEnumerable<ListenerBase> automataList = null, IClient handler = null)
-        {
-            handler?.GetPluginManager().CallEvent(action);
-
-            if (automataList == null)
-                return;
-
-            foreach (var automaton in automataList)
-            {
-                try
-                {
-                    action(automaton);
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        //Retrieve parent method name to determine which event caused the exception
-                        var frame = new System.Diagnostics.StackFrame(1);
-                        var method = frame.GetMethod();
-                        var parentMethodName = method?.Name;
-
-                        //Display a meaningful error message to help debugging the AutomatonBase
-                        handler?.GetLogger().Error($"{parentMethodName}: Got error from {automaton}: {e}");
-                    }
-                    //ThreadAbortException should not be caught here as in can happen when disconnecting from server
-                    else throw;
-                }
-            }
-        }
+        /// <param name="command">Full command</param>
+        /// <param name="args">Arguments in the command</param>
+        /// <returns>CommandBase result to display to the user</returns>
+        private delegate string CommandRunner(string command, string[] args);
 
         /// <summary>
-        /// Anything you want to initialize your automaton, will be called on load
+        /// Is called when the client has been disconnected fom the server
+        /// </summary>
+        /// <param name="reason">Disconnect Reason</param>
+        /// <param name="message">Kick message, if any</param>
+        /// <returns>Return TRUE if the client is about to restart</returns>
+        public virtual bool OnDisconnect(DisconnectReason reason, string message) { return false; }
+
+        /// <summary>
+        /// Anything you want to initialize your listener, will be called on load
         /// This method is called only once, whereas OnGameJoined() is called once per server join.
         ///
         /// NOTE: Chat messages cannot be sent at this point in the login process.
-        /// If you want to send a message when the automaton is loaded, use OnGameJoined.
+        /// If you want to send a message when the listener is loaded, use OnGameJoined.
         /// </summary>
         public virtual void OnInitialize() { }
 
@@ -70,7 +51,7 @@ namespace API.Plugins
         /// Called after the server has been joined successfully and chat messages are able to be sent.
         /// This method is called again after reconnecting to the server, whereas OnInitialize() is called only once.
         ///
-        /// NOTE: This is not always right after joining the server - if the automaton was loaded after logging
+        /// NOTE: This is not always right after joining the server - if the listener was loaded after logging
         /// in this is still called.
         /// </summary>
         public virtual void OnGameJoined() { }
@@ -185,5 +166,27 @@ namespace API.Plugins
         /// called when visual property is updated
         /// </summary>
         public virtual void OnEntityUpdateVisualProperty(in uint gameCycle, in byte slot, in byte prop, in uint predictedInterval) { }
+
+        /// <summary>
+        /// Called when one of the characters from the friend list updates
+        /// </summary>
+        /// <param name="contactId">id</param>
+        /// <param name="online">new status</param>
+        public virtual void OnTeamContactStatus(uint contactId, CharConnectionState online) { }
+
+        /// <summary>
+        /// Called when friend list and ignore list from the contact list are initialized
+        /// </summary>
+        public virtual void OnTeamContactInit(List<uint> vFriendListName, List<CharConnectionState> vFriendListOnline, List<string> vIgnoreListName) { }
+
+        /// <summary>
+        /// Called when one character from the friend or ignore list is created
+        /// </summary>
+        public virtual void OnTeamContactCreate(uint contactId, uint nameId, CharConnectionState online, byte nList) { }
+
+        /// <summary>
+        /// Any chat will arrive here 
+        /// </summary>
+        public virtual void OnChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, uint dynChatId, string senderName, uint bubbleTimer) { }
     }
 }

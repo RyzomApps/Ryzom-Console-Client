@@ -35,7 +35,8 @@ namespace Client.Logger
             try
             {
                 // TODO: Verbatim
-                //msg = AutomatonBase.GetVerbatim(msg);
+                //msg = ListenerBase.GetVerbatim(msg);
+
                 if (_prependTimestamp)
                     msg = GetTimestamp() + ' ' + msg;
 

@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using API.Helper;
 using Client.Helper;
 using Client.Network;
 using Client.Sheet;

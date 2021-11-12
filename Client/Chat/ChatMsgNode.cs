@@ -6,6 +6,8 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using API.Chat;
+
 namespace Client.Chat
 {
     public class ChatMsgNode

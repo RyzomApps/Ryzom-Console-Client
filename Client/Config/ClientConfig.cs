@@ -76,7 +76,7 @@ namespace Client.Config
         // Other Settings
         public static char InternalCmdChar = '/';
 
-        // Automata
+        // Plugins
         public static bool OnlinePlayersLoggerEnabled;
         public static bool AutoJoinTeamEnabled;
         public static bool ImpulseDebuggerEnabled;

@@ -378,7 +378,7 @@ namespace Client.Helper
                     if (BasicIoNoColor)
                     {
                         // TODO: Verbatim
-                        //str = AutomatonBase.GetVerbatim(str);
+                        //str = Misc.GetVerbatim(str);
                     }
 
                     Console.WriteLine(str);

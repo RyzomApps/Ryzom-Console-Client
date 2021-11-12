@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Client.Helper.Tasks
+namespace API.Helper.Tasks
 {
     /// <summary>
     /// Holds a task with delay

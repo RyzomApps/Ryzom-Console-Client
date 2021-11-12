@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace Client.Chat
+namespace API.Chat
 {
     /// <summary>
     /// Type of the chat channel (e.g. around, region, dynamic).

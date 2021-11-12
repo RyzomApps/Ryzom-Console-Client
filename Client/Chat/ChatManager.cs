@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using API.Chat;
 using Client.Client;
 using Client.Database;
 using Client.Network;

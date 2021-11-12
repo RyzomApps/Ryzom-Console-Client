@@ -7,11 +7,13 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using API.Commands;
 using API.Config;
+using API.Helper.Tasks;
 using API.Logger;
 using API.Plugins.Interfaces;
 
@@ -32,6 +34,13 @@ namespace API.Plugins
         private YamlConfiguration _newConfig;
         private FileInfo _configFile;
         private PluginLoggerWrapper _logger;
+
+        private readonly List<TaskWithDelay> _delayedTasks = new List<TaskWithDelay>();
+
+        private readonly object _delayTasksLock = new object();
+
+        // TODO: unregister commands
+        private readonly List<string> _registeredCommands = new List<string>();
 
         // ReSharper disable once UnusedMember.Global
         protected Plugin() { }
@@ -90,25 +99,6 @@ namespace API.Plugins
             }
 
             return _newConfig;
-        }
-
-        /// <summary>
-        /// Iterate all types within the specified assembly.<br/>
-        /// Check whether that's the shortest so far.<br/>
-        /// If it's, set it to the ns.
-        /// </summary>
-        /// <param name="asm">Assembly to check</param>
-        /// <returns>Return the shortest namespace of the assembly</returns>
-        /// TODO: Move to helper class
-        public static string GetAssemblyNamespace(Assembly asm)
-        {
-            var ns = "";
-
-            foreach (var tp in asm.Modules.First().GetTypes())
-                if (tp.Namespace != null && (ns.Length == 0 || tp.Namespace.Length < ns.Length))
-                    ns = tp.Namespace;
-
-            return ns;
         }
 
         /// <inheritdoc />
@@ -301,6 +291,119 @@ namespace API.Plugins
         public string GetName()
         {
             return GetDescription().GetName();
+        }
+
+        /// <inheritdoc />
+        public bool PerformInternalCommand(string command, Dictionary<string, object> localVars = null)
+        {
+            var temp = "";
+            return _client.PerformInternalCommand(command, ref temp, localVars);
+        }
+
+        /// <inheritdoc />
+        public bool PerformInternalCommand(string command, ref string responseMsg, Dictionary<string, object> localVars = null)
+        {
+            return _client.PerformInternalCommand(command, ref responseMsg, localVars);
+        }
+
+        /// <inheritdoc />
+        public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, IClient.CommandRunner callback)
+        {
+            var result = _client.RegisterCommand(cmdName, cmdDesc, cmdUsage, callback);
+            if (result)
+                _registeredCommands.Add(cmdName.ToLower());
+        
+            return result;
+        }
+
+        /// <summary>
+        /// Will be called every ~100ms.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="ListenerBase.OnUpdate"/> method can be overridden by child class so need an extra update method
+        /// </remarks>
+        public void UpdateInternal()
+        {
+            lock (_delayTasksLock)
+            {
+                if (_delayedTasks.Count <= 0) return;
+
+                var tasksToRemove = new List<int>();
+
+                for (var i = 0; i < _delayedTasks.Count; i++)
+                {
+                    if (!_delayedTasks[i].Tick()) continue;
+
+                    _delayedTasks[i].Task();
+                    tasksToRemove.Add(i);
+                }
+
+                if (tasksToRemove.Count <= 0) return;
+
+                tasksToRemove.Sort((a, b) => b.CompareTo(a)); // descending sort
+
+                foreach (var index in tasksToRemove)
+                {
+                    _delayedTasks.RemoveAt(index);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Schedule a task to run on the main thread, and do not wait for completion
+        /// </summary>
+        /// <param name="task">Task to run</param>
+        /// <param name="delayTicks">Run the task after X ticks (1 tick delay = ~100ms). 0 for no delay</param>
+        /// <example>
+        /// <example>InvokeOnMainThread(methodThatReturnsNothing, 10);</example>
+        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument), 10);</example>
+        /// <example>InvokeOnMainThread(() => { yourCode(); }, 10);</example>
+        /// </example>
+        protected void ScheduleOnMainThread(Action task, int delayTicks = 0)
+        {
+            lock (_delayTasksLock)
+            {
+                _delayedTasks.Add(new TaskWithDelay(task, delayTicks));
+            }
+        }
+
+        /// <summary>
+        /// Schedule a task to run on the main thread, and do not wait for completion
+        /// </summary>
+        /// <param name="task">Task to run</param>
+        /// <param name="delay">Run the task after the specified delay</param>
+        protected void ScheduleOnMainThread(Action task, TimeSpan delay)
+        {
+            lock (_delayTasksLock)
+            {
+                _delayedTasks.Add(new TaskWithDelay(task, delay));
+            }
+        }
+
+        /// <summary>
+        /// Invoke a task on the main thread, wait for completion and retrieve return value.
+        /// </summary>
+        /// <param name="task">Task to run with any type or return value</param>
+        /// <returns>Any result returned from task, result type is inferred from the task</returns>
+        /// <example>bool result = InvokeOnMainThread(methodThatReturnsAbool);</example>
+        /// <example>bool result = InvokeOnMainThread(() => methodThatReturnsAbool(argument));</example>
+        /// <example>int result = InvokeOnMainThread(() => { yourCode(); return 42; });</example>
+        /// <typeparam name="T">Type of the return value</typeparam>
+        protected T InvokeOnMainThread<T>(Func<T> task)
+        {
+            return _client.InvokeOnMainThread(task);
+        }
+
+        /// <summary>
+        /// Invoke a task on the main thread and wait for completion
+        /// </summary>
+        /// <param name="task">Task to run without return value</param>
+        /// <example>InvokeOnMainThread(methodThatReturnsNothing);</example>
+        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument));</example>
+        /// <example>InvokeOnMainThread(() => { yourCode(); });</example>
+        protected void InvokeOnMainThread(Action task)
+        {
+            _client.InvokeOnMainThread(task);
         }
     }
 }

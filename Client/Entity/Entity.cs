@@ -9,6 +9,7 @@
 using System;
 using System.Diagnostics;
 using System.Numerics;
+using API.Entity;
 using Client.Database;
 using Client.Property;
 
@@ -20,7 +21,7 @@ namespace Client.Entity
     /// <author>Guillaume PUZIN</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    public class Entity
+    public class Entity : EntityBase
     {
         /// <summary>
         /// Entity Id (CLFECOMMON::INVALID_CLIENT_DATASET_INDEX for an invalid one)
@@ -94,45 +95,6 @@ namespace Client.Entity
 
             _entityGuildName = value;
         }
-
-        #region Static Methods
-        public static string RemoveTitleFromName(string name)
-        {
-            var p1 = name.IndexOf('$');
-
-            if (p1 == -1)
-            {
-                return name;
-            }
-
-            var p2 = name.IndexOf('$', p1 + 1);
-
-            if (p2 != -1)
-            {
-                return name.Substring(0, p1) + name[(p2 + 1)..];
-            }
-
-            return name.Substring(0, p1);
-        }
-
-        public static string RemoveShardFromName(string name)
-        {
-            // The string must contains a '(' and a ')'
-            var p0 = name.IndexOf('(');
-            var p1 = name.IndexOf(')');
-
-            if (p0 == -1 || p1 == -1 || p1 <= p0)
-                return name;
-
-            // Remove all shard names (hack)
-            return name.Substring(0, p0) + name[(p1 + 1)..];
-        }
-
-        public static string RemoveTitleAndShardFromName(string name)
-        {
-            return RemoveTitleFromName(RemoveShardFromName(name));
-        }
-        #endregion
 
         /// <summary>
         /// Default constructor
@@ -434,7 +396,7 @@ namespace Client.Entity
             var focus = (byte)((prop >> 25) & 0x7f);
 
             //client.GetLogger().Info($"{_entityName} {hitPoints} {stamina} {sap} {focus}");
-            client.Automata.OnEntityUpdateBars(gameCycle, prop, _slot, hitPoints, stamina, sap, focus);
+            client.Plugins.OnEntityUpdateBars(gameCycle, prop, _slot, hitPoints, stamina, sap, focus);
         }
 
         /// <summary>

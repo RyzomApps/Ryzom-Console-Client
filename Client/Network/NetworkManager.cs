@@ -11,6 +11,9 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
 using System.Threading;
+using API.Chat;
+using API.Helper;
+using API.Network;
 using Client.Chat;
 using Client.Client;
 using Client.Database;
@@ -23,10 +26,11 @@ using Client.Property;
 
 namespace Client.Network
 {
+
     /// <summary>
     /// used to control the connection and implements the impulse callbacks from the connection
     /// </summary>
-    public class NetworkManager
+    public class NetworkManager : INetworkManager
     {
         public bool ServerReceivedReady;
 
@@ -37,7 +41,7 @@ namespace Client.Network
         public List<CharacterSummary> CharacterSummaries = new List<CharacterSummary>();
         public bool WaitServerAnswer;
 
-        public string PlayerSelectedHomeShardName = "";
+        public string PlayerSelectedHomeShardName { get; set; } = "";
         public string PlayerSelectedHomeShardNameWithParenthesis = "";
 
         public bool GameExit;
@@ -457,14 +461,14 @@ namespace Client.Network
             impulse.Serial(ref sta);
             impulse.Serial(ref focus);
 
-            _client.Automata.OnUserBars(msgNumber, hp, sap, sta, focus);
+            _client.Plugins.OnUserBars(msgNumber, hp, sap, sta, focus);
         }
 
         private void ImpulseEncyclopediaInit(BitMemoryStream impulse)
         {
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            _client.Automata.OnEncyclopediaInit();
+            _client.Plugins.OnEncyclopediaInit();
         }
 
         private void ImpulseEncyclopediaUpdate(BitMemoryStream impulse)
@@ -525,7 +529,7 @@ namespace Client.Network
             impulse.Serial(ref x);
             impulse.Serial(ref y);
 
-            _client.Automata.OnDeathRespawnPoint(x, y);
+            _client.Plugins.OnDeathRespawnPoint(x, y);
         }
 
         private void ImpulseItemCloseRoomInventory(BitMemoryStream impulse)
@@ -630,7 +634,7 @@ namespace Client.Network
             // update gray state, if game inited.
             //pPM.updateMemoryBar();
 
-            _client.Automata.OnPhraseDownLoad(phrases, memorizedPhrases);
+            _client.Plugins.OnPhraseDownLoad(phrases, memorizedPhrases);
         }
 
         private void ImpulseRemoteAdmin(BitMemoryStream impulse)
@@ -653,7 +657,7 @@ namespace Client.Network
             bool useFemaleTitles = false;
             impulse.Serial(ref useFemaleTitles);
 
-            _client.Automata.OnGuildUseFemaleTitles(useFemaleTitles);
+            _client.Plugins.OnGuildUseFemaleTitles(useFemaleTitles);
         }
 
         /// <summary>
@@ -678,7 +682,7 @@ namespace Client.Network
                 vTitles.Add(value);
             }
 
-            _client.Automata.OnGuildUpdatePlayerTitle(bUnblock, len, vTitles);
+            _client.Plugins.OnGuildUpdatePlayerTitle(bUnblock, len, vTitles);
         }
 
         private void ImpulseGuildCloseInventory(BitMemoryStream impulse)
@@ -753,7 +757,7 @@ namespace Client.Network
 
             _stringManager.LoadCache(timestamp);
 
-            _client.Automata.OnReloadCache(timestamp);
+            _client.Plugins.OnReloadCache(timestamp);
         }
 
         /// <summary>
@@ -770,13 +774,13 @@ namespace Client.Network
 
             _stringManager.ReceiveString(stringId, strUtf8, this);
 
-            _client.Automata.OnStringResp(stringId, strUtf8);
+            _client.Plugins.OnStringResp(stringId, strUtf8);
         }
 
         /// <summary>
         /// A dyn string (or phrase) is send (so, we receive it)
         /// </summary>
-        /// <remarks>Automaton Event is fired inside the string manager</remarks>
+        /// <remarks>Event is fired inside the string manager</remarks>
         private void ImpulsePhraseSend(BitMemoryStream impulse)
         {
             _stringManager.ReceiveDynString(impulse, this);
@@ -818,7 +822,7 @@ namespace Client.Network
             impulse.Serial(ref contactId);
             impulse.Serial(ref nList);
 
-            _client.Automata.OnTeamContactRemove(contactId, nList);
+            _client.Plugins.OnTeamContactRemove(contactId, nList);
         }
 
         /// <summary>
@@ -834,7 +838,7 @@ namespace Client.Network
 
             var online = (CharConnectionState)state;
 
-            _client.Automata.OnTeamContactStatus(contactId, online);
+            _client.Plugins.OnTeamContactStatus(contactId, online);
         }
 
         private void ImpulseTeamContactCreate(BitMemoryStream impulse)
@@ -858,7 +862,7 @@ namespace Client.Network
                 if (nameId == 0) return;
             }
 
-            _client.Automata.OnTeamContactCreate(contactId, nameId, online, nList);
+            _client.Plugins.OnTeamContactCreate(contactId, nameId, online, nList);
         }
 
         /// <summary>
@@ -902,7 +906,7 @@ namespace Client.Network
                 vIgnoreListName.Add(value);
             }
 
-            _client.Automata.OnTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
+            _client.Plugins.OnTeamContactInit(vFriendListName, vFriendListOnline, vIgnoreListName);
         }
 
         private void ImpulseTeamShareClose(BitMemoryStream impulse)
@@ -927,7 +931,7 @@ namespace Client.Network
             uint textID = uint.MinValue;
             impulse.Serial(ref textID);
 
-            _client.Automata.OnTeamInvitation(textID);
+            _client.Plugins.OnTeamInvitation(textID);
         }
 
         private void ImpulseBeginCast(BitMemoryStream impulse)
@@ -1080,7 +1084,7 @@ namespace Client.Network
             GameExit = true;
             _networkConnection.Disconnect();
 
-            _client.Automata.OnDisconnect();
+            _client.Plugins.OnDisconnect();
         }
 
         /// <summary>
@@ -1096,7 +1100,7 @@ namespace Client.Network
             var webHost = "";
             impulse.Serial(ref webHost, false);
 
-            _client.Automata.OnShardID(shardId, webHost);
+            _client.Plugins.OnShardID(shardId, webHost);
         }
 
         private void ImpulseCharNameValid(BitMemoryStream impulse)
@@ -1112,7 +1116,7 @@ namespace Client.Network
 
             CheckHandshake(impulse);
 
-            _client.Automata.OnGameJoined();
+            _client.Plugins.OnGameJoined();
         }
 
         private void ImpulseFarTp(BitMemoryStream impulse)
@@ -1144,7 +1148,7 @@ namespace Client.Network
                 // Update the position for the vision.
                 _networkConnection.SetReferencePosition(_entitiesManager.UserEntity.Pos);
 
-                _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, _entitiesManager.UserEntity.Pos, _entitiesManager.UserEntity.Front, season, userRole, isInRingSession);
+                _client.Plugins.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, _entitiesManager.UserEntity.Pos, _entitiesManager.UserEntity.Front, season, userRole, isInRingSession);
             }
             else
             {
@@ -1156,7 +1160,7 @@ namespace Client.Network
                 // Update the position for the vision.
                 _networkConnection.SetReferencePosition(userEntityInitPos);
 
-                _client.Automata.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, userEntityInitPos, userEntityInitFront, season, userRole, isInRingSession);
+                _client.Plugins.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, userEntityInitPos, userEntityInitFront, season, userRole, isInRingSession);
             }
 
             _client.UserCharPosReceived = true;
@@ -1231,7 +1235,7 @@ namespace Client.Network
             _client.GetLogger().Debug("st_ingame->st_select_char");
             CanSendCharSelection = true;
 
-            _client.Automata.OnUserChars();
+            _client.Plugins.OnUserChars();
         }
 
         private void ImpulseNoUserChar(BitMemoryStream impulse)
@@ -1260,7 +1264,7 @@ namespace Client.Network
 
                 _databaseManager.ResetBank(serverTick, bank);
 
-                _client.Automata.OnDatabaseResetBank(serverTick, bank, _databaseManager);
+                _client.Plugins.OnDatabaseResetBank(serverTick, bank, _databaseManager);
             }
             catch (Exception e)
             {
@@ -1292,7 +1296,7 @@ namespace Client.Network
 
                 _databaseManager.ReadDelta(serverTick, impulse, bank);
 
-                _client.Automata.OnDatabaseInitBank(serverTick, bank, _databaseManager);
+                _client.Plugins.OnDatabaseInitBank(serverTick, bank, _databaseManager);
             }
             catch (Exception e)
             {
@@ -1321,7 +1325,7 @@ namespace Client.Network
 
                 _databaseManager.ReadDelta(serverTick, impulse, bank);
 
-                _client.Automata.OnDatabaseUpdateBank(serverTick, bank, _databaseManager);
+                _client.Plugins.OnDatabaseUpdateBank(serverTick, bank, _databaseManager);
             }
             catch (Exception e)
             {
@@ -1340,7 +1344,7 @@ namespace Client.Network
             uint serverTick = 0;
             impulse.Serial(ref serverTick);
 
-            _client.Automata.OnInitInventory(serverTick);
+            _client.Plugins.OnInitInventory(serverTick);
         }
 
         private void ImpulseUpdateInventory(BitMemoryStream impulse)
@@ -1370,7 +1374,7 @@ namespace Client.Network
                 _databaseManager.SetInitPacketReceived();
                 _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
 
-                _client.Automata.OnDatabaseInitPlayer(serverTick);
+                _client.Plugins.OnDatabaseInitPlayer(serverTick);
             }
             catch (Exception e)
             {
@@ -1396,7 +1400,7 @@ namespace Client.Network
 
                 _databaseManager.ReadDelta(serverTick, impulse, Constants.CdbPlayer); // unlike on the server, here there is only one unified CCDBSynchronized object
 
-                _client.Automata.OnDatabaseUpdatePlayer(serverTick);
+                _client.Plugins.OnDatabaseUpdatePlayer(serverTick);
             }
             catch (Exception e)
             {

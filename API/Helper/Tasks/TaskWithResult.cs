@@ -9,7 +9,7 @@
 using System;
 using System.Threading;
 
-namespace Client.Helper.Tasks
+namespace API.Helper.Tasks
 {
     /// <summary>
     /// Holds an asynchronous task with return value

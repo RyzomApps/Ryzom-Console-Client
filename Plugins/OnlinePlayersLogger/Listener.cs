@@ -6,18 +6,23 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Client.Automata.Internal;
-using Client.Chat;
-using Client.Commands;
-using Client.Config;
-using Client.Helper;
-using Client.Network;
+using API.Chat;
+using API.Entity;
+using API.Helper;
+using API.Network;
+using API.Plugins;
 
-namespace Client.Automata
+namespace OnlinePlayersLogger
 {
-    public class OnlinePlayersLogger : AutomatonBase
+    /// <summary>
+    /// Handle events for all Player related events
+    /// </summary>
+    /// <author>bierdosenhalter</author>
+    internal class Listener : ListenerBase
     {
-        readonly Mutex _mutex = new Mutex();
+        public string OnlinePlayersApi { get; set; }
+
+        private readonly Mutex _mutex = new Mutex();
 
         private readonly Dictionary<uint, string> _friendNames = new Dictionary<uint, string>();
         private readonly Dictionary<uint, CharConnectionState> _friendOnline = new Dictionary<uint, CharConnectionState>();
@@ -36,18 +41,27 @@ namespace Client.Automata
         private const string WhoPlayerPattern = @"^\&SYS\&(?<name>[a-zA-Z].*)\(Atys\)\.$";
         private readonly Regex _whoRegex = new Regex(WhoPlayerPattern);
 
+        private readonly Main _plugin;
+
         private string _playerName;
+
+        public Listener(Main instance)
+        {
+            _plugin = instance;
+        }
 
         /// <inheritdoc />
         public override void OnInitialize()
         {
-            Handler.GetLogger().Info("Automaton 'OnlinePlayersLogger' initialized.");
-            RegisterAutomatonCommand("list", "Lists all online players in the friend list.", "", Command);
-            RegisterAutomatonCommand("importfriends", "Imports a newline separated text file of player names to the friends list.", "<filename>", Command);
-            RegisterAutomatonCommand("exportfriends", "Exports a newline separated text file of player names from the friends list.", "<filename>", Command);
-            RegisterAutomatonCommand("sendAPI", "Sending Player Array manually to API Server", "", Command);
-            if (ClientConfig.OnlinePlayersApi.Trim().Equals(string.Empty))
-                Handler.GetLogger().Info("No server for player online status updates set: Not using this feature.");
+            _plugin.GetLogger().Info("'OnlinePlayersLogger' initialized.");
+
+            _plugin.RegisterCommand("list", "Lists all online players in the friend list.", "", Command);
+            _plugin.RegisterCommand("importfriends", "Imports a newline separated text file of player names to the friends list.", "<filename>", Command);
+            _plugin.RegisterCommand("exportfriends", "Exports a newline separated text file of player names from the friends list.", "<filename>", Command);
+            _plugin.RegisterCommand("sendAPI", "Sending Player Array manually to API Server", "", Command);
+
+            if (OnlinePlayersApi.Trim().Equals(string.Empty))
+                _plugin.GetLogger().Info("No server for player online status updates set: Not using this feature.");
         }
 
         /// <inheritdoc />
@@ -60,9 +74,9 @@ namespace Client.Automata
             // Get missing names from server
             foreach (var id in _friendNames.Keys.Where(id => _friendNames[id] == string.Empty))
             {
-                if (Handler.GetStringManager().GetString(id, out var name, Handler.GetNetworkManager()))
+                if (_plugin.GetClient().GetIStringManager().GetString(id, out var name, _plugin.GetClient().GetINetworkManager()))
                 {
-                    _friendNames[id] = Entity.Entity.RemoveTitleAndShardFromName(name).ToLower();
+                    _friendNames[id] = EntityBase.RemoveTitleAndShardFromName(name).ToLower();
                 }
 
                 return;
@@ -79,8 +93,11 @@ namespace Client.Automata
                 if (_friendNames.ContainsValue(name))
                     return;
 
-                Handler.GetLogger().Info($"Trying to add {name} to the friend list. {_namesToAdd.Count} left.");
-                new AddFriend().Run(Handler, "addfriend " + name, null);
+                _plugin.GetLogger().Info($"Trying to add {name} to the friend list. {_namesToAdd.Count} left.");
+
+                _plugin.PerformInternalCommand("addfriend " + name);
+
+                //new AddFriend().Run(_plugin.GetClient(), "addfriend " + name, null);
 
                 return;
             }
@@ -90,11 +107,13 @@ namespace Client.Automata
             {
                 _lastWhoCommand = DateTime.Now + _intervalWhoCommand;
 
-                new Who().Run(Handler, "who ", null);
+                _plugin.PerformInternalCommand("who");
+
+                //new Who().Run(_plugin.GetClient(), "who ", null);
             }
 
             // Update the API
-            if (!_friendNames.ContainsValue(string.Empty) && !ClientConfig.OnlinePlayersApi.Trim().Equals(string.Empty))
+            if (!_friendNames.ContainsValue(string.Empty) && !OnlinePlayersApi.Trim().Equals(string.Empty))
             {
                 if (DateTime.Now > _lastApiServerUpdate + _intervalApiServer)
                 {
@@ -117,7 +136,7 @@ namespace Client.Automata
             _friendOnline[key] = online;
             var name = _friendNames[key] != string.Empty ? _friendNames[key] : $"{contactListIndex}";
 
-            Handler.GetLogger().Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
+            _plugin.GetLogger().Info($"{name} is now {(online == CharConnectionState.CcsOnline ? "online" : "offline")}.");
         }
 
         /// <inheritdoc />
@@ -128,7 +147,7 @@ namespace Client.Automata
 
             var (key, _) = _friendOnline.ElementAt((int)contactListIndex);
 
-            Handler.GetLogger().Info($"Removing {(_friendNames[key] != string.Empty ? _friendNames[key] : $"{key}")} from the friend list.");
+            _plugin.GetLogger().Info($"Removing {(_friendNames[key] != string.Empty ? _friendNames[key] : $"{key}")} from the friend list.");
 
             _mutex.WaitOne();
             _friendOnline.Remove(key);
@@ -146,19 +165,19 @@ namespace Client.Automata
 
                 _mutex.WaitOne();
                 _friendOnline.Add(id, state);
-                _friendNames.Add(id, /*Handler.GetStringManager().GetString(id, out string name, Handler.GetNetworkManager()) ? name :*/ string.Empty);
+                _friendNames.Add(id, /*_plugin.GetClient().GetStringManager().GetString(id, out string name, _plugin.GetClient().GetNetworkManager()) ? name :*/ string.Empty);
                 _mutex.ReleaseMutex();
             }
 
-            Handler.GetLogger().Info($"Initialized friend list with {friendListNames.Count} contacts.");
+            _plugin.GetLogger().Info($"Initialized friend list with {friendListNames.Count} contacts.");
 
-            _playerName = Entity.Entity.RemoveTitleAndShardFromName(Handler.GetNetworkManager().PlayerSelectedHomeShardName).ToLower();
+            _playerName = EntityBase.RemoveTitleAndShardFromName(_plugin.GetClient().GetINetworkManager().PlayerSelectedHomeShardName).ToLower();
 
             _initialized = true;
         }
 
         /// <inheritdoc />
-        public override void OnTeamContactCreate(in uint contactId, in uint nameId, CharConnectionState online, in byte nList)
+        public override void OnTeamContactCreate(uint contactId, uint nameId, CharConnectionState online, byte nList)
         {
             if (nList != 0) return;
 
@@ -166,14 +185,14 @@ namespace Client.Automata
 
             _mutex.WaitOne();
             _friendOnline.Add(nameId, online);
-            _friendNames.Add(nameId, Handler.GetStringManager().GetString(nameId, out var name, Handler.GetNetworkManager()) ? Entity.Entity.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
+            _friendNames.Add(nameId, _plugin.GetClient().GetIStringManager().GetString(nameId, out var name, _plugin.GetClient().GetINetworkManager()) ? EntityBase.RemoveTitleAndShardFromName(name).ToLower() : string.Empty);
             _mutex.ReleaseMutex();
 
-            Handler.GetLogger().Info($"Added {(_friendNames[nameId] != string.Empty ? _friendNames[nameId] : $"{nameId}")} to the friend list.");
+            _plugin.GetLogger().Info($"Added {(_friendNames[nameId] != string.Empty ? _friendNames[nameId] : $"{nameId}")} to the friend list.");
         }
 
         /// <inheritdoc />
-        public override void OnChat(in uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, in uint dynChatId, string senderName, in uint bubbleTimer)
+        public override void OnChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, uint dynChatId, string senderName, uint bubbleTimer)
         {
             // Try to add player from who command
             if (mode == ChatGroupType.System)
@@ -202,7 +221,7 @@ namespace Client.Automata
             }
 
             // Try to add players from the chat
-            var name = Entity.Entity.RemoveTitleAndShardFromName(senderName).ToLower();
+            var name = EntityBase.RemoveTitleAndShardFromName(senderName).ToLower();
 
             if (name.StartsWith("~"))
                 name = name[1..];
@@ -210,13 +229,16 @@ namespace Client.Automata
             if (name.Trim().Equals(string.Empty))
                 return;
 
-            if (name.ToLower().Equals(Entity.Entity.RemoveTitleAndShardFromName(Handler.GetNetworkManager().PlayerSelectedHomeShardName).ToLower()))
+            if (name.ToLower().Equals(EntityBase.RemoveTitleAndShardFromName(_plugin.GetClient().GetINetworkManager().PlayerSelectedHomeShardName).ToLower()))
                 return;
 
             if (_friendNames.ContainsValue(name)) return;
 
-            Handler.GetLogger().Info($"{name} will be added to the friends list.");
-            new AddFriend().Run(Handler, "addfriend " + name, null);
+            _plugin.GetLogger().Info($"{name} will be added to the friends list.");
+
+            _plugin.PerformInternalCommand("addfriend " + name);
+
+            //new AddFriend().Run(_plugin.GetClient(), "addfriend " + name, null);
         }
 
         public string Command(string cmd, string[] args)
@@ -249,7 +271,7 @@ namespace Client.Automata
                     return ret;
 
                 case "importfriends" when args.Length != 1:
-                    Handler.GetLogger()?.Error("Please specify a file for the players to import.");
+                    _plugin.GetLogger()?.Error("Please specify a file for the players to import.");
                     return "";
 
                 case "importfriends":
@@ -257,7 +279,7 @@ namespace Client.Automata
 
                     if (!File.Exists(pathR))
                     {
-                        Handler.GetLogger()?.Error("File does not exist.");
+                        _plugin.GetLogger()?.Error("File does not exist.");
                         return "";
                     }
 
@@ -273,7 +295,7 @@ namespace Client.Automata
                     return "";
 
                 case "exportfriends" when args.Length != 1:
-                    Handler.GetLogger()?.Error("Please specify a file for the players to export.");
+                    _plugin.GetLogger()?.Error("Please specify a file for the players to export.");
                     return "";
 
                 case "exportfriends":
@@ -281,7 +303,7 @@ namespace Client.Automata
 
                     if (_friendNames.ContainsValue(string.Empty))
                     {
-                        Handler.GetLogger()?.Error("There are unloaded playernames. Please wait before all names are known by the client.");
+                        _plugin.GetLogger()?.Error("There are unloaded playernames. Please wait before all names are known by the client.");
                         return "";
                     }
 
@@ -293,14 +315,14 @@ namespace Client.Automata
                     return "";
 
                 case "sendapi":
-                    Handler.GetLogger()?.Info("Sending Player Array to API");
+                    _plugin.GetLogger()?.Info("Sending Player Array to API");
                     _lastApiServerUpdate = DateTime.Now + _intervalApiServer;
 
                     Task.Factory.StartNew(SendApiUpdate);
                     return "";
 
                 default:
-                    Handler.GetLogger()?.Warn("CommandBase unknown: " + cmd);
+                    _plugin.GetLogger()?.Warn("CommandBase unknown: " + cmd);
                     return "";
             }
         }
@@ -310,13 +332,17 @@ namespace Client.Automata
         /// </summary>
         public void SendApiUpdate()
         {
+            // no api uri set
+            if (string.IsNullOrEmpty(OnlinePlayersApi))
+                return;
+
             // there are friends that have not received a name
             if (_friendNames.Keys.Any(id => _friendNames[id] == string.Empty))
                 return;
 
             try
             {
-                var httpWebRequest = (HttpWebRequest)WebRequest.Create(ClientConfig.OnlinePlayersApi);
+                var httpWebRequest = (HttpWebRequest)WebRequest.Create(OnlinePlayersApi);
                 httpWebRequest.ContentType = "application/json";
                 httpWebRequest.Method = "POST";
                 httpWebRequest.AllowWriteStreamBuffering = false;
@@ -347,12 +373,12 @@ namespace Client.Automata
 
                 if (!int.TryParse(response, out var result) || result != 1)
                 {
-                    Handler.GetLogger().Error("Error API responded with: " + response);
+                    _plugin.GetLogger().Error("Error API responded with: " + response);
                 }
             }
             catch (Exception e)
             {
-                Handler.GetLogger().Error("Error while posting to the players API: " + e.Message);
+                _plugin.GetLogger().Error("Error while posting to the players API: " + e.Message);
             }
         }
     }

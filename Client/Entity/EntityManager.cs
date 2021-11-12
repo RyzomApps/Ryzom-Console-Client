@@ -83,7 +83,7 @@ namespace Client.Entity
                 // Store the alias (although there should not be one for the slot 0!)
                 _entities[0].NpcAlias(newEntityInfo.Alias);
 
-                //_client.Automata.OnEntityCreate(slot, form, newEntityInfo); TODO onplayerentitycreate
+                //_client.Plugins.OnEntityCreate(slot, form, newEntityInfo); TODO onplayerentitycreate
 
                 return _entities[0];
             }
@@ -121,7 +121,7 @@ namespace Client.Entity
                 _entities[slot].NpcAlias(newEntityInfo.Alias);
             }
 
-            _client.Automata.OnEntityCreate(slot, form, newEntityInfo);
+            _client.Plugins.OnEntityCreate(slot, form, newEntityInfo);
 
             // TODO: Implementation
 
@@ -134,7 +134,7 @@ namespace Client.Entity
         /// <returns>bool : 'true' if the entity has been correctly removed</returns> 
         public bool Remove(in byte slot, bool warning)
         {
-            _client.Automata.OnEntityRemove(slot, warning);
+            _client.Plugins.OnEntityRemove(slot, warning);
 
             // TODO: Implementation
 
@@ -198,7 +198,7 @@ namespace Client.Entity
                 _entities[slot].UpdateVisualProperty(gameCycle, prop, predictedInterval, _client);
             }
 
-            _client.Automata.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval);
+            _client.Plugins.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval);
 
             // TODO: Implementation
         }

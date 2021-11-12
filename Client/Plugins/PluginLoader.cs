@@ -97,7 +97,7 @@ namespace Client.Plugins
         private static string GetResourceFile(string assemblyPath, string fileName)
         {
             var assembly = Assembly.LoadFrom(assemblyPath);
-            var nameSpace = Plugin.GetAssemblyNamespace(assembly);
+            var nameSpace = Misc.GetAssemblyNamespace(assembly);
             var resourceName = $"{nameSpace}.{fileName}";
             using var stream = assembly.GetManifestResourceStream(resourceName);
             using var reader = new StreamReader(stream ?? throw new InvalidOperationException());
