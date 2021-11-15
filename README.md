@@ -1,21 +1,22 @@
-# RCC
+# RCC (Ryzom Console Client)
 
 [![nightly-release](https://github.com/RyzomApps/RCC/actions/workflows/dotnet.yml/badge.svg)](https://github.com/RyzomApps/RCC/actions/workflows/dotnet.yml)
+[![last commit](https://img.shields.io/github/last-commit/RyzomApps/RCC)](https://github.com/RyzomApps/Ryzom-Console-Client/commits/main)
+![lines of code](https://img.shields.io/github/downloads/RyzomApps/Ryzom-Console-Client/total)
 [![reddit](https://img.shields.io/reddit/subreddit-subscribers/Ryzom)](https://old.reddit.com/r/Ryzom/)
-![last commit](https://img.shields.io/github/last-commit/RyzomApps/RCC)
 ![lines of code](https://tokei.rs/b1/github/RyzomApps/RCC)
 ![repo size](https://img.shields.io/github/languages/code-size/RyzomApps/RCC.svg?label=repo%20size)
 
-Ryzom Console Client (RCC) is a lightweight application that lets you connect to the server of the MMORPG Ryzom, send commands and receive text messages in a fast and simple way, without having to open the main Ryzom game. It also offers various automations for management and other purposes.
+Ryzom Console Client (RCC) is a lightweight application that lets you connect to the server of the MMORPG Ryzom, send commands and receive text messages in a fast and simple way, without having to open the official Ryzom game client. It also offers an [API](https://github.com/RyzomApps/Ryzom-Console-Client-API) to create plugins for management and other purposes.
 
 ## Installation
-Get the exe file from the latest build. This exe file is a .NET-Core binary that also works on Mac and Linux.
+Get the executable for windows from the latest [nightly-release](https://github.com/RyzomApps/Ryzom-Console-Client/releases/tag/nightly-release) or build the source files yourself. The application is a .NET-Core binary that should also work on Mac and Linux.
 
 ## Usage
-Take a look at the sample configuration that is created when RCC is started for the first time.
+Take a look at the sample configuration (client.cfg) that is created when RCC is started for the first time.
 
 ## Scripting
-Write your own plugin that inherits from API.Plugins.Plugin. It has an initialization method and is updated every few ticks by the server. Many so-called "impulses" of the Ryzom server are already included as methods that can be inherited by the automaton.
+Write your own plugin that inherits from API.Plugins.Plugin. An initialization method is provided and the plugin is updated every few ticks by the client. Many so-called "impulses" of the Ryzom server are already included as methods that can be inherited by the plugin.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
@@ -23,6 +24,14 @@ Please make sure to update tests as appropriate.
 
 ## License ##
 See the [LICENSE](LICENSE.md) file for license rights and limitations (McRae General Public License).
+
+## Warranty ##
+
+Please note: all tools/scripts in this repo are released for use "AS IS" without any warranties of any kind, including, but not limited to their installation, use, or performance. We disclaim any and all warranties, either express or implied, including but not limited to any warranty of noninfringement, merchantability, and/or fitness for a particular purpose. We do not warrant that the technology will meet your requirements, that the operation thereof will be uninterrupted or error-free, or that any errors will be corrected.
+
+Any use of these scripts and tools is at your own risk. There is no guarantee that they have been through thorough testing in a comparable environment and we are not responsible for any damage or data loss incurred with their use.
+
+You are responsible for reviewing and testing any scripts you run thoroughly before use in any non-testing environment.
 
 ## Sources
 
