@@ -17,8 +17,8 @@
     <Deterministic>false</Deterministic>
     <AssemblyName>RyzomConsoleClient</AssemblyName>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimUnusedDependencies>true</TrimUnusedDependencies>
+    <!--PublishTrimmed>true</PublishTrimmed-->
+    <!--TrimUnusedDependencies>true</TrimUnusedDependencies-->
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RuntimeIdentifiers>win10-x64;linux-x64</RuntimeIdentifiers>

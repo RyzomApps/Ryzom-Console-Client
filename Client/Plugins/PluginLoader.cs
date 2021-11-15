@@ -16,7 +16,7 @@ namespace Client.Plugins
         /// <inheritdoc/>
         public IClient Handler { get; set; }
 
-        private readonly List<string> _fileFilters = new List<string> { @"\.dll$" };
+        private readonly List<string> _fileFilters = new List<string> { @"\.dll$", @"\.nupkg$" };
 
         private readonly Dictionary<string, PluginClassLoader> _loaders = new Dictionary<string, PluginClassLoader>();
 
