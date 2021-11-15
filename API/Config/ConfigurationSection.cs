@@ -90,10 +90,10 @@ namespace API.Config
         }
 
         /// <summary>
-        /// Gets a Map containing all keys and their values for this section.
+        /// Gets a Dictionary containing all keys and their values for this section.
         /// </summary>
         /// <param name="deep">Whether or not to get a deep list, as opposed to a shallow list.</param>
-        /// <returns>Map of keys and values of this section.</returns>
+        /// <returns>Dictionary of keys and values of this section.</returns>
         public Dictionary<string, object> GetValues(bool deep)
         {
             var result = new Dictionary<string, object>();
@@ -1034,10 +1034,10 @@ namespace API.Config
         }
 
         /// <summary>
-        /// Gets the requested List of Maps by path.
+        /// Gets the requested List of Dictionarys by path.
         /// </summary>
         /// <param name="path">Path of the List to get.</param>
-        /// <returns>Requested List of Maps.</returns>
+        /// <returns>Requested List of Dictionarys.</returns>
         public List<Dictionary<string, object>> GetMapList(string path)
         {
             var list = GetList(path);

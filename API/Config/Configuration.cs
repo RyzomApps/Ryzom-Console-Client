@@ -56,7 +56,7 @@ namespace API.Config
         /// <summary>
         /// Sets the default values of the given paths as provided.
         /// </summary>
-        /// <param name="defaults">A map of Path->Values to add to defaults.</param>
+        /// <param name="defaults">A dictionary of Path->Values to add to defaults.</param>
         public void AddDefaults(Dictionary<string, object> defaults)
         {
             Validate.NotNull(_defaults, "Defaults may not be null");
