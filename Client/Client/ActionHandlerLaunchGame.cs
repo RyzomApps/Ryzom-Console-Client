@@ -24,7 +24,7 @@ namespace Client.Client
             // Get the player selected slot
             if (sSlot != "ingame_auto")
             {
-                networkManager.PlayerSelectedSlot = (byte)int.Parse(sSlot); //result.getInteger());
+                networkManager.PlayerSelectedSlot = (byte)int.Parse(sSlot);
                 if (networkManager.PlayerSelectedSlot >= networkManager.CharacterSummaries.Count)
                     return;
 

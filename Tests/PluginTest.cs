@@ -62,9 +62,22 @@ namespace Tests
 
             var config = plugin.GetConfig();
 
-            config.AddDefault("test", true);
+            var str = config.GetString("doe");
+            Assert.Equal("a deer, a female deer", str);
 
+            var boolean = config.GetBool("xmas");
+            Assert.True(boolean);
+
+            var integer = config.GetInt("french-hens");
+            Assert.Equal(3, integer);
+
+            var dbl = config.GetDouble("pi");
+            Assert.Equal(3.14159, dbl);
+
+            config.AddDefault("test", true);
             Assert.NotNull(config.Get("test"));
+
+            // TODO: add lists to config and tests list
         }
     }
 }

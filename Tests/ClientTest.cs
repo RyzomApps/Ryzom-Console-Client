@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics;
 using Client;
 using Client.Plugins;
 using System.IO;
@@ -21,6 +23,10 @@ namespace Tests
             var client = new RyzomClient(false);
 
             var loader = new PluginManager(client);
+
+            Debug.Print(Environment.CurrentDirectory);
+
+            loader.RegisterInterface(typeof(PluginLoader));
 
             var plugins = loader.LoadPlugins(new DirectoryInfo(@"..\plugins\"));
 
