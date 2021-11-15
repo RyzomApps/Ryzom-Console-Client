@@ -6,6 +6,7 @@
 // Copyright 2021 Bukkit Team
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using API.Plugins;
 
 namespace OnlinePlayersLogger
@@ -26,7 +27,11 @@ namespace OnlinePlayersLogger
             // Config
             SaveDefaultConfig();
             ReloadConfig();
-            listener.OnlinePlayersApi = GetConfig().GetString("onlinePlayersApi");
+
+            listener.Enabled = GetConfig().GetBool("enabled");
+            listener.ApiUri = GetConfig().GetString("apiUri");
+            listener.ApiInterval = new TimeSpan(GetConfig().GetInt("apiInterval", 60));
+            listener.WhoInterval = new TimeSpan(GetConfig().GetInt("whoInterval", 60 * 10));
 
             // Register listener
             var pm = GetClient().GetPluginManager();

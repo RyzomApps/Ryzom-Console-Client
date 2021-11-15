@@ -1,1 +1,4 @@
-﻿onlinePlayersApi: ''
+﻿enabled: true
+apiUri: ''
+apiInterval: 60
+whoInterval: 600

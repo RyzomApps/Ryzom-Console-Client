@@ -9,6 +9,9 @@ namespace AutoRelogPlugin
     /// <author>bierdosenhalter</author>
     internal class Listener : ListenerBase
     {
+        public int RelogSeconds { get; set; }
+        public bool Enabled { get; set; }
+
         private readonly Main _plugin;
         private DateTime _timeStart;
 
@@ -24,12 +27,15 @@ namespace AutoRelogPlugin
 
         public override void OnUpdate()
         {
-            if ((DateTime.Now - _timeStart).TotalSeconds <= _plugin.RelogSeconds) return;
+            if (!Enabled)
+                return;
+
+            if ((DateTime.Now - _timeStart).TotalSeconds <= RelogSeconds) return;
 
             // To avoid restart cancellation
             _timeStart = _timeStart.AddSeconds(60);
 
-            _plugin.GetLogger().Info("Restarting client after " + _plugin.RelogSeconds + " seconds...");
+            _plugin.GetLogger().Info($"Restarting client after {RelogSeconds} seconds...");
             var responseMessage = "";
             _plugin.GetClient().PerformInternalCommand("Quit", ref responseMessage);
         }

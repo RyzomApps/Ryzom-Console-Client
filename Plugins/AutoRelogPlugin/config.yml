@@ -1,1 +1,2 @@
-﻿relogSeconds: 3600
+﻿enabled: true
+relogSeconds: 3600

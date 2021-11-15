@@ -20,7 +20,10 @@ namespace OnlinePlayersLogger
     /// <author>bierdosenhalter</author>
     internal class Listener : ListenerBase
     {
-        public string OnlinePlayersApi { get; set; }
+        public string ApiUri { get; set; }
+        public bool Enabled { get; set; }
+        public TimeSpan ApiInterval { get; set; }
+        public TimeSpan WhoInterval { get; set; }
 
         private readonly Mutex _mutex = new Mutex();
 
@@ -32,8 +35,8 @@ namespace OnlinePlayersLogger
         private DateTime _lastApiServerUpdate = DateTime.MinValue;
         private DateTime _lastWhoCommand = DateTime.MinValue;
 
-        private readonly TimeSpan _intervalApiServer = TimeSpan.FromSeconds(60);
-        private readonly TimeSpan _intervalWhoCommand = TimeSpan.FromSeconds(60 * 10);
+        //private readonly TimeSpan _intervalApiServer = TimeSpan.FromSeconds(60);
+        //private readonly TimeSpan _intervalWhoCommand = TimeSpan.FromSeconds(60 * 10);
 
         private readonly Queue<string> _namesToAdd = new Queue<string>();
 
@@ -60,7 +63,7 @@ namespace OnlinePlayersLogger
             _plugin.RegisterCommand("exportfriends", "Exports a newline separated text file of player names from the friends list.", "<filename>", Command);
             _plugin.RegisterCommand("sendAPI", "Sending Player Array manually to API Server", "", Command);
 
-            if (OnlinePlayersApi.Trim().Equals(string.Empty))
+            if (ApiUri.Trim().Equals(string.Empty))
                 _plugin.GetLogger().Info("No server for player online status updates set: Not using this feature.");
         }
 
@@ -68,7 +71,7 @@ namespace OnlinePlayersLogger
         /// <remarks>cancel after each action, because there is still a problem with multiple actions in one action block when sending -> disco</remarks>
         public override void OnUpdate()
         {
-            if (!_initialized)
+            if (!Enabled || !_initialized)
                 return;
 
             // Get missing names from server
@@ -103,9 +106,9 @@ namespace OnlinePlayersLogger
             }
 
             // Do the who
-            if (!_friendNames.ContainsValue(string.Empty) && DateTime.Now > _lastWhoCommand + _intervalWhoCommand)
+            if (!_friendNames.ContainsValue(string.Empty) && DateTime.Now > _lastWhoCommand + WhoInterval)
             {
-                _lastWhoCommand = DateTime.Now + _intervalWhoCommand;
+                _lastWhoCommand = DateTime.Now + WhoInterval;
 
                 _plugin.PerformInternalCommand("who");
 
@@ -113,11 +116,11 @@ namespace OnlinePlayersLogger
             }
 
             // Update the API
-            if (!_friendNames.ContainsValue(string.Empty) && !OnlinePlayersApi.Trim().Equals(string.Empty))
+            if (!_friendNames.ContainsValue(string.Empty) && !ApiUri.Trim().Equals(string.Empty))
             {
-                if (DateTime.Now > _lastApiServerUpdate + _intervalApiServer)
+                if (DateTime.Now > _lastApiServerUpdate + ApiInterval)
                 {
-                    _lastApiServerUpdate = DateTime.Now + _intervalApiServer;
+                    _lastApiServerUpdate = DateTime.Now + ApiInterval;
 
                     Task.Factory.StartNew(SendApiUpdate);
                 }
@@ -316,7 +319,7 @@ namespace OnlinePlayersLogger
 
                 case "sendapi":
                     _plugin.GetLogger()?.Info("Sending Player Array to API");
-                    _lastApiServerUpdate = DateTime.Now + _intervalApiServer;
+                    _lastApiServerUpdate = DateTime.Now + ApiInterval;
 
                     Task.Factory.StartNew(SendApiUpdate);
                     return "";
@@ -333,7 +336,7 @@ namespace OnlinePlayersLogger
         public void SendApiUpdate()
         {
             // no api uri set
-            if (string.IsNullOrEmpty(OnlinePlayersApi))
+            if (string.IsNullOrEmpty(ApiUri))
                 return;
 
             // there are friends that have not received a name
@@ -342,10 +345,11 @@ namespace OnlinePlayersLogger
 
             try
             {
-                var httpWebRequest = (HttpWebRequest)WebRequest.Create(OnlinePlayersApi);
+                var httpWebRequest = (HttpWebRequest)WebRequest.Create(ApiUri);
                 httpWebRequest.ContentType = "application/json";
                 httpWebRequest.Method = "POST";
                 httpWebRequest.AllowWriteStreamBuffering = false;
+                httpWebRequest.Timeout = 180 * 1000;
 
                 var hash = Misc.GetMD5(DateTime.Now.ToString("ddMMyyyy")).ToLower();
 

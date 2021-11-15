@@ -14,11 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="config.yml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="config.yml" />
     <EmbeddedResource Include="plugin.yml" />
   </ItemGroup>
 
