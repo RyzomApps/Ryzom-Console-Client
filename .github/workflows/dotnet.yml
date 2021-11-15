@@ -10,7 +10,10 @@ jobs:
   publish:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout repository and submodules
+        uses: actions/checkout@master
+        with:
+          submodules: recursive
 
       - name: Create builddate file
         run: echo %date% %time:~0,-3%>"Client\Resources\BuildDate.txt"
