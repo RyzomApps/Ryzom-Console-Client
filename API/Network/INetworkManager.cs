@@ -13,6 +13,9 @@ namespace API.Network
     /// </summary>
     public interface INetworkManager
     {
+        /// <summary>
+        /// This is the mainland selected at the SELECT perso!!
+        /// </summary>
         string PlayerSelectedHomeShardName { get; set; }
 
         /// <summary>

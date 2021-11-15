@@ -84,7 +84,7 @@ namespace API.Config
                 }
             }
 
-            MapChildrenKeys(result, this, deep);
+            MapChildrenKeys(ref result, this, deep);
 
             return result;
         }
@@ -110,7 +110,7 @@ namespace API.Config
                 }
             }
 
-            MapChildrenValues(result, this, deep);
+            MapChildrenValues(ref result, this, deep);
 
             return result;
         }
@@ -288,6 +288,11 @@ namespace API.Config
             }
         }
 
+        /// <summary>
+        /// Creates an empty <see cref="ConfigurationSection"/> at the specified path.
+        /// </summary>
+        /// <param name="path">Path of the object to set.</param>
+        /// <returns>Newly created section</returns>
         public ConfigurationSection CreateSection(string path)
         {
             Validate.NotEmpty(path, "Cannot create section at empty path");
@@ -318,6 +323,12 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Creates a <see cref="ConfigurationSection"/> at the specified path, with specified values.
+        /// </summary>
+        /// <param name="path">Path to create the section at.</param>
+        /// <param name="map">The values to used.</param>
+        /// <returns>Newly created section</returns>
         public ConfigurationSection CreateSection(string path, Dictionary<string, object> map)
         {
             var section = CreateSection(path);
@@ -337,114 +348,215 @@ namespace API.Config
             return section;
         }
 
+        /// <summary>
+        /// Gets the requested String by path.
+        /// </summary>
+        /// <param name="path">Path of the String to get.</param>
+        /// <returns>Requested String.</returns>
         public string GetString(string path)
         {
             var def = GetDefault(path);
             return GetString(path, def?.ToString());
         }
 
+        /// <summary>
+        /// Gets the requested String by path, returning a default value if not found.
+        /// </summary>
+        /// <param name="path">Path of the String to get.</param>
+        /// <param name="def">The default value to return if the path is not found or is not a String.</param>
+        /// <returns>Requested String.</returns>
         public string GetString(string path, string def)
         {
             var val = Get(path, def);
             return val != null ? val.ToString() : def;
         }
 
+        /// <summary>
+        /// Checks if the specified path is a String.
+        /// </summary>
+        /// <param name="path">Path of the String to check.</param>
+        /// <returns>Whether or not the specified path is a String.</returns>
         public bool IsString(string path)
         {
             var val = Get(path);
             return val is string;
         }
 
+        /// <summary>
+        /// Gets the requested int by path.
+        /// </summary>
+        /// <param name="path">Path of the int to get.</param>
+        /// <returns>Requested int.</returns>
         public int GetInt(string path)
         {
             var def = GetDefault(path);
             return GetInt(path, int.TryParse(def.ToString(), out var ret) ? ret : 0);
         }
 
+        /// <summary>
+        /// Gets the requested int by path, returning a default value if not found.
+        /// </summary>
+        /// <param name="path">Path of the int to get.</param>
+        /// <param name="def"> The default value to return if the path is not found or is not an int.</param>
+        /// <returns>Requested int.</returns>
         public int GetInt(string path, int def)
         {
             var val = Get(path, def);
             return int.TryParse(val.ToString(), out var ret) ? ret : def;
         }
 
+        /// <summary>
+        /// Checks if the specified path is an int.
+        /// </summary>
+        /// <param name="path">Path of the int to check.</param>
+        /// <returns>Whether or not the specified path is an int.</returns>
         public bool IsInt(string path)
         {
             var val = Get(path);
             return val is int;
         }
 
+        /// <summary>
+        /// Gets the requested boolean by path.
+        /// </summary>
+        /// <param name="path">Path of the boolean to get.</param>
+        /// <returns>Requested boolean.</returns>
         public bool GetBool(string path)
         {
             var def = GetDefault(path);
             return GetBool(path, def is bool b && b);
         }
 
+        /// <summary>
+        /// Gets the requested boolean by path, returning a default value if not found.
+        /// </summary>
+        /// <param name="path">Path of the boolean to get.</param>
+        /// <param name="def">The default value to return if the path is not found or is not a boolean.</param>
+        /// <returns>Requested boolean.</returns>
         public bool GetBool(string path, bool def)
         {
             var val = Get(path, def);
             return val is bool b ? b : def;
         }
 
+        /// <summary>
+        /// Checks if the specified path is a boolean.
+        /// </summary>
+        /// <param name="path">Path of the boolean to check.</param>
+        /// <returns>Whether or not the specified path is a boolean.</returns>
         public bool IsBool(string path)
         {
             var val = Get(path);
             return val is bool;
         }
 
+        /// <summary>
+        /// Gets the requested double by path.
+        /// </summary>
+        /// <param name="path">Path of the double to get.</param>
+        /// <returns>Requested double.</returns>
         public double GetDouble(string path)
         {
             var def = GetDefault(path);
             return GetDouble(path, def is double ? Convert.ToDouble(def) : 0);
         }
 
+        /// <summary>
+        /// Gets the requested double by path, returning a default value if not found.
+        /// </summary>
+        /// <param name="path">Path of the double to get.</param>
+        /// <param name="def">The default value to return if the path is not found or is not a double.</param>
+        /// <returns>Requested double.</returns>
         public double GetDouble(string path, double def)
         {
             var val = Get(path, def);
             return val is double ? Convert.ToDouble(val) : def;
         }
 
+        /// <summary>
+        /// Checks if the specified path is a double.
+        /// </summary>
+        /// <param name="path">Path of the double to check.</param>
+        /// <returns>Whether or not the specified path is a double.</returns>
         public bool IsDouble(string path)
         {
             var val = Get(path);
             return val is double;
         }
 
+        /// <summary>
+        /// Gets the requested long by path.
+        /// </summary>
+        /// <param name="path">Path of the long to get.</param>
+        /// <returns>Requested long.</returns>
         public long GetLong(string path)
         {
             var def = GetDefault(path);
             return GetLong(path, def is long ? Convert.ToInt64(def) : 0);
         }
 
+        /// <summary>
+        /// Gets the requested long by path, returning a default value if not found.
+        /// </summary>
+        /// <param name="path">Path of the long to get.</param>
+        /// <param name="def">The default value to return if the path is not found or is not a long.</param>
+        /// <returns>Requested long.</returns>
         public long GetLong(string path, long def)
         {
             var val = Get(path, def);
             return val is long ? Convert.ToInt64(val) : def;
         }
 
+        /// <summary>
+        /// Checks if the specified path is a long.
+        /// </summary>
+        /// <param name="path">Path of the long to check.</param>
+        /// <returns>Whether or not the specified path is a long.</returns>
         public bool IsLong(string path)
         {
             var val = Get(path);
             return val is long;
         }
 
+        /// <summary>
+        /// Gets the requested List by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>Requested List.</returns>
         public IList GetList(string path)
         {
             var def = GetDefault(path);
             return GetList(path, def is IList list ? list : null);
         }
 
+        /// <summary>
+        /// Gets the requested List by path, returning a default value if not found.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <param name="def">The default value to return if the path is not found or is not a List.</param>
+        /// <returns>Requested List.</returns>
         public IList GetList(string path, IList def)
         {
             var val = Get(path, def);
             return (IList)(val is IList ? val : def);
         }
 
+        /// <summary>
+        /// Checks if the specified path is a List.
+        /// </summary>
+        /// <param name="path">Path of the List to check.</param>
+        /// <returns>Whether or not the specified path is a List.</returns>
         public bool IsList(string path)
         {
             var val = Get(path);
             return val is IList;
         }
 
+        /// <summary>
+        /// Gets the requested List of String by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>List of String.</returns>
         public List<string> GetStringList(string path)
         {
             var list = GetList(path);
@@ -458,7 +570,7 @@ namespace API.Config
 
             foreach (var obj in list)
             {
-                if (obj is string || (IsPrimitiveWrapper(obj)))
+                if (obj is string || IsPrimitiveWrapper(obj))
                 {
                     result.Add(obj.ToString());
                 }
@@ -467,6 +579,11 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Gets the requested List of Integer by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>List of Integer.</returns>
         public List<int> GetIntList(string path)
         {
             var list = GetList(path);
@@ -524,6 +641,11 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Gets the requested List of Boolean by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>List of Boolean.</returns>
         public List<bool> GetBooleanList(string path)
         {
             var list = GetList(path);
@@ -561,6 +683,11 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Gets the requested List of Double by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>List of Double.</returns>
         public List<double> GetDoubleList(string path)
         {
             var list = GetList(path);
@@ -617,6 +744,11 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Gets the requested List of Float by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>Requested List of Float.</returns>
         public List<float> GetFloatList(string path)
         {
             var list = GetList(path);
@@ -675,6 +807,11 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Gets the requested List of Long by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>Requested List of Long.</returns>
         public List<long> GetLongList(string path)
         {
             var list = GetList(path);
@@ -732,6 +869,11 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Gets the requested List of Byte by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>Requested List of Byte.</returns>
         public List<byte> GetByteList(string path)
         {
             var list = GetList(path);
@@ -785,6 +927,11 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Gets the requested List of Character by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>List of Character.</returns>
         public List<char> GetCharList(string path)
         {
             var list = GetList(path);
@@ -826,6 +973,11 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Gets the requested List of Short by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>Requested List of Short.</returns>
         public List<short> GetShortList(string path)
         {
             var list = GetList(path);
@@ -881,6 +1033,11 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Gets the requested List of Maps by path.
+        /// </summary>
+        /// <param name="path">Path of the List to get.</param>
+        /// <returns>Requested List of Maps.</returns>
         public List<Dictionary<string, object>> GetMapList(string path)
         {
             var list = GetList(path);
@@ -902,6 +1059,11 @@ namespace API.Config
             return result;
         }
 
+        /// <summary>
+        /// Gets the requested ConfigurationSection by path.
+        /// </summary>
+        /// <param name="path">Path of the ConfigurationSection to get.</param>
+        /// <returns>Requested ConfigurationSection.</returns>
         public ConfigurationSection GetConfigurationSection(string path)
         {
             var val = Get(path, null);
@@ -914,12 +1076,21 @@ namespace API.Config
             return val is ConfigurationSection ? CreateSection(path) : null;
         }
 
+        /// <summary>
+        /// Checks if the specified path is a ConfigurationSection.
+        /// </summary>
+        /// <param name="path">Path of the ConfigurationSection to check.</param>
+        /// <returns>Whether or not the specified path is a ConfigurationSection.</returns>
         public bool IsConfigurationSection(string path)
         {
             var val = Get(path);
             return val is ConfigurationSection;
         }
 
+        /// <summary>
+        /// Gets the equivalent <see cref="ConfigurationSection"/> from the default <see cref="Configuration"/> defined in <see cref="GetRoot()"/>.
+        /// </summary>
+        /// <returns>Equivalent section in root configuration</returns>
         public ConfigurationSection GetDefaultSection()
         {
             var root = GetRoot();
@@ -931,6 +1102,11 @@ namespace API.Config
             return defaults.IsConfigurationSection(GetCurrentPath()) ? defaults.GetConfigurationSection(GetCurrentPath()) : null;
         }
 
+        /// <summary>
+        /// Sets the default value in the root at the given path as provided.
+        /// </summary>
+        /// <param name="path">Path of the value to set.</param>
+        /// <param name="value">Value to set the default to.</param>
         public void AddDefault(string path, object value)
         {
             Validate.NotNull(path, "Path cannot be null");
@@ -950,6 +1126,11 @@ namespace API.Config
             root.AddDefault(CreatePath(this, path), value);
         }
 
+        /// <summary>
+        /// Checks if the input from one of the eight primitive data types
+        /// </summary>
+        /// <param name="input">object to check</param>
+        /// <returns>true if primitive type</returns>
         protected bool IsPrimitiveWrapper(object input)
         {
             return input is int || input is bool ||
@@ -958,6 +1139,11 @@ namespace API.Config
                 input is long || input is float;
         }
 
+        /// <summary>
+        /// Gets the default value for a given path
+        /// </summary>
+        /// <param name="path">Path of the default value</param>
+        /// <returns>Default value</returns>
         protected object GetDefault(string path)
         {
             Validate.NotNull(path, "Path cannot be null");
@@ -967,7 +1153,10 @@ namespace API.Config
             return defaults?.Get(CreatePath(this, path));
         }
 
-        protected void MapChildrenKeys(List<string> output, ConfigurationSection section, bool deep)
+        /// <summary>
+        /// Flat dictionary output of section keys
+        /// </summary>
+        protected void MapChildrenKeys(ref List<string> output, ConfigurationSection section, bool deep)
         {
             var sec = section;
 
@@ -978,11 +1167,14 @@ namespace API.Config
                 if (!deep || !(value is ConfigurationSection configurationSection)) continue;
 
                 var subsection = configurationSection;
-                MapChildrenKeys(output, subsection, deep);
+                MapChildrenKeys(ref output, subsection, deep);
             }
         }
 
-        protected void MapChildrenValues(Dictionary<string, object> output, ConfigurationSection section, bool deep)
+        /// <summary>
+        /// Flat dictionary output of section values
+        /// </summary>
+        protected void MapChildrenValues(ref Dictionary<string, object> output, ConfigurationSection section, bool deep)
         {
             var sec = section;
 
@@ -994,17 +1186,30 @@ namespace API.Config
                 {
                     if (deep)
                     {
-                        MapChildrenValues(output, configurationSection, deep);
+                        MapChildrenValues(ref output, configurationSection, deep);
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Creates a full path to the given <see cref="ConfigurationSection"/> from its root <see cref="Configuration"/>.
+        /// </summary>
+        /// <param name="section">Section to create a path for.</param>
+        /// <param name="key">Name of the specified section.</param>
+        /// <returns>Full path of the section from its root.</returns>
         public static string CreatePath(ConfigurationSection section, string key)
         {
             return CreatePath(section, key, section?.GetRoot());
         }
 
+        /// <summary>
+        /// Creates a relative path to the given {@link ConfigurationSection} from the given relative section.
+        /// </summary>
+        /// <param name="section">Section to create a path for.</param>
+        /// <param name="key">Name of the specified section.</param>
+        /// <param name="relativeTo">Section to create the path relative to.</param>
+        /// <returns>Full path of the section from its root.</returns>
         public static string CreatePath(ConfigurationSection section, string key, ConfigurationSection relativeTo)
         {
             Validate.NotNull(section, "Cannot create path without a section");
@@ -1045,6 +1250,7 @@ namespace API.Config
             return builder.ToString();
         }
 
+        /// <inheritdoc cref="object.ToString"/>
         public override string ToString()
         {
             var root = GetRoot();

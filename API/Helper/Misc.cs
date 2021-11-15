@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using API.Chat;
 
 namespace API.Helper
 {
+    /// <summary>
+    /// selection of helper functions that do not fit into any other class
+    /// </summary>
     public static class Misc
     {
         /// <summary>
@@ -61,18 +62,6 @@ namespace API.Helper
         }
 
         /// <summary>
-        /// Get the console color from a color specified
-        /// </summary>
-        public static ConsoleColor FromColor(Color c)
-        {
-            var index = (c.R > 128) | (c.G > 128) | (c.B > 128) ? 8 : 0; // Bright bit
-            index |= c.R > 64 ? 4 : 0; // Red bit
-            index |= c.G > 64 ? 2 : 0; // Green bit
-            index |= c.B > 64 ? 1 : 0; // Blue bit
-            return (ConsoleColor)index;
-        }
-
-        /// <summary>
         /// Use input string to calculate MD5 hash
         /// </summary>
         public static string GetMD5(string input)
@@ -91,48 +80,6 @@ namespace API.Helper
             }
 
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// returns the console color code for a minecraft channel type
-        /// </summary>
-        public static string GetMinecraftColorForChatGroupType(ChatGroupType mode)
-        {
-            var color = mode switch
-            {
-                ChatGroupType.DynChat => "§b",
-                ChatGroupType.Shout => "§c",
-                ChatGroupType.Team => "§9",
-                ChatGroupType.Guild => "§a",
-                ChatGroupType.Civilization => "§d",
-                ChatGroupType.Territory => "§d",
-                ChatGroupType.Universe => "§6",
-                ChatGroupType.Region => "§7",
-                ChatGroupType.Tell => "§f",
-                _ => "§f"
-            };
-
-            return color;
-        }
-
-        /// <summary>
-        /// Remove color codes ("§c") from a text message received from the server
-        /// </summary>
-        public static string GetVerbatim(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return string.Empty;
-
-            var idx = 0;
-            var data = new char[text.Length];
-
-            for (var i = 0; i < text.Length; i++)
-                if (text[i] != '§')
-                    data[idx++] = text[i];
-                else
-                    i++;
-
-            return new string(data, 0, idx);
         }
 
         /// <summary>
@@ -158,9 +105,12 @@ namespace API.Helper
             return $"{time.Year:0000}-{time.Month:00}-{time.Day:00} {time.Hour:00}:{time.Minute:00}:{time.Second:00}";
         }
 
+        /// <summary>
+        /// Resizes a list filling it with a given type
+        /// </summary>
         public static void Resize<T>(this List<T> list, int sz, T c)
         {
-            int cur = list.Count;
+            var cur = list.Count;
             if (sz < cur)
                 list.RemoveRange(sz, cur - sz);
             else if (sz > cur)
@@ -171,30 +121,27 @@ namespace API.Helper
             }
         }
 
+        /// <summary>
+        /// Resizes a list filling it with a default type
+        /// </summary>
         public static void Resize<T>(this List<T> list, int sz) where T : new()
         {
             Resize(list, sz, new T());
         }
 
+        /// <summary>
+        /// Convert a timespan to a human readable string (only one unit long)
+        /// </summary>
         public static string ToHumanReadableString(this TimeSpan t)
         {
             if (t.TotalSeconds <= 1)
-            {
                 return $@"{t:s\.ff}s";
-            }
             if (t.TotalMinutes <= 1)
-            {
                 return $@"{t:%s}s";
-            }
             if (t.TotalHours <= 1)
-            {
                 return $@"{t:%m}m";
-            }
             if (t.TotalDays <= 1)
-            {
                 return $@"{t:%h}h";
-            }
-
             return $@"{t:%d}d";
         }
 

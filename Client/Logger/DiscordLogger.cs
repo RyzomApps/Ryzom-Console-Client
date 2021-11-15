@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using API.Chat;
+using API.Helper;
 using Client.Discord;
 using Client.Discord.Classes;
 
 namespace Client.Logger
 {
+    /// <summary>
+    /// Logger for logging via discord webhook
+    /// </summary>
     internal class DiscordLogger : FilteredLogger
     {
         /// <summary>
@@ -31,7 +36,7 @@ namespace Client.Logger
             var messageFlusher = new Thread(FlushMessages) { Name = "RCC DiscordLogger MessageFlusher" };
             messageFlusher.Start();
 
-            QueueMessage("### Log started at " + FileLogLogger.GetTimestamp() + " ###");
+            QueueMessage("### Log started at " + Misc.GetTimestamp() + " ###");
         }
 
         /// <summary>
@@ -80,8 +85,8 @@ namespace Client.Logger
         /// </summary>
         private void LogAndSave(string msg)
         {
-            QueueMessage(msg);
             Log(msg);
+            QueueMessage(msg);
         }
 
         /// <summary>
@@ -89,6 +94,8 @@ namespace Client.Logger
         /// </summary>
         private void QueueMessage(string text)
         {
+            text = ChatColor.GetVerbatim(text);
+
             while (text.Length > 500)
             {
                 var subText = text[..500];

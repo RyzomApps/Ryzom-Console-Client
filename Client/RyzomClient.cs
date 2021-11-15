@@ -235,7 +235,7 @@ namespace Client
         public void DisplayChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode,
             uint dynChatId, string senderName, uint bubbleTimer = 0)
         {
-            var color = Misc.GetMinecraftColorForChatGroupType(mode);
+            var color = ChatColor.GetMinecraftColorForChatGroupType(mode);
 
             var stringCategory = ChatManager.GetStringCategory(ucstr, out var finalString).ToUpper();
 
@@ -256,7 +256,7 @@ namespace Client
                             int.Parse(paramStringSplit[2]));
 
                         color = "";
-                        Console.ForegroundColor = Misc.FromColor(col);
+                        Console.ForegroundColor = ChatColor.FromColor(col);
                     }
                 }
             }

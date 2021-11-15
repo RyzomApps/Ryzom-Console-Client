@@ -11,6 +11,10 @@ namespace API.Entity
     public class EntityBase
     {
         #region Static Methods
+
+        /// <summary>
+        /// Removes the specification from a name. The specification is surrounded by '$', and tells the title of the entity (guard, matis merchant, etc ..)
+        /// </summary>
         public static string RemoveTitleFromName(string name)
         {
             var p1 = name.IndexOf('$');
@@ -30,6 +34,9 @@ namespace API.Entity
             return name.Substring(0, p1);
         }
 
+        /// <summary>
+        /// Removes the shard from a name (if player from the same shard). The shard is surrounded by (), and tells the incoming shard of the entity (aniro, leanon etc...)
+        /// </summary>
         public static string RemoveShardFromName(string name)
         {
             // The string must contains a '(' and a ')'
@@ -43,6 +50,9 @@ namespace API.Entity
             return name.Substring(0, p0) + name[(p1 + 1)..];
         }
 
+        /// <summary>
+        /// Removes title and shard from a name. See <see cref="RemoveTitleFromName"/> and <see cref="RemoveShardFromName"/>.
+        /// </summary>
         public static string RemoveTitleAndShardFromName(string name)
         {
             return RemoveTitleFromName(RemoveShardFromName(name));

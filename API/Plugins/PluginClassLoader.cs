@@ -22,6 +22,13 @@ namespace API.Plugins
         public object Class { get; set; }
         private Plugin _pluginInit;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="pluginLoader">plugin loader</param>
+        /// <param name="description">plugin.yml information container</param>
+        /// <param name="dataFolder">path to the data folder</param>
+        /// <param name="file">path to the plugin file</param>
         public PluginClassLoader(IPluginLoader pluginLoader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
         {
             _pluginLoader = pluginLoader;
@@ -45,20 +52,28 @@ namespace API.Plugins
             Initialize((Plugin)Class);
         }
 
-        public void Initialize(Plugin javaPlugin)
+        /// <summary>
+        /// Initialize a plugin
+        /// </summary>
+        /// <param name="plugin">Plugin to initialize</param>
+        public void Initialize(Plugin plugin)
         {
-            Validate.NotNull(javaPlugin, "Initializing plugin cannot be null");
+            Validate.NotNull(plugin, "Initializing plugin cannot be null");
 
             if (_pluginInit != null)
             {
                 throw new ArgumentException("Plugin already initialized!", new Exception("Initial initialization"));
             }
 
-            _pluginInit = javaPlugin;
+            _pluginInit = plugin;
 
-            javaPlugin.Init(_pluginLoader, _pluginLoader.Handler, _description, _dataFolder, _file, this);
+            plugin.Init(_pluginLoader, _pluginLoader.Handler, _description, _dataFolder, _file, this);
         }
 
+        /// <summary>
+        /// Get the plugin class
+        /// </summary>
+        /// <returns>plugin class</returns>
         public List<string> GetClasses()
         {
             return new List<string> { Class.ToString() };

@@ -7,19 +7,24 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.Serialization;
 
 namespace API.Exceptions
 {
+    /// <summary>
+    /// Thrown when attempting to load an invalid Plugin file
+    /// </summary>
     [Serializable]
     public class UnknownDependencyException : Exception
     {
+        /// <summary>
+        /// Constructs a new UnknownDependencyException
+        /// </summary>
         public UnknownDependencyException() { }
 
+        /// <summary>
+        /// Constructs a new UnknownDependencyException with the given message
+        /// </summary>
+        /// <param name="message">Brief message explaining the cause of the exception</param>
         public UnknownDependencyException(string message) : base(message) { }
-
-        public UnknownDependencyException(string message, Exception innerException) : base(message, innerException) { }
-
-        protected UnknownDependencyException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

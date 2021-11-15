@@ -25,90 +25,110 @@ namespace API.Logger
             _pluginName = prefix != null ? new StringBuilder().Append("[").Append(prefix).Append("] ").ToString() : "[" + context.GetDescription().GetName() + "] ";
         }
 
+        /// <inheritdoc/>
         public bool DebugEnabled { get; set; } = false;
 
+        /// <inheritdoc/>
         public bool WarnEnabled { get; set; } = true;
 
+        /// <inheritdoc/>
         public bool InfoEnabled { get; set; } = true;
 
+        /// <inheritdoc/>
         public bool ErrorEnabled { get; set; } = true;
 
+        /// <inheritdoc/>
         public bool ChatEnabled { get; set; } = true;
 
+        /// <inheritdoc/>
         public void Chat(string msg, params object[] args)
         {
             Chat(string.Format(msg, args));
         }
 
+        /// <inheritdoc/>
         public void Chat(object msg)
         {
             Chat(msg.ToString());
         }
 
+        /// <inheritdoc/>
         public void Debug(string msg, params object[] args)
         {
             Debug(string.Format(msg, args));
         }
 
+        /// <inheritdoc/>
         public void Debug(object msg)
         {
             Debug(msg.ToString());
         }
 
+        /// <inheritdoc/>
         public void Error(string msg, params object[] args)
         {
             Error(string.Format(msg, args));
         }
 
+        /// <inheritdoc/>
         public void Error(object msg)
         {
             Error(msg.ToString());
         }
 
+        /// <inheritdoc/>
         public void Info(string msg, params object[] args)
         {
             Info(string.Format(msg, args));
         }
 
+        /// <inheritdoc/>
         public void Info(object msg)
         {
             Info(msg.ToString());
         }
 
+        /// <inheritdoc/>
         public void Warn(string msg, params object[] args)
         {
             Warn(string.Format(msg, args));
         }
 
+        /// <inheritdoc/>
         public void Warn(object msg)
         {
             Warn(msg.ToString());
         }
 
+        /// <inheritdoc/>
         public void Debug(string msg)
         {
             if (DebugEnabled)
                 _logger.Debug(_pluginName + msg);
         }
 
+        /// <inheritdoc/>
         public void Info(string msg)
         {
             if (InfoEnabled)
                 _logger.Info(_pluginName + msg);
         }
 
+        /// <inheritdoc/>
         public void Warn(string msg)
         {
             if (WarnEnabled)
                 _logger.Warn(_pluginName + msg);
         }
 
+        /// <inheritdoc/>
         public void Error(string msg)
         {
             if (ErrorEnabled)
                 _logger.Error(_pluginName + msg);
         }
 
+        /// <inheritdoc/>
         public void Chat(string msg)
         {
             if (ChatEnabled)

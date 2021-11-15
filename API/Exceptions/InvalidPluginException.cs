@@ -7,24 +7,25 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
-using System.Runtime.Serialization;
 
 namespace API.Exceptions
 {
+    /// <summary>
+    /// Thrown when attempting to load an invalid Plugin file
+    /// </summary>
     [Serializable]
     public class InvalidPluginException : Exception
     {
-        public InvalidPluginException(InvalidDescriptionException invalidDescriptionException) : base(null, invalidDescriptionException) { }
+        /// <summary>
+        /// Constructs a new InvalidPluginException based on the given Exception
+        /// </summary>
+        /// <param name="cause">Exception that triggered this Exception</param>
+        public InvalidPluginException(Exception cause) : base(null, cause) { }
 
-        public InvalidPluginException(FileNotFoundException fileNotFoundException) : base(null, fileNotFoundException) { }
-
+        /// <summary>
+        /// Constructs a new InvalidPluginException with the specified detail message
+        /// </summary>
+        /// <param name="message">The detail message is saved for later retrieval.</param>
         public InvalidPluginException(string message) : base(message) { }
-
-        public InvalidPluginException(string message, Exception innerException) : base(message, innerException) { }
-
-        protected InvalidPluginException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-
-        public InvalidPluginException(Exception invalidDescriptionException) : base(null, invalidDescriptionException) { }
     }
 }

@@ -7,21 +7,32 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.Serialization;
 
 namespace API.Exceptions
 {
+    /// <summary>
+    /// Thrown when attempting to load an invalid PluginDescriptionFile
+    /// </summary>
     [Serializable]
     public class InvalidDescriptionException : Exception
     {
-        public InvalidDescriptionException(Exception fileNotFoundException) : base(null, fileNotFoundException) { }
-
-        public InvalidDescriptionException(string message) : base(message) { }
-
+        /// <summary>
+        /// Constructs a new InvalidDescriptionException based on the given Exception
+        /// </summary>
+        /// <param name="exception">Exception that triggered this Exception</param>
+        /// <param name="message">Brief message explaining the cause of the exception</param>
         public InvalidDescriptionException(Exception exception, string message) : base(message, exception) { }
 
-        public InvalidDescriptionException(string message, Exception innerException) : base(message, innerException) { }
+        /// <summary>
+        /// Constructs a new InvalidDescriptionException based on the given Exception
+        /// </summary>
+        /// <param name="cause">Exception that triggered this Exception</param>
+        public InvalidDescriptionException(Exception cause) : base(null, cause) { }
 
-        protected InvalidDescriptionException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+        /// <summary>
+        /// Constructs a new InvalidDescriptionException with the given message
+        /// </summary>
+        /// <param name="message">Brief message explaining the cause of the exception</param>
+        public InvalidDescriptionException(string message) : base(message) { }
     }
 }

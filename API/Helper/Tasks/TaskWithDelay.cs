@@ -20,6 +20,9 @@ namespace API.Helper.Tasks
 
         public Action Task { get; }
 
+        /// <summary>
+        /// Create a task with delay
+        /// </summary>
         public TaskWithDelay(Action task, int delayTicks)
         {
             Task = task;
@@ -27,6 +30,9 @@ namespace API.Helper.Tasks
             _dateToLaunch = DateTime.MaxValue;
         }
 
+        /// <summary>
+        /// Create a task with delay
+        /// </summary>
         public TaskWithDelay(Action task, TimeSpan delay)
         {
             Task = task;

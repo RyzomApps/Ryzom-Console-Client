@@ -23,29 +23,65 @@ namespace API.Plugins
     /// </summary>
     public class PluginDescriptionFile
     {
+        /// <summary>
+        /// Internal use
+        /// </summary>
         [YamlIgnore]
         public string RawName { get; set; }
 
+        /// <summary>
+        /// The unique name of plugin
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// The plugin's initial class file
+        /// </summary>
         public string Main { get; set; }
 
+        /// <summary>
+        /// Other required plugins
+        /// </summary>
         public List<string> Depend { get; set; } = new List<string>();
 
+        /// <summary>
+        /// Other plugins that add functionality
+        /// </summary>
         public List<string> SoftDepend { get; set; } = new List<string>();
 
+        /// <summary>
+        /// The inverse softdepend
+        /// </summary>
         public List<string> LoadBefore { get; set; } = new List<string>();
 
+        /// <summary>
+        /// A plugin revision identifier
+        /// </summary>
         public string Version { get; set; }
 
+        /// <summary>
+        /// The commands the plugin will register
+        /// </summary>
         public Dictionary<string, Dictionary<string, string>> Commands { get; } = null;
 
+        /// <summary>
+        /// Human readable plugin summary
+        /// </summary>
         public string Description { get; set; }
 
+        /// <summary>
+        /// The plugin contributors
+        /// </summary>
         public List<string> Authors { get; } = null;
 
+        /// <summary>
+        /// The URL to the plugin's site
+        /// </summary>
         public string Website { get; set; }
 
+        /// <summary>
+        /// The token to prefix plugin log entries
+        /// </summary>
         public string Prefix { get; set; }
 
         /// <summary>
@@ -80,6 +116,9 @@ namespace API.Plugins
             return ret;
         }
 
+        /// <summary>
+        /// Parameterless constructor
+        /// </summary>
         // ReSharper disable once EmptyConstructor
         public PluginDescriptionFile() { }
 
@@ -190,7 +229,9 @@ namespace API.Plugins
             return Name + " v" + Version;
         }
 
-        [Obsolete("Internal use")]
+        /// <summary>
+        /// Internal use only
+        /// </summary>
         public string GetRawName()
         {
             return Name;

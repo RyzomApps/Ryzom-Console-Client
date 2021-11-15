@@ -9,12 +9,15 @@
 namespace API.Plugins.Interfaces
 {
     /// <summary>
-    /// Interface of a class loader
+    /// Interface of a class loader, to allow shared classes across multiple plugins
     /// </summary>
     public interface IClassLoader
     {
         object Class { get; set; }
 
-        void Initialize(Plugin javaPlugin);
+        /// <summary>
+        /// Initialize a plugin
+        /// </summary>
+        void Initialize(Plugin plugin);
     }
 }

@@ -502,14 +502,6 @@ namespace Client.Plugins
             }
         }
 
-        ///// <summary>
-        ///// Called from the main instance to update all the listeners every some ticks
-        ///// </summary>
-        //public void OnUpdate()
-        //{
-        //    ListenerBase.DispatchListenerEvent(listener => listener.OnUpdate(), handler: _client);
-        //}
-
         #region Event API
 
         /// <summary>

@@ -8,37 +8,50 @@
 
 using System;
 using System.IO;
+using API.Chat;
+using API.Helper;
 
 namespace Client.Logger
 {
+    /// <summary>
+    /// Logger for logfiles
+    /// </summary>
     public class FileLogLogger : FilteredLogger
     {
         private readonly string _logFile;
         private readonly object _logFileLock = new object();
         private readonly bool _prependTimestamp;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public FileLogLogger(string file, bool prependTimestamp = false)
         {
             _logFile = file;
             _prependTimestamp = prependTimestamp;
-            Save("### Log started at " + GetTimestamp() + " ###");
+            Save("### Log started at " + Misc.GetTimestamp() + " ###");
         }
 
+        /// <summary>
+        /// Processing of the message
+        /// </summary>
         private void LogAndSave(string msg)
         {
             Log(msg);
             Save(msg);
         }
 
+        /// <summary>
+        /// Saves the message to the logfile
+        /// </summary>
         private void Save(string msg)
         {
             try
             {
-                // TODO: Verbatim
-                //msg = ListenerBase.GetVerbatim(msg);
+                msg = ChatColor.GetVerbatim(msg);
 
                 if (_prependTimestamp)
-                    msg = GetTimestamp() + ' ' + msg;
+                    msg = $"{Misc.GetTimestamp()} {msg}";
 
                 var directory = Path.GetDirectoryName(_logFile);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -61,13 +74,7 @@ namespace Client.Logger
             }
         }
 
-        internal static string GetTimestamp()
-        {
-            var time = DateTime.Now;
-            return
-                $"{time.Year:0000}-{time.Month:00}-{time.Day:00} {time.Hour:00}:{time.Minute:00}:{time.Second:00}";
-        }
-
+        /// <inheritdoc />
         public override void Chat(string msg)
         {
             if (!ChatEnabled) return;
@@ -78,6 +85,7 @@ namespace Client.Logger
             else Debug("[Logger] One Chat message filtered: " + msg);
         }
 
+        /// <inheritdoc />
         public override void Debug(string msg)
         {
             if (!DebugEnabled) return;
@@ -87,6 +95,7 @@ namespace Client.Logger
             }
         }
 
+        /// <inheritdoc />
         public override void Error(string msg)
         {
             base.Error(msg);
@@ -94,6 +103,7 @@ namespace Client.Logger
                 Save(msg);
         }
 
+        /// <inheritdoc />
         public override void Info(string msg)
         {
             base.Info(msg);
@@ -101,6 +111,7 @@ namespace Client.Logger
                 Save(msg);
         }
 
+        /// <inheritdoc />
         public override void Warn(string msg)
         {
             base.Warn(msg);

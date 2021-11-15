@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Numerics;
-using System.Threading;
 using API.Chat;
 using API.Network;
 using API.Plugins.Interfaces;
@@ -13,6 +11,9 @@ namespace API.Plugins
     /// </summary>
     public abstract class ListenerBase : IListener
     {
+        /// <summary>
+        /// Enum of reasons for a disconnection
+        /// </summary>
         public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost, UserLogout };
 
 

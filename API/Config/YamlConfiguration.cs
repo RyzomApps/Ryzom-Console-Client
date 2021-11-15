@@ -8,7 +8,6 @@
 
 using API.Helper;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using YamlDotNet.RepresentationModel;
@@ -23,6 +22,10 @@ namespace API.Config
     /// <remarks> Note that this implementation is not synchronized.</remarks>
     public class YamlConfiguration : Configuration
     {
+        /// <summary>
+        /// Saves this <see cref="YamlConfiguration"/> to the specified location.
+        /// </summary>
+        /// <param name="file">File to save to.</param>
         public void Save(FileInfo file)
         {
             var serializer = new SerializerBuilder()
@@ -36,6 +39,10 @@ namespace API.Config
             writer.Write(content);
         }
 
+        /// <summary>
+        /// Loads this <see cref="YamlConfiguration"/> from the specified location.
+        /// </summary>
+        /// <param name="file">File to load from.</param>
         private void Load(FileSystemInfo file)
         {
             using var reader = File.OpenText(file.FullName);
@@ -50,6 +57,10 @@ namespace API.Config
             }
         }
 
+        /// <summary>
+        /// Loads this <seealso cref="YamlConfiguration"/> from the specified string, as opposed to from file.
+        /// </summary>
+        /// <param name="contents">Contents of a Configuration to load.</param>
         public void LoadFromString(string contents)
         {
             Validate.NotNull(contents, "Contents cannot be null");
@@ -64,6 +75,11 @@ namespace API.Config
             }
         }
 
+        /// <summary>
+        /// Convert the YamlNodes to ConfigurationSerctions
+        /// </summary>
+        /// <param name="node">Input root node</param>
+        /// <param name="section">Output root section</param>
         protected void ConvertMapsToSections(YamlNode node, ConfigurationSection section)
         {
             switch (node.NodeType)
@@ -109,6 +125,12 @@ namespace API.Config
             }
         }
 
+        /// <summary>
+        /// Creates a new <see cref="YamlConfiguration"/>, loading from the given file.
+        /// </summary>
+        /// <param name="file">Input file</param>
+        /// <param name="client">Client to use for the logger.</param>
+        /// <returns>Resulting configuration</returns>
         public static YamlConfiguration LoadConfiguration(FileInfo file, IClient client)
         {
             Validate.NotNull(file, "File cannot be null");

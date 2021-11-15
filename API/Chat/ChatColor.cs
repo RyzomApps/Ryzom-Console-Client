@@ -1,4 +1,9 @@
 ﻿
+// ReSharper disable InconsistentNaming
+
+using System;
+using System.Drawing;
+
 namespace API.Chat
 {
     /// <summary>
@@ -115,5 +120,59 @@ namespace API.Chat
         /// Resets all previous chat colors or formats.
         /// </summary>
         public static string RESET = "§r";
+
+        /// <summary>
+        /// Get the console color from a color specified
+        /// </summary>
+        public static ConsoleColor FromColor(Color c)
+        {
+            var index = (c.R > 128) | (c.G > 128) | (c.B > 128) ? 8 : 0; // Bright bit
+            index |= c.R > 64 ? 4 : 0; // Red bit
+            index |= c.G > 64 ? 2 : 0; // Green bit
+            index |= c.B > 64 ? 1 : 0; // Blue bit
+            return (ConsoleColor)index;
+        }
+
+        /// <summary>
+        /// returns the console color code for a minecraft channel type
+        /// </summary>
+        public static string GetMinecraftColorForChatGroupType(ChatGroupType mode)
+        {
+            var color = mode switch
+            {
+                ChatGroupType.DynChat => AQUA,
+                ChatGroupType.Shout => RED,
+                ChatGroupType.Team => BLUE,
+                ChatGroupType.Guild => GREEN,
+                ChatGroupType.Civilization => LIGHT_PURPLE,
+                ChatGroupType.Territory => LIGHT_PURPLE,
+                ChatGroupType.Universe => GOLD,
+                ChatGroupType.Region => GRAY,
+                ChatGroupType.Tell => WHITE,
+                _ => WHITE
+            };
+
+            return color;
+        }
+
+        /// <summary>
+        /// Remove color codes (e.g. "§c") from a text message received from the server
+        /// </summary>
+        public static string GetVerbatim(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
+
+            var idx = 0;
+            var data = new char[text.Length];
+
+            for (var i = 0; i < text.Length; i++)
+                if (text[i] != '§')
+                    data[idx++] = text[i];
+                else
+                    i++;
+
+            return new string(data, 0, idx);
+        }
     }
 }

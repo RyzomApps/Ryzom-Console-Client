@@ -7,19 +7,24 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.Serialization;
 
 namespace API.Exceptions
 {
+    /// <summary>
+    /// Thrown when a plugin attempts to interact with the server when it is not enabled
+    /// </summary>
     [Serializable]
     public class IllegalPluginAccessException : Exception
     {
+        /// <summary>
+        /// Creates a new instance of <see cref="IllegalPluginAccessException"/> without detail message.
+        /// </summary>
         public IllegalPluginAccessException() { }
 
+        /// <summary>
+        /// Constructs an instance of <see cref="IllegalPluginAccessException"/> with the specified detail message.
+        /// </summary>
+        /// <param name="message">The detail message.</param>
         public IllegalPluginAccessException(string message) : base(message) { }
-
-        public IllegalPluginAccessException(string message, Exception innerException) : base(message, innerException) { }
-
-        protected IllegalPluginAccessException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

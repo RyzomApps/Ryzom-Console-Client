@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using API.Commands;
 using API.Config;
@@ -42,9 +41,20 @@ namespace API.Plugins
         // TODO: unregister commands
         private readonly List<string> _registeredCommands = new List<string>();
 
+        /// <summary>
+        /// Parameterless constructor
+        /// </summary>
         // ReSharper disable once UnusedMember.Global
         protected Plugin() { }
 
+        /// <summary>
+        /// Constructor with parameters
+        /// </summary>
+        /// <param name="classLoader">class loader</param>
+        /// <param name="loader">plugin loader</param>
+        /// <param name="description">container for the information in the plugin.yml</param>
+        /// <param name="dataFolder">path to the data folder</param>
+        /// <param name="file">path to the plugin</param>
         // ReSharper disable once UnusedMember.Global
         protected Plugin(PluginClassLoader classLoader, IPluginLoader loader, PluginDescriptionFile description, DirectoryInfo dataFolder, FileInfo file)
         {
