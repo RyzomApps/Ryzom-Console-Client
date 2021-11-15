@@ -1,6 +1,11 @@
-[![nightly-release](https://github.com/RyzomApps/RCC/actions/workflows/dotnet.yml/badge.svg)](https://github.com/RyzomApps/RCC/actions/workflows/dotnet.yml)
-
 # RCC
+
+[![nightly-release](https://github.com/RyzomApps/RCC/actions/workflows/dotnet.yml/badge.svg)](https://github.com/RyzomApps/RCC/actions/workflows/dotnet.yml)
+[![reddit](https://img.shields.io/reddit/subreddit-subscribers/Ryzom)](https://old.reddit.com/r/Ryzom/)
+![last commit](https://img.shields.io/github/last-commit/RyzomApps/RCC)
+![lines of code](https://tokei.rs/b1/github/RyzomApps/RCC)
+![repo size](https://img.shields.io/github/languages/code-size/RyzomApps/RCC.svg?label=repo%20size)
+
 Ryzom Console Client (RCC) is a lightweight application that lets you connect to the server of the MMORPG Ryzom, send commands and receive text messages in a fast and simple way, without having to open the main Ryzom game. It also offers various automations for management and other purposes.
 
 ## Installation
@@ -10,7 +15,7 @@ Get the exe file from the latest build. This exe file is a .NET-Core binary that
 Take a look at the sample configuration that is created when RCC is started for the first time.
 
 ## Scripting
-Use an automaton that inherits from RCC.Automata.Internal.AutomatonBase. It has an initialization method and is updated every few ticks by the server. Many so-called "impulses" of the Ryzom server are already included as methods that can be inherited by the automaton.
+Write your own plugin that inherits from API.Plugins.Plugin. It has an initialization method and is updated every few ticks by the server. Many so-called "impulses" of the Ryzom server are already included as methods that can be inherited by the automaton.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
