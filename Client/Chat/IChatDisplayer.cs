@@ -26,5 +26,5 @@ namespace Client.Chat
         /// display a player tell message
         /// </summary>
         public void DisplayTell( /*TDataSetIndex senderIndex, */ string ucstr, string senderName);
-    };
+    }
 }

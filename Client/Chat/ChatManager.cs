@@ -6,9 +6,12 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 using API.Chat;
+using API.Entity;
 using Client.Client;
 using Client.Database;
 using Client.Network;
@@ -125,7 +128,8 @@ namespace Client.Chat
             if (type == ChatGroupType.DynChat)
             {
                 // TODO retrieve the DBIndex from the dynamic chat id
-                int dbIndex = GetDynamicChannelDbIndexFromId(chatMsg.DynChatChanID);
+                var dbIndex = GetDynamicChannelDbIndexFromId(chatMsg.DynChatChanID);
+
                 // if the client database is not yet up to date, put the chat message in buffer
                 if (dbIndex < 0)
                     complete = false;
@@ -140,6 +144,7 @@ namespace Client.Chat
 
             // display
             BuildChatSentence(senderStr, chatMsg.Content, type, out var ucstr);
+
             chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, chatMsg.DynChatChanID,
                 senderStr);
         }
@@ -149,13 +154,12 @@ namespace Client.Chat
         /// </summary>
         private int GetDynamicChannelDbIndexFromId(uint channelId)
         {
-            for (int i = 0; i < Constants.MaxDynChanPerPlayer; i++)
+            for (var i = 0; i < Constants.MaxDynChanPerPlayer; i++)
             {
-                if (_dynamicChannelIdLeaf[i] != null)
-                {
-                    if ((ulong)_dynamicChannelIdLeaf[i].GetValue64() == channelId)
-                        return i;
-                }
+                if (_dynamicChannelIdLeaf[i] == null) continue;
+
+                if ((ulong)_dynamicChannelIdLeaf[i].GetValue64() == channelId)
+                    return i;
             }
 
             return -1;
@@ -261,7 +265,7 @@ namespace Client.Chat
         private static void BuildTellSentence(string sender, string msg, out string result)
         {
             // If no sender name was provided, show only the msg
-            var name = Entity.Entity.RemoveTitleAndShardFromName(sender);
+            var name = EntityBase.RemoveTitleAndShardFromName(sender);
 
             if (sender.Length == 0)
                 result = msg;
@@ -414,6 +418,24 @@ namespace Client.Chat
             }
 
             return new string(colorCode);
+        }
+
+        /// <summary>
+        /// Removes translations from the message
+        /// </summary>
+        /// <param name="msg">message to be processed</param>
+        /// <returns>message without translations</returns>
+        public static string GetVerbatim(string msg)
+        {
+            var startTr = msg.IndexOf("{:", StringComparison.Ordinal);
+            var endOfOriginal = msg.IndexOf("}@{", StringComparison.Ordinal);
+
+            if (startTr != -1 && endOfOriginal != -1)
+            {
+                return msg.Substring(0, startTr) + msg.Substring(startTr + 5, endOfOriginal - startTr - 5);
+            }
+
+            return msg;
         }
     }
 }

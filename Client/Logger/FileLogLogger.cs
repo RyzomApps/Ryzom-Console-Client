@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using API.Chat;
 using API.Helper;
+using Client.Chat;
 
 namespace Client.Logger
 {
@@ -49,6 +50,7 @@ namespace Client.Logger
             try
             {
                 msg = ChatColor.GetVerbatim(msg);
+                msg = ChatManager.GetVerbatim(msg);
 
                 if (_prependTimestamp)
                     msg = $"{Misc.GetTimestamp()} {msg}";

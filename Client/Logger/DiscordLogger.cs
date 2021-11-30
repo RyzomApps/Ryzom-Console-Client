@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using API.Chat;
 using API.Helper;
+using Client.Chat;
 using Client.Discord;
 using Client.Discord.Classes;
 
@@ -95,6 +96,7 @@ namespace Client.Logger
         private void QueueMessage(string text)
         {
             text = ChatColor.GetVerbatim(text);
+            text = ChatManager.GetVerbatim(text);
 
             while (text.Length > 500)
             {

@@ -62,5 +62,5 @@ namespace Client.Chat
             UsePhraseId = true;
             DisplayAsTell = displayAsTell;
         }
-    };
+    }
 }

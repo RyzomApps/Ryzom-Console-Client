@@ -641,7 +641,7 @@ namespace Client
             var emptyEntityInfo = new Change.TNewEntityInfo();
             emptyEntityInfo.Reset();
             _networkManager.GetEntityManager().Create(0, Constants.UserSheetId, emptyEntityInfo);
-            Log.Info("Created the user with the sheet " + Constants.UserSheetId);
+            Log.Info("Created user entity with sheet id " + Constants.UserSheetId);
 
             // Create the message for the server that the client is ready
             var out2 = new BitMemoryStream();

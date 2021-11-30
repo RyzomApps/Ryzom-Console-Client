@@ -39,5 +39,5 @@ namespace Client.Chat
                 f.Serial(ref DynChatChanID);
             f.Serial(ref Content);
         }
-    };
+    }
 }

@@ -26,5 +26,5 @@ namespace Client.Chat
             PhraseId = 0;
             CustomTxt = "";
         }
-    };
+    }
 }
