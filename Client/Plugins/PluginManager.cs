@@ -193,7 +193,6 @@ namespace Client.Plugins
                                 if (loadedPlugins.Contains(dependency))
                                 {
                                     //  We have a dependency not found
-                                    //dependencyIterator.Remove();
                                     dependencies.Remove(plugin);
                                 }
                                 else if (!plugins.ContainsKey(dependency))
@@ -201,7 +200,6 @@ namespace Client.Plugins
                                     missingDependency = false;
                                     var file = plugins[plugin];
 
-                                    //pluginIterator.Remove();
                                     plugins.Remove(plugin);
 
                                     softDependencies.Remove(plugin);
@@ -228,7 +226,6 @@ namespace Client.Plugins
                                 //  Soft depend is no longer around
                                 if (!plugins.ContainsKey(softDependency))
                                 {
-                                    //softDependencyIterator.Remove();
                                     softDependencies.Remove(softDependency);
                                 }
                             }
@@ -246,7 +243,6 @@ namespace Client.Plugins
 
                             pluginIteratorRemove.Add(plugin);
 
-                            //pluginIterator.Remove();
                             plugins.Remove(plugin);
 
                             missingDependency = false;
@@ -280,7 +276,6 @@ namespace Client.Plugins
                             missingDependency = false;
                             var file = plugins[plugin];
 
-                            //pluginIterator.Remove();
                             plugins.Remove(plugin);
 
                             try
@@ -307,7 +302,6 @@ namespace Client.Plugins
                         {
                             var file = failedPluginIterator.Current;
 
-                            //failedPluginIterator.Remove();
                             plugins.Remove(pluginIterator.Current);
 
                             _client.GetLogger().Error($"Could not load '{file.FullName}' in folder '{directory.FullName}': circular dependency detected");
@@ -394,7 +388,7 @@ namespace Client.Plugins
                 _client.GetLogger().Error($"Error occurred (in the plugin loader) while enabling {plugin.GetDescription().GetFullName()} (Is it up to date?)", ex);
             }
 
-            // TODO: Add listeners again?
+            // TODO: add listeners again?
         }
 
         /// <inheritdoc/>
@@ -422,7 +416,7 @@ namespace Client.Plugins
                 _client.GetLogger().Error($"Error occurred (in the plugin loader) while disabling {plugin.GetDescription().GetFullName()} (Is it up to date?)", ex);
             }
 
-            // TODO: Remove listeners?
+            // TODO: remove listeners?
         }
 
         /// <inheritdoc/>
@@ -437,18 +431,6 @@ namespace Client.Plugins
 
         public void CallEvent(Action<ListenerBase> evt)
         {
-            //    isAsynchronous();
-            //    if (Thread.holdsLock(this)) {
-            //        throw new IllegalStateException(event, ., (getEventName() + " cannot be triggered asynchronously from inside synchronized code."));
-            //    }
-            //
-            //    if (this.server.isPrimaryThread()) {
-            //        throw new IllegalStateException(event, ., (getEventName() + " cannot be triggered asynchronously from primary server thread."));
-            //    }
-            //
-            //    this.fireEvent(event);
-            //    this;
-
             FireEvent(evt);
         }
 
@@ -462,9 +444,9 @@ namespace Client.Plugins
                     {
                         action(listener);
                     }
-                    catch
+                    catch (Exception e)
                     {
-                        _client.GetLogger().Error($"Could not pass event {action.Method.Name} to {plugin.GetDescription().GetFullName()}");
+                        _client.GetLogger().Error($"Could not pass event {action.Method.Name} to {plugin.GetDescription().GetFullName()}\r\n{e.Message}\r\n{e.StackTrace}");
                     }
                 }
             }
@@ -859,7 +841,7 @@ namespace Client.Plugins
                         //Display a meaningful error message to help debugging the listener
                         _client?.GetLogger().Error($"{parentMethodName}: Got error from {listener}: {e}");
                     }
-                    //ThreadAbortException should not be caught here as in can happen when disconnecting from server
+                    // ThreadAbortException should not be caught here as in can happen when disconnecting from server
                     else throw;
                 }
             }
