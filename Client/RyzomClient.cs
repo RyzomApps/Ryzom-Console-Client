@@ -531,6 +531,8 @@ namespace Client
 
                         // Auto-selection for fast launching (dev only)
                         _networkManager.CanSendCharSelection = false;
+                        
+                        ActionHandlerRenameChar.Execute((byte)charSelect, _networkManager);
                         ActionHandlerLaunchGame.Execute(charSelect.ToString(), _networkManager);
                     }
                 }
