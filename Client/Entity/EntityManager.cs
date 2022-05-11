@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using API.Entity;
 using Client.Property;
 
 namespace Client.Entity
@@ -21,16 +22,24 @@ namespace Client.Entity
     /// <author>Nevrax France</author>
     /// <date>2001</date>
     /// 
-    public class EntityManager
+    public class EntityManager : IEntityManager
     {
-
         private readonly RyzomClient _client;
 
-        public UserEntity UserEntity;
+        public IEntity UserEntity
+        {
+            get => _userEntity;
+            set => _userEntity = (UserEntity)value;
+        }
+
         private uint _nbMaxEntity;
+
+        public List<IEntity> Entities => new List<IEntity>(_entities);
 
         // Contain all entities.
         readonly List<Entity> _entities = new List<Entity>();
+
+        private UserEntity _userEntity;
 
         public EntityManager(RyzomClient client)
         {
@@ -64,7 +73,7 @@ namespace Client.Entity
         /// <param name="form">uint32 : form to create the entity</param>
         /// <param name="newEntityInfo">dataset</param>
         /// <returns>CEntityCL : pointer on the new entity</returns> 
-        public Entity Create(in byte slot, uint form, Change.TNewEntityInfo newEntityInfo)
+        public Entity Create(in byte slot, uint form, PropertyChange.TNewEntityInfo newEntityInfo)
         {
             if (slot >= _nbMaxEntity)
             {
@@ -98,11 +107,11 @@ namespace Client.Entity
                 _entities[slot] = new Entity();
             else
             {
-                UserEntity = new UserEntity
+                _userEntity = new UserEntity
                 {
                     Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition()
                 };
-                _entities[0] = UserEntity;
+                _entities[0] = _userEntity;
             }
 
             // If the entity has been right created.

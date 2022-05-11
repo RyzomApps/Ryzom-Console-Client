@@ -16,13 +16,13 @@ namespace Client.Entity
 {
     public class UserEntity : Entity
     {
-        private byte _Selection;
+        private byte _selection;
 
         internal void Selection(byte slot, RyzomClient client)
         {
             //allows reselection in Ring client: even if the selected slots is equal to the selection,
             //the client must send the messages.
-            if (_Selection == slot)
+            if (_selection == slot)
             {
                 return;
             }
@@ -53,7 +53,7 @@ namespace Client.Entity
             //}
 
             // Set the entity selected
-            _Selection = slot;
+            _selection = slot;
 
             // Update visual selection and interface
             //if (sel != null && sel.isForageSource())
@@ -229,7 +229,7 @@ namespace Client.Entity
             }
 
             // Check the target
-            Entity target = client.GetNetworkManager().GetEntityManager().GetEntity(slot);
+            Entity target = (Entity)client.GetNetworkManager().GetEntityManager().GetEntity(slot);
 
             if (target == null)
             {

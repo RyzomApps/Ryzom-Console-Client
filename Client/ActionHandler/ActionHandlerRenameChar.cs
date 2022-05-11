@@ -6,10 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using Client.Config;
 using Client.Network;
 
-namespace Client.Client
+namespace Client.ActionHandler
 {
     /// <summary>
     /// Ask the server to rename a character
@@ -42,7 +41,7 @@ namespace Client.Client
             out2.Serial(ref sSurname, false);
 
             networkManager.Push(out2);
-            //networkManager.Send(networkManager.GetCurrentServerTick());
+            networkManager.Send(networkManager.GetNetworkConnection().GetCurrentServerTick());
 
             RyzomClient.GetInstance().GetLogger().Info("impulseCallBack : CONNECTION:RENAME_CHAR sent...");
 

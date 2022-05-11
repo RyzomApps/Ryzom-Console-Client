@@ -57,7 +57,7 @@ namespace Client.Network
         /// <summary>
         /// Changes since
         /// </summary>
-        private readonly List<Change> _changes = new List<Change>();
+        private readonly List<PropertyChange> _changes = new List<PropertyChange>();
 
         private readonly PropertyDecoder _propertyDecoder = new PropertyDecoder();
 
@@ -230,7 +230,7 @@ namespace Client.Network
         /// <summary>
         /// Get the changes since last clear
         /// </summary>
-        public List<Change> GetChanges() { return _changes; }
+        public List<PropertyChange> GetChanges() { return _changes; }
 
         /// <summary>
         /// Clear all changes
@@ -523,7 +523,7 @@ namespace Client.Network
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, decode probe and state probe
                                 ConnectionState = ConnectionState.Probe;
-                                _changes.Add(new Change(0, (byte)PropertyType.ProbeReceived));
+                                _changes.Add(new PropertyChange(0, (byte)PropertyType.ProbeReceived));
                                 _client.GetLogger().Debug("CNET: login->probe");
                                 ReceiveSystemProbe(msgin);
                                 return true;
@@ -668,7 +668,7 @@ namespace Client.Network
                             case SystemMessageType.SystemProbeCode:
                                 // receive probe, decode probe and state probe
                                 ConnectionState = ConnectionState.Probe;
-                                _changes.Add(new Change(0, (byte)PropertyType.ProbeReceived));
+                                _changes.Add(new PropertyChange(0, (byte)PropertyType.ProbeReceived));
                                 ReceiveSystemProbe(msgin);
                                 return true;
 
@@ -699,7 +699,7 @@ namespace Client.Network
                     {
                         ConnectionState = ConnectionState.Connected;
 
-                        _changes.Add(new Change(0, (byte)PropertyType.ConnectionReady));
+                        _changes.Add(new PropertyChange(0, (byte)PropertyType.ConnectionReady));
 
                         ImpulseDecoder.Reset();
 
@@ -768,7 +768,7 @@ namespace Client.Network
                                 // receive probe, and goto state probe
                                 ConnectionState = ConnectionState.Probe;
 
-                                _changes.Add(new Change(0, (byte)PropertyType.ProbeReceived));
+                                _changes.Add(new PropertyChange(0, (byte)PropertyType.ProbeReceived));
                                 ReceiveSystemProbe(msgin);
                                 return true;
 
@@ -1034,7 +1034,7 @@ namespace Client.Network
 
                             _propertyDecoder.RemoveEntity(slot);
 
-                            var theChange = new Change(slot, (byte)PropertyType.RemoveOldEntity);
+                            var theChange = new PropertyChange(slot, (byte)PropertyType.RemoveOldEntity);
                             _changes.Add(theChange);
                         }
                         else
@@ -1104,7 +1104,7 @@ namespace Client.Network
                         ActionFactory.Remove(ap);
 
                         // Add into the changes vector
-                        var thechange = new Change(slot, (byte)PropertyType.Position, timestamp)
+                        var thechange = new PropertyChange(slot, (byte)PropertyType.Position, timestamp)
                         {
                             PositionInfo = { PredictedInterval = 0, IsInterior = interior }
                             // TODO Statistical prediction of time before next position update: set PredictedInterval
@@ -1126,7 +1126,7 @@ namespace Client.Network
                             ac.Unpack(msgin); // TODO: ap unpack
 
                             // Process orientation
-                            var thechange = new Change(slot, (byte)PropertyType.Orientation, timestamp);
+                            var thechange = new PropertyChange(slot, (byte)PropertyType.Orientation, timestamp);
                             _changes.Add(thechange);
 
                             var nodeRoot = (DatabaseNodeBranch)_databaseManager?.GetNodePtr().GetNode(0);
@@ -1757,7 +1757,7 @@ namespace Client.Network
 
         public void DecodeDiscreetProperty(BitMemoryStream msgin, byte propIndex)
         {
-            Change change;
+            PropertyChange propertyChange;
             var slot = VisualPropertyNodeClient.SlotContext.Slot;
 
             // \todo BEN this is temp, put it somewhere in database
@@ -1831,8 +1831,8 @@ namespace Client.Network
                     _client.GetLogger().Debug($"CLIENT: recvd property {(ushort)propIndex}u ({propIndex}) for slot {(ushort)slot}u, date {VisualPropertyNodeClient.SlotContext.Timestamp}");
                 }
 
-                change = new Change(slot, propIndex, VisualPropertyNodeClient.SlotContext.Timestamp);
-                _changes.Add(change);
+                propertyChange = new PropertyChange(slot, propIndex, VisualPropertyNodeClient.SlotContext.Timestamp);
+                _changes.Add(propertyChange);
 
                 return;
             }
@@ -1874,10 +1874,10 @@ namespace Client.Network
                     }
 
                     // Set information
-                    change = new Change(slot, (byte)PropertyType.AddNewEntity);
-                    change.NewEntityInfo.DataSetIndex = (uint)((ac.GetValue() >> 32) & 0xffffffff);
-                    change.NewEntityInfo.Alias = alias;
-                    _changes.Add(change);
+                    propertyChange = new PropertyChange(slot, (byte)PropertyType.AddNewEntity);
+                    propertyChange.NewEntityInfo.DataSetIndex = (uint)((ac.GetValue() >> 32) & 0xffffffff);
+                    propertyChange.NewEntityInfo.Alias = alias;
+                    _changes.Add(propertyChange);
 
                     break;
 
@@ -1887,8 +1887,8 @@ namespace Client.Network
                     var modeTimestamp = _currentServerTick - (uint)((mode44 >> 8) & 0xF);
 
                     // Push the mode Before the position or the orientation
-                    change = new Change(slot, (byte)PropertyType.Mode, modeTimestamp);
-                    _changes.Add(change);
+                    propertyChange = new PropertyChange(slot, (byte)PropertyType.Mode, modeTimestamp);
+                    _changes.Add(propertyChange);
 
                     // Set mode value in database
                     if (_databaseManager != null)
@@ -1966,8 +1966,8 @@ namespace Client.Network
                     }
 
                     // Process property
-                    change = new Change(slot, propIndex, timeStamp);
-                    _changes.Add(change);
+                    propertyChange = new PropertyChange(slot, propIndex, timeStamp);
+                    _changes.Add(propertyChange);
 
                     if (_databaseManager != null)
                     {

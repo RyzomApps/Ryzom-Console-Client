@@ -97,9 +97,10 @@ namespace Client.Network
         /// </summary>
         public void Serial(ref byte obj)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 8, BitMemoryStreamSerialInfo.SerialType.Byte, new StackTrace(true)));
+
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 8, BitMemoryStreamSerialInfo.SerialType.Byte, new StackTrace(true)));
                 var newBits = ReadFromArray(8);
                 obj = ConvertBoolArrayToByteArray(newBits)[0];
             }
@@ -115,9 +116,10 @@ namespace Client.Network
         /// </summary>
         public void Serial(ref int obj)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.Int, new StackTrace(true)));
+            
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.Int, new StackTrace(true)));
                 var newBits = ReadFromArray(32);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToInt32(reversed);
@@ -150,9 +152,10 @@ namespace Client.Network
         /// </summary>
         public void Serial(ref uint obj)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.UInt, new StackTrace(true)));
+            
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.UInt, new StackTrace(true)));
                 var newBits = ReadFromArray(32);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToUInt32(reversed);
@@ -169,9 +172,10 @@ namespace Client.Network
         /// </summary>
         public void Serial(ref ushort obj)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 16, BitMemoryStreamSerialInfo.SerialType.UShort, new StackTrace(true)));
+
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 16, BitMemoryStreamSerialInfo.SerialType.UShort, new StackTrace(true)));
                 var newBits = ReadFromArray(16);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToUInt16(reversed);
@@ -188,11 +192,11 @@ namespace Client.Network
         /// </summary>
         public void Serial(ref short obj, int nbits = 16)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.Short, new StackTrace(true)));
+
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.Short, new StackTrace(true)));
-
-                var bits = ReadFromArray(nbits);
+               var bits = ReadFromArray(nbits);
 
                 var newBits = new bool[16];
                 Array.Copy(bits, 0, newBits, 16 - bits.Length, bits.Length);
@@ -214,10 +218,10 @@ namespace Client.Network
         /// </summary>
         public void Serial(ref uint obj, int nbits)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.UInt, new StackTrace(true)));
+
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.UInt, new StackTrace(true)));
-
                 var bits = ReadFromArray(nbits);
 
                 var newBits = new bool[32];
@@ -266,10 +270,10 @@ namespace Client.Network
         /// </summary>
         public void Serial(ref ulong obj, int nbits)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.ULong, new StackTrace(true)));
+
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.ULong, new StackTrace(true)));
-
                 var bits = ReadFromArray(nbits);
 
                 var newBits = new bool[64];
@@ -290,10 +294,10 @@ namespace Client.Network
         /// </summary>
         public void Serial(ref long obj)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 64, BitMemoryStreamSerialInfo.SerialType.Long, new StackTrace(true)));
+            
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 64, BitMemoryStreamSerialInfo.SerialType.Long, new StackTrace(true)));
-
                 var newBits = ReadFromArray(64);
                 byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToInt64(reversed);
@@ -310,10 +314,10 @@ namespace Client.Network
         /// </summary>
         public void Serial(ref byte[] obj)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, obj.Length * 8, BitMemoryStreamSerialInfo.SerialType.ByteArray, new StackTrace(true)));
+            
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, obj.Length * 8, BitMemoryStreamSerialInfo.SerialType.ByteArray, new StackTrace(true)));
-
                 var newBits = ReadFromArray(obj.Length * 8);
 
                 //obj = ConvertBoolArrayToByteArray(newBits);
@@ -332,11 +336,11 @@ namespace Client.Network
         /// </summary>
         public void Serial(ref bool obj)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 1, BitMemoryStreamSerialInfo.SerialType.Bool, new StackTrace(true)));
+
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 1, BitMemoryStreamSerialInfo.SerialType.Bool, new StackTrace(true)));
-
-                // direct read
+               // direct read
                 obj = _contentBits[_bitPos];
                 _bitPos++;
             }
@@ -379,6 +383,8 @@ namespace Client.Network
 
                 var len = obj.Length;
                 Serial(ref len);
+
+                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * (isUtf16 ? 2 : 1) * 8, BitMemoryStreamSerialInfo.SerialType.BoolArray, new StackTrace(true)));
 
                 for (var i = 0; i < obj.ToCharArray().Length; ++i)
                 {
@@ -432,6 +438,8 @@ namespace Client.Network
             }
             else
             {
+                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, obj.Length, BitMemoryStreamSerialInfo.SerialType.BoolArray, new StackTrace(true)));
+
                 foreach (var ack in obj)
                 {
                     var b = ack;
@@ -448,13 +456,14 @@ namespace Client.Network
             uint i;
             byte v = 0x00;
 
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * 8, BitMemoryStreamSerialInfo.SerialType.Buffer, new StackTrace(true)));
+
             if (IsReading())
             {
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * 8, BitMemoryStreamSerialInfo.SerialType.Buffer, new StackTrace(true)));
-
                 for (i = 0; i != len; ++i)
                 {
                     Serial(ref v);
+
                     buf.AddToArray(new[] { v });
                 }
             }
@@ -483,6 +492,7 @@ namespace Client.Network
             if (IsReading())
             {
                 Serial(ref b);
+
                 if (b == 0xFF)
                     Serial(ref v);
                 else

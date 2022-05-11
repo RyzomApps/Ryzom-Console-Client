@@ -14,6 +14,7 @@ using API.Chat;
 using API.Entity;
 using Client.Client;
 using Client.Database;
+using Client.Messages;
 using Client.Network;
 
 namespace Client.Chat
@@ -21,7 +22,7 @@ namespace Client.Chat
     /// <summary>
     /// Class for management of incoming and outgoing chat messages
     /// </summary>
-    public class ChatManager
+    public class ChatManager : IChatManager
     {
         private readonly List<ChatMsgNode> _chatBuffer = new List<ChatMsgNode>();
 

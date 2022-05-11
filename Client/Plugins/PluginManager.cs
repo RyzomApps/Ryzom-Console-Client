@@ -104,9 +104,7 @@ namespace Client.Plugins
                         throw new InvalidDescriptionException("description is empty");
                     }
 
-#pragma warning disable 618
                     if (description.GetRawName().IndexOf(' ') != -1)
-#pragma warning restore 618
                     {
                         _client.GetLogger().Warn($"Plugin '{description.GetFullName()}' uses the space-character (0x20) in its name '{description.RawName}' - this is discouraged");
                     }
@@ -780,7 +778,7 @@ namespace Client.Plugins
         /// <summary>
         /// called when an entity is created
         /// </summary>
-        public void OnEntityCreate(byte slot, uint form, Change.TNewEntityInfo newEntityInfo)
+        public void OnEntityCreate(byte slot, uint form, PropertyChange.TNewEntityInfo newEntityInfo)
         {
             // TODO: OnEntityCreate
             //DispatchAutomatonEvent(automaton => automaton.OnEntityCreate(slot, form, newEntityInfo));

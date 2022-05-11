@@ -21,7 +21,7 @@ namespace Client.Entity
     /// <author>Guillaume PUZIN</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    public class Entity : EntityBase
+    public class Entity : EntityBase, IEntity
     {
         /// <summary>
         /// Entity Id (CLFECOMMON::INVALID_CLIENT_DATASET_INDEX for an invalid one)

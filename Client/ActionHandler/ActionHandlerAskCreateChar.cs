@@ -6,9 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using Client.Client;
+using Client.Messages;
 using Client.Network;
 
-namespace Client.Client
+namespace Client.ActionHandler
 {
     /// <summary>
     /// Ask the server to create a character
@@ -18,12 +20,12 @@ namespace Client.Client
         /// <summary>
         /// Execute the answer to the action
         /// </summary>
-        public static void Execute(string sSlot, NetworkManager networkManager)
+        public static void Execute(string name, byte slot, NetworkManager networkManager)
         {
             //CInterfaceManager pIM = CInterfaceManager.getInstance();
 
             // Create the message for the server to create the character.
-            var out2 = new BitMemoryStream(false);
+            var out2 = new BitMemoryStream();
 
             if (!networkManager.GetMessageHeaderManager().PushNameToStream("CONNECTION:CREATE_CHAR", out2))
             {
@@ -33,8 +35,8 @@ namespace Client.Client
 
             // Setup the name
             //string sEditBoxPath = getParam(Params, "name");
-            string sFirstName = "NotSet";
-            string sSurName = "NotSet";
+            var sFirstName = name; //"NotSet";
+            //string sSurName = "NotSet";
 
             //CGroupEditBox pGEB = CWidgetManager.getInstance().getElementFromId(sEditBoxPath) as CGroupEditBox;
             //if (pGEB != null)
@@ -47,21 +49,22 @@ namespace Client.Client
             //}
 
             // Build the character summary from the database branch ui:temp:char3d
-            CharacterSummary CS = new CharacterSummary();
+            var cs = new CharacterSummary {Mainland = networkManager.MainlandSelected, Name = sFirstName};
 
             //string sCharSumPath = getParam(Params, "charsum");
             //SCharacter3DSetup.setupCharacterSummaryFromDB(CS, sCharSumPath);
-            //CS.Mainland = MainlandSelected;
-            //CS.Name = ucstring.makeFromUtf8(sFirstName); // FIXME: UTF-8 (serial)
-                                                           // CS.Surname = sSurName;
+
+            // FIXME: UTF-8 (serial)
+            // CS.Surname = sSurName;
 
             // Create the message to send to the server from the character summary
-            //CreateCharMsg CreateCharMsg = new CreateCharMsg();
-            //
-            //CreateCharMsg.setupFromCharacterSummary(CS);
-            //
+            var createCharMsg = new CreateCharMsg();
+
+            createCharMsg.SetupFromCharacterSummary(cs);
+
+            // Slot
             //{
-            //    // Slot
+            //    
             //    string sSlot = getParam(Params, "slot");
             //
             //    CInterfaceExprValue result = new CInterfaceExprValue();
@@ -70,18 +73,18 @@ namespace Client.Client
             //        return;
             //    }
             //
-            //    CreateCharMsg.Slot = (byte)result.getInteger();
+            //createCharMsg.Slot = slot;
             //
             //    NLGUI.CDBManager.getInstance().getDbProp("UI:SELECTED_SLOT").setValue32(PlayerSelectedSlot);
             //}
-            //
+
             //// Setup the new career
             //string sCaracBasePath = getParam(Params, "caracs");
-            //CreateCharMsg.NbPointFighter = (byte)NLGUI.CDBManager.getInstance().getDbProp(sCaracBasePath + "FIGHT").getValue32();
-            //CreateCharMsg.NbPointCaster = (byte)NLGUI.CDBManager.getInstance().getDbProp(sCaracBasePath + "MAGIC").getValue32();
-            //CreateCharMsg.NbPointCrafter = (byte)NLGUI.CDBManager.getInstance().getDbProp(sCaracBasePath + "CRAFT").getValue32();
-            //CreateCharMsg.NbPointHarvester = (byte)NLGUI.CDBManager.getInstance().getDbProp(sCaracBasePath + "FORAGE").getValue32();
-            //
+            createCharMsg.NbPointFighter = 2; //(byte)NLGUI.CDBManager.getInstance().getDbProp(sCaracBasePath + "FIGHT").getValue32();
+            createCharMsg.NbPointCaster = 1;  //(byte)NLGUI.CDBManager.getInstance().getDbProp(sCaracBasePath + "MAGIC").getValue32();
+            createCharMsg.NbPointCrafter = 1;  //(byte)NLGUI.CDBManager.getInstance().getDbProp(sCaracBasePath + "CRAFT").getValue32();
+            createCharMsg.NbPointHarvester = 1;  //(byte)NLGUI.CDBManager.getInstance().getDbProp(sCaracBasePath + "FORAGE").getValue32();
+
             //// Setup starting point
             //string sLocationPath = getParam(Params, "loc");
             //{
@@ -115,17 +118,19 @@ namespace Client.Client
             //    }
             //
             //}
-            //
+
             //// Send the message to the server
-            //CreateCharMsg.serialBitMemStream(@out);
+            createCharMsg.SerialBitMemStream(out2);
+
             //if (!ClientCfg.Local)
             //{
             //    noUserChar = userChar = false;
             //
-            //    NetMngr.push(@out);
-            //    NetMngr.send(NetMngr.getCurrentServerTick());
-            //
-            //    //nlinfo("impulseCallBack : CONNECTION:CREATE_CHAR sent");
+            networkManager.Push(out2);
+            //networkManager.Send(networkManager.GetNetworkConnection().GetCurrentServerTick());
+
+            RyzomClient.GetInstance().GetLogger().Info("impulseCallBack : CONNECTION:CREATE_CHAR sent");
+
             //    CreateCharMsg.dump();
             //}
             //else

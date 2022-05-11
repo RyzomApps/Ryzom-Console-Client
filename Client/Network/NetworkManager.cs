@@ -12,6 +12,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Threading;
 using API.Chat;
+using API.Entity;
 using API.Helper;
 using API.Network;
 using Client.Chat;
@@ -40,6 +41,11 @@ namespace Client.Network
 
         public List<CharacterSummary> CharacterSummaries = new List<CharacterSummary>();
         public bool WaitServerAnswer;
+
+        /// <summary>
+        /// This is the mainland selected at the CREATE perso!!
+        /// </summary>
+        public uint MainlandSelected = 0;
 
         public string PlayerSelectedHomeShardName { get; set; } = "";
         public string PlayerSelectedHomeShardNameWithParenthesis = "";
@@ -79,7 +85,13 @@ namespace Client.Network
 
         public EntityManager GetEntityManager() => _entitiesManager;
 
+        public IEntityManager GetIEntityManager() => _entitiesManager;
+
         public ChatManager GetChatManager() => _chatManager;
+
+        public IChatManager GetIChatManager() => _chatManager;
+
+        public NetworkConnection GetNetworkConnection() => _networkConnection;
 
         /// <summary>
         /// Constructor
@@ -596,18 +608,18 @@ namespace Client.Network
 
             for (var i = 0; i < phrases.Count; ++i)
             {
-            //    if (phrases[i].PhraseSheetId != CSheetId.Unknown)
-            //    {
-            //        PhraseCom phraseCom = new PhraseCom();
-            //        _phraseManager.buildPhraseFromSheet(phraseCom, phrases[i].PhraseSheetId.AsInt());
-            //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phraseCom);
-            //    }
-            //    else
-            //    {
-            //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phrases[i].Phrase);
-            //    }
+                //    if (phrases[i].PhraseSheetId != CSheetId.Unknown)
+                //    {
+                //        PhraseCom phraseCom = new PhraseCom();
+                //        _phraseManager.buildPhraseFromSheet(phraseCom, phrases[i].PhraseSheetId.AsInt());
+                //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phraseCom);
+                //    }
+                //    else
+                //    {
+                //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phrases[i].Phrase);
+                //    }
             }
-            
+
             // must update the DB (NB: if initInGameDone) after all phrase set.
             //pPM.updateBookDB();
 
@@ -625,12 +637,12 @@ namespace Client.Network
 
             for (var i = 0; i < memorizedPhrases.Count; ++i)
             {
-            //    pPM.memorizePhrase(memorizedPhrases[i].MemoryLineId, memorizedPhrases[i].MemorySlotId, memorizedPhrases[i].PhraseId);
+                //    pPM.memorizePhrase(memorizedPhrases[i].MemoryLineId, memorizedPhrases[i].MemorySlotId, memorizedPhrases[i].PhraseId);
             }
-            
+
             // OK.
             _client.SabrinaPhraseBookLoaded = true;
-            
+
             // update gray state, if game inited.
             //pPM.updateMemoryBar();
 
@@ -988,7 +1000,7 @@ namespace Client.Network
                 _client.GetNetworkManager().SetReferencePosition(dest);
 
                 // Change the user poisition.
-                _entitiesManager.UserEntity.CorrectPos(dest);
+                ((UserEntity)_entitiesManager.UserEntity).CorrectPos(dest);
             }
             //}
         }
@@ -1132,16 +1144,16 @@ namespace Client.Network
             // received USER_CHAR
             _client.GetLogger().Debug("ImpulseCallBack : Received CONNECTION:USER_CHAR");
 
-            UserCharMsgRead(impulse, out var x, out var y, out var z, out var heading, out var season, out var userRole, out var isInRingSession, out var highestMainlandSessionId, out var firstConnectedTime, out CharPlayedTime);
+            UserCharMsg.Read(impulse, out var x, out var y, out var z, out var heading, out var season, out var userRole, out var isInRingSession, out var highestMainlandSessionId, out var firstConnectedTime, out CharPlayedTime);
 
             ServerSeasonReceived = true; // set the season that will be used when selecting the continent from the position
 
             if (_entitiesManager.UserEntity != null)
             {
-                _entitiesManager.UserEntity.Pos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
+                ((UserEntity)_entitiesManager.UserEntity).Pos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
                 _entitiesManager.UserEntity.Front = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
                 _entitiesManager.UserEntity.Dir = _entitiesManager.UserEntity.Front;
-                _entitiesManager.UserEntity.SetHeadPitch(0);
+                ((UserEntity)_entitiesManager.UserEntity).SetHeadPitch(0);
 
                 _client.GetLogger().Info($"Received Char Position: {_entitiesManager.UserEntity.Pos} Heading: {heading:0.000} Front: {_entitiesManager.UserEntity.Front:0.000}");
 
@@ -1164,47 +1176,6 @@ namespace Client.Network
             }
 
             _client.UserCharPosReceived = true;
-        }
-
-        /// <summary>
-        /// decode server client message for the character information at the beginning
-        /// </summary>
-        /// <author>PUZIN Guillaume (GUIGUI)</author>
-        /// <author>Nevrax France</author>
-        /// <date>2002</date>
-        private static void UserCharMsgRead(BitMemoryStream impulse, out int x, out int y, out int z, out float heading, out short season, out int userRole, out bool isInRingSession, out int highestMainlandSessionId, out int firstConnectedTime, out int playedTime)
-        {
-            x = 0;
-            y = 0;
-            z = 0;
-
-            var headingI = 0;
-
-            var s = impulse;
-            var f = s;
-
-            f.Serial(ref x);
-            f.Serial(ref y);
-            f.Serial(ref z);
-            f.Serial(ref headingI);
-
-            heading = Misc.Int32BitsToSingle(headingI);
-
-            short v = 0;
-            s.Serial(ref v, 3);
-            season = v;
-            v = 0;
-            s.Serial(ref v, 3);
-            userRole = v & 0x3;
-            isInRingSession = (v & 0x4) != 0;
-
-            highestMainlandSessionId = 0;
-            firstConnectedTime = 0;
-            playedTime = 0;
-
-            s.Serial(ref highestMainlandSessionId);
-            s.Serial(ref firstConnectedTime);
-            s.Serial(ref playedTime);
         }
 
         private void ImpulseUserChars(BitMemoryStream impulse)

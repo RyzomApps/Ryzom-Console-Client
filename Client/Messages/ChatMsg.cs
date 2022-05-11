@@ -9,7 +9,7 @@
 using API.Chat;
 using Client.Network;
 
-namespace Client.Chat
+namespace Client.Messages
 {
     public class ChatMsg
     {

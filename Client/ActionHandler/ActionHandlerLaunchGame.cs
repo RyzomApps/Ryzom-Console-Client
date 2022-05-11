@@ -9,7 +9,7 @@
 using Client.Config;
 using Client.Network;
 
-namespace Client.Client
+namespace Client.ActionHandler
 {
     /// <summary>
     /// Launch the game given a slot (slot is reference to the character summaries)
