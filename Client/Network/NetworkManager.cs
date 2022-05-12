@@ -6,24 +6,22 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Reflection;
-using System.Threading;
 using API.Chat;
 using API.Entity;
-using API.Helper;
 using API.Network;
 using Client.Chat;
 using Client.Client;
 using Client.Database;
 using Client.Entity;
-using Client.Helper;
 using Client.Messages;
 using Client.Network.Action;
 using Client.Phrase;
 using Client.Property;
+using System;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Reflection;
+using System.Threading;
 
 namespace Client.Network
 {
@@ -1000,7 +998,7 @@ namespace Client.Network
                 _client.GetNetworkManager().SetReferencePosition(dest);
 
                 // Change the user poisition.
-                ((UserEntity)_entitiesManager.UserEntity).CorrectPos(dest);
+                _entitiesManager.UserEntity.CorrectPos(dest);
             }
             //}
         }
@@ -1150,10 +1148,10 @@ namespace Client.Network
 
             if (_entitiesManager.UserEntity != null)
             {
-                ((UserEntity)_entitiesManager.UserEntity).Pos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
+                _entitiesManager.UserEntity.Pos = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
                 _entitiesManager.UserEntity.Front = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
                 _entitiesManager.UserEntity.Dir = _entitiesManager.UserEntity.Front;
-                ((UserEntity)_entitiesManager.UserEntity).SetHeadPitch(0);
+                _entitiesManager.UserEntity.SetHeadPitch(0);
 
                 _client.GetLogger().Info($"Received Char Position: {_entitiesManager.UserEntity.Pos} Heading: {heading:0.000} Front: {_entitiesManager.UserEntity.Front:0.000}");
 

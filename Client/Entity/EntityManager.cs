@@ -26,10 +26,12 @@ namespace Client.Entity
     {
         private readonly RyzomClient _client;
 
-        public IEntity UserEntity
+        public IEntity GetUserEntity() => _userEntity;
+
+        public UserEntity UserEntity
         {
             get => _userEntity;
-            set => _userEntity = (UserEntity)value;
+            set => _userEntity = value;
         }
 
         private uint _nbMaxEntity;

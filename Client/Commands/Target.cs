@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using API;
+﻿using API;
 using API.Commands;
-using Client.Entity;
+using System;
+using System.Collections.Generic;
 
 namespace Client.Commands
 {
@@ -35,8 +34,8 @@ namespace Client.Commands
                 return "";
             }
 
-            ((UserEntity)ryzomClient.GetNetworkManager().GetEntityManager().UserEntity).Selection(entity.Slot(), ryzomClient);
-            ((UserEntity)ryzomClient.GetNetworkManager().GetEntityManager().UserEntity).SetTargetSlot(entity.Slot());
+            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.Selection(entity.Slot(), ryzomClient);
+            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.SetTargetSlot(entity.Slot());
 
             return "";
         }

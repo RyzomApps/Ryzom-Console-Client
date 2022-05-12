@@ -27,7 +27,6 @@ using Client.Chat;
 using Client.Client;
 using Client.Config;
 using Client.Database;
-using Client.Entity;
 using Client.Helper;
 using Client.Logger;
 using Client.Network;
@@ -620,7 +619,7 @@ namespace Client
             // Initialize Sound System
 
             // Initializing Entities Manager
-            ((EntityManager)_networkManager.GetEntityManager()).Initialize(256);
+            _networkManager.GetEntityManager().Initialize(256);
 
             // Creating Scene.
 
@@ -649,7 +648,7 @@ namespace Client
             //CSheetId userSheet = new CSheetId(ClientCfg.UserSheet);
             var emptyEntityInfo = new PropertyChange.TNewEntityInfo();
             emptyEntityInfo.Reset();
-            ((EntityManager)_networkManager.GetEntityManager()).Create(0, Constants.UserSheetId, emptyEntityInfo);
+            _networkManager.GetEntityManager().Create(0, Constants.UserSheetId, emptyEntityInfo);
             Log.Info("Created user entity with sheet id " + Constants.UserSheetId);
 
             // Create the message for the server that the client is ready
@@ -705,14 +704,14 @@ namespace Client
                         // Update the server with our position and orientation.
                         out2 = new BitMemoryStream();
 
-                        if (((UserEntity)_networkManager.GetEntityManager().UserEntity).SendToServer(out2, _networkManager.GetMessageHeaderManager()))
+                        if (_networkManager.GetEntityManager().UserEntity.SendToServer(out2, _networkManager.GetMessageHeaderManager()))
                         {
                             _networkManager.Push(out2);
                         }
 
                         // Give information to the server about the combat position (ability to strike).
                         out2 = new BitMemoryStream();
-                        if (((UserEntity)_networkManager.GetEntityManager().UserEntity).MsgForCombatPos(out2, _networkManager.GetMessageHeaderManager()))
+                        if (_networkManager.GetEntityManager().UserEntity.MsgForCombatPos(out2, _networkManager.GetMessageHeaderManager()))
                         {
                             _networkManager.Push(out2);
                         }

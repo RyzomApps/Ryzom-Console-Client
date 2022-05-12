@@ -187,7 +187,7 @@ namespace Client.Entity
             //pIM.incLocalSyncActionCounter();
         }
 
-        float FrontYaw() { return (float)Math.Atan2(Front.Y, Front.X); }
+        private float FrontYaw() { return (float)Math.Atan2(Front.Y, Front.X); }
 
         /// <summary>
         /// Send the position and orientation to the server.
@@ -229,7 +229,7 @@ namespace Client.Entity
             }
 
             // Check the target
-            Entity target = (Entity)client.GetNetworkManager().GetEntityManager().GetEntity(slot);
+            var target = client.GetNetworkManager().GetEntityManager().GetEntity(slot);
 
             if (target == null)
             {
