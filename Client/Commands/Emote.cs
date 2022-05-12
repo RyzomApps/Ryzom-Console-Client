@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
+using API.Entity;
 using Client.Network;
 
 namespace Client.Commands
@@ -37,7 +38,7 @@ namespace Client.Commands
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                var displayName = $"{Entity.Entity.RemoveTitleAndShardFromName(ryzomClient.GetNetworkManager().PlayerSelectedHomeShardName)}";
+                var displayName = $"{EntityBase.RemoveTitleAndShardFromName(ryzomClient.GetNetworkManager().PlayerSelectedHomeShardName)}";
                 emotePhrase = $"&EMT&{displayName} {emotePhrase}";
 
                 out2.Serial(ref behavToSend);
