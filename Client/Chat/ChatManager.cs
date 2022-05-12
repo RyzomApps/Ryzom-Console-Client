@@ -9,11 +9,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection.Metadata.Ecma335;
 using API.Chat;
 using API.Entity;
 using Client.Client;
 using Client.Database;
+using Client.Messages;
 using Client.Network;
 
 namespace Client.Chat
@@ -169,7 +169,9 @@ namespace Client.Chat
         /// Extract and decode the chat string from the stream.
         /// the stream here is only a iunt32 for the id of the dynamic string
         /// </summary>
+        /// <param name="bms">memory stream</param>
         /// <param name="type">where do you want this string to go (dyn_chat is not allowed)</param>
+        /// <param name="chatDisplayer">class that acts as the display</param>
         internal void ProcessChatStringWithNoSender(BitMemoryStream bms, ChatGroupType type, IChatDisplayer chatDisplayer)
         {
             Debug.Assert(type != ChatGroupType.DynChat);
@@ -315,7 +317,7 @@ namespace Client.Chat
             }
 
             // Format the sentence with the provided sender name
-            var senderName = Entity.Entity.RemoveTitleAndShardFromName(sender);
+            var senderName = EntityBase.RemoveTitleAndShardFromName(sender);
 
             // TODO Does the char have a CSR title?
             const string csr = "";
@@ -348,11 +350,11 @@ namespace Client.Chat
         }
 
         /// <summary>
-        /// Get the category from the string (src="&SYS&Who are you?" and dest="Who are you?" and return "SYS"), if no category, return ""
+        /// Get the category from the string (src="&amp;SYS&amp;Who are you?" and dest="Who are you?" and return "SYS"), if no category, return ""
         /// </summary>
         public static string GetStringCategoryIfAny(string src, out string dest)
         {
-            const int PreTagSize = 5;
+            const int preTagSize = 5;
 
             var colorCode = new char[0];
 
@@ -365,17 +367,17 @@ namespace Client.Chat
 
                 const string newTag = "<NEW>";
 
-                if (src.Length >= PreTagSize && src.Substring(0, PreTagSize) == newTag)
+                if (src.Length >= preTagSize && src.Substring(0, preTagSize) == newTag)
                 {
-                    startPos = PreTagSize;
+                    startPos = preTagSize;
                     preTag = newTag;
                 }
 
                 const string chgTag = "<CHG>";
 
-                if (src.Length >= PreTagSize && src.Substring(0, PreTagSize) == chgTag)
+                if (src.Length >= preTagSize && src.Substring(0, preTagSize) == chgTag)
                 {
-                    startPos = PreTagSize;
+                    startPos = preTagSize;
                     preTag = chgTag;
                 }
 

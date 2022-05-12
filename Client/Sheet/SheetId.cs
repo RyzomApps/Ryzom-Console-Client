@@ -6,6 +6,8 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Client.Sheet
 {
     public class SheetId
@@ -22,6 +24,12 @@ namespace Client.Sheet
         public SheetId(uint sheetRef)
         {
             _id = sheetRef;
+        }
+
+        /// <summary>Return the **whole** sheet id (id+type)</summary>
+        public uint AsInt()
+        {
+            return _id;
         }
     }
 }

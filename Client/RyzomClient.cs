@@ -22,6 +22,7 @@ using API.Logger;
 using API.Network;
 using API.Plugins;
 using API.Plugins.Interfaces;
+using Client.ActionHandler;
 using Client.Chat;
 using Client.Client;
 using Client.Config;
@@ -531,7 +532,14 @@ namespace Client
 
                         // Auto-selection for fast launching (dev only)
                         _networkManager.CanSendCharSelection = false;
+
                         ActionHandlerLaunchGame.Execute(charSelect.ToString(), _networkManager);
+
+                        //ActionHandlerRenameChar.Execute((byte)charSelect, _networkManager);
+
+                        //ActionHandlerAskCreateChar.Execute("faafaa", 1, _networkManager);
+
+                        //ActionHandlerLaunchGame.Execute(1.ToString(), _networkManager);
                     }
                 }
 
@@ -638,7 +646,7 @@ namespace Client
             // DO IT AFTER: Database, Collision Manager, PACS, scene, animations loaded.
 
             //CSheetId userSheet = new CSheetId(ClientCfg.UserSheet);
-            var emptyEntityInfo = new Change.TNewEntityInfo();
+            var emptyEntityInfo = new PropertyChange.TNewEntityInfo();
             emptyEntityInfo.Reset();
             _networkManager.GetEntityManager().Create(0, Constants.UserSheetId, emptyEntityInfo);
             Log.Info("Created user entity with sheet id " + Constants.UserSheetId);
@@ -696,16 +704,14 @@ namespace Client
                         // Update the server with our position and orientation.
                         out2 = new BitMemoryStream();
 
-                        if (_networkManager.GetEntityManager().UserEntity
-                            .SendToServer(out2, _networkManager.GetMessageHeaderManager()))
+                        if (_networkManager.GetEntityManager().UserEntity.SendToServer(out2, _networkManager.GetMessageHeaderManager()))
                         {
                             _networkManager.Push(out2);
                         }
 
                         // Give information to the server about the combat position (ability to strike).
                         out2 = new BitMemoryStream();
-                        if (_networkManager.GetEntityManager().UserEntity
-                            .MsgForCombatPos(out2, _networkManager.GetMessageHeaderManager()))
+                        if (_networkManager.GetEntityManager().UserEntity.MsgForCombatPos(out2, _networkManager.GetMessageHeaderManager()))
                         {
                             _networkManager.Push(out2);
                         }

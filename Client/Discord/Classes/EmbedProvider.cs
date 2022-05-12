@@ -12,18 +12,18 @@ namespace Client.Discord.Classes
 {
     public class EmbedProvider
     {
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("name")]
         /// <summary>
         /// Provider name
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("url")]
         /// <summary>
         /// Provider url
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("url")]
         public string Url { get; set; }
     }
 }

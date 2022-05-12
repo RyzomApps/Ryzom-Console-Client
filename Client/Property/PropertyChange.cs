@@ -11,12 +11,12 @@ namespace Client.Property
     /// <summary>
     /// A property change
     /// </summary>
-    public class Change
+    public class PropertyChange
     {
         /// <summary>
         /// Constructor
         /// </summary>
-        internal Change(byte id = 0, byte prop = 255, uint gc = 0)
+        internal PropertyChange(byte id = 0, byte prop = 255, uint gc = 0)
         {
             ShortId = id;
             Property = prop;

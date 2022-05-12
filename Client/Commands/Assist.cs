@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
+using Client.Entity;
 
 namespace Client.Commands
 {
@@ -39,13 +40,13 @@ namespace Client.Commands
             }
             else
             {
-                entity = entityManager.GetEntity(user.TargetSlot());
+                entity = entityManager.GetEntity(((UserEntity)user).TargetSlot());
             }
 
             if (entity != null)
             {
                 // Select the entity
-                user.Assist(entity.Slot(), ryzomClient);
+                ((UserEntity)user).Assist(entity.Slot(), ryzomClient);
             }
             else
             {

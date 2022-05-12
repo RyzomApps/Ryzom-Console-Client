@@ -56,7 +56,7 @@ namespace Client.Client
         /// </summary>
         public CharacterSummary()
         {
-            Mainland = 0;
+            Mainland = 101; // TODO: Get this from the server
             Name = string.Empty;
             _location = 0;
             _visualPropA = 0;
