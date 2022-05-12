@@ -62,7 +62,7 @@ namespace Client.Network
         private readonly GenericMessageHeaderManager _messageHeaderManager;
         private readonly ChatManager _chatManager;
 
-        private readonly PhraseManager _phraseManager = new PhraseManager();
+        //private readonly PhraseManager _phraseManager = new PhraseManager();
 
         /// <summary>
         /// was the inital server season received
@@ -86,8 +86,6 @@ namespace Client.Network
         public IEntityManager GetIEntityManager() => _entitiesManager;
 
         public ChatManager GetChatManager() => _chatManager;
-
-        public IChatManager GetIChatManager() => _chatManager;
 
         public NetworkConnection GetNetworkConnection() => _networkConnection;
 
@@ -587,64 +585,64 @@ namespace Client.Network
         /// </summary>
         private void ImpulsePhraseDownLoad(BitMemoryStream impulse)
         {
-            return;
+            //return;
 
-            // Read Known Phrases
-            //impulse.SerialCont(phrases);
+            //// Read Known Phrases
+            ////impulse.SerialCont(phrases);
 
-            int len = 0;
-            impulse.Serial(ref len);
-            var phrases = new List<PhraseSlot>(len);
+            //int len = 0;
+            //impulse.Serial(ref len);
+            //var phrases = new List<PhraseSlot>(len);
 
-            for (var i = 0; i < len; i++)
-            {
-                var value = PhraseSlot.Serial(impulse);
-                phrases.Add(value);
-            }
+            //for (var i = 0; i < len; i++)
+            //{
+            //    var value = PhraseSlot.Serial(impulse);
+            //    phrases.Add(value);
+            //}
 
-            //PhraseManager pPM = PhraseManager.getInstance();
+            ////PhraseManager pPM = PhraseManager.getInstance();
 
-            for (var i = 0; i < phrases.Count; ++i)
-            {
-                //    if (phrases[i].PhraseSheetId != CSheetId.Unknown)
-                //    {
-                //        PhraseCom phraseCom = new PhraseCom();
-                //        _phraseManager.buildPhraseFromSheet(phraseCom, phrases[i].PhraseSheetId.AsInt());
-                //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phraseCom);
-                //    }
-                //    else
-                //    {
-                //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phrases[i].Phrase);
-                //    }
-            }
+            //for (var i = 0; i < phrases.Count; ++i)
+            //{
+            //    //    if (phrases[i].PhraseSheetId != CSheetId.Unknown)
+            //    //    {
+            //    //        PhraseCom phraseCom = new PhraseCom();
+            //    //        _phraseManager.buildPhraseFromSheet(phraseCom, phrases[i].PhraseSheetId.AsInt());
+            //    //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phraseCom);
+            //    //    }
+            //    //    else
+            //    //    {
+            //    //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phrases[i].Phrase);
+            //    //    }
+            //}
 
-            // must update the DB (NB: if initInGameDone) after all phrase set.
-            //pPM.updateBookDB();
+            //// must update the DB (NB: if initInGameDone) after all phrase set.
+            ////pPM.updateBookDB();
 
-            // Then Read Memorized Phrases
-            //impulse.SerialCont(memorizedPhrases);
-            len = 0;
-            impulse.Serial(ref len);
-            var memorizedPhrases = new List<PhraseMemorySlot>(len);
+            //// Then Read Memorized Phrases
+            ////impulse.SerialCont(memorizedPhrases);
+            //len = 0;
+            //impulse.Serial(ref len);
+            //var memorizedPhrases = new List<PhraseMemorySlot>(len);
 
-            for (var i = 0; i < len; i++)
-            {
-                var value = PhraseMemorySlot.Serial(impulse);
-                memorizedPhrases.Add(value);
-            }
+            //for (var i = 0; i < len; i++)
+            //{
+            //    var value = PhraseMemorySlot.Serial(impulse);
+            //    memorizedPhrases.Add(value);
+            //}
 
-            for (var i = 0; i < memorizedPhrases.Count; ++i)
-            {
-                //    pPM.memorizePhrase(memorizedPhrases[i].MemoryLineId, memorizedPhrases[i].MemorySlotId, memorizedPhrases[i].PhraseId);
-            }
+            //for (var i = 0; i < memorizedPhrases.Count; ++i)
+            //{
+            //    //    pPM.memorizePhrase(memorizedPhrases[i].MemoryLineId, memorizedPhrases[i].MemorySlotId, memorizedPhrases[i].PhraseId);
+            //}
 
-            // OK.
-            _client.SabrinaPhraseBookLoaded = true;
+            //// OK.
+            //_client.SabrinaPhraseBookLoaded = true;
 
-            // update gray state, if game inited.
-            //pPM.updateMemoryBar();
+            //// update gray state, if game inited.
+            ////pPM.updateMemoryBar();
 
-            _client.Plugins.OnPhraseDownLoad(phrases, memorizedPhrases);
+            //_client.Plugins.OnPhraseDownLoad(phrases, memorizedPhrases);
         }
 
         private void ImpulseRemoteAdmin(BitMemoryStream impulse)

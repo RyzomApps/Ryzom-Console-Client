@@ -224,7 +224,7 @@ namespace Client.Entity
         {
             foreach (var entity in _entities)
             {
-                if (entity != null && entity.GetDisplayName().Contains(name, StringComparison.OrdinalIgnoreCase))
+                if (entity != null && entity.GetDisplayName().Contains(name, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
                 {
                     return entity;
                 }

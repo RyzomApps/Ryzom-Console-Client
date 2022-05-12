@@ -21,7 +21,7 @@ namespace Client.Chat
     /// <summary>
     /// Class for management of incoming and outgoing chat messages
     /// </summary>
-    public class ChatManager : IChatManager
+    public class ChatManager
     {
         private readonly List<ChatMsgNode> _chatBuffer = new List<ChatMsgNode>();
 
