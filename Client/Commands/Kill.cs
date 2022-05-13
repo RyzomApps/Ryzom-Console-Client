@@ -9,7 +9,7 @@ namespace Client.Commands
     {
         public override string CmdName => "SELFKILL";
         public override string CmdUsage => "";
-        public override string CmdDesc => "client asks EGS to kill self";
+        public override string CmdDesc => "Client asks EGS to kill itself";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

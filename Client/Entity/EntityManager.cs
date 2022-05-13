@@ -26,22 +26,19 @@ namespace Client.Entity
     {
         private readonly RyzomClient _client;
 
-        public IEntity GetUserEntity() => _userEntity;
-
-        public UserEntity UserEntity
-        {
-            get => _userEntity;
-            set => _userEntity = value;
-        }
-
         private uint _nbMaxEntity;
 
-        public List<IEntity> Entities => new List<IEntity>(_entities);
+        public UserEntity UserEntity { get; set; }
+
+        /// <inheritdoc />
+        public IEntity GetApiUserEntity() => UserEntity;
 
         // Contain all entities.
+        // TODO: Array?
         readonly List<Entity> _entities = new List<Entity>();
 
-        private UserEntity _userEntity;
+        /// <inheritdoc />
+        public List<IEntity> GetApiEntities() => new List<IEntity>(_entities);
 
         public EntityManager(RyzomClient client)
         {
@@ -109,11 +106,11 @@ namespace Client.Entity
                 _entities[slot] = new Entity();
             else
             {
-                _userEntity = new UserEntity
+                UserEntity = new UserEntity
                 {
                     Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition()
                 };
-                _entities[0] = _userEntity;
+                _entities[0] = UserEntity;
             }
 
             // If the entity has been right created.
@@ -148,6 +145,7 @@ namespace Client.Entity
             _client.Plugins.OnEntityRemove(slot, warning);
 
             // TODO: Implementation
+            _entities[slot] = null;
 
             return true;
         }

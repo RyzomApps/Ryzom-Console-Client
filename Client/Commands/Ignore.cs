@@ -12,7 +12,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "<player name>";
 
-        public override string CmdDesc => "add or remove a player from the ignore list";
+        public override string CmdDesc => "Add or remove a player from the ignore list";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

@@ -13,7 +13,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Display character played time";
+        public override string CmdDesc => "Display the characters overall time played";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

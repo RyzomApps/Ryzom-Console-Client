@@ -83,7 +83,8 @@ namespace Client.Network
 
         public EntityManager GetEntityManager() => _entitiesManager;
 
-        public IEntityManager GetIEntityManager() => _entitiesManager;
+        /// <inheritdoc />
+        public IEntityManager GetApiEntityManager() => _entitiesManager;
 
         public ChatManager GetChatManager() => _chatManager;
 

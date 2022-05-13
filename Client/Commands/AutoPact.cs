@@ -10,7 +10,7 @@ namespace Client.Commands
     {
         public override string CmdName => "AutoPact";
         public override string CmdUsage => "<u8>";
-        public override string CmdDesc => "client want set AUTOPACT to TRUE or FALSE";
+        public override string CmdDesc => "Client want to set AUTOPACT to TRUE or FALSE";
         public override IEnumerable<string> GetCmdAliases() { return new string[] { }; }
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)

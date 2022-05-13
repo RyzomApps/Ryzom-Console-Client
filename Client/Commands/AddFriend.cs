@@ -10,7 +10,7 @@ namespace Client.Commands
     {
         public override string CmdName => "AddFriend";
         public override string CmdUsage => "<contactName>";
-        public override string CmdDesc => "";
+        public override string CmdDesc => "Adds a friend to the contact list";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

@@ -10,7 +10,7 @@ namespace Client.Commands
     {
         public override string CmdName => "quit";
         public override string CmdUsage => "";
-        public override string CmdDesc => "request to quit the game";
+        public override string CmdDesc => "Request to quit the game. The logout will usually take 30s.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -44,7 +44,6 @@ namespace Client.Commands
                 handler.GetLogger().Info("Initiating quit sequence... Please wait 30s for the logout.");
             }
 
-            //Program.Exit();
             return "";
         }
 

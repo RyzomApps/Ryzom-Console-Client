@@ -9,7 +9,7 @@ namespace Client.Commands
     public class Plugins : CommandBase
     {
         public override string CmdName => "plugins";
-        public override string CmdUsage => "/plugins";
+        public override string CmdUsage => "";
         public override string CmdDesc => "Gets a list of plugins running on the client";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
