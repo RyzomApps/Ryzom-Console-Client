@@ -12,7 +12,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "leave team";
+        public override string CmdDesc => "Leave the team";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

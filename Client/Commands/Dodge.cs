@@ -9,7 +9,7 @@ namespace Client.Commands
     {
         public override string CmdName => "dodge";
         public override string CmdUsage => "";
-        public override string CmdDesc => "the client toggle chooses dodge as his defense mode";
+        public override string CmdDesc => "The client toggle chooses dodge as its defense mode";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

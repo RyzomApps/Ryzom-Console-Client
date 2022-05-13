@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         public override string CmdName => "say";
         public override string CmdUsage => "<text>";
-        public override string CmdDesc => "Messages sent normally in the around channel have a 25m range.";
+        public override string CmdDesc => "Use the around channel for messages. Messages sent normally in the around channel have a 25m range.";
 
         public override IEnumerable<string> GetCmdAliases()
         {

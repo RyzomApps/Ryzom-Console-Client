@@ -12,7 +12,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "accept an invitation";
+        public override string CmdDesc => "Accept an invitation";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

@@ -128,11 +128,12 @@ namespace Client
         public NetworkManager GetNetworkManager() { return _networkManager; }
 
         /// <inheritdoc />
-        public INetworkManager GetINetworkManager() { return _networkManager; }
+        public INetworkManager GetApiNetworkManager() { return _networkManager; }
 
         public StringManager GetStringManager() { return _stringManager; }
 
-        public IStringManager GetIStringManager() { return _stringManager; }
+        /// <inheritdoc />
+        public IStringManager GetApiStringManager() { return _stringManager; }
 
         public DatabaseManager GetDatabaseManager() { return _databaseManager; }
 

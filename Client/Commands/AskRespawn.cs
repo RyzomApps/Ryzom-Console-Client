@@ -10,7 +10,7 @@ namespace Client.Commands
     {
         public override string CmdName => "AskRespawn";
         public override string CmdUsage => "<index>";
-        public override string CmdDesc => "client wants to respawn somewhere (index of the respawn location wanted)";
+        public override string CmdDesc => "Client wants to respawn somewhere (index of the respawn location wanted)";
         public override IEnumerable<string> GetCmdAliases() { return new[] { "respawn" }; }
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)

@@ -12,7 +12,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "<name> <icon> <description>";
 
-        public override string CmdDesc => "client wants to create a guild (name of new guild, guild icon descriptor, description of the guild)";
+        public override string CmdDesc => "Client wants to create a guild (name of new guild, guild icon descriptor, description of the guild)";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

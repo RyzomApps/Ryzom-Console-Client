@@ -12,7 +12,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "building index";
 
-        public override string CmdDesc => "client wants to teleport somewhere in guild flats";
+        public override string CmdDesc => "Client wants to teleport somewhere in guild flats";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

@@ -9,7 +9,7 @@ namespace Client.Commands
     {
         public override string CmdName => "parry";
         public override string CmdUsage => "";
-        public override string CmdDesc => "";
+        public override string CmdDesc => "The client toggle chooses parry as its defense mode";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

@@ -12,7 +12,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "<player name> <counter>";
 
-        public override string CmdDesc => "client (lead,ho,of) wants to kick member specifying its index. Last param is the counter";
+        public override string CmdDesc => "Client (lead, ho, of) wants to kick member specifying its index. Last param is the counter";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
