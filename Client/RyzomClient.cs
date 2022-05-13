@@ -1092,7 +1092,7 @@ namespace Client
             }
             else
             {
-                responseMsg = "Unknown command '{command_name}'. Use 'help' for command list.";
+                responseMsg = $"Unknown command '{commandName}'. Use 'help' for command list.";
                 return false;
             }
 

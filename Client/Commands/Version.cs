@@ -15,11 +15,9 @@ namespace Client.Commands
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
-            var sVersion = $"RCC {Program.Version} ({Resources.BuildDate})";
+            var sVersion = $"RCC {Program.Version} ({Resources.BuildDate})".Replace("\r\n", "").Replace("  ", " ");
 
-            handler.GetLogger().Info(sVersion.Replace("\r\n", "").Replace("  ", " "));
-
-            return "";
+            return sVersion;
         }
 
         public override IEnumerable<string> GetCmdAliases()

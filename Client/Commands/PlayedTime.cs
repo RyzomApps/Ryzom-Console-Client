@@ -26,9 +26,7 @@ namespace Client.Commands
 
             msg = msg.Replace("%time", secondsHumanReadable);
 
-            handler.GetLogger().Info(msg);
-
-            return "";
+            return msg;
         }
 
         public override IEnumerable<string> GetCmdAliases()

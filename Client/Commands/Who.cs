@@ -38,6 +38,7 @@ namespace Client.Commands
 
             out2.Serial(ref opt);
             ryzomClient.GetNetworkManager().Push(out2);
+
             return "";
         }
 

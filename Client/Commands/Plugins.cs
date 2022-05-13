@@ -14,8 +14,7 @@ namespace Client.Commands
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
-            handler.GetLogger().Info("Plugins " + GetPluginList(handler));
-            return "";
+            return "Plugins " + GetPluginList(handler);
         }
 
         private static string GetPluginList(IClient handler)

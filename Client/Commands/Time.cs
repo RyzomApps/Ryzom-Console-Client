@@ -23,9 +23,7 @@ namespace Client.Commands
             msg = msg.Replace("%local", csLocal);
             msg = msg.Replace("%utc", csUtc);
 
-            handler.GetLogger().Info(msg);
-
-            return "";
+            return msg;
         }
 
         public override IEnumerable<string> GetCmdAliases()

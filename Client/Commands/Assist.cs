@@ -20,7 +20,7 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            string entityName = "";
+            var entityName = "";
 
             if (args.Length != 0)
             {
@@ -29,24 +29,17 @@ namespace Client.Commands
 
             var entityManager = ryzomClient.GetNetworkManager().GetEntityManager();
 
-            Entity.Entity entity;
             var user = entityManager.UserEntity;
+
             if (user == null)
                 return "";
 
-            if (entityName != string.Empty)
-            {
-                entity = entityManager.GetEntityByName(entityName, false, false);
-            }
-            else
-            {
-                entity = entityManager.GetEntity(((UserEntity)user).TargetSlot());
-            }
+            var entity = entityName != string.Empty ? entityManager.GetEntityByName(entityName, false, false) : entityManager.GetEntity(user.TargetSlot());
 
             if (entity != null)
             {
                 // Select the entity
-                ((UserEntity)user).Assist(entity.Slot(), ryzomClient);
+                user.Assist(entity.Slot(), ryzomClient);
             }
             else
             {
