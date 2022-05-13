@@ -32,6 +32,10 @@ namespace SamplePlugin
 
         public override void OnEnable()
         {
+            // Config
+            SaveDefaultConfig();
+            ReloadConfig();
+
             // TODO: Place any custom enable code here including the registration of any events
 
             // Register our events

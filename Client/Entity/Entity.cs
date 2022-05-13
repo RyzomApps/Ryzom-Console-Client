@@ -143,13 +143,13 @@ namespace Client.Entity
         private void Init()
         {
             //_Position = CVectorD(0.f, 0.f, 0.f);
-            
+
             //// No parent.
             //_Parent = CLFECOMMON::INVALID_SLOT;
-            
+
             //// No entry for the moment.
             //_DBEntry = 0;
-            
+
             //// Entity is not flyer at the beginning.
             //_Flyer = false;
 
@@ -173,10 +173,10 @@ namespace Client.Entity
 
             //_HasReservedTitle = false;
 
-            _entityName = "Name";
+            _entityName = "";
 
             _nameId = 0;
-            
+
             //_HasMoved = false;
             //_IsInTeam = false;
         }
@@ -208,7 +208,7 @@ namespace Client.Entity
         /// <summary>
         /// Returns the title of the entity
         /// </summary>
-        public string  GetTitle()
+        public string GetTitle()
         {
             return _title ?? "";
         }
@@ -340,7 +340,7 @@ namespace Client.Entity
             switch ((PropertyType)prop)
             {
                 case PropertyType.Position:
-                    UpdateVisualPropertyPos(gameCycle, nodeProp.GetValue64(), predictedInterval);
+                    UpdateVisualPropertyPos(gameCycle, nodeProp.GetValue64(), predictedInterval, client);
                     break;
 
                 case PropertyType.Orientation:
@@ -504,7 +504,7 @@ namespace Client.Entity
 
         /// <summary>Received a new position for the entity.</summary>
         /// <remarks>Do not send position for the user</remarks> 
-        private void UpdateVisualPropertyPos(in uint _, object prop, in uint pI)
+        private void UpdateVisualPropertyPos(uint gameCycle, long prop, uint predictedInterval, RyzomClient client)
         {
             // Check the DB entry (the warning is already done in the build method).
             if (_dbEntry == null)
@@ -533,7 +533,7 @@ namespace Client.Entity
 
             Pos = new Vector3(x, y, z);
 
-            //RyzomClient.GetInstance().GetLogger().Info(_slot + " moved to " + Pos);
+            client.Plugins.OnEntityUpdatePos(gameCycle, prop, _slot, predictedInterval, Pos);
 
             //// First position Managed -> set the PACS Position
             //if (_FirstPosManaged)

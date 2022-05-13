@@ -767,6 +767,14 @@ namespace Client.Plugins
         }
 
         /// <summary>
+        /// calles when an entity position update occurs
+        /// </summary>
+        public void OnEntityUpdatePos(uint gameCycle, long prop, byte slot, uint predictedInterval, Vector3 pos)
+        {
+            DispatchListenerEvent(listener => listener.OnEntityUpdatePos(gameCycle, prop, slot, predictedInterval, pos));
+        }
+
+        /// <summary>
         /// Called when the ingame database was received
         /// TODO: we have this two times
         /// </summary>
