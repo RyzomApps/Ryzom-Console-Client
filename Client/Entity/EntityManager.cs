@@ -31,11 +31,11 @@ namespace Client.Entity
         public UserEntity UserEntity { get; set; }
 
         /// <inheritdoc />
-        public IEntity GetApiUserEntity() => UserEntity;
+        public IUserEntity GetApiUserEntity() => UserEntity;
 
         // Contain all entities.
         // TODO: Array?
-        readonly List<Entity> _entities = new List<Entity>();
+        private Entity[] _entities;
 
         /// <inheritdoc />
         public List<IEntity> GetApiEntities() => new List<IEntity>(_entities);
@@ -54,11 +54,13 @@ namespace Client.Entity
             // Set the maximum number of entities.
             _nbMaxEntity = nbMaxEntity;
 
-            if (_nbMaxEntity > 0)
-            {
-                for (var i = 0; i < _nbMaxEntity; i++)
-                    _entities.Add(null);
-            }
+            _entities = new Entity[_nbMaxEntity];
+
+            //if (_nbMaxEntity > 0)
+            //{
+            //    for (var i = 0; i < _nbMaxEntity; i++)
+            //        _entities[i] = null;
+            //}
 
             // TODO: Add an observer on the mission database
             // TODO: Add an Observer to the Team database
@@ -212,13 +214,8 @@ namespace Client.Entity
             // TODO: Implementation
         }
 
-        /// <summary>
-        /// Get an entity by name. Returns NULL if the entity is not found.
-        /// </summary>
-        /// <param name="name">of the entity to find</param>  
-        /// <param name="caseSensitive">type of test to perform</param>  
-        /// <param name="complete">if true, the name must match the full name of the entity</param>
-        public Entity GetEntityByName(string name, bool caseSensitive, bool complete)
+        /// <inheritdoc />
+        public IEntity GetEntityByName(string name, bool caseSensitive, bool complete)
         {
             foreach (var entity in _entities)
             {
@@ -250,9 +247,7 @@ namespace Client.Entity
 
             for (var i = 1; i < nb; ++i)
             {
-                if (_entities[i] == null) continue;
-
-                strTmp = $"\"{_entities[i].SheetId()}\",\t\"{_entities[i].Pos.X}\", \"{_entities[i].Pos.Y}\", \"{_entities[i].Pos.Z}\", \"{_entities[i].Front.X}\", \"{_entities[i].Front.Y}\", \"{_entities[i].Front.Z}\",\t// {i}\n";
+                strTmp = _entities[i] == null ? $"// {i}\n" : $"\"{_entities[i].SheetId()}\",\t\"{_entities[i].Pos.X}\", \"{_entities[i].Pos.Y}\", \"{_entities[i].Pos.Z}\", \"{_entities[i].Front.X}\", \"{_entities[i].Front.Y}\", \"{_entities[i].Front.Z}\",\t// {i} {_entities[i].GetDisplayName()}\n";
                 file.Write(strTmp);
             }
 

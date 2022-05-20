@@ -14,16 +14,20 @@ namespace Client.Logger
 {
     public class FilteredLogger : LoggerBase
     {
+        private readonly object _loggerLock = new object();
+
         protected bool ShouldDisplay(FilterChannel channel, string msg)
         {
             Regex regexToUse = null;
             // Convert to bool for XOR later. Whitelist = 0, Blacklist = 1
             var filterMode = FilterMode == FilterModeEnum.Blacklist;
+
             switch (channel)
             {
                 case FilterChannel.Chat:
                     regexToUse = ChatFilter;
                     break;
+
                 case FilterChannel.Debug:
                     regexToUse = DebugFilter;
                     break;
@@ -45,7 +49,10 @@ namespace Client.Logger
 
             if (ShouldDisplay(FilterChannel.Debug, msg))
             {
-                Log("§8[DEBUG] " + msg);
+                lock (_loggerLock)
+                {
+                    Log("§8[DEBUG] " + msg);
+                }
             }
 
             // Don't write debug lines here as it could cause a stack overflow
@@ -54,31 +61,44 @@ namespace Client.Logger
         public override void Info(string msg)
         {
             if (InfoEnabled)
-                ConsoleIO.WriteLogLine(msg);
+                lock (_loggerLock)
+                {
+                    ConsoleIO.WriteLogLine(msg);
+                }
         }
 
         public override void Warn(string msg)
         {
-            if (WarnEnabled)
+            if (!WarnEnabled) return;
+
+            lock (_loggerLock)
+            {
                 Log("§6[WARN] " + msg);
+            }
         }
 
         public override void Error(string msg)
         {
-            if (ErrorEnabled)
+            if (!ErrorEnabled) return;
+
+            lock (_loggerLock)
+            {
                 Log("§c[ERROR] " + msg);
+            }
         }
 
         public override void Chat(string msg)
         {
-            if (ChatEnabled)
+            if (!ChatEnabled) return;
+
+            if (ShouldDisplay(FilterChannel.Chat, msg))
             {
-                if (ShouldDisplay(FilterChannel.Chat, msg))
+                lock (_loggerLock)
                 {
                     Log(msg);
                 }
-                else Debug("[Logger] One Chat message filtered: " + msg);
             }
+            else Debug("[Logger] One Chat message filtered: " + msg);
         }
 
         protected enum FilterChannel

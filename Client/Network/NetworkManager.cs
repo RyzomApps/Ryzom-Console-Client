@@ -179,6 +179,8 @@ namespace Client.Network
                 {
                     // Remove the old entity
                     _entitiesManager.Remove(change.ShortId, true);
+
+                    _client.GetLogger().Debug($"CNetManager::remove old entity : {(_entitiesManager.GetEntity(change.ShortId) != null ? _entitiesManager.GetEntity(change.ShortId).GetDisplayName().Trim() : "unnamed")}");
                 }
                 // Lag detected
                 else if (change.Property == (byte)PropertyType.LagDetected)
