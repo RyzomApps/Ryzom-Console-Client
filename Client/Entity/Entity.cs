@@ -21,7 +21,7 @@ namespace Client.Entity
     /// <author>Guillaume PUZIN</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    public class Entity : EntityBase, IEntity
+    public class Entity : IEntity
     {
         /// <summary>
         /// Entity Id (CLFECOMMON::INVALID_CLIENT_DATASET_INDEX for an invalid one)
@@ -194,7 +194,7 @@ namespace Client.Entity
         /// </summary>
         public string GetDisplayName()
         {
-            return _entityName == null ? "" : RemoveTitleAndShardFromName(_entityName);
+            return _entityName == null ? "" : EntityHelper.RemoveTitleAndShardFromName(_entityName);
         }
 
         /// <summary>
@@ -229,9 +229,10 @@ namespace Client.Entity
             return _targetSlot;
         }
 
-        public void SetTargetSlot(byte value)
+        /// <inheritdoc />
+        public void SetTargetSlot(byte entityId)
         {
-            _targetSlot = value;
+            _targetSlot = entityId;
         }
 
         /// <summary>

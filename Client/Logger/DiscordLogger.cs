@@ -96,7 +96,7 @@ namespace Client.Logger
         private void QueueMessage(string text)
         {
             text = ChatColor.GetVerbatim(text);
-            text = ChatManager.GetVerbatim(text);
+            text = ChatManagerHelper.GetVerbatim(text);
 
             while (text.Length > 500)
             {

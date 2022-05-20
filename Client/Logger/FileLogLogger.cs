@@ -50,7 +50,7 @@ namespace Client.Logger
             try
             {
                 msg = ChatColor.GetVerbatim(msg);
-                msg = ChatManager.GetVerbatim(msg);
+                msg = ChatManagerHelper.GetVerbatim(msg);
 
                 if (_prependTimestamp)
                     msg = $"{Misc.GetTimestamp()} {msg}";

@@ -21,7 +21,7 @@ namespace Client.Chat
     /// <summary>
     /// Class for management of incoming and outgoing chat messages
     /// </summary>
-    public class ChatManager : ChatManagerBase
+    public class ChatManager
     {
         private readonly List<ChatMsgNode> _chatBuffer = new List<ChatMsgNode>();
 
@@ -103,7 +103,7 @@ namespace Client.Chat
             }
 
             // display
-            BuildTellSentence(senderStr, chatMsg.Content, out var ucstr);
+            ChatManagerHelper.BuildTellSentence(senderStr, chatMsg.Content, out var ucstr);
             chatDisplayer.DisplayTell(ucstr, senderStr);
         }
 
@@ -143,7 +143,7 @@ namespace Client.Chat
             }
 
             // display
-            BuildChatSentence(senderStr, chatMsg.Content, type, out var ucstr);
+            ChatManagerHelper.BuildChatSentence(senderStr, chatMsg.Content, type, out var ucstr);
 
             chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, chatMsg.DynChatChanID,
                 senderStr);
@@ -245,9 +245,9 @@ namespace Client.Chat
                     else
                     {
                         if (itMsg.DisplayAsTell)
-                            BuildTellSentence(sender, content, out ucstr);
+                            ChatManagerHelper.BuildTellSentence(sender, content, out ucstr);
                         else
-                            BuildChatSentence(sender, content, type, out ucstr);
+                            ChatManagerHelper.BuildChatSentence(sender, content, type, out ucstr);
                     }
 
                     // display

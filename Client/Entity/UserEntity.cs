@@ -9,16 +9,19 @@
 using System;
 using System.Diagnostics;
 using System.Numerics;
+using API;
+using API.Entity;
 using Client.Messages;
 using Client.Network;
 
 namespace Client.Entity
 {
-    public class UserEntity : Entity
+    public class UserEntity : Entity, IUserEntity
     {
         private byte _selection;
 
-        internal void Selection(byte slot, RyzomClient client)
+        /// <inheritdoc />
+        public void Selection(byte slot, IClient client)
         {
             //allows reselection in Ring client: even if the selected slots is equal to the selection,
             //the client must send the messages.
@@ -32,8 +35,7 @@ namespace Client.Entity
             //disableFollow();
 
             // Send the entity selected to the server.
-            client.GetNetworkManager().PushTarget(slot);
-
+            client.GetApiNetworkManager().PushTarget(slot);
 
             // Target the slot on client, don't wait NetWork response
             //targetSlot(slot);
@@ -237,7 +239,7 @@ namespace Client.Entity
             }
 
             // Check the new slot.
-            byte newSlot = target.TargetSlot();
+            var newSlot = target.TargetSlot();
 
             if (newSlot == Constants.InvalidSlot || newSlot == _slot)
             {

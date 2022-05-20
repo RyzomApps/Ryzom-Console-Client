@@ -239,7 +239,7 @@ namespace Client
         {
             var color = ChatColor.GetMinecraftColorForChatGroupType(mode);
 
-            var stringCategory = ChatManager.GetStringCategory(ucstr, out var finalString).ToUpper();
+            var stringCategory = ChatManagerHelper.GetStringCategory(ucstr, out var finalString).ToUpper();
 
             // Override color if the string contains the color
             if (stringCategory.Length > 0 && stringCategory != "SYS")

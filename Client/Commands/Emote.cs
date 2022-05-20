@@ -38,7 +38,7 @@ namespace Client.Commands
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                var displayName = $"{EntityBase.RemoveTitleAndShardFromName(ryzomClient.GetNetworkManager().PlayerSelectedHomeShardName)}";
+                var displayName = $"{EntityHelper.RemoveTitleAndShardFromName(ryzomClient.GetNetworkManager().PlayerSelectedHomeShardName)}";
                 emotePhrase = $"&EMT&{displayName} {emotePhrase}";
 
                 out2.Serial(ref behavToSend);

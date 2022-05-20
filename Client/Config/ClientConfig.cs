@@ -45,13 +45,12 @@ namespace Client.Config
 
         public static string UserSheet;
 
-        //public static int SBSPortOffset = 1000;
-
         public static bool UseDatabase;
         public static bool DecodeVisualProperties;
 
         /// <summary>Default Velocity for the Walk.</summary>
         public static float Walk = 1.66f;
+
         /// <summary>Default Velocity for the Run.</summary>
         public static float Run = 6.0f;
 
@@ -62,28 +61,20 @@ namespace Client.Config
 
         // Custom app variables 
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
+
+        // Filtering
         public static Regex ChatFilter = null;
         public static Regex DebugFilter = null;
         public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
+
+        // Logging
         public static bool LogToFile = false;
         public static string LogFile = "console-log.txt";
         public static bool PrependTimestamp = false;
-        public static string OnlinePlayersApi = "";
         public static string DiscordWebhook = "";
-        public static int OnlinePlayersApiInterval = 60;
-        public static int OnlinePlayersWhoInterval = 60 * 10;
 
         // Other Settings
         public static char InternalCmdChar = '/';
-
-        // Plugins
-        public static bool OnlinePlayersLoggerEnabled;
-        public static bool AutoJoinTeamEnabled;
-        public static bool ImpulseDebuggerEnabled;
-        public static bool FollowerEnabled;
-        public static bool AutoRelogEnabled;
-        public static int AutoRelogSeconds;
-        public static bool HealerEnabled;
 
         // Read : "ID", "R G B A MODE [FX]"
         public static Dictionary<string, string> SystemInfoColors = new Dictionary<string, string>
@@ -284,22 +275,6 @@ namespace Client.Config
                     SelectCharacter = int.Parse(argValue);
                     return;
 
-                case "onlineplayersapi":
-                    OnlinePlayersApi = argValue;
-                    return;
-
-                case "onlineplayerslogger":
-                    OnlinePlayersLoggerEnabled = bool.Parse(argValue);
-                    return;
-
-                case "autojointeam":
-                    AutoJoinTeamEnabled = bool.Parse(argValue);
-                    return;
-
-                case "impulsedebugger":
-                    ImpulseDebuggerEnabled = bool.Parse(argValue);
-                    return;
-
                 case "debug":
                     DebugEnabled = bool.Parse(argValue);
                     return;
@@ -316,32 +291,8 @@ namespace Client.Config
                     DecodeVisualProperties = bool.Parse(argValue);
                     break;
 
-                case "followerenabled":
-                    FollowerEnabled = bool.Parse(argValue);
-                    break;
-
                 case "sendposition":
                     SendPosition = bool.Parse(argValue);
-                    break;
-
-                case "autorelogenabled":
-                    AutoRelogEnabled = bool.Parse(argValue);
-                    break;
-
-                case "autorelogseconds":
-                    AutoRelogSeconds = int.Parse(argValue);
-                    break;
-
-                case "healerenabled":
-                    HealerEnabled = bool.Parse(argValue);
-                    break;
-
-                case "onlineplayersapiinterval":
-                    OnlinePlayersApiInterval = int.Parse(argValue);
-                    break;
-
-                case "onlineplayerswhointerval":
-                    OnlinePlayersWhoInterval = int.Parse(argValue);
                     break;
 
                 default:

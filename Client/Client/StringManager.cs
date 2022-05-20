@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using API.Client;
+using API.Entity;
 using API.Network;
 using Client.Network;
 using static Client.Client.DynamicStringInfo;
@@ -425,7 +426,7 @@ namespace Client.Client
 
                                 if (str.Length > 0 && pos != -1)
                                 {
-                                    str = Entity.Entity.RemoveTitleFromName(str);
+                                    str = EntityHelper.RemoveTitleFromName(str);
                                 }
 
                                 // if the string contains a special rename of creature, remove it
