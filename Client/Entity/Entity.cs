@@ -345,7 +345,7 @@ namespace Client.Entity
                     break;
 
                 case PropertyType.Orientation:
-                    //UpdateVisualPropertyOrient(gameCycle, nodeProp.GetValue64());
+                    UpdateVisualPropertyOrient(gameCycle, nodeProp.GetValue64(), client);
                     break;
 
                 case PropertyType.Behaviour:
@@ -560,6 +560,19 @@ namespace Client.Entity
             //    _Stages.addStage(gameCycle, PROPERTY_POSY, nodeY.getValue64());
             //    _Stages.addStage(gameCycle, PROPERTY_POSZ, nodeZ.getValue64());
             //}
+        }
+
+        /// <summary>
+        /// Received a new orientation.
+        /// </summary>
+        private unsafe void UpdateVisualPropertyOrient(uint gameCycle, long prop, RyzomClient client)
+        {
+            // TODO: Implement properly
+            var ori = *(float*)&prop;
+            Front = new Vector3((float)Math.Cos(ori), (float)Math.Sin(ori), 0.0f);
+            Dir = Front;
+
+            client.Plugins.OnEntityUpdateOrient(gameCycle, prop);
         }
     }
 }

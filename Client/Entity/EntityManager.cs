@@ -21,7 +21,6 @@ namespace Client.Entity
     /// <author>Guillaume PUZIN</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    /// 
     public class EntityManager : IEntityManager
     {
         private readonly RyzomClient _client;

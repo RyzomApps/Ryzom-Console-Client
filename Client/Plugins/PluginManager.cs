@@ -767,11 +767,19 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// calles when an entity position update occurs
+        /// called when an entity position update occurs
         /// </summary>
         public void OnEntityUpdatePos(uint gameCycle, long prop, byte slot, uint predictedInterval, Vector3 pos)
         {
             DispatchListenerEvent(listener => listener.OnEntityUpdatePos(gameCycle, prop, slot, predictedInterval, pos));
+        }
+
+        /// <summary>
+        /// called when an entity orientation update occurs
+        /// </summary>
+        public void OnEntityUpdateOrient(uint gameCycle, long prop)
+        {
+            DispatchListenerEvent(listener => listener.OnEntityUpdateOrient(gameCycle, prop));
         }
 
         /// <summary>

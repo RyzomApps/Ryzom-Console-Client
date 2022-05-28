@@ -54,6 +54,15 @@ namespace Client.Config
         /// <summary>Default Velocity for the Run.</summary>
         public static float Run = 6.0f;
 
+        /// <summary>True if we want to Compute Visual Slots</summary>
+        public static bool NeedComputeVS;
+
+        /// <summary>True if we want the packed sheet to be updated if needed</summary>
+        public static bool UpdatePackedSheet;
+
+        /// <summary>True if we want to Dump Visual Slot IDs</summary>
+        public static bool DumpVSIndex;
+
         // === NON RYZOM STUFF
 
         public static bool DebugEnabled;

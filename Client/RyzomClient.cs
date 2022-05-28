@@ -32,6 +32,7 @@ using Client.Logger;
 using Client.Network;
 using Client.Plugins;
 using Client.Property;
+using Client.Sheet;
 
 namespace Client
 {
@@ -48,6 +49,7 @@ namespace Client
         private readonly StringManager _stringManager;
         private readonly DatabaseManager _databaseManager;
         private readonly InterfaceManager _interfaceManager;
+        private readonly SheetManager _sheetManager;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -139,6 +141,8 @@ namespace Client
 
         public NetworkConnection GetNetworkConnection() { return _networkConnection; }
 
+        public SheetManager GetSheetManager() { return _sheetManager; }
+
         public IPluginManager GetPluginManager() { return Plugins; }
 
         #endregion
@@ -152,7 +156,7 @@ namespace Client
         {
             _instance = this;
             _clientThread = Thread.CurrentThread;
-            
+
             Plugins = new PluginManager(this);
             Plugins.RegisterInterface(typeof(PluginLoader));
 
@@ -162,6 +166,7 @@ namespace Client
             _stringManager = new StringManager(this);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager);
             _interfaceManager = new InterfaceManager();
+            _sheetManager = new SheetManager(this);
 
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");
@@ -378,8 +383,9 @@ namespace Client
         }
 
         /// <summary>
-        /// OnInitialize the application after login
+        /// Initialize the application after login
         /// </summary>
+        /// <remarks>if the init fails, call nlerror</remarks>
         private void PostLoginInit()
         {
             _networkManager.GetMessageHeaderManager().Init(Constants.MsgXmlPath);
@@ -387,8 +393,21 @@ namespace Client
             // OnInitialize the Generic Message Header Manager.
             _networkManager.InitializeNetwork();
 
-            // TODO: init the chat manager
+            // TODO: Initialize Chat Manager
             // ChatManager.init(CPath::lookup("chat_static.cdb"));
+
+            // TODO: Read the ligo primitive class file
+
+            // Initialize Sheet IDs
+            SheetId.init(ClientConfig.UpdatePackedSheet, this);
+
+            // Initialize Packed Sheets
+            _sheetManager.setOutputDataPath("../../client/data");
+            _sheetManager.Load(null, ClientConfig.UpdatePackedSheet, ClientConfig.NeedComputeVS, ClientConfig.DumpVSIndex);
+
+            // TODO: Initialize bricks
+
+            // TODO: Initialize primitives
         }
 
         /// <summary>

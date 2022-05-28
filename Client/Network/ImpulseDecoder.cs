@@ -43,7 +43,7 @@ namespace Client.Network
         /// unpacking actions from a stream and calling the corresponding impusions
         /// </summary>
         public static void Decode(BitMemoryStream inbox, int receivedPacket, int receivedAck, int nextSentPacket,
-            List<Action.ActionBase> actions)
+            List<ActionBase> actions)
         {
             uint level;
 
