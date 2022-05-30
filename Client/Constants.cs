@@ -40,7 +40,7 @@
         /// <remarks>
         /// This must be changed when cdbank bits in the client change
         /// </remarks>
-        public const int FillNbitsWithNbBitsForCdbbank = 3;
+        public const int FillNbitsWithNbBitsForCdbbank = 2;
 
         /// <summary>
         /// Database bank identifiers (please change CDBBankNames in cpp accordingly) - enum
