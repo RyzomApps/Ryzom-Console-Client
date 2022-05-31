@@ -85,7 +85,8 @@ namespace Client.Plugins
 
                 foreach (var filter in filters)
                 {
-                    if (!new Regex(filter).IsMatch(file.Name)) continue;
+                    if (!new Regex(filter).IsMatch(file.Name)) 
+                        continue;
 
                     loader = _fileAssociations[filter];
                 }
@@ -111,7 +112,7 @@ namespace Client.Plugins
                 }
                 catch (InvalidDescriptionException ex)
                 {
-                    _client.GetLogger().Debug($"Could not load '{file.FullName}' in folder '{directory.FullName}'", ex);
+                    _client.GetLogger().Warn($"Could not load '{file.Name}' in folder '{directory.Name}'. Embedded resource 'plugin.yml' may be missing.", ex);
                     continue;
                 }
 
@@ -679,8 +680,7 @@ namespace Client.Plugins
         /// </summary>
         public void OnDatabaseInitBank(uint serverTick, uint bank, DatabaseManager databaseManager)
         {
-            // TODO: OnDatabaseInitBank
-            //DispatchAutomatonEvent(automaton => automaton.OnDatabaseInitBank(serverTick, bank, databaseManager));
+            DispatchListenerEvent(automaton => automaton.OnDatabaseInitBank(serverTick, bank, databaseManager));
         }
 
         /// <summary>
@@ -688,8 +688,7 @@ namespace Client.Plugins
         /// </summary>
         internal void OnDatabaseUpdateBank(uint serverTick, uint bank, DatabaseManager databaseManager)
         {
-            // TODO: OnDatabaseUpdateBank
-            //DispatchAutomatonEvent(automaton => automaton.OnDatabaseUpdateBank(serverTick, bank, databaseManager));
+            DispatchListenerEvent(automaton => automaton.OnDatabaseUpdateBank(serverTick, bank, databaseManager));
         }
 
         /// <summary>
@@ -697,8 +696,7 @@ namespace Client.Plugins
         /// </summary>
         internal void OnDatabaseResetBank(uint serverTick, uint bank, DatabaseManager databaseManager)
         {
-            // TODO: OnDatabaseResetBank
-            //DispatchAutomatonEvent(automaton => automaton.OnDatabaseResetBank(serverTick, bank, databaseManager));
+            DispatchListenerEvent(automaton => automaton.OnDatabaseResetBank(serverTick, bank, databaseManager));
         }
 
         /// <summary>

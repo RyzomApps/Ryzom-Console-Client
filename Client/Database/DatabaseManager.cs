@@ -9,6 +9,7 @@
 using System;
 using System.IO;
 using System.Xml;
+using API.Database;
 using Client.Network;
 
 namespace Client.Database
@@ -19,7 +20,7 @@ namespace Client.Database
     /// <author>Stephane Coutelas</author>
     /// <author>Nevrax France</author>
     /// <date>2002</date>
-    public class DatabaseManager
+    public class DatabaseManager : IDatabaseManager
     {
         /// <summary>
         /// Database bank identifiers (please change BankNames in cpp accordingly)
@@ -130,7 +131,8 @@ namespace Client.Database
         /// <summary>
         /// Update the database from a stream coming from the FE
         /// </summary>
-        /// <param name="f">the stream</param>
+        /// <param name="s">the stream</param>
+        /// <param name="bank">The banks we want to update</param>
         public void ReadDelta(uint gc, BitMemoryStream s, uint bank)
         {
             _client.GetLogger().Debug("Update DB");
@@ -163,11 +165,11 @@ namespace Client.Database
         /// <summary>Called after flushObserversCalls() as it calls the observers for branches</summary>
         public void SetChangesProcessed()
         {
-            if (AllInitPacketReceived())
-            {
-                _initInProgress = false;
-                WriteInitInProgressIntoUIDB(); // replaced by DECLARE_INTERFACE_USER_FCT(isDBInitInProgress)
-            }
+            if (!AllInitPacketReceived()) 
+                return;
+
+            _initInProgress = false;
+            WriteInitInProgressIntoUIDB(); // replaced by DECLARE_INTERFACE_USER_FCT(isDBInitInProgress)
         }
 
         /// <summary>
@@ -190,8 +192,8 @@ namespace Client.Database
         /// <summary>
 		/// Resets the specified bank.
 		/// </summary>
-		/// <param name="gc"> GameCycle ( no idea what it is exactly, probably some time value)</param>
-		/// <param name="bank"> The banks we want to reset</param>
+		/// <param name="gc">GameCycle ( no idea what it is exactly, probably some time value)</param>
+		/// <param name="bank">The banks we want to reset</param>
         public void ResetBank(in uint gc, in uint bank)
         {
             _database.ResetNode(gc, BankHandler.GetUidForBank(bank));
@@ -204,13 +206,11 @@ namespace Client.Database
 	    /// <returns>the value of the property</returns>
         public long GetProp(string name)
         {
-            if (_database != null)
-            {
-                var txtId = new TextId(name);
-                return _database.GetProp(txtId);
-            }
+            if (_database == null)
+                throw new Exception("EDBNotInit");
 
-            throw new Exception("EDBNotInit");
+            var txtId = new TextId(name);
+            return _database.GetProp(txtId);
         }
 
         /// <summary>

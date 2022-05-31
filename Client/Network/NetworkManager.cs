@@ -1264,8 +1264,6 @@ namespace Client.Network
                 // read delta
                 if (_databaseManager == null) return;
 
-                _client.GetLogger().Info("ImpulseDatabaseInitBank " + bank);
-
                 _databaseManager.ReadDelta(serverTick, impulse, bank);
 
                 _client.Plugins.OnDatabaseInitBank(serverTick, bank, _databaseManager);
