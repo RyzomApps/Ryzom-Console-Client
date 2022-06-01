@@ -90,6 +90,9 @@ namespace Client.Network
 
         public NetworkConnection GetNetworkConnection() => _networkConnection;
 
+        /// <inheritdoc />
+        public uint GetCurrentServerTick() => _networkConnection.GetCurrentServerTick();
+
         /// <summary>
         /// Constructor
         /// </summary>

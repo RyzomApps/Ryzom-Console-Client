@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using API.Chat;
 
 namespace Client.Helper
 {
@@ -393,69 +394,15 @@ namespace Client.Helper
                     Write(parts[0]);
                 }
 
-                for (int i = 1; i < parts.Length; i++)
+                for (var i = 1; i < parts.Length; i++)
                 {
-                    if (parts[i].Length > 0)
-                    {
-                        switch (parts[i][0])
-                        {
-                            case '0':
-                                Console.ForegroundColor = ConsoleColor.Gray;
-                                break; //Should be Black but Black is non-readable on a black background
-                            case '1':
-                                Console.ForegroundColor = ConsoleColor.DarkBlue;
-                                break;
-                            case '2':
-                                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                                break;
-                            case '3':
-                                Console.ForegroundColor = ConsoleColor.DarkCyan;
-                                break;
-                            case '4':
-                                Console.ForegroundColor = ConsoleColor.DarkRed;
-                                break;
-                            case '5':
-                                Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                                break;
-                            case '6':
-                                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                                break;
-                            case '7':
-                                Console.ForegroundColor = ConsoleColor.Gray;
-                                break;
-                            case '8':
-                                Console.ForegroundColor = ConsoleColor.DarkGray;
-                                break;
-                            case '9':
-                                Console.ForegroundColor = ConsoleColor.Blue;
-                                break;
-                            case 'a':
-                                Console.ForegroundColor = ConsoleColor.Green;
-                                break;
-                            case 'b':
-                                Console.ForegroundColor = ConsoleColor.Cyan;
-                                break;
-                            case 'c':
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                break;
-                            case 'd':
-                                Console.ForegroundColor = ConsoleColor.Magenta;
-                                break;
-                            case 'e':
-                                Console.ForegroundColor = ConsoleColor.Yellow;
-                                break;
-                            case 'f':
-                                Console.ForegroundColor = ConsoleColor.White;
-                                break;
-                            case 'r':
-                                Console.ForegroundColor = ConsoleColor.Gray;
-                                break;
-                        }
+                    if (parts[i].Length <= 0) continue;
 
-                        if (parts[i].Length > 1)
-                        {
-                            Write(parts[i][1..]);
-                        }
+                    Console.ForegroundColor = ChatColor.GetConsoleColorFromMinecraftColor(parts[i][0]);
+
+                    if (parts[i].Length > 1)
+                    {
+                        Write(parts[i][1..]);
                     }
                 }
 

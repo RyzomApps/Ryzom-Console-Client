@@ -187,7 +187,7 @@ namespace Client.Chat
             chatMsg.PhraseId = phraseID;
 
             // if !complete, wait
-            var complete = _stringManager.GetDynString(chatMsg.PhraseId, out string ucstr, _networkManager);
+            var complete = _stringManager.GetDynString(chatMsg.PhraseId, out var ucstr, _networkManager);
 
             if (!complete)
             {

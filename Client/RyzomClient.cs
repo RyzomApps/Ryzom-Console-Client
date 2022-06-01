@@ -16,6 +16,7 @@ using API;
 using API.Chat;
 using API.Client;
 using API.Commands;
+using API.Database;
 using API.Helper;
 using API.Helper.Tasks;
 using API.Logger;
@@ -102,6 +103,9 @@ namespace Client
 
         #region Properties
 
+        /// <summary>
+        /// Current ingame chat channel of the client used for outgoing chat messages
+        /// </summary>
         public ChatGroupType Channel
         {
             get => _channel;
@@ -115,13 +119,31 @@ namespace Client
         public string Cookie { get; set; }
 
         public string FsAddr { get; set; }
+
         public string RingMainURL { get; set; }
+
         public string FarTpUrlBase { get; set; }
+
         public bool StartStat { get; set; }
+
+        /// <summary>
+        /// domain server version for patch
+        /// </summary>
         public string R2ServerVersion { get; set; }
+
+        /// <summary>
+        /// Backup patch server to use in case of failure of all other servers
+        /// </summary>
         public string R2BackupPatchURL { get; set; }
+
+        /// <summary>
+        /// a list of patch server to use randomly
+        /// </summary>
         public string[] R2PatchUrLs { get; set; }
 
+        /// <summary>
+        /// Logger instance attached to the Client
+        /// </summary>
         public ILogger GetLogger() { return Log; }
 
         /// <inheritdoc />
@@ -138,6 +160,9 @@ namespace Client
         public IStringManager GetApiStringManager() { return _stringManager; }
 
         public DatabaseManager GetDatabaseManager() { return _databaseManager; }
+
+        /// <inheritdoc />
+        public IDatabaseManager GetApiDatabaseManager() { return _databaseManager; }
 
         public NetworkConnection GetNetworkConnection() { return _networkConnection; }
 

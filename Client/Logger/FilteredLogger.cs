@@ -93,6 +93,8 @@ namespace Client.Logger
 
             if (ShouldDisplay(FilterChannel.Chat, msg))
             {
+                msg = API.Chat.ChatColor.ReplaceRyzomColors(msg);
+
                 lock (_loggerLock)
                 {
                     Log(msg);

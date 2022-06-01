@@ -165,7 +165,7 @@ namespace Client.Database
         /// <summary>Called after flushObserversCalls() as it calls the observers for branches</summary>
         public void SetChangesProcessed()
         {
-            if (!AllInitPacketReceived()) 
+            if (!AllInitPacketReceived())
                 return;
 
             _initInProgress = false;
@@ -189,21 +189,14 @@ namespace Client.Database
             //TODO: implementation of WriteInitInProgressIntoUIDB -> UI:VARIABLES:CDB_INIT_IN_PROGRESS
         }
 
-        /// <summary>
-		/// Resets the specified bank.
-		/// </summary>
-		/// <param name="gc">GameCycle ( no idea what it is exactly, probably some time value)</param>
-		/// <param name="bank">The banks we want to reset</param>
+        /// <inheritdoc />
         public void ResetBank(in uint gc, in uint bank)
         {
-            _database.ResetNode(gc, BankHandler.GetUidForBank(bank));
+            //_database.ResetNode(gc, BankHandler.GetUidForBank(bank));
+            _serverDatabase.ResetNode(gc, BankHandler.GetUidForBank(bank));
         }
 
-        /// <summary>
-	    /// Return the value of a property (the update flag is set to false)
-	    /// </summary>
-	    /// <param name="name">is the name of the property</param>
-	    /// <returns>the value of the property</returns>
+        /// <inheritdoc />
         public long GetProp(string name)
         {
             if (_database == null)
@@ -235,7 +228,7 @@ namespace Client.Database
                 return null;
             }
 
-            DatabaseNodeLeaf leaf = GetNodePtr().GetNode(new TextId(name), create) as DatabaseNodeLeaf;
+            var leaf = GetNodePtr().GetNode(new TextId(name), create) as DatabaseNodeLeaf;
             return leaf;
         }
     }
