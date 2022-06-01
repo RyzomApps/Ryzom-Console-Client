@@ -85,7 +85,7 @@ namespace Client.Plugins
 
                 foreach (var filter in filters)
                 {
-                    if (!new Regex(filter).IsMatch(file.Name)) 
+                    if (!new Regex(filter).IsMatch(file.Name))
                         continue;
 
                     loader = _fileAssociations[filter];
