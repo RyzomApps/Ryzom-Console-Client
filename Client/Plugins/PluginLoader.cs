@@ -47,7 +47,7 @@ namespace Client.Plugins
             }
 
             var parentFile = file.Directory?.Parent;
-            var dataFolder = new DirectoryInfo($"{parentFile}\\plugins\\{description.GetName()}");
+            var dataFolder = new DirectoryInfo($"{parentFile}/plugins/{description.GetName()}");
 
             if (dataFolder.Exists && (File.GetAttributes(dataFolder.FullName) & FileAttributes.Directory) != FileAttributes.Directory)
             {

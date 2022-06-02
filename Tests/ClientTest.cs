@@ -28,7 +28,7 @@ namespace Tests
 
             loader.RegisterInterface(typeof(PluginLoader));
 
-            var plugins = loader.LoadPlugins(new DirectoryInfo(@"..\plugins\"));
+            var plugins = loader.LoadPlugins(new DirectoryInfo(@"../plugins/"));
 
             Assert.True(plugins.Length > 0);
         }

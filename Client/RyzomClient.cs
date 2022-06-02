@@ -237,11 +237,13 @@ namespace Client
 
             Log.DebugEnabled = ClientConfig.DebugEnabled;
 
+            Log.Debug("StartConsoleClient()");
+
             // Load commands from Commands namespace
             LoadCommands();
 
             // Load plugin manager
-            Plugins.LoadPlugins(new DirectoryInfo(@".\plugins\"));
+            Plugins.LoadPlugins(new DirectoryInfo(@"./plugins/"));
 
             _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
             _timeoutdetector.Start();
@@ -315,6 +317,8 @@ namespace Client
         /// </summary>
         private void StartRyzomClient()
         {
+            Log?.Debug("StartRyzomClient()");
+
             // Initialize the application
             PreLoginInit();
 

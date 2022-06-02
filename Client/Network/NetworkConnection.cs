@@ -300,8 +300,8 @@ namespace Client.Network
             _visualPropertyTreeRoot.BuildTree();
 
             // get md5 hashes
-            _msgXmlMD5 = Misc.GetFileMD5("data\\msg.xml"); // c9728a56c6852972e52b88a37b48fd8b
-            _databaseXmlMD5 = Misc.GetFileMD5("data\\database.xml"); // 09a464f8f35fd70af3e363b69cef6950
+            _msgXmlMD5 = Misc.GetFileMD5("data/msg.xml"); // c9728a56c6852972e52b88a37b48fd8b
+            _databaseXmlMD5 = Misc.GetFileMD5("data/database.xml"); // 09a464f8f35fd70af3e363b69cef6950
         }
 
         /// <summary>

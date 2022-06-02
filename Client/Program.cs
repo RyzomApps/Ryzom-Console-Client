@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using Client.Config;
@@ -87,8 +88,8 @@ namespace Client
 
             // Setup ConsoleIO
             ConsoleIO.EnableTimestamps = true;
-            ConsoleIO.LogPrefix = "§8[§fR§eC§cC§8] ";
-            if (args.Length >= 1 && args[^1] == "BasicIO" || args.Length >= 1 && args[^1] == "BasicIO-NoColor")
+            ConsoleIO.LogPrefix = "§7[§fR§eC§cC§7] §r";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || args.Length >= 1 && args[^1] == "BasicIO" || args.Length >= 1 && args[^1] == "BasicIO-NoColor")
             {
                 if (args.Length >= 1 && args[^1] == "BasicIO-NoColor")
                 {

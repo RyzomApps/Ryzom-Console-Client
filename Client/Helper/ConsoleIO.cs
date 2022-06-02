@@ -361,6 +361,8 @@ namespace Client.Helper
         /// </param>
         public static void WriteLineFormatted(string str, bool acceptnewlines = true, bool? displayTimestamp = null)
         {
+            var noColorRet = "";
+
             if (!string.IsNullOrEmpty(str))
             {
                 if (!acceptnewlines)
@@ -375,41 +377,38 @@ namespace Client.Helper
                     Write($"[{DateTime.Now:HH:mm:ss}] ");
                 }
 
-                if (BasicIo)
-                {
-                    if (BasicIoNoColor)
-                    {
-                        // TODO: Verbatim
-                        //str = Misc.GetVerbatim(str);
-                    }
-
-                    Console.WriteLine(str);
-                    return;
-                }
-
                 var parts = str.Split(new[] { '§' });
 
                 if (parts[0].Length > 0)
                 {
-                    Write(parts[0]);
+                    if (BasicIoNoColor)
+                        noColorRet += parts[0];
+                    else
+                        Write(parts[0]);
                 }
 
                 for (var i = 1; i < parts.Length; i++)
                 {
                     if (parts[i].Length <= 0) continue;
 
-                    Console.ForegroundColor = ChatColor.GetConsoleColorFromMinecraftColor(parts[i][0]);
+                    if (!BasicIoNoColor)
+                        Console.ForegroundColor = ChatColor.GetConsoleColorFromMinecraftColor(parts[i][0]);
 
-                    if (parts[i].Length > 1)
-                    {
+                    if (parts[i].Length <= 1) continue;
+                    if (BasicIoNoColor)
+                        noColorRet += parts[i][1..];
+                    else
                         Write(parts[i][1..]);
-                    }
                 }
 
-                Console.ForegroundColor = ConsoleColor.Gray;
+                if (!BasicIoNoColor)
+                    Console.ForegroundColor = ConsoleColor.Gray;
             }
 
-            Write('\n');
+            if (BasicIoNoColor)
+                Write(noColorRet);
+            else
+                Write('\n');
         }
 
         /// <summary>

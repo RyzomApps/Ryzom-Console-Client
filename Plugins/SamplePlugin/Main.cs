@@ -62,7 +62,7 @@ namespace SamplePlugin
         /// </summary>
         private void ConfigExample()
         {
-            var file = new FileInfo($"{GetDataFolder()}\\config.yml"); //This will get the config file
+            var file = new FileInfo($"{GetDataFolder()}/config.yml"); //This will get the config file
             
             //This will check if the file exist
             if (!file.Exists)
