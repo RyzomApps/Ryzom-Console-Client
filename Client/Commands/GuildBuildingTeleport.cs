@@ -29,7 +29,7 @@ namespace Client.Commands
             var out2 = new BitMemoryStream();
 
             if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2)) 
-                return "";
+                return $"Unknown message named '{msgName}'.";
 
             out2.Serial(ref index);
             ryzomClient.GetNetworkManager().Push(out2);

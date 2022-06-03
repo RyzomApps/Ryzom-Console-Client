@@ -20,8 +20,18 @@ namespace Client.Entity
     {
         private byte _selection;
 
+        /// <summary>
+        /// Ryzom Client
+        /// </summary>
+        private IClient _client;
+
+        public UserEntity(IClient client)
+        {
+            _client = client;
+        }
+
         /// <inheritdoc />
-        public void Selection(byte slot, IClient client)
+        public void Selection(byte slot)
         {
             //allows reselection in Ring client: even if the selected slots is equal to the selection,
             //the client must send the messages.
@@ -35,7 +45,7 @@ namespace Client.Entity
             //disableFollow();
 
             // Send the entity selected to the server.
-            client.GetApiNetworkManager().PushTarget(slot);
+            _client.GetApiNetworkManager().PushTarget(slot);
 
             // Target the slot on client, don't wait NetWork response
             //targetSlot(slot);
@@ -189,26 +199,46 @@ namespace Client.Entity
             //pIM.incLocalSyncActionCounter();
         }
 
+        public void Attack()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Angle in the world to the front vector
+        /// </summary>
         private float FrontYaw() { return (float)Math.Atan2(Front.Y, Front.X); }
 
         /// <summary>
         /// Send the position and orientation to the server.
         /// </summary>
-        public bool SendToServer(BitMemoryStream out2, GenericMessageHeaderManager genericMessageHeaderManager)
+        public bool SendToServer(BitMemoryStream out2, GenericMessageHeaderManager genericMessageHeaderManager, IClient client)
         {
             if (!genericMessageHeaderManager.PushNameToStream("POSITION", out2))
                 throw new Exception("UE:sendToServer: unknown message named 'POSITION'.");
 
             // Backup the position sent.
             //if (_Primitive) _Primitive->getGlobalPosition(_LastGPosSent, dynamicWI);
+
+            // funny rotation
+            if (false)
+            {
+                var tick = client.GetApiNetworkManager().GetCurrentServerTick();
+
+                var sin = (float)Math.Sin(tick / 100d);
+                var cos = (float)Math.Cos(tick / 100d);
+
+                Front = new Vector3(sin, cos, 0);
+            }
+
             // Send Position & Orientation
             //CPositionMsg positionMsg;
 
             // hack for CPositionMsg
-
             var x = (int)(Pos.X * 1000);
             var y = (int)(Pos.Y * 1000);
             var z = (int)(Pos.Z * 1000);
+
             var heading = FrontYaw();
 
             out2.Serial(ref x);
@@ -222,7 +252,7 @@ namespace Client.Entity
         /// <summary>
         /// the entity target in the slot become the target of your current one.
         /// </summary>
-        public void Assist(byte slot, RyzomClient client)
+        public void Assist(byte slot)
         {
             // Check the current target
             if (slot == Constants.InvalidSlot || slot == _slot)
@@ -231,7 +261,7 @@ namespace Client.Entity
             }
 
             // Check the target
-            var target = client.GetNetworkManager().GetEntityManager().GetEntity(slot);
+            var target = _client.GetApiNetworkManager().GetApiEntityManager().GetApiEntities()[slot];
 
             if (target == null)
             {
@@ -247,7 +277,7 @@ namespace Client.Entity
             }
 
             // Select the new target.
-            Selection(newSlot, client);
+            Selection(newSlot);
         }
 
         //private static bool wellPosition = false;

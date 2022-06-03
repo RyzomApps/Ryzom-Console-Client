@@ -9,7 +9,9 @@ namespace Client.Commands
     public class OutpostChooseSide : CommandBase
     {
         public override string CmdName => "outpostChooseSide";
+
         public override string CmdUsage => "[<side 0=Owner 1=Attacker>]";
+
         public override string CmdDesc => "Lets the client chose a side in an outpost war";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
@@ -37,7 +39,7 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
 
             return "";
         }

@@ -7,11 +7,13 @@ using Client.Network;
 
 namespace Client.Commands
 {
-    // TODO: em command seems to be broken (still)
+    // TODO: em command is broken - need to test on the real client for the phrase
     public class Emote : CommandBase
     {
         public override string CmdName => "em";
+
         public override string CmdUsage => "<custom emote text>";
+
         public override string CmdDesc => "Creates an emote without using an animation.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
@@ -46,7 +48,7 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
 
             return "";
         }

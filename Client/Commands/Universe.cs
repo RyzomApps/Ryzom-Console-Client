@@ -10,13 +10,10 @@ namespace Client.Commands
     public class Universe : CommandBase
     {
         public override string CmdName => "universe";
-        public override string CmdUsage => "<text>";
-        public override string CmdDesc => "This command sends a message to the universe channel, which is visible to everyone online at that moment.";
 
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] { "u" };
-        }
+        public override string CmdUsage => "<text>";
+
+        public override string CmdDesc => "This command sends a message to the universe channel, which is visible to everyone online at that moment.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -35,6 +32,11 @@ namespace Client.Commands
             ryzomClient.SendText(text);
 
             return "";
+        }
+
+        public override IEnumerable<string> GetCmdAliases()
+        {
+            return new[] { "u" };
         }
     }
 }

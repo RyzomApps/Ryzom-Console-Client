@@ -21,9 +21,11 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
+            const string msgName = "COMMAND:GUILDMOTD";
             var out2 = new BitMemoryStream();
 
-            if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream("COMMAND:GUILDMOTD", out2)) return "";
+            if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream("COMMAND:GUILDMOTD", out2))
+                return $"Unknown message named '{msgName}'.";
 
             var gmotd = "";
 

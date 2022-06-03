@@ -9,7 +9,9 @@ namespace Client.Commands
     public class Afk : CommandBase
     {
         public override string CmdName => "afk";
+
         public override string CmdUsage => "[<custom text>]";
+
         public override string CmdDesc => "Set the player as 'away from keyboard'";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
@@ -37,7 +39,7 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
 
             // custom afk txt
             var outTxt = new BitMemoryStream();
@@ -50,7 +52,7 @@ namespace Client.Commands
             }
             else
             {
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
             }
 
             return "";

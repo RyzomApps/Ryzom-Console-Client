@@ -49,6 +49,8 @@ namespace Client
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             Enc1252 = Encoding.GetEncoding(1252);
 
+            Console.OutputEncoding = Enc1252;
+
             if (typeof(Program)
                 .Assembly
                 .GetCustomAttributes(typeof(AssemblyConfigurationAttribute), false)

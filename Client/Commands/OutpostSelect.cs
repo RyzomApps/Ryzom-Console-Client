@@ -9,8 +9,10 @@ namespace Client.Commands
     public class OutpostSelect : CommandBase
     {
         public override string CmdName => "OutpostSelect";
+
         public override string CmdUsage => "<outpostSheetId>";
-        public override string CmdDesc => "CAHOutpostSelectFromBC ";
+
+        public override string CmdDesc => "Select an outpost to be displayed in the outpost window.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -37,7 +39,7 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
 
             return "";
         }

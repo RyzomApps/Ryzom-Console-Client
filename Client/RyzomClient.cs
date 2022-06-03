@@ -753,7 +753,7 @@ namespace Client
                         // Update the server with our position and orientation.
                         out2 = new BitMemoryStream();
 
-                        if (_networkManager.GetEntityManager().UserEntity.SendToServer(out2, _networkManager.GetMessageHeaderManager()))
+                        if (_networkManager.GetEntityManager().UserEntity.SendToServer(out2, _networkManager.GetMessageHeaderManager(), this))
                         {
                             _networkManager.Push(out2);
                         }
@@ -1134,9 +1134,16 @@ namespace Client
             }
             else if (_cmds.ContainsKey(commandName))
             {
-                responseMsg = _cmds[commandName].Run(this, command, localVars);
+                try
+                {
+                    responseMsg = _cmds[commandName].Run(this, command, localVars);
 
-                Plugins.OnInternalCommand(commandName, command, responseMsg);
+                    Plugins.OnInternalCommand(commandName, command, responseMsg);
+                }
+                catch (Exception e)
+                {
+                    responseMsg = $"Command '{commandName}' caused {e}: {e.Message}\r\n{e.StackTrace}";
+                }
             }
             else
             {

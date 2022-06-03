@@ -9,7 +9,9 @@ namespace Client.Commands
     public class AddFriend : CommandBase
     {
         public override string CmdName => "AddFriend";
+
         public override string CmdUsage => "<contactName>";
+
         public override string CmdDesc => "Adds a friend to the contact list";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
@@ -21,8 +23,7 @@ namespace Client.Commands
 
             if (args.Length != 1)
             {
-                handler.GetLogger().Warn($"Please specify a player name to add.");
-                return "";
+                return "Please specify a player name to add.";
             }
 
             // add into server (NB: will be added by the server response later)
@@ -37,12 +38,10 @@ namespace Client.Commands
                 out2.Serial(ref temp);
                 out2.Serial(ref list);
 
-                //Debug.Print(out2.ToString());
-
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
 
             return "";
         }

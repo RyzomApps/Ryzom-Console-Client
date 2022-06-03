@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using API;
 using API.Commands;
 using API.Helper;
-using Client.Helper;
 
 namespace Client.Commands
 {
+    /// <summary>
+    /// Display character played time
+    /// </summary>
     public class PlayedTime : CommandBase
     {
         public override string CmdName => "playedTime";

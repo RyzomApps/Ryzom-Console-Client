@@ -29,7 +29,7 @@ namespace Client.Commands
             }
             else
             {
-                handler.GetLogger().Warn("mainLoop : unknown message name : '%s'" + msgName);
+                return $"Unknown message named '{msgName}'.";
             }
 
             return "";

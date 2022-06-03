@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Entity;
 
 namespace Client.Commands
 {
     public class Assist : CommandBase
     {
-        public override IEnumerable<string> GetCmdAliases() { return new string[] { "as" }; }
         public override string CmdName => "assist";
+
         public override string CmdUsage => "[<name>]";
+
         public override string CmdDesc => "Targets the target of the targeted entity.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
@@ -39,7 +39,7 @@ namespace Client.Commands
             if (entity != null)
             {
                 // Select the entity
-                user.Assist(entity.Slot(), ryzomClient);
+                user.Assist(entity.Slot());
             }
             else
             {
@@ -48,5 +48,7 @@ namespace Client.Commands
 
             return "";
         }
+
+        public override IEnumerable<string> GetCmdAliases() { return new[] { "as" }; }
     }
 }

@@ -21,12 +21,12 @@ namespace Client.Commands
             if (GetArgs(command).Length > 1)
                 return "";
 
+            const string msgName = "DEBUG:WHO";
             var out2 = new BitMemoryStream();
 
-            if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream("DEBUG:WHO", out2))
+            if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                handler.GetLogger().Warn("Unknown message name DEBUG:WHO");
-                return "";
+                return $"Unknown message named '{msgName}'.";
             }
 
             var opt = "";

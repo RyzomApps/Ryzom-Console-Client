@@ -8,7 +8,7 @@ namespace Client.Commands
 {
     public class JoinTeamProposal : CommandBase
     {
-        public override string CmdName => "joinTeamProposal";
+        public override string CmdName => "invite";
 
         public override string CmdUsage => "";
 
@@ -29,7 +29,7 @@ namespace Client.Commands
             }
             else
             {
-                handler.GetLogger().Warn("mainLoop : unknown message name : '%s'" + msgName);
+                return $"Unknown message named '{msgName}'.";
             }
 
             return "";
@@ -37,7 +37,7 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "invite" };
+            return new[] { "joinTeamProposal" };
         }
     }
 }

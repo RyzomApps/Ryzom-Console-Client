@@ -9,7 +9,9 @@ namespace Client.Commands
     public class Tell : CommandBase
     {
         public override string CmdName => "tell";
+
         public override string CmdUsage => "<receiver> <text>";
+
         public override string CmdDesc => "Transmit a chat message to the receiver.";
 
         /// <summary>
@@ -44,7 +46,7 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(bms);
             }
             else
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
 
             return "";
         }

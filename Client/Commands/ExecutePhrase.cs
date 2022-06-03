@@ -9,7 +9,9 @@ namespace Client.Commands
     public class ExecutePhrase : CommandBase
     {
         public override string CmdName => "executePhrase";
+
         public override string CmdUsage => "<[memoryId] [slotId]>";
+
         public override string CmdDesc => "Command to send the execution message for a phrase to the server.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
@@ -34,14 +36,12 @@ namespace Client.Commands
 
                 if (!worked)
                 {
-                    handler.GetLogger().Warn($"One of the arguments could not be parsed.");
-                    return "";
+                    return "One of the arguments could not be parsed.";
                 }
             }
             else if (args.Length == 1 || args.Length > 2)
             {
-                handler.GetLogger().Warn($"Please specify zero or two arguments.");
-                return "";
+                return "Please specify zero or two arguments.";
             }
 
             // before, append the execution counter to the list of ACK to wait
@@ -60,7 +60,7 @@ namespace Client.Commands
             }
             else
             {
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
             }
 
             return "";

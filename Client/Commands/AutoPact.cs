@@ -9,9 +9,10 @@ namespace Client.Commands
     public class AutoPact : CommandBase
     {
         public override string CmdName => "AutoPact";
+
         public override string CmdUsage => "<u8>";
+
         public override string CmdDesc => "Client want to set AUTOPACT to TRUE or FALSE";
-        public override IEnumerable<string> GetCmdAliases() { return new string[] { }; }
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -35,9 +36,11 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
 
             return "";
         }
+
+        public override IEnumerable<string> GetCmdAliases() { return new string[] { }; }
     }
 }

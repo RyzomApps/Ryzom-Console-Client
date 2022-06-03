@@ -8,7 +8,9 @@ namespace Client.Commands
     public class Target : CommandBase
     {
         public override string CmdName => "target";
+
         public override string CmdUsage => "<name>";
+
         public override string CmdDesc => "Finds the nearest entity whose name contains the given string.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
@@ -30,11 +32,10 @@ namespace Client.Commands
 
             if (entity == null)
             {
-                handler.GetLogger().Warn($"Could not find '{entityName}'.");
-                return "";
+                return $"Could not find '{entityName}'.";
             }
 
-            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.Selection(entity.Slot(), ryzomClient);
+            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.Selection(entity.Slot());
             ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.SetTargetSlot(entity.Slot());
 
             return "";

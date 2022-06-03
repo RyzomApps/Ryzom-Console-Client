@@ -14,7 +14,6 @@ using API.Chat;
 
 namespace Client.Helper
 {
-    // TODO: add lock for async writing to the console
     /// <summary>
     /// Allows simultaneous console input and output without breaking user input
     /// (Without having this annoying behaviour : User inp[Some Console output]ut)

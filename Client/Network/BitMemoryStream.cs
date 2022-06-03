@@ -207,9 +207,8 @@ namespace Client.Network
             }
             else
             {
-                throw new NotImplementedException();
-                //var bytes = BitConverter.GetBytes(obj);
-                //AddToArray(bytes);
+                var bytes = BitConverter.GetBytes(obj);
+                AddToArray(bytes);
             }
         }
 

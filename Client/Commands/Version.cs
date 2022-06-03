@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using API;
 using API.Commands;
 
@@ -15,9 +14,7 @@ namespace Client.Commands
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
-            var sVersion = $"RCC {Program.Version} ({Resources.BuildDate})".Replace("\r\n", "").Replace("  ", " ");
-
-            return sVersion;
+            return $"RCC {Program.Version} ({Resources.BuildDate})".Replace("\r\n", "").Replace("  ", " ");
         }
 
         public override IEnumerable<string> GetCmdAliases()

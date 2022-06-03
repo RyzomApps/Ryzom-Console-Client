@@ -20,7 +20,7 @@ namespace Client.WinAPI
     /// <seealso>
     /// https://stackoverflow.com/a/37755503
     /// </seealso>
-    class WindowsVersion
+    internal class WindowsVersion
     {
         /// <summary>
         /// Returns the Windows major version number for this computer.

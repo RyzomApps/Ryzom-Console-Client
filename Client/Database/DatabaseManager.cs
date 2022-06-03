@@ -23,6 +23,11 @@ namespace Client.Database
     public class DatabaseManager : IDatabaseManager
     {
         /// <summary>
+        /// Verbose Mode
+        /// </summary>
+        public static bool VerboseDatabase = true;
+
+        /// <summary>
         /// Database bank identifiers (please change BankNames in cpp accordingly)
         /// </summary>
         public enum BankIdentifiers { CDBPlayer = 0, CDBGuild = 1, /* CDBContinent, */ CDBOutpost = 2, /* CDBGlobal, */ NB_CDB_BANKS = 3, INVALID_CDB_BANK = 4 };
@@ -146,7 +151,7 @@ namespace Client.Database
             uint propertyCount = 0;
             s.Serial(ref propertyCount, 16);
 
-            if (Constants.VerboseDatabase)
+            if (VerboseDatabase)
                 _client.GetLogger().Debug($"CDB: Reading delta ({propertyCount} changes)");
 
 
@@ -211,7 +216,7 @@ namespace Client.Database
         /// </summary>
         /// <param name="name">name of the data leaf node we are querying.</param>
         /// <param name="create">when true if a node cannot be found it is created.</param>
-        public DatabaseNodeLeaf GetDbProp(string name, bool create)
+        public DatabaseNodeLeaf GetDbProp(string name, bool create = false)
         {
             return GetDbLeaf(name, create);
         }

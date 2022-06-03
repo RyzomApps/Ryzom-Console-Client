@@ -9,7 +9,9 @@ namespace Client.Commands
     public class Where : CommandBase
     {
         public override string CmdName => "where";
+
         public override string CmdUsage => "";
+
         public override string CmdDesc => "Ask information on the position";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
@@ -29,7 +31,7 @@ namespace Client.Commands
                     ryzomClient.GetNetworkManager().Push(out2);
                 }
                 else
-                    handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                    return $"Unknown message named '{msgName}'.";
             }
 
             return "";

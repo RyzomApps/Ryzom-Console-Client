@@ -3,20 +3,16 @@ using System.Collections.Generic;
 using API;
 using API.Chat;
 using API.Commands;
-using Client.Chat;
 
 namespace Client.Commands
 {
     public class Shout : CommandBase
     {
         public override string CmdName => "shout";
-        public override string CmdUsage => "<text>";
-        public override string CmdDesc => "This command will make your messages have a 50m range and will appear red (by default) for you.";
 
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] { "sh", "y", "yell" };
-        }
+        public override string CmdUsage => "<text>";
+
+        public override string CmdDesc => "This command will make your messages have a 50m range and will appear red (by default) for you.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -35,6 +31,11 @@ namespace Client.Commands
             ryzomClient.SendText(text);
 
             return "";
+        }
+
+        public override IEnumerable<string> GetCmdAliases()
+        {
+            return new[] { "sh", "y", "yell" };
         }
     }
 }

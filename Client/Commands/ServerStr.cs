@@ -5,14 +5,16 @@ using API.Commands;
 
 namespace Client.Commands
 {
-    public class LogEntities : CommandBase
+    /// <summary>
+    /// Display a server string value
+    /// </summary>
+    public class ServerStr : CommandBase
     {
-        public override string CmdName => "logEntities";
+        public override string CmdName => "serverStr";
 
-        public override string CmdUsage => "/logEntities";
+        public override string CmdUsage => "/serverstr <string_id>";
 
-        public override string CmdDesc =>
-            "Write the position and orientation af all entities in the vision in the file 'entities.txt'";
+        public override string CmdDesc => "Display a server string value";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -21,14 +23,16 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            // Check parameters
-            if (args.Length != 0) 
+            if (args.Length != 1) 
                 return "Usage: " + CmdUsage;
 
-            // Log entities
-            ryzomClient.GetNetworkManager().GetEntityManager().WriteEntities();
+            var dynId = (uint)Convert.ToInt32(args[0]);
 
-            // Command well done.
+            var networkManager = ryzomClient.GetNetworkManager();
+            ryzomClient.GetStringManager().GetString(dynId, out var result, networkManager);
+
+            handler.GetLogger().Info(result);
+
             return "";
         }
 

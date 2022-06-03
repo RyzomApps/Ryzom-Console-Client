@@ -8,11 +8,6 @@
         public const int RyzomMaxShortcut = 20;
 
         /// <summary>
-        /// misc cdb
-        /// </summary>
-        public const bool VerboseDatabase = true;
-
-        /// <summary>
         /// game_share chat_group
         /// </summary>
         public const int MaxDynChanPerPlayer = 8;

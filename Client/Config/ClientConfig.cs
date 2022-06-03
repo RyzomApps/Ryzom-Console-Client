@@ -144,33 +144,6 @@ namespace Client.Config
 
             try
             {
-                //var text = File.ReadAllText(file);
-                //
-                //var match = Regex.Match(text, configPattern, RegexOptions.Multiline & RegexOptions.ECMAScript);
-                //
-                //while (match.Success)
-                //{
-                //    Console.WriteLine("'{0}' found in the source code at position {1}.", match.Value, match.Index);
-                //
-                //    if (match.Groups.ContainsKey("parameter"))
-                //    {
-                //        if (match.Groups.ContainsKey("value1"))
-                //        {
-                //            LoadSingleSetting(match.Groups["parameter"].Value, match.Groups["value1"].Value);
-                //        }
-                //        else if (match.Groups.ContainsKey("value2"))
-                //        {
-                //            LoadSingleSetting(match.Groups["parameter"].Value, match.Groups["value2"].Value);
-                //        }
-                //        else if (match.Groups.ContainsKey("value3"))
-                //        {
-                //            LoadSingleSetting(match.Groups["parameter"].Value, match.Groups["value3"].Value);
-                //        }
-                //    }
-                //
-                //    match = match.NextMatch();
-                //}
-
                 var lines = File.ReadAllLines(file);
 
                 foreach (var lineRaw in lines)

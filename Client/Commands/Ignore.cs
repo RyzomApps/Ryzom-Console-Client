@@ -43,7 +43,7 @@ namespace Client.Commands
             }
             else
             {
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
             }
 
             return "";

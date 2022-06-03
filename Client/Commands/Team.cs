@@ -10,13 +10,10 @@ namespace Client.Commands
     public class Team : CommandBase
     {
         public override string CmdName => "team";
-        public override string CmdUsage => "<text>";
-        public override string CmdDesc => "With this command a message is sent to the Team channel and is visible to those currently in your party.";
 
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] { "p", "party", "te" };
-        }
+        public override string CmdUsage => "<text>";
+
+        public override string CmdDesc => "With this command a message is sent to the Team channel and is visible to those currently in your party.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -35,6 +32,11 @@ namespace Client.Commands
             ryzomClient.SendText(text);
 
             return "";
+        }
+
+        public override IEnumerable<string> GetCmdAliases()
+        {
+            return new[] { "p", "party", "te" };
         }
     }
 }

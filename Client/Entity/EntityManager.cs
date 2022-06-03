@@ -107,7 +107,7 @@ namespace Client.Entity
                 _entities[slot] = new Entity();
             else
             {
-                UserEntity = new UserEntity
+                UserEntity = new UserEntity(_client)
                 {
                     Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition()
                 };

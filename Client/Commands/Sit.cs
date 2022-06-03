@@ -9,7 +9,9 @@ namespace Client.Commands
     public class Sit : CommandBase
     {
         public override string CmdName => "sit";
+
         public override string CmdUsage => "<[sit state]>";
+
         public override string CmdDesc => "client send to the server the sitting state";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
@@ -24,14 +26,12 @@ namespace Client.Commands
             {
                 if (!bool.TryParse(args[0], out s))
                 {
-                    handler.GetLogger().Warn($"One of the arguments could not be parsed.");
-                    return "";
+                    return "One of the arguments could not be parsed.";
                 }
             }
             else if (args.Length > 1)
             {
-                handler.GetLogger().Warn($"Please specify zero or one argument.");
-                return "";
+                return "Please specify zero or one argument.";
             }
 
             // send afk state
@@ -44,7 +44,7 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
 
             return "";
         }

@@ -9,7 +9,9 @@ namespace Client.Commands
     public class AskServices : CommandBase
     {
         public override string CmdName => "askservices";
+
         public override string CmdUsage => "";
+
         public override string CmdDesc => "Ask the server all services up";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
@@ -20,12 +22,13 @@ namespace Client.Commands
             const string msgName = "DEBUG:SERVICES";
 
             var out2 = new BitMemoryStream();
+
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
-                handler.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return $"Unknown message named '{msgName}'.";
 
             return "";
         }
