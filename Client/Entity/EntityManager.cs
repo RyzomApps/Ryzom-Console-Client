@@ -33,7 +33,6 @@ namespace Client.Entity
         public IUserEntity GetApiUserEntity() => UserEntity;
 
         // Contain all entities.
-        // TODO: Array?
         private Entity[] _entities;
 
         /// <inheritdoc />

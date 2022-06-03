@@ -220,17 +220,6 @@ namespace Client.Entity
             // Backup the position sent.
             //if (_Primitive) _Primitive->getGlobalPosition(_LastGPosSent, dynamicWI);
 
-            // funny rotation
-            if (false)
-            {
-                var tick = client.GetApiNetworkManager().GetCurrentServerTick();
-
-                var sin = (float)Math.Sin(tick / 100d);
-                var cos = (float)Math.Cos(tick / 100d);
-
-                Front = new Vector3(sin, cos, 0);
-            }
-
             // Send Position & Orientation
             //CPositionMsg positionMsg;
 

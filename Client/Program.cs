@@ -49,8 +49,6 @@ namespace Client
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             Enc1252 = Encoding.GetEncoding(1252);
 
-            Console.OutputEncoding = Enc1252;
-
             if (typeof(Program)
                 .Assembly
                 .GetCustomAttributes(typeof(AssemblyConfigurationAttribute), false)
@@ -75,6 +73,7 @@ namespace Client
         private static void Main(string[] args)
         {
             //Console.OutputEncoding = Encoding.Unicode;
+            Console.OutputEncoding = Enc1252;
 
             Banner();
 

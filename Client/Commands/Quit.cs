@@ -34,7 +34,7 @@ namespace Client.Commands
             //FarTP.writeSecurityCodeForDisconnection(out2); // must always be written because of msg.xml (or could have a special handler in the FS)
             uint sessionId = 0;
             out2.Serial(ref sessionId);
-            uint asNum = 0; // this has to be short, but thats not implemented
+            short asNum = 0;
             out2.Serial(ref asNum);
 
             ryzomClient.GetNetworkManager().Push(out2);
