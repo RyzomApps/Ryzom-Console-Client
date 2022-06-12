@@ -26,15 +26,28 @@ jobs:
       - name: Install dependencies
         run: dotnet restore
 
-      - name: Compile package
-        run: dotnet publish Client\Client.csproj -r win-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true --self-contained true -p:SolutionDir=".."
+      - name: Compile package Win-x64
+        run: dotnet publish Client\Client.csproj -r win-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true --self-contained true -p:SolutionDir=".." -o="./publish/win64/"
 
-      - name: Zip package
-        uses: vimtor/action-zip@v1
+      - name: Zip package Win-x64
+        uses: thedoctor0/zip-release@main
         with:
-          files: bin/Publish/netcoreapp3.1/
-          dest: win-x64.zip
+          type: 'zip'
+          path: 'publish/win64/'
+          exclusions: '*.pdb'
+          filename: 'win-x64.zip'
 
+      - name: Compile package Linux-x64
+        run: dotnet publish Client\Client.csproj -r linux-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true --self-contained true -p:SolutionDir=".." -o="./publish/linux64/"
+
+      - name: Zip package Linux-x64
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'tar'
+          path: 'publish/linux64/'
+          exclusions: '*.pdb'
+          filename: 'linux-x64.tar.gz'
+          
       - name: Upload
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -42,5 +55,5 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
-            bin/Publish/netcoreapp3.1/*.exe
             win-x64.zip
+            linux-x64.tar.gz
