@@ -10,39 +10,60 @@ using API;
 
 namespace Client.Sheet
 {
+    /// <summary>
+    /// SheetId
+    /// </summary>
+    /// <author>Stephane Coutelas</author>
+    /// <author>Nevrax France</author>
+    /// <date>2002</date>
+    /// <remarks>
+    /// This class is case unsensitive. It means that you can call build() and 
+    /// buildIdVector() with string with anycase, it'll work.
+    /// </remarks>
     // TODO: make SheetId non static
     public class SheetId
     {
-        static bool _Initialised = false;
-        static bool _RemoveUnknownSheet = true;
-        static bool _DontHaveSheetKnowledge = false;
+        static bool _initialised = false;
+        static bool _removeUnknownSheet = true;
+        static bool _dontHaveSheetKnowledge = false;
 
         public static SheetId Unknown = new SheetId(0);
 
         private uint _id;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public SheetId()
         {
 
         }
 
+        /// <summary>
+        /// create an SheetId from a numeric reference
+        /// </summary>
         public SheetId(uint sheetRef)
         {
             _id = sheetRef;
         }
 
-        /// <summary>Return the **whole** sheet id (id+type)</summary>
+        /// <summary>
+        /// Return the **whole** sheet id (id+type)
+        /// </summary>
         public uint AsInt()
         {
             return _id;
         }
 
-        internal static void init(bool removeUnknownSheet, IClient _client)
+        /// <summary>
+        /// Load the association sheet ref / sheet name
+        /// </summary>
+        internal static void Init(bool removeUnknownSheet, IClient _client)
         {
             // allow multiple calls to init in case libraries depending on sheetid call this init from their own
-            if (_Initialised)
+            if (_initialised)
             {
-                if (_DontHaveSheetKnowledge)
+                if (_dontHaveSheetKnowledge)
                     _client.GetLogger().Info("SHEETID: CSheetId is already initialized without sheet_id.bin");
 
                 return;
@@ -50,13 +71,16 @@ namespace Client.Sheet
 
             //	CFile::addFileChangeCallback ("sheet_id.bin", cbFileChange);
 
-            _RemoveUnknownSheet = removeUnknownSheet;
+            _removeUnknownSheet = removeUnknownSheet;
 
-            loadSheetId();
-            _Initialised = true;
+            LoadSheetId();
+            _initialised = true;
         }
 
-        private static void loadSheetId()
+        /// <summary>
+        /// Load sheet_id.bin file
+        /// </summary>
+        private static void LoadSheetId()
         {
 
         }

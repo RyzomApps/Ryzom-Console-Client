@@ -11,66 +11,84 @@ using System.Collections.Generic;
 
 namespace Client.Sheet
 {
+    /// <summary>
+    /// Class to manage all sheets.
+    /// </summary>
+    /// <author>Guillaume PUZIN</author>
+    /// <author>Nevrax France</author>
+    /// <date>2001</date>
     public class SheetManager : IDisposable
     {
         private readonly RyzomClient _client;
 
-        protected int _NbEyesColor;
-        protected int _NbHairColor;
+        protected int _nbEyesColor;
+        protected int _nbHairColor;
 
-        /// Return the number of color available for the eyes.
-        public int nbEyesColor()
+        /// <summary>
+        /// Return the number of color available for the eyes
+        /// </summary>
+        public int NbEyesColor()
         {
-            return _NbEyesColor;
+            return _nbEyesColor;
         }
 
-        /// Return the number of color available for the hair.
-        public int nbHairColor()
+        /// <summary>
+        /// Return the number of color available for the hair
+        /// </summary>
+        public int NbHairColor()
         {
-            return _NbHairColor;
+            return _nbHairColor;
         }
 
-
+        /// <summary>
         /// Get all sheets (useful for other managers (skill, brick, ...))
-        public SortedDictionary<SheetId, SheetManagerEntry> getSheets()
+        /// </summary>
+        public SortedDictionary<SheetId, SheetManagerEntry> GetSheets()
         {
-            return _EntitySheetContainer;
+            return _entitySheetContainer;
         }
 
+        /// <summary>
         /// Set output data path
-        public void setOutputDataPath(string dataPath)
+        /// </summary>
+        public void SetOutputDataPath(string dataPath)
         {
-            _OutputDataPath = dataPath;
+            _outputDataPath = dataPath;
         }
 
+        /// <summary>
         /// Return output data path
-        public string getOutputDataPath()
+        /// </summary>
+        public string GetOutputDataPath()
         {
-            return _OutputDataPath;
+            return _outputDataPath;
         }
 
         //private List<List<ItemSheet>> _VisualSlots = new List<List<CtemSheet>>();
 
-        // directory where to create .packed_sheets
-        private string _OutputDataPath;
+        /// <summary>
+        /// directory where to create .packed_sheets
+        /// </summary>
+        private string _outputDataPath;
 
+        /// <summary>
         /// this structure is fill by the loadForm() function and will contain all the sheets needed
-        protected SortedDictionary<SheetId, SheetManagerEntry> _EntitySheetContainer = new SortedDictionary<SheetId, SheetManagerEntry>();
+        /// </summary>
+        protected SortedDictionary<SheetId, SheetManagerEntry> _entitySheetContainer = new SortedDictionary<SheetId, SheetManagerEntry>();
 
         // Associate sheet to visual slots
         //protected SortedDictionary<ItemSheet, List<Tuple<EVisualSlot, uint>>> _SheetToVS = new SortedDictionary<ItemSheet, List<Tuple<EVisualSlot, uint>>>();
 
-        private SortedDictionary<string, ushort> computeVS_ProcessedItem = new SortedDictionary<string, ushort>();
+        private SortedDictionary<string, ushort> _computeVS_ProcessedItem = new SortedDictionary<string, ushort>();
 
-        //-----------------------------------------------
-        // CSheetManager :
-        // Constructor.
-        //-----------------------------------------------
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public SheetManager(RyzomClient client)
         {
             _client = client;
 
-            _NbEyesColor = 0; // Default is no color available for the eyes.
+            _nbEyesColor = 0; // Default is no color available for the eyes.
 
             //// Slot 0 is invalid.
             //for (uint i = 0; i < NB_SLOT; ++i)
@@ -81,26 +99,28 @@ namespace Client.Sheet
             //}
         }
 
-        //-----------------------------------------------
-        // CSheetManager :
-        // Destructor.
-        //-----------------------------------------------
+        /// <summary>
+        /// Destructor
+        /// </summary>
         public void Dispose()
         {
-            release();
+            Release();
         }
 
-        public void release()
+        /// <summary>
+        /// Release memory
+        /// </summary>
+        public void Release()
         {
             //_VisualSlots.Clear();
 
-            _EntitySheetContainer.Clear();
+            _entitySheetContainer.Clear();
 
             //_SheetToVS.Clear();
         }
 
         /// <summary>
-        /// Load all sheets.
+        /// Load all sheets
         /// </summary>
         public void Load(object callBack, bool updatePackedSheet, bool needComputeVS, bool dumpVSIndex)
         {
@@ -114,7 +134,7 @@ namespace Client.Sheet
         }
 
         /// <summary>
-        /// Load all sheets.
+        /// Load all sheets
         /// </summary>
         public void LoadAllSheet(object callBack, bool updatePackedSheet, bool needComputeVS, bool dumpVSIndex, bool forceRecompute = false, List<string> userExtensions = null)
         {
@@ -125,7 +145,7 @@ namespace Client.Sheet
             //loadTyp();
 
             // prepare a list of sheets extension to load.
-            List<string> extensions = new List<string>();
+            //List<string> extensions = new List<string>();
 
             //uint sizeTypeVersion = sizeof(TypeVersion);
             //uint sizeCTypeVersion = sizeof(CTypeVersion);
@@ -192,7 +212,7 @@ namespace Client.Sheet
             // Re-compute Visual Slot
             if (needComputeVS)
             {
-                computeVS();
+                ComputeVS();
             }
 
             //// Compute Visual Slots
@@ -233,10 +253,9 @@ namespace Client.Sheet
             //callBack.popCropedValues();
         }
 
-        //-----------------------------------------------
-        // computeVS :
-        // compute Visual Slots for this sheet.
-        //-----------------------------------------------
+        /// <summary>
+        /// compute Visual Slots for this sheet.
+        /// </summary>
         public void LoadAllSheetNoPackedSheet(object callBack, List<string> extensions, string wildcardFilter)
         {
             //callBack.progress(0);
@@ -249,7 +268,10 @@ namespace Client.Sheet
             //callBack.popCropedValues();
         }
 
-        public void computeVS()
+        /// <summary>
+        /// Compute Visual Slots for this sheet
+        /// </summary>
+        public void ComputeVS()
         {
             ////	static ClassicMap< string, ushort > ProcessedItem;
             //SortedDictionary<string, ushort>.Enumerator it;
@@ -336,118 +358,129 @@ namespace Client.Sheet
             //}
         }
 
-        ////-----------------------------------------------
-        //// processSheet :
-        //// Porcessing the sheet.
-        //// \param sheet : sheet to process.
-        //public void processSheet(EntitySheet sheet)
-        //{
-        //    // For now: no op
-        //}
-        //
+        /// <summary>
+        /// Processing the sheet
+        /// </summary>
+        /// <param name="sheet">sheet to process</param>
+        public void ProcessSheet(EntitySheet sheet)
+        {
+            // For now: no op
+        }
+
+        ///// <summary>
+        ///// Get a pair of visual slots / index from a CItemSheet pointer.
+        ///// </summary>
+        ///// <param name="sheet"></param>
+        ///// <returns></returns>
         //public VisualSlotItemArray getVSItems(ItemSheet sheet)
         //{
-        //    ItemSheet2SlotItemArray.const_iterator it = _SheetToVS.find(sheet);
-        //
-        //    if (it == _SheetToVS.end())
-        //    {
-        //        return null;
-        //    }
-        //    return &(it.second);
-        //}
-        //
-        //public int getVSIndex(string itemName, VisualSlot slot)
-        //{
-        //    SheetId si = new SheetId();
-        //
-        //    if (!si.buildSheetId(itemName))
-        //    {
-        //        _client.GetLogger().Warn("<CSheetManager::getVSIndex> : cannot build id from item %s for the slot %d.", itemName, slot);
-        //        return -1;
-        //    }
-        //
-        //    EntitySheetMap.iterator it = _EntitySheetContainer.find(si);
-        //
-        //    if (it == _EntitySheetContainer.end())
-        //    {
-        //        _client.GetLogger().Warn("<CSheetManager::getVSIndex> : cannot find %s for the slot %d.", itemName, slot);
-        //        return -1;
-        //    }
-        //    if (it.second.EntitySheet == 0 || it.second.EntitySheet.type() != EntitySheet.ITEM)
-        //    {
-        //        _client.GetLogger().Warn("<CSheetManager::getVSIndex> : %s is not an item for the slot %d.", itemName, slot);
-        //        return -1;
-        //    }
-        //
-        //    ItemSheet @is = (ItemSheet)it.second.EntitySheet;
-        //
-        //    VisualSlotItemArray ia = getVSItems(@is);
-        //    if (ia == null)
-        //    {
-        //        _client.GetLogger().Warn("<CSheetManager::getVSIndex> : no items for the slot %d. while looking for %s", slot, itemName);
-        //        return -1;
-        //    }
-        //
-        //    VisualSlotItemArray.const_iterator first = new VisualSlotItemArray.const_iterator(ia.begin());
-        //    VisualSlotItemArray.const_iterator last = new VisualSlotItemArray.const_iterator(ia.end());
-        //
-        //    for (; first != last; ++first)
-        //    {
-        //        if (first.first == slot)
-        //        {
-        //            return first.second;
-        //        }
-        //    }
-        //
-        //    _client.GetLogger().Warn("<CSheetManager::getVSIndex> : cannot find %s for the slot %d.", itemName, slot);
-        //    return -1;
+        //    //    ItemSheet2SlotItemArray.const_iterator it = _SheetToVS.find(sheet);
+        //    //
+        //    //    if (it == _SheetToVS.end())
+        //    //    {
+        //    //        return null;
+        //    //    }
+        //    //    return &(it.second);
         //}
 
-        ////-----------------------------------------------
-        //// get :
-        //// Get a sheet from its number.
-        //// \param uint32 num : sheet number.
-        //// \return EntitySheet * : pointer on the sheet according to the param or 0 if any pb.
-        //public EntitySheet get(SheetId num)
-        //{
-        //    EntitySheetMap.iterator it = _EntitySheetContainer.find(num);
-        //    if (it != _EntitySheetContainer.end())
-        //    {
-        //        return it.second.EntitySheet;
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //} // get //
-        //
-        //public uint getNumItem(SLOTTYPE.EVisualSlot slot)
-        //{
-        //    // The slot is not a visible one.
-        //    if (slot == SLOTTYPE.HIDDEN_SLOT)
-        //    {
-        //        return 0;
-        //    }
-        //    // Convert into an uint to remove warnings.
-        //    uint s = (uint)slot;
-        //
-        //    // Check slot.
-        //    if (s < _VisualSlots.size())
-        //    {
-        //        return (uint)_VisualSlots[s].size();
-        //    }
-        //    else
-        //    {
-        //        _client.GetLogger().Warn("CSheetManager::getNumItem : invalid slot %d.", slot);
-        //        return 0;
-        //    }
-        //}
-        //
-        ////-----------------------------------------------
-        //// getItem :
-        //// Get the real.
-        ////-----------------------------------------------
-        //public ItemSheet getItem(SLOTTYPE.EVisualSlot slot, uint index)
+        /// <summary>
+        /// From an item name and a slot, get its item, or -1 if not found
+        /// </summary>
+        public int GetVSIndex(string itemName, VisualSlot slot)
+        {
+            //    SheetId si = new SheetId();
+            //
+            //    if (!si.buildSheetId(itemName))
+            //    {
+            //        _client.GetLogger().Warn("<CSheetManager::getVSIndex> : cannot build id from item %s for the slot %d.", itemName, slot);
+            //        return -1;
+            //    }
+            //
+            //    EntitySheetMap.iterator it = _EntitySheetContainer.find(si);
+            //
+            //    if (it == _EntitySheetContainer.end())
+            //    {
+            //        _client.GetLogger().Warn("<CSheetManager::getVSIndex> : cannot find %s for the slot %d.", itemName, slot);
+            //        return -1;
+            //    }
+            //    if (it.second.EntitySheet == 0 || it.second.EntitySheet.type() != EntitySheet.ITEM)
+            //    {
+            //        _client.GetLogger().Warn("<CSheetManager::getVSIndex> : %s is not an item for the slot %d.", itemName, slot);
+            //        return -1;
+            //    }
+            //
+            //    ItemSheet @is = (ItemSheet)it.second.EntitySheet;
+            //
+            //    VisualSlotItemArray ia = getVSItems(@is);
+            //    if (ia == null)
+            //    {
+            //        _client.GetLogger().Warn("<CSheetManager::getVSIndex> : no items for the slot %d. while looking for %s", slot, itemName);
+            //        return -1;
+            //    }
+            //
+            //    VisualSlotItemArray.const_iterator first = new VisualSlotItemArray.const_iterator(ia.begin());
+            //    VisualSlotItemArray.const_iterator last = new VisualSlotItemArray.const_iterator(ia.end());
+            //
+            //    for (; first != last; ++first)
+            //    {
+            //        if (first.first == slot)
+            //        {
+            //            return first.second;
+            //        }
+            //    }
+            //
+            //    _client.GetLogger().Warn("<CSheetManager::getVSIndex> : cannot find %s for the slot %d.", itemName, slot);
+            return -1;
+        }
+
+        /// <summary>
+        /// Get a sheet from its number
+        /// </summary>
+        /// <param name="num">sheet number</param>
+        /// <returns>pointer on the sheet according to the param or 0 if any pb</returns>
+        public EntitySheet Get(SheetId num)
+        {
+            //    EntitySheetMap.iterator it = _EntitySheetContainer.find(num);
+            //    if (it != _EntitySheetContainer.end())
+            //    {
+            //        return it.second.EntitySheet;
+            //    }
+            //    else
+            //    {
+            return null;
+            //    }
+        } // get //
+
+        /// <summary>
+        /// Get the number of available items for the given visual slot
+        /// </summary>
+        public uint GetNumItem(VisualSlot slot)
+        {
+            //    // The slot is not a visible one.
+            //    if (slot == SLOTTYPE.HIDDEN_SLOT)
+            //    {
+            //        return 0;
+            //    }
+            //    // Convert into an uint to remove warnings.
+            //    uint s = (uint)slot;
+            // 
+            //    // Check slot.
+            //    if (s < _VisualSlots.size())
+            //    {
+            //        return (uint)_VisualSlots[s].size();
+            //    }
+            //    else
+            //    {
+            //        _client.GetLogger().Warn("CSheetManager::getNumItem : invalid slot %d.", slot);
+            return 0;
+            //    }
+        }
+
+        //-----------------------------------------------
+        // getItem :
+        // Get the real.
+        //-----------------------------------------------
+        //public ItemSheet getItem(VisualSlot slot, uint index)
         //{
         //    // The slot is not a visible one.
         //    if (slot == SLOTTYPE.HIDDEN_SLOT)
@@ -488,90 +521,95 @@ namespace Client.Sheet
         //        _client.GetLogger().Warn("CSheetManager::getItem : invalid slot %d.", slot);
         //        return null;
         //    }
-        //} // getItem //
-        //
-        //
-        ////-----------------------------------------------
-        //// loadTyp :
-        //// Get Some information from 'typ' files.
-        ////-----------------------------------------------
-        //public void loadTyp()
-        //{
-        //    // Read the Eyes Color 'typ'
-        //    NLMISC.CSmartPtr<NLGEORGES.UType> smartPtr = FormLoader.loadFormType("_creature_3d_eyes_color.typ");
-        //    if (smartPtr != null)
-        //    {
-        //        string maxStr = smartPtr.getMax();
-        //        fromString(maxStr, _NbEyesColor);
-        //
-        //        if (_NbEyesColor <= 0)
-        //        {
-        //            _client.GetLogger().Warn("CSheetManager::loadTyp: There no is Color available for the eyes.");
-        //        }
-        //    }
-        //    else
-        //    {
-        //        _client.GetLogger().Warn("CSheetManager::loadTyp: Cannot load the '_creature_3d_eyes_color.typ' file.");
-        //    }
-        //
-        //    // Read the Hair Color 'typ'
-        //    smartPtr = FormLoader.loadFormType("_creature_3d_hair_color.typ");
-        //    if (smartPtr != null)
-        //    {
-        //        string maxStr = smartPtr.getMax();
-        //        fromString(maxStr, _NbHairColor);
-        //        if (_NbHairColor <= 0)
-        //        {
-        //            _client.GetLogger().Warn("CSheetManager::loadTyp: There is no Color available for the hair.");
-        //        }
-        //    }
-        //    else
-        //    {
-        //        _client.GetLogger().Warn("CSheetManager::loadTyp: Cannot load the '_creature_3d_hair_color.typ' file.");
-        //    }
-        //} // initTyp //
-        //
-        //public void dumpVisualSlots()
-        //{
-        //    for (uint k = 0; k < _VisualSlots.size(); ++k)
-        //    {
-        //        ItemVector iv = _VisualSlots[k];
-        //        for (uint l = 0; l < iv.size(); ++l)
-        //        {
-        //            if (iv[l])
-        //            {
-        //                nlinfo("Slot %d, item %d = %s", (int)k, (int)l, iv[l].Id.toString().c_str());
-        //            }
-        //        }
-        //    }
         //}
-        //
-        //public void dumpVisualSlotsIndex()
-        //{
-        //    FILE vsIndexFile = nlfopen(getLogDirectory() + "vs_index.txt", "w");
-        //    if (vsIndexFile != null)
-        //    {
-        //        for (uint i = 0; i < SLOTTYPE.NB_SLOT; ++i)
-        //        {
-        //            fprintf(vsIndexFile, "VISUAL SLOT : %d\n", i);
-        //            ItemVector rVTmp = _VisualSlots[i];
-        //            for (uint j = 0; j < rVTmp.size(); ++j)
-        //            {
-        //                ItemSheet pIS = rVTmp[j];
-        //                if (pIS != null)
-        //                {
-        //                    fprintf(vsIndexFile, "%d : %s\n", j, pIS.Id.toString().c_str());
-        //                }
-        //                //nlSleep(100);
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        _client.GetLogger().Warn("<CSheetManager::loadAllSheet> Can't open file to dump VS index");
-        //    }
-        //
-        //    fclose(vsIndexFile);
-        //}
+
+
+        /// <summary>
+        /// Get Some information from 'typ' files.
+        /// </summary>
+        public void LoadTyp()
+        {
+            //    // Read the Eyes Color 'typ'
+            //    NLMISC.CSmartPtr<NLGEORGES.UType> smartPtr = FormLoader.loadFormType("_creature_3d_eyes_color.typ");
+            //    if (smartPtr != null)
+            //    {
+            //        string maxStr = smartPtr.getMax();
+            //        fromString(maxStr, _NbEyesColor);
+            //
+            //        if (_NbEyesColor <= 0)
+            //        {
+            //            _client.GetLogger().Warn("CSheetManager::loadTyp: There no is Color available for the eyes.");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        _client.GetLogger().Warn("CSheetManager::loadTyp: Cannot load the '_creature_3d_eyes_color.typ' file.");
+            //    }
+            //
+            //    // Read the Hair Color 'typ'
+            //    smartPtr = FormLoader.loadFormType("_creature_3d_hair_color.typ");
+            //    if (smartPtr != null)
+            //    {
+            //        string maxStr = smartPtr.getMax();
+            //        fromString(maxStr, _NbHairColor);
+            //        if (_NbHairColor <= 0)
+            //        {
+            //            _client.GetLogger().Warn("CSheetManager::loadTyp: There is no Color available for the hair.");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        _client.GetLogger().Warn("CSheetManager::loadTyp: Cannot load the '_creature_3d_hair_color.typ' file.");
+            //    }
+        } // initTyp //
+
+        /// <summary>
+        /// Dump the visual slots
+        /// </summary>
+        public void DumpVisualSlots()
+        {
+            //    for (uint k = 0; k < _VisualSlots.size(); ++k)
+            //    {
+            //        ItemVector iv = _VisualSlots[k];
+            //        for (uint l = 0; l < iv.size(); ++l)
+            //        {
+            //            if (iv[l])
+            //            {
+            //                nlinfo("Slot %d, item %d = %s", (int)k, (int)l, iv[l].Id.toString().c_str());
+            //            }
+            //        }
+            //    }
+        }
+
+        /// <summary>
+        /// Dump all visual slots indexes in a file
+        /// </summary>
+        public void DumpVisualSlotsIndex()
+        {
+            //    FILE vsIndexFile = nlfopen(getLogDirectory() + "vs_index.txt", "w");
+            //    if (vsIndexFile != null)
+            //    {
+            //        for (uint i = 0; i < SLOTTYPE.NB_SLOT; ++i)
+            //        {
+            //            fprintf(vsIndexFile, "VISUAL SLOT : %d\n", i);
+            //            ItemVector rVTmp = _VisualSlots[i];
+            //            for (uint j = 0; j < rVTmp.size(); ++j)
+            //            {
+            //                ItemSheet pIS = rVTmp[j];
+            //                if (pIS != null)
+            //                {
+            //                    fprintf(vsIndexFile, "%d : %s\n", j, pIS.Id.toString().c_str());
+            //                }
+            //                //nlSleep(100);
+            //            }
+            //        }
+            //    }
+            //    else
+            //    {
+            //        _client.GetLogger().Warn("<CSheetManager::loadAllSheet> Can't open file to dump VS index");
+            //    }
+            //
+            //    fclose(vsIndexFile);
+        }
     }
 }

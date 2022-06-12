@@ -428,10 +428,10 @@ namespace Client
             // TODO: Read the ligo primitive class file
 
             // Initialize Sheet IDs
-            SheetId.init(ClientConfig.UpdatePackedSheet, this);
+            SheetId.Init(ClientConfig.UpdatePackedSheet, this);
 
             // Initialize Packed Sheets
-            _sheetManager.setOutputDataPath("../../client/data");
+            _sheetManager.SetOutputDataPath("../../client/data");
             _sheetManager.Load(null, ClientConfig.UpdatePackedSheet, ClientConfig.NeedComputeVS, ClientConfig.DumpVSIndex);
 
             // TODO: Initialize bricks
