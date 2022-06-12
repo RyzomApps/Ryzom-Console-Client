@@ -30,9 +30,9 @@ jobs:
         run: dotnet publish Client\Client.csproj -r win-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true --self-contained true -p:SolutionDir=".."
 
       - name: Zip package
-        uses: papeloto/action-zip@v1
+        uses: vimtor/action-zip@v1
         with:
-          files: bin/Publish/netcoreapp3.1/*.exe
+          files: bin/Publish/netcoreapp3.1/
           dest: win-x64.zip
 
       - name: Upload
