@@ -76,7 +76,6 @@ namespace Client.Network
         /// </summary>
         public int GetPosInBit()
         {
-            // return (_BufPos - _Buffer.getPtr() + 1)*8 - _FreeBits;
             return (Pos + 1) * 8 - FreeBits;
         }
 

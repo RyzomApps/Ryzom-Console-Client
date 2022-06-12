@@ -1546,7 +1546,7 @@ namespace Client.Network
                     int i;
 
                     // block size is 32 (cycle) + 8 (number of actions)
-                    var bitSize = 32 + 8; 
+                    var bitSize = 32 + 8;
 
                     for (i = 0; i < block.Actions.Count; ++i)
                     {
@@ -1613,11 +1613,14 @@ namespace Client.Network
 
                 block.Serial(message);
 
-                // Prevent to send a message too big
-                //if (message.GetPosInBit() > 480  8) // easy version TODO: GetPosInBit does not return the right size (i guess)
+                // Prevent to send a message too big - MTU 480? - easy version
+                if (message.GetPosInBit() > 480 * 8)
+                {
+                    // TODO: i guess GetPosInBit does not return the right size - leads to disconnections
+                    _client.GetLogger().Debug($"CNET: message size={message.GetPosInBit() / 8d:0}");
 
-                // TODO fix workaround: send only 1 block at a time (to not get disconnected)
-                break;
+                    break;
+                }
             }
 
             _client.GetLogger().Debug($"CNET: send normal message Packet={_currentSendNumber} Ack={_lastReceivedAck}");
@@ -1775,7 +1778,7 @@ namespace Client.Network
             PropertyChange propertyChange;
             var slot = VisualPropertyNodeClient.SlotContext.Slot;
 
-            // \todo BEN this is temp, put it somewhere in database
+            // todo: BEN this is temp, put it somewhere in database
             if (propIndex == (byte)PropertyType.TargetList)
             {
                 byte listSize = 0;
@@ -2000,13 +2003,14 @@ namespace Client.Network
             ActionFactory.Remove(ac);
         }
 
-
         public void PushTarget(in byte slot, TargettingType targetOrPickup)
         {
             ActionTargetSlot ats = (ActionTargetSlot)ActionFactory.Create(Constants.InvalidSlot, ActionCode.ActionTargetSlotCode);
             Debug.Assert(ats != null);
             ats.Slot = slot;
-            switch (targetOrPickup) // ensure the value is good for the FE
+
+            // ensure the value is good for the FE
+            switch (targetOrPickup) 
             {
                 case TargettingType.None:
                     ats.TargetOrPickup = 0;

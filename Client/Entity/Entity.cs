@@ -442,7 +442,7 @@ namespace Client.Entity
         {
             //// Encode HP to 7 bits
             //barInfo.Score[SCORES::hit_points]
-            var hitPoints = (byte)((prop & 0x7ff) * 127 / 1023);
+            var hitPoints = (sbyte)((prop & 0x7ff) * 127 / 1023);
             //// NB: barInfo are sint8, but no problem, since anything following is 7 bits.
             //barInfo.Score[SCORES::stamina]
             var stamina = (byte)((prop >> 11) & 0x7f);

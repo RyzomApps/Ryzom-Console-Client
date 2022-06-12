@@ -759,7 +759,7 @@ namespace Client.Plugins
         /// <summary>
         /// called when an entity health, sap, stamina or focus value changes
         /// </summary>
-        public void OnEntityUpdateBars(uint gameCycle, long prop, byte slot, byte hitPoints, byte stamina, byte sap, byte focus)
+        public void OnEntityUpdateBars(uint gameCycle, long prop, byte slot, sbyte hitPoints, byte stamina, byte sap, byte focus)
         {
             DispatchListenerEvent(listener => listener.OnEntityUpdateBars(gameCycle, prop, slot, hitPoints, stamina, sap, focus));
         }

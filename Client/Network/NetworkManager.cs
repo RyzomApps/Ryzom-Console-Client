@@ -1371,7 +1371,8 @@ namespace Client.Network
                 // read delta
                 if (_databaseManager == null) return;
 
-                _databaseManager.ReadDelta(serverTick, impulse, Constants.CdbPlayer); // unlike on the server, here there is only one unified CCDBSynchronized object
+                // unlike on the server, here there is only one unified CCDBSynchronized object
+                _databaseManager.ReadDelta(serverTick, impulse, Constants.CdbPlayer); 
 
                 _client.Plugins.OnDatabaseUpdatePlayer(serverTick);
             }
@@ -1399,7 +1400,6 @@ namespace Client.Network
             //    nlerror("Handshake: itemSlotVersion mismatch (S:%hu C:%hu)", itemSlotVersion, INVENTORIES::CItemSlot::getVersion());
         }
 
-
         /// <summary>
         /// sendMsgToServer Helper
         /// selects the message by its name and pushes it to the connection
@@ -1417,6 +1417,7 @@ namespace Client.Network
                 _client.GetLogger().Warn($"Unknown message named '{sMsg}'.");
             }
         }
+
         /// <summary>
         /// Buffers a target action
         /// </summary>
