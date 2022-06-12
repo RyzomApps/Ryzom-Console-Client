@@ -29,7 +29,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// clear the decoder for a new incoming packet
+        /// Clear the decoder for a new incoming packet
         /// </summary>
         public static void Reset()
         {
@@ -40,7 +40,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// unpacking actions from a stream and calling the corresponding impusions
+        /// Unpacking actions from a stream and calling the corresponding impusions
         /// </summary>
         public static void Decode(BitMemoryStream inbox, int receivedPacket, int receivedAck, int nextSentPacket,
             List<ActionBase> actions)
@@ -102,12 +102,12 @@ namespace Client.Network
                     {
                         actions.Add(action);
                         RyzomClient.GetInstance().GetLogger()?.Debug(
-                            $"CLIMPD: received new impulsion {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
+                            $"ImpulseDecoder: received new impulsion {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                     }
                     else
                     {
                         RyzomClient.GetInstance().GetLogger()?.Warn(
-                            $"CLIMPD: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
+                            $"ImpulseDecoder: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                         ActionFactory.Remove(action);
                     }
                 }
@@ -115,7 +115,7 @@ namespace Client.Network
                 if (checkOnce)
                 {
                     RyzomClient.GetInstance().GetLogger()?.Debug(
-                        $"CLIMPD: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
+                        $"ImpulseDecoder: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
                 }
             }
         }

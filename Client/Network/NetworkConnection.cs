@@ -1544,7 +1544,9 @@ namespace Client.Network
 
                     // check last block isn't bigger than maximum allowed
                     int i;
-                    var bitSize = 32 + 8; // block size is 32 (cycle) + 8 (number of actions
+
+                    // block size is 32 (cycle) + 8 (number of actions)
+                    var bitSize = 32 + 8; 
 
                     for (i = 0; i < block.Actions.Count; ++i)
                     {
@@ -1556,8 +1558,21 @@ namespace Client.Network
 
                     if (i < block.Actions.Count)
                     {
-                        _client.GetLogger().Error("Send: ActionBlock size is bigger than 480 bit. Thats not implemented yet.");
-                        //throw new NotImplementedException
+                        // last block is bigger than allowed
+                        _client.GetLogger().Debug($"Postponing {block.Actions.Count - i} actions exceeding max size in block {cycle} (block size is {bitSize} bits long)");
+
+                        // allocate a new block
+                        ActionBlock newBlock = new ActionBlock();
+                        _actions.Add(newBlock);
+
+                        // reset block stamp
+                        newBlock.Cycle = 0;
+
+                        // copy remaining actions in new block
+                        newBlock.Actions.AddRange(block.Actions.GetRange(i, block.Actions.Count - i));
+
+                        // remove remaining actions of block
+                        block.Actions.RemoveRange(i, block.Actions.Count - i);
                     }
                 }
 
