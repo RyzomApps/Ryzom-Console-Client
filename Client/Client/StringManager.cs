@@ -14,6 +14,7 @@ using API.Client;
 using API.Entity;
 using API.Network;
 using Client.Network;
+using Client.Sheet;
 using static Client.Client.DynamicStringInfo;
 
 namespace Client.Client
@@ -774,6 +775,70 @@ namespace Client.Client
                     StringsCallbacks.Add(stringId, pcallback);
                 }
             }
+        }
+
+        public string GetSPhraseLocalizedName(SheetId id)
+        {
+            return GetSpecialWord(id.ToString());
+        }
+
+        public string GetSpecialWord(string label, bool women = false)
+        {
+            //if (label.empty())
+            //{
+            //    static string emptyString = new static();
+            //    return emptyString.c_str();
+            //}
+            //
+            //if (label[0] == '#')
+            //{
+            //    return getLocalizedName(label.substr(1, label.size() - 1));
+            //}
+
+            // avoid case problems
+            var lwrLabel = label.ToLower();
+
+            //if (_SpecItem_MemoryCompressed)
+            //{
+            //    CItemLight tmp = new CItemLight();
+            //    tmp.Label = (string)lwrLabel.c_str();
+            //    List<CItemLight>.Enumerator it = lower_bound(_SpecItems.begin(), _SpecItems.end(), tmp, CItemLightComp());
+            //
+            //    if (it != _SpecItems.end())
+            //    {
+            //        if (string.Compare(it.Label, lwrLabel.c_str()) == 0)
+            //        {
+            //            if (UseFemaleTitles && women)
+            //            {
+            //                if (!it.WomenName[0])
+            //                {
+            //                    return it.WomenName;
+            //                }
+            //            }
+            //            return it.Name;
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    SortedDictionary<string,CItem>.Enumerator it = _SpecItem_TempMap.find(lwrLabel);
+            //
+            //    if (it != _SpecItem_TempMap.end())
+            //    {
+            //        if (UseFemaleTitles && women)
+            //        {
+            //            if (!it.second.WomenName.empty())
+            //            {
+            //                return it.second.WomenName.c_str();
+            //            }
+            //        }
+            //
+            //        return it.second.Name.c_str();
+            //    }
+            //}
+
+            var badString = "<NotExist:" + lwrLabel + ">";
+            return badString;
         }
     }
 }

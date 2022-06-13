@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////
 
 using Client.Network;
+using Client.Sheet;
 
 namespace Client.Phrase
 {
@@ -18,14 +19,18 @@ namespace Client.Phrase
     {
         internal PhraseCom Phrase;
         internal ushort KnownSlot;
-        internal uint PhraseSheetId;
+        internal SheetId PhraseSheetId;
 
         public static PhraseSlot Serial(BitMemoryStream impulse)
         {
             var ret = new PhraseSlot { Phrase = PhraseCom.Serial(impulse) };
 
             impulse.Serial(ref ret.KnownSlot);
-            impulse.Serial(ref ret.PhraseSheetId);
+
+            uint sheetid = 0;
+            impulse.Serial(ref sheetid);
+
+            ret.PhraseSheetId = new SheetId(sheetid);
 
             return ret;
         }

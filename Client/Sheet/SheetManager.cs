@@ -79,7 +79,7 @@ namespace Client.Sheet
         // Associate sheet to visual slots
         //protected SortedDictionary<ItemSheet, List<Tuple<EVisualSlot, uint>>> _SheetToVS = new SortedDictionary<ItemSheet, List<Tuple<EVisualSlot, uint>>>();
 
-        private SortedDictionary<string, ushort> _computeVS_ProcessedItem = new SortedDictionary<string, ushort>();
+        private SortedDictionary<string, ushort> _computeVsProcessedItem = new SortedDictionary<string, ushort>();
 
         /// <summary>
         /// Constructor

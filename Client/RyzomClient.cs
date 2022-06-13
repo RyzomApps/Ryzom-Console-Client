@@ -6,12 +6,6 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Net.Sockets;
-using System.Threading;
 using API;
 using API.Chat;
 using API.Client;
@@ -34,6 +28,15 @@ using Client.Network;
 using Client.Plugins;
 using Client.Property;
 using Client.Sheet;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Net.Sockets;
+using System.Threading;
+using Client.Brick;
+using Client.Phrase;
+using Client.Skill;
 
 namespace Client
 {
@@ -51,6 +54,9 @@ namespace Client
         private readonly DatabaseManager _databaseManager;
         private readonly InterfaceManager _interfaceManager;
         private readonly SheetManager _sheetManager;
+        private readonly PhraseManager _phraseManager;
+        private readonly SkillManager _skillManager;
+        private readonly BrickManager _brickManager;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -170,6 +176,8 @@ namespace Client
 
         public IPluginManager GetPluginManager() { return Plugins; }
 
+        public PhraseManager GetPhraseManager() { return _phraseManager; }
+
         #endregion
 
         #region Console Client - Initialization
@@ -187,11 +195,15 @@ namespace Client
 
             if (ClientConfig.UseDatabase)
                 _databaseManager = new DatabaseManager(this);
-            _networkConnection = new NetworkConnection(this, _databaseManager);
+
             _stringManager = new StringManager(this);
-            _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager);
-            _interfaceManager = new InterfaceManager();
             _sheetManager = new SheetManager(this);
+            _skillManager = new SkillManager();
+            _brickManager = new BrickManager();
+            _phraseManager = new PhraseManager(_sheetManager, _stringManager, _interfaceManager, _databaseManager);
+            _interfaceManager = new InterfaceManager(_skillManager, _brickManager, _phraseManager);
+            _networkConnection = new NetworkConnection(this, _databaseManager);
+            _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager, _phraseManager);
 
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");
@@ -808,6 +820,10 @@ namespace Client
 
                 // Get the Connection State.
                 var connectionState = _networkConnection.ConnectionState;
+
+                // Update Phrase Manager
+                _phraseManager.UpdateEquipInvalidation(_networkManager.GetCurrentServerTick());
+                _phraseManager.UpdateAllActionRegen();
 
                 // loop while connected
                 if (connectionState != ConnectionState.Disconnect && connectionState != ConnectionState.Quit) continue;

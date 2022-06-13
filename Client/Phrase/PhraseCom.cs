@@ -24,6 +24,8 @@ namespace Client.Phrase
 
         public List<SheetId> Bricks = new List<SheetId>();
 
+        public static PhraseCom EmptyPhrase { get; internal set; }
+
         public static PhraseCom Serial(BitMemoryStream impulse)
         {
             PhraseCom ret = new PhraseCom();

@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
 using System.Threading;
+using Client.Sheet;
 
 namespace Client.Network
 {
@@ -61,8 +62,7 @@ namespace Client.Network
         private readonly RyzomClient _client;
         private readonly GenericMessageHeaderManager _messageHeaderManager;
         private readonly ChatManager _chatManager;
-
-        //private readonly PhraseManager _phraseManager = new PhraseManager();
+        private readonly PhraseManager _phraseManager;
 
         /// <summary>
         /// was the inital server season received
@@ -96,7 +96,7 @@ namespace Client.Network
         /// <summary>
         /// Constructor
         /// </summary>
-        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, DatabaseManager databaseManager)
+        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, DatabaseManager databaseManager, PhraseManager phraseManager)
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
             _chatManager = new ChatManager(this, stringManager, databaseManager);
@@ -105,6 +105,7 @@ namespace Client.Network
             _networkConnection = networkConnection;
             _stringManager = stringManager;
             _databaseManager = databaseManager;
+            _phraseManager = phraseManager;
             _client = client;
         }
 
@@ -321,7 +322,7 @@ namespace Client.Network
 
             _messageHeaderManager.SetCallback("COMMAND:REMOTE_ADMIN", ImpulseRemoteAdmin);
 
-            _messageHeaderManager.SetCallback("PHRASE:DOWNLOAD", ImpulsePhraseDownLoad);
+            _messageHeaderManager.SetCallback("PHRASE:DOWNLOAD", ImpulsePhraseDownload);
             _messageHeaderManager.SetCallback("PHRASE:CONFIRM_BUY", ImpulsePhraseConfirmBuy);
             _messageHeaderManager.SetCallback("PHRASE:EXEC_CYCLIC_ACK", ImpulsePhraseAckExecuteCyclic);
             _messageHeaderManager.SetCallback("PHRASE:EXEC_NEXT_ACK", ImpulsePhraseAckExecuteNext);
@@ -587,68 +588,64 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// TODO server sends the phrases
+        /// server upload the phrases
         /// </summary>
-        private void ImpulsePhraseDownLoad(BitMemoryStream impulse)
+        private void ImpulsePhraseDownload(BitMemoryStream impulse)
         {
-            //return;
+            // Read Known Phrases
+            // workaround for: impulse.serialCont(phrases);
+            var len = 0;
+            impulse.Serial(ref len);
 
-            //// Read Known Phrases
-            ////impulse.SerialCont(phrases);
+            var phrases = new List<PhraseSlot>(len);
 
-            //int len = 0;
-            //impulse.Serial(ref len);
-            //var phrases = new List<PhraseSlot>(len);
+            for (var i = 0; i < len; i++)
+            {
+                var value = PhraseSlot.Serial(impulse);
+                phrases.Add(value);
+            }
 
-            //for (var i = 0; i < len; i++)
-            //{
-            //    var value = PhraseSlot.Serial(impulse);
-            //    phrases.Add(value);
-            //}
+            foreach (var phrase in phrases)
+            {
+                if (phrase.PhraseSheetId != SheetId.Unknown)
+                {
+                    var phraseCom = new PhraseCom();
+                    _phraseManager.BuildPhraseFromSheet(ref phraseCom, phrase.PhraseSheetId.AsInt());
+                    _phraseManager.SetPhraseNoUpdateDB(phrase.KnownSlot, phraseCom);
+                }
+                else
+                {
+                    _phraseManager.SetPhraseNoUpdateDB(phrase.KnownSlot, phrase.Phrase);
+                }
+            }
 
-            ////PhraseManager pPM = PhraseManager.getInstance();
+            // must update the DB (NB: if initInGameDone) after all phrase set.
+            _phraseManager.UpdateBookDB();
 
-            //for (var i = 0; i < phrases.Count; ++i)
-            //{
-            //    //    if (phrases[i].PhraseSheetId != CSheetId.Unknown)
-            //    //    {
-            //    //        PhraseCom phraseCom = new PhraseCom();
-            //    //        _phraseManager.buildPhraseFromSheet(phraseCom, phrases[i].PhraseSheetId.AsInt());
-            //    //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phraseCom);
-            //    //    }
-            //    //    else
-            //    //    {
-            //    //        _phraseManager.setPhraseNoUpdateDB(phrases[i].KnownSlot, phrases[i].Phrase);
-            //    //    }
-            //}
+            // Then Read Memorized Phrases
+            // workaround for: impulse.SerialCont(memorizedPhrases);
+            len = 0;
+            impulse.Serial(ref len);
+            var memorizedPhrases = new List<PhraseMemorySlot>(len);
 
-            //// must update the DB (NB: if initInGameDone) after all phrase set.
-            ////pPM.updateBookDB();
+            for (var i = 0; i < len; i++)
+            {
+                var value = PhraseMemorySlot.Serial(impulse);
+                memorizedPhrases.Add(value);
+            }
 
-            //// Then Read Memorized Phrases
-            ////impulse.SerialCont(memorizedPhrases);
-            //len = 0;
-            //impulse.Serial(ref len);
-            //var memorizedPhrases = new List<PhraseMemorySlot>(len);
+            foreach (var phrase in memorizedPhrases)
+            {
+                _phraseManager.MemorizePhrase(phrase.MemoryLineId, phrase.MemorySlotId, phrase.PhraseId);
+            }
 
-            //for (var i = 0; i < len; i++)
-            //{
-            //    var value = PhraseMemorySlot.Serial(impulse);
-            //    memorizedPhrases.Add(value);
-            //}
+            // OK.
+            _client.SabrinaPhraseBookLoaded = true;
 
-            //for (var i = 0; i < memorizedPhrases.Count; ++i)
-            //{
-            //    //    pPM.memorizePhrase(memorizedPhrases[i].MemoryLineId, memorizedPhrases[i].MemorySlotId, memorizedPhrases[i].PhraseId);
-            //}
+            // update gray state, if game inited.
+            _phraseManager.UpdateMemoryBar();
 
-            //// OK.
-            //_client.SabrinaPhraseBookLoaded = true;
-
-            //// update gray state, if game inited.
-            ////pPM.updateMemoryBar();
-
-            //_client.Plugins.OnPhraseDownLoad(phrases, memorizedPhrases);
+            _client.Plugins.OnPhraseDownLoad(phrases, memorizedPhrases);
         }
 
         private void ImpulseRemoteAdmin(BitMemoryStream impulse)
@@ -668,7 +665,7 @@ namespace Client.Network
         {
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            bool useFemaleTitles = false;
+            var useFemaleTitles = false;
             impulse.Serial(ref useFemaleTitles);
 
             _client.Plugins.OnGuildUseFemaleTitles(useFemaleTitles);

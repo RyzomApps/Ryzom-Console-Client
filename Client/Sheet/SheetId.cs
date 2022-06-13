@@ -6,7 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System.Diagnostics;
 using API;
+using Client.Network;
 
 namespace Client.Sheet
 {
@@ -20,7 +22,6 @@ namespace Client.Sheet
     /// This class is case unsensitive. It means that you can call build() and 
     /// buildIdVector() with string with anycase, it'll work.
     /// </remarks>
-    // TODO: make SheetId non static
     public class SheetId
     {
         static bool _initialised = false;
@@ -45,6 +46,32 @@ namespace Client.Sheet
         public SheetId(uint sheetRef)
         {
             _id = sheetRef;
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+
+        public SheetId(in string sheetName)
+        {
+            if (!BuildSheetId(sheetName, sheetName.Length))
+            {
+                if (string.IsNullOrEmpty(sheetName))
+                {
+                    //_client.GetLogger().Warn("SHEETID: Try to create an CSheetId with empty name. TODO: check why.");
+                }
+                else
+                {
+                    //_client.GetLogger().Warn("SHEETID: The sheet '%s' is not in sheet_id.bin, setting it to Unknown", sheetName);
+                }
+
+                //TODO: this = Unknown;
+            }
+        }
+
+        private bool BuildSheetId(in string sheetName, in int sheetNameLength)
+        {
+            return false;
         }
 
         /// <summary>
@@ -83,6 +110,16 @@ namespace Client.Sheet
         private static void LoadSheetId()
         {
 
+        }
+
+        /// <summary>
+        /// Serial
+        /// </summary>
+        public void Serial(BitMemoryStream f)
+        {
+            Debug.Assert(!_dontHaveSheetKnowledge);
+    
+            f.Serial(ref _id);
         }
     }
 }

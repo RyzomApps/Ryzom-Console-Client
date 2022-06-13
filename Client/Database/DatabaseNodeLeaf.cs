@@ -160,6 +160,15 @@ namespace Client.Database
             }
         }
 
+        /// <summary>
+        /// Set the value of the property
+        /// </summary>
+        internal void SetValue32(int prop)
+        {
+            var newVal = (long)prop;
+            SetValue64(newVal);
+        }
+
         internal override DatabaseNodeBase GetNode(ushort idx)
         {
             throw new NotImplementedException();

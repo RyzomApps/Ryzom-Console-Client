@@ -109,10 +109,7 @@ namespace Client.Sheet
         /// <summary>
         /// Return the type of the sheet
         /// </summary>
-        public TType Type()
-        {
-            return _type;
-        }
+        public TType Type => _type;
 
         // TType enum/string conversion
         //	static string typeToString(TType e);

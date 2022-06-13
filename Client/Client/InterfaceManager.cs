@@ -6,7 +6,10 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System.Diagnostics;
+using Client.Brick;
 using Client.Phrase;
+using Client.Skill;
 
 namespace Client.Client
 {
@@ -16,18 +19,20 @@ namespace Client.Client
     /// <author>Matthieu 'TrapII' Besson</author>
     /// <author>Nevrax France</author>
     /// <date>2002</date>
-    internal class InterfaceManager
+    public class InterfaceManager
     {
+        private readonly SkillManager _skillManager;
+        private readonly BrickManager _brickManager;
         private readonly PhraseManager _phraseManager;
-
-        public PhraseManager GetPhraseManager => _phraseManager;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public InterfaceManager()
+        public InterfaceManager(SkillManager skillManager, BrickManager brickManager, PhraseManager phraseManager)
         {
-            _phraseManager = new PhraseManager();
+            _skillManager = skillManager;
+            _brickManager = brickManager;
+            _phraseManager = phraseManager;
         }
 
         /// <summary>
@@ -36,9 +41,11 @@ namespace Client.Client
         public void InitInGame()
         {
             // Skill Manager Init
-
-
+            _skillManager.InitInGame();
+            
             // SBrick Manager Init
+            _brickManager.InitInGame();
+            _brickManager.InitTitles();
 
             // SPhrase Manager DB Init (BEFORE loading). Must be init AFTER skill and brick init
             _phraseManager.InitInGame();
@@ -46,6 +53,8 @@ namespace Client.Client
 
         public void CreateLocalBranch(string fileName)
         {
+            Debug.Print("TODO");
+
             //try
             //{
             //    CIFile file = new CIFile();
