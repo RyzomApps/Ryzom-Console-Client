@@ -611,16 +611,16 @@ namespace Client.Network
                 {
                     var phraseCom = new PhraseCom();
                     _phraseManager.BuildPhraseFromSheet(ref phraseCom, phrase.PhraseSheetId.AsInt());
-                    _phraseManager.SetPhraseNoUpdateDB(phrase.KnownSlot, phraseCom);
+                    _phraseManager.SetPhraseNoUpdateDb(phrase.KnownSlot, phraseCom);
                 }
                 else
                 {
-                    _phraseManager.SetPhraseNoUpdateDB(phrase.KnownSlot, phrase.Phrase);
+                    _phraseManager.SetPhraseNoUpdateDb(phrase.KnownSlot, phrase.Phrase);
                 }
             }
 
             // must update the DB (NB: if initInGameDone) after all phrase set.
-            _phraseManager.UpdateBookDB();
+            _phraseManager.UpdateBookDb();
 
             // Then Read Memorized Phrases
             // workaround for: impulse.SerialCont(memorizedPhrases);
@@ -1369,7 +1369,7 @@ namespace Client.Network
                 if (_databaseManager == null) return;
 
                 // unlike on the server, here there is only one unified CCDBSynchronized object
-                _databaseManager.ReadDelta(serverTick, impulse, Constants.CdbPlayer); 
+                _databaseManager.ReadDelta(serverTick, impulse, Constants.CdbPlayer);
 
                 _client.Plugins.OnDatabaseUpdatePlayer(serverTick);
             }

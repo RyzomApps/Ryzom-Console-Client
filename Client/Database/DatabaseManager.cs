@@ -81,7 +81,7 @@ namespace Client.Database
         ///  Returns the root branch of the database.
         /// </summary>
         /// <returns></returns>
-        public static DatabaseNodeBranch GetDb()
+        public DatabaseNodeBranch GetDb()
         {
             return _database ??= new DatabaseNodeBranch("ROOT");
         }
@@ -90,6 +90,7 @@ namespace Client.Database
         /// Build the structure of the database from a file
         /// </summary>
         /// <param name="fileName">is the name of file containing the database structure</param>
+        /// <param name="progressCallBack"></param>
         public void Init(string fileName, Action progressCallBack)
         {
             try
@@ -216,7 +217,7 @@ namespace Client.Database
         /// </summary>
         /// <param name="name">name of the data leaf node we are querying.</param>
         /// <param name="create">when true if a node cannot be found it is created.</param>
-        public DatabaseNodeLeaf GetDbProp(string name, bool create = false)
+        public DatabaseNodeLeaf GetDbProp(string name, bool create = true)
         {
             return GetDbLeaf(name, create);
         }

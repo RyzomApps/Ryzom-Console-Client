@@ -6,10 +6,18 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace Client.Sheet
+namespace Client.Phrase
 {
-    public class SheetManagerEntry
+    public class MemoryLine
     {
-        public EntitySheet EntitySheet { get; internal set; }
+        public MemorySlot[] Slot = new MemorySlot[PhraseManager.PHRASE_MAX_MEMORY_SLOT];
+
+        public MemoryLine()
+        {
+            for (var i = 0; i < PhraseManager.PHRASE_MAX_MEMORY_SLOT; i++)
+            {
+                Slot[i] = new MemorySlot();
+            }
+        }
     }
 }

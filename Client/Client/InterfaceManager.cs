@@ -6,8 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using System.Diagnostics;
+using System.Xml;
 using Client.Brick;
+using Client.Database;
 using Client.Phrase;
 using Client.Skill;
 
@@ -21,6 +24,8 @@ namespace Client.Client
     /// <date>2002</date>
     public class InterfaceManager
     {
+        private readonly RyzomClient _client;
+        private readonly DatabaseManager _databaseManager;
         private readonly SkillManager _skillManager;
         private readonly BrickManager _brickManager;
         private readonly PhraseManager _phraseManager;
@@ -28,8 +33,10 @@ namespace Client.Client
         /// <summary>
         /// Constructor
         /// </summary>
-        public InterfaceManager(SkillManager skillManager, BrickManager brickManager, PhraseManager phraseManager)
+        public InterfaceManager(RyzomClient client, DatabaseManager databaseManager, SkillManager skillManager, BrickManager brickManager, PhraseManager phraseManager)
         {
+            _client = client;
+            _databaseManager = databaseManager;
             _skillManager = skillManager;
             _brickManager = brickManager;
             _phraseManager = phraseManager;
@@ -42,7 +49,7 @@ namespace Client.Client
         {
             // Skill Manager Init
             _skillManager.InitInGame();
-            
+
             // SBrick Manager Init
             _brickManager.InitInGame();
             _brickManager.InitTitles();
@@ -53,44 +60,40 @@ namespace Client.Client
 
         public void CreateLocalBranch(string fileName)
         {
-            Debug.Print("TODO");
+            try
+            {
+                // open xml file
+                var file = new XmlDocument();
 
-            //try
-            //{
-            //    CIFile file = new CIFile();
-            //
-            //    if (file.open(fileName))
-            //    {
-            //        // Init an xml stream
-            //        CIXml read = new CIXml();
-            //        read.init(file);
-            //
-            //        //Parse the parser output!!!
-            //        CCDBNodeBranch localNode = new CCDBNodeBranch("LOCAL");
-            //        localNode.init(read.getRootNode(), progressCallBack);
-            //        NLGUI.CDBManager.getInstance().getDB().attachChild(localNode, "LOCAL");
-            //
-            //        // Create the observers for auto-copy SERVER->LOCAL of inventory
-            //        ServerToLocalAutoCopyInventory.init("INVENTORY");
-            //
-            //        // Create the observers for auto-copy SERVER->LOCAL of exchange
-            //        ServerToLocalAutoCopyExchange.init("EXCHANGE");
-            //
-            //        // Create the observers for auto-copy SERVER->LOCAL of dm (animator) gift
-            //        ServerToLocalAutoCopyDMGift.init("DM_GIFT");
-            //
-            //        // Create the observers for auto-copy SERVER->LOCAL of context menu
-            //        ServerToLocalAutoCopyContextMenu.init("TARGET:CONTEXT_MENU");
-            //
-            //        // Create the observers for auto-copy SERVER->LOCAL of Skill Points
-            //        ServerToLocalAutoCopySkillPoints.init("USER");
-            //    }
-            //}
-            //catch (Exception e)
-            //{
-            //    // Output error
-            //    nlwarning("CFormLoader: Error while loading the form %s: %s", fileName, e.what());
-            //}
+                // Init an xml stream
+                file.Load(fileName);
+                file.Load(fileName);
+
+                //Parse the parser output!!!
+                var localNode = new DatabaseNodeBranch("LOCAL");
+                localNode.Init(file.DocumentElement, null);
+                _databaseManager.GetDb().AttachChild(localNode, "LOCAL");
+
+                //// Create the observers for auto-copy SERVER->LOCAL of inventory
+                //ServerToLocalAutoCopyInventory.init("INVENTORY");
+                //
+                //// Create the observers for auto-copy SERVER->LOCAL of exchange
+                //ServerToLocalAutoCopyExchange.init("EXCHANGE");
+                //
+                //// Create the observers for auto-copy SERVER->LOCAL of dm (animator) gift
+                //ServerToLocalAutoCopyDMGift.init("DM_GIFT");
+                //
+                //// Create the observers for auto-copy SERVER->LOCAL of context menu
+                //ServerToLocalAutoCopyContextMenu.init("TARGET:CONTEXT_MENU");
+                //
+                //// Create the observers for auto-copy SERVER->LOCAL of Skill Points
+                //ServerToLocalAutoCopySkillPoints.init("USER");
+            }
+            catch (Exception e)
+            {
+                // Output error
+                _client.GetLogger().Error($"InterfaceManager: Error while loading the form {fileName}: {e.Message}");
+            }
         }
     }
 }

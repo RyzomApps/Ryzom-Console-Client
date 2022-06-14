@@ -200,9 +200,9 @@ namespace Client
             _sheetManager = new SheetManager(this);
             _skillManager = new SkillManager();
             _brickManager = new BrickManager();
-            _phraseManager = new PhraseManager(_sheetManager, _stringManager, _interfaceManager, _databaseManager);
-            _interfaceManager = new InterfaceManager(_skillManager, _brickManager, _phraseManager);
             _networkConnection = new NetworkConnection(this, _databaseManager);
+            _phraseManager = new PhraseManager(_sheetManager, _stringManager, _interfaceManager, _databaseManager);
+            _interfaceManager = new InterfaceManager(this, _databaseManager, _skillManager, _brickManager, _phraseManager);
             _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager, _phraseManager);
 
             // create the data dir
@@ -216,6 +216,10 @@ namespace Client
 
             // copy database.xml from resources
             if (!File.Exists("./data/database.xml")) ResourceHelper.WriteResourceToFile("database", "./data/database.xml");
+
+            // copy local_database.xml from resources
+            if (!File.Exists("./data/local_database.xml")) ResourceHelper.WriteResourceToFile("local_database", "./data/local_database.xml");
+
 
             // Start the main client
             if (autoStart)
@@ -653,12 +657,12 @@ namespace Client
 
                 var textId = new TextId("SERVER");
 
-                if (DatabaseManager.GetDb().GetNode(textId, false) != null)
+                if (_databaseManager.GetDb().GetNode(textId, false) != null)
                 {
-                    DatabaseManager.GetDb().RemoveNode(textId);
+                    _databaseManager.GetDb().RemoveNode(textId);
                 }
 
-                DatabaseManager.GetDb().AttachChild(_databaseManager.GetNodePtr(), "SERVER");
+                _databaseManager.GetDb().AttachChild(_databaseManager.GetNodePtr(), "SERVER");
 
                 // Set the database
                 //_networkManager.SetDataBase(_databaseManager.GetNodePtr());
@@ -669,12 +673,12 @@ namespace Client
                 // Add the LOCAL branch
                 textId = new TextId("LOCAL");
 
-                if (DatabaseManager.GetDb().GetNode(textId, false) != null)
+                if (_databaseManager.GetDb().GetNode(textId, false) != null)
                 {
-                    DatabaseManager.GetDb().RemoveNode(textId);
+                    _databaseManager.GetDb().RemoveNode(textId);
                 }
 
-                _interfaceManager.CreateLocalBranch("local_database.xml");
+                _interfaceManager.CreateLocalBranch(@"data\local_database.xml");
             }
 
             // Initialize Sound System

@@ -6,10 +6,17 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace Client.Sheet
+namespace Client.Phrase
 {
-    public class SheetManagerEntry
+    internal class PhraseClient
     {
-        public EntitySheet EntitySheet { get; internal set; }
+        public int Version;
+        public bool Lock;
+
+        public PhraseClient()
+        {
+            Version = 0;
+            Lock = false;
+        }
     }
 }

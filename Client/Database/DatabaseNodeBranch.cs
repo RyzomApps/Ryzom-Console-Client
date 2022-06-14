@@ -35,7 +35,9 @@ namespace Client.Database
 
         DatabaseNodeBase _predictDatabaseNode;
 
-        /// <summary>number of bits required to stock my children's ids</summary>
+        /// <summary>
+        /// Number of bits required to stock my children's ids
+        /// </summary>
         private byte _idBits;
 
         private bool _sorted;
@@ -54,7 +56,6 @@ namespace Client.Database
         /// <summary>
         /// Build the structure of the database from a file
         /// </summary>
-        /// <param id="f">is the stream</param>
         internal override void Init(XmlElement node, Action progressCallBack, bool mapBanks = false, BankHandler bankHandler = null)
         {
             _sorted = false;
@@ -176,7 +177,8 @@ namespace Client.Database
         /// <summary>
         /// Get a database node. Create it if it does not exist yet
         /// </summary>
-        /// <param id="id">the TextId identifying the database node</param>
+        /// <param name="id">the TextId identifying the database node</param>
+        /// <param name="bCreate">true, if the node should be created</param>
         internal override DatabaseNodeBase GetNode(TextId id, bool bCreate = true)
         {
             // lookup next element from textid in my index => idx
@@ -191,10 +193,12 @@ namespace Client.Database
             {
                 // Yoyo: must not be SERVER or LOCAL, cause definied through xml.
                 // This may cause some important crash error
-                //nlassert(!id.empty());
-                //nlassert(id.getElement(0)!="SERVER");
-                //nlassert(id.getElement(0)!="LOCAL");
+                Debug.Assert(id != null);
+                Debug.Assert(id.GetElement(0) != "SERVER");
+                //Debug.Assert(id.GetElement(0) != "LOCAL");
+
                 DatabaseNodeBase newNode;
+
                 if (id.GetCurrentIndex() == id.Size())
                 {
                     newNode = new DatabaseNodeLeaf(str);
