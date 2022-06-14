@@ -26,10 +26,14 @@ namespace Client.Commands
 
             var dumpName = args.Length == 1 ? args[0] : "default";
 
+            // TODO: Write information to start as the version (RecordVersion, currentPos)
+
             // Write the DB
             ryzomClient.GetDatabaseManager().Write(dumpName + "_db.rec");
 
-            // TODO: Other dump files
+            // TODO: Dump Client CFG.
+
+            // TODO: Dump entities.
 
             return "";
         }

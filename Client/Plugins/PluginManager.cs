@@ -615,8 +615,7 @@ namespace Client.Plugins
         /// </summary>
         public void OnPhraseDownLoad(List<PhraseSlot> phrases, List<PhraseMemorySlot> memorizedPhrases)
         {
-            // TODO: OnPhraseDownLoad
-            //DispatchAutomatonEvent(automaton => automaton.OnPhraseDownLoad(phrases, memorizedPhrases));
+            DispatchListenerEvent(listener => listener.OnPhraseDownLoad(phrases, memorizedPhrases));
         }
 
         /// <summary>

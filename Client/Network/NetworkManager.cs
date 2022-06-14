@@ -634,6 +634,7 @@ namespace Client.Network
                 var value = PhraseMemorySlot.Serial(impulse);
                 memorizedPhrases.Add(value);
             }
+            // end workaround
 
             foreach (var phrase in memorizedPhrases)
             {
@@ -1027,7 +1028,11 @@ namespace Client.Network
 
         private void ImpulseDynStringInChatGroup(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            int type = 0;
+            impulse.Serial(ref type);
+            _chatManager.ProcessChatStringWithNoSender(impulse, (ChatGroupType)type, _client);
         }
 
         private void ImpulseDynString(BitMemoryStream impulse)
