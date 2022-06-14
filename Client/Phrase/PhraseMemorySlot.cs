@@ -16,6 +16,9 @@ namespace Client.Phrase
         internal byte MemorySlotId;
         internal ushort PhraseId;
 
+        /// <summary>
+        /// This serial is made for server->client com.
+        /// </summary>
         public static PhraseMemorySlot Serial(BitMemoryStream impulse)
         {
             var ret = new PhraseMemorySlot();

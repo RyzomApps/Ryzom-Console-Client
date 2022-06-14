@@ -35,7 +35,7 @@ namespace Client.Phrase
                 throw new NotImplementedException();
             }
 
-            impulse.Serial(ref ret.Name);
+            impulse.Serial(ref ret.Name, false);
 
             // Get the type of .sbrick
             if (ret._serialSbrickType == 0)

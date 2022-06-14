@@ -17,7 +17,7 @@ using Client.Sheet;
 namespace Client.Phrase
 {
     /// <summary>
-    /// Singleton to Get/Set Sabrina Phrase in SpellBook / Memory.
+    /// Singleton to Get/Set Sabrina Phrase in SpellBook/Memory.
     /// </summary>
     /// <remarks>NB: you MUST create it (getInstance()), before loading of ingame.xmls.</remarks>
     /// <author>Lionel Berenguier</author>

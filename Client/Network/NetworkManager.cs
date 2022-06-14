@@ -234,7 +234,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// initializeNetwork :
+        /// Initialize Network
         /// </summary>
         public void InitializeNetwork()
         {
@@ -604,6 +604,7 @@ namespace Client.Network
                 var value = PhraseSlot.Serial(impulse);
                 phrases.Add(value);
             }
+            // end workaround
 
             foreach (var phrase in phrases)
             {

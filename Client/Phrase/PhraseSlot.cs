@@ -11,7 +11,7 @@ using Client.Sheet;
 
 namespace Client.Phrase
 {
-    /// <summary>Tuple Sabrina / Known Slot.</summary>
+    /// <summary>Tuple Sabrina / Known Slot</summary>
     /// <author>Lionel Berenguier</author>
     /// <author>Nevrax France</author>
     /// <date>2003</date>
@@ -21,6 +21,9 @@ namespace Client.Phrase
         internal ushort KnownSlot;
         internal SheetId PhraseSheetId;
 
+        /// <summary>
+        /// This serial is made for server->client com
+        /// </summary>
         public static PhraseSlot Serial(BitMemoryStream impulse)
         {
             var ret = new PhraseSlot { Phrase = PhraseCom.Serial(impulse) };
