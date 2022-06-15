@@ -6,6 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using Client.Network;
 using Client.Sheet;
 
@@ -19,6 +20,7 @@ namespace Client.Phrase
     /// <date>2003 September</date>
     public class PhraseSheet : EntitySheet
     {
+        private readonly SheetIdFactory _sheetIdFactory;
         public const int SPHRASE_MAX_BRICK = 100;
 
         // <summary>
@@ -44,8 +46,9 @@ namespace Client.Phrase
         /// <summary>
         /// Constructor
         /// </summary>
-        public PhraseSheet()
+        public PhraseSheet(SheetIdFactory sheetIdFactory) : base(sheetIdFactory)
         {
+            _sheetIdFactory = sheetIdFactory;
             _type = TType.SPHRASE;
             Castable = true;
             ShowInActionProgression = true;
@@ -65,7 +68,7 @@ namespace Client.Phrase
 
             for (var i = 0; i < len; i++)
             {
-                var value = new SheetId();
+                var value = new SheetId(_sheetIdFactory);
                 value.Serial(s);
                 Bricks[i] = value;
             }
@@ -78,7 +81,7 @@ namespace Client.Phrase
         /// <summary>
         /// Valid if Bricks not empty and all Bricks sheetId != NULL
         /// </summary>
-        public bool IsValid()
+        public bool IsValid(SheetIdFactory sheetIdFactory)
         {
             if (Bricks.Length == 0)
             {
@@ -87,7 +90,7 @@ namespace Client.Phrase
 
             for (uint i = 0; i < Bricks.Length; i++)
             {
-                if (Bricks[i] == SheetId.Unknown)
+                if (Bricks[i] == sheetIdFactory.Unknown)
                 {
                     return false;
                 }
@@ -128,6 +131,11 @@ namespace Client.Phrase
             //// read ShowInAPOnlyIfLearnt
             //TRANSLATE_VAL(ShowInAPOnlyIfLearnt, "ShowInAPOnlyIfLearnt");
 
+        }
+
+        public override void Serial(BitStreamFile s)
+        {
+            //throw new NotImplementedException();
         }
     }
 }

@@ -61,7 +61,7 @@ namespace Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 13.06.2022 16:29:15
+        ///   Looks up a localized string similar to 14.06.2022 21:37:36
         ///.
         /// </summary>
         internal static string BuildDate {
@@ -160,6 +160,16 @@ namespace Client {
         internal static string msg {
             get {
                 return ResourceManager.GetString("msg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] sheet_id {
+            get {
+                object obj = ResourceManager.GetObject("sheet_id", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

@@ -63,6 +63,7 @@ namespace Client.Network
         private readonly GenericMessageHeaderManager _messageHeaderManager;
         private readonly ChatManager _chatManager;
         private readonly PhraseManager _phraseManager;
+        private readonly SheetIdFactory _sheetIdFactory;
 
         /// <summary>
         /// was the inital server season received
@@ -96,7 +97,7 @@ namespace Client.Network
         /// <summary>
         /// Constructor
         /// </summary>
-        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, DatabaseManager databaseManager, PhraseManager phraseManager)
+        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, DatabaseManager databaseManager, PhraseManager phraseManager, SheetIdFactory sheetIdFactory)
         {
             _messageHeaderManager = new GenericMessageHeaderManager();
             _chatManager = new ChatManager(this, stringManager, databaseManager);
@@ -106,6 +107,8 @@ namespace Client.Network
             _stringManager = stringManager;
             _databaseManager = databaseManager;
             _phraseManager = phraseManager;
+            _sheetIdFactory = sheetIdFactory;
+
             _client = client;
         }
 
@@ -601,14 +604,14 @@ namespace Client.Network
 
             for (var i = 0; i < len; i++)
             {
-                var value = PhraseSlot.Serial(impulse);
+                var value = PhraseSlot.Serial(impulse, _sheetIdFactory);
                 phrases.Add(value);
             }
             // end workaround
 
             foreach (var phrase in phrases)
             {
-                if (phrase.PhraseSheetId != SheetId.Unknown)
+                if (phrase.PhraseSheetId != _sheetIdFactory.Unknown)
                 {
                     var phraseCom = new PhraseCom();
                     _phraseManager.BuildPhraseFromSheet(ref phraseCom, phrase.PhraseSheetId.AsInt());

@@ -20,6 +20,7 @@ namespace Client.Sheet
     /// <date>2001</date>
     public abstract class EntitySheet : IDisposable
     {
+        private readonly SheetIdFactory _sheetIdFactory;
         private static readonly List<string> _debug = new List<string>();
 
         public enum TType
@@ -78,7 +79,7 @@ namespace Client.Sheet
         /// <summary>
         /// Sheet Id
         /// </summary>
-        public SheetId Id = new SheetId();
+        public SheetId Id;
 
         /// Add string to the debug stack
         //	static void debug(string str);
@@ -89,9 +90,11 @@ namespace Client.Sheet
         /// <summary>
         /// Constructor
         /// </summary>
-        public EntitySheet()
+        protected EntitySheet(SheetIdFactory sheetIdFactory)
         {
+            _sheetIdFactory = sheetIdFactory;
             _type = TType.UNKNOWN_SHEET_TYPE;
+            Id = new SheetId(sheetIdFactory);
         }
 
         /// <summary>
@@ -109,7 +112,11 @@ namespace Client.Sheet
         /// <summary>
         /// Return the type of the sheet
         /// </summary>
-        public TType Type => _type;
+        public TType Type
+        {
+            get => _type;
+            set => _type = value;
+        }
 
         // TType enum/string conversion
         //	static string typeToString(TType e);
@@ -120,5 +127,7 @@ namespace Client.Sheet
         /// Serialize character sheet into binary data file
         /// </summary>
         public abstract void Serial(BitMemoryStream f);
+
+        public abstract void Serial(BitStreamFile s);
     }
 }

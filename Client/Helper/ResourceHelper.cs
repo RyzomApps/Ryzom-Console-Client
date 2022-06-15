@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.ComponentModel.Design;
+using System.IO;
 
 namespace Client.Helper
 {
@@ -9,8 +11,21 @@ namespace Client.Helper
         /// </summary>
         public static void WriteResourceToFile(string resourceName, string fileName)
         {
-            var text = (string)Resources.ResourceManager.GetObject(resourceName);
-            File.WriteAllText(fileName, text);
+            var obj = Resources.ResourceManager.GetObject(resourceName);
+
+            switch (obj)
+            {
+                case byte[] bytes:
+                    File.WriteAllBytes(fileName, bytes);
+                    break;
+
+                case string text:
+                    File.WriteAllText(fileName, text);
+                    break;
+
+                default:
+                    throw new Exception("Resource is neither of type byte[] nor type text. Cannot save it!");
+            }
         }
     }
 }

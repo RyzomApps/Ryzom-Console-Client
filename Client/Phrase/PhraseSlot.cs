@@ -24,16 +24,16 @@ namespace Client.Phrase
         /// <summary>
         /// This serial is made for server->client com
         /// </summary>
-        public static PhraseSlot Serial(BitMemoryStream impulse)
+        public static PhraseSlot Serial(BitMemoryStream impulse, SheetIdFactory sheetIdFactory)
         {
-            var ret = new PhraseSlot { Phrase = PhraseCom.Serial(impulse) };
+            var ret = new PhraseSlot { Phrase = PhraseCom.Serial(impulse, sheetIdFactory) };
 
             impulse.Serial(ref ret.KnownSlot);
 
             uint sheetid = 0;
             impulse.Serial(ref sheetid);
 
-            ret.PhraseSheetId = new SheetId(sheetid);
+            ret.PhraseSheetId = sheetIdFactory.SheetId(sheetid);
 
             return ret;
         }

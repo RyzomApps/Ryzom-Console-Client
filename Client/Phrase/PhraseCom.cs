@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using API.Helper;
 using Client.Network;
 using Client.Sheet;
 
@@ -26,7 +25,7 @@ namespace Client.Phrase
 
         public static PhraseCom EmptyPhrase = new PhraseCom();
 
-        public static PhraseCom Serial(BitMemoryStream impulse)
+        public static PhraseCom Serial(BitMemoryStream impulse, SheetIdFactory sheetIdFactory)
         {
             var ret = new PhraseCom();
 
@@ -61,7 +60,16 @@ namespace Client.Phrase
             // uncompress
             //ContReset(Bricks);
 
-            ret.Bricks.Resize(serialCompBricks.Count);
+            // workaround for: ret.Bricks.Resize(serialCompBricks.Count);
+
+            ret.Bricks.Clear();
+
+            for (int i = 0; i < serialCompBricks.Count; i++)
+            {
+                ret.Bricks.Add(new SheetId(sheetIdFactory));
+            }
+
+            // end workaround
 
             for (var i = 0; i < ret.Bricks.Count; i++)
             {

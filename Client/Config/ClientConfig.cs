@@ -25,8 +25,8 @@ namespace Client.Config
         /// </summary>
         public enum FilterModeEnum
         {
-            Blacklist,
-            Whitelist
+            NegativeList,
+            PositiveList
         }
 
         // === RYZOM STUFF
@@ -55,13 +55,13 @@ namespace Client.Config
         public static float Run = 6.0f;
 
         /// <summary>True if we want to Compute Visual Slots</summary>
-        public static bool NeedComputeVS;
+        public static bool NeedComputeVs;
 
         /// <summary>True if we want the packed sheet to be updated if needed</summary>
         public static bool UpdatePackedSheet;
 
         /// <summary>True if we want to Dump Visual Slot IDs</summary>
-        public static bool DumpVSIndex;
+        public static bool DumpVsIndex;
 
         // === NON RYZOM STUFF
 
@@ -74,7 +74,7 @@ namespace Client.Config
         // Filtering
         public static Regex ChatFilter = null;
         public static Regex DebugFilter = null;
-        public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
+        public static FilterModeEnum FilterMode = FilterModeEnum.NegativeList;
 
         // Logging
         public static bool LogToFile = false;

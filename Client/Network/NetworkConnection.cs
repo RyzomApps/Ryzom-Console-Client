@@ -1053,7 +1053,7 @@ namespace Client.Network
                         uint timestampDelta = 0;
                         msgin.Serial(ref timestampDelta, 4);
                         timestamp = _currentServerTick - timestampDelta;
-                        //nldebug( "TD: %u (S%hu)", timestampDelta, (uint16)slot );
+                        //_client.GetLogger().Debug( "TD: %u (S%hu)", timestampDelta, (uint16)slot );
                     }
                     else
                     {

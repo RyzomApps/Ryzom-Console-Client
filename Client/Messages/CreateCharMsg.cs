@@ -21,7 +21,7 @@ namespace Client.Messages
     {
         public byte Slot;
 
-        public SheetId SheetId = new SheetId();
+        public SheetId SheetId;
 
         public uint Mainland; //mainland where char is
         public string Name = ""; //character name choose by player
@@ -70,10 +70,10 @@ namespace Client.Messages
         // 103 Arispotle    en
         // 301 Yubo         yubo
 
-        internal void SetupFromCharacterSummary(CharacterSummary cs)
+        internal void SetupFromCharacterSummary(CharacterSummary cs, SheetIdFactory sheetIdFactory)
         {
             Slot = 1;
-            SheetId = SheetId.Unknown;
+            SheetId = sheetIdFactory.Unknown;
             Mainland = 101; //cs.Mainland; TODO remove tests
             Name = cs.Name;
             People = 3; // Zorai //(byte)cs.People; TODO remove tests

@@ -20,7 +20,7 @@ namespace Client.Logger
         {
             Regex regexToUse = null;
             // Convert to bool for XOR later. Whitelist = 0, Blacklist = 1
-            var filterMode = FilterMode == FilterModeEnum.Blacklist;
+            var filterMode = FilterMode == FilterModeEnum.NegativeList;
 
             switch (channel)
             {

@@ -166,7 +166,7 @@ namespace Client.Database
             if (!string.IsNullOrEmpty(bankName))
             {
                 bankHandler?.MapNodeByBank(bankName);
-                //nldebug( "CDB: Mapping %s for %s (databaseNode %u)", newName.c_str(), bankName.c_str(), nodes.size()-1 );
+                //_client.GetLogger().Debug( "CDB: Mapping %s for %s (databaseNode %u)", newName.c_str(), bankName.c_str(), nodes.size()-1 );
             }
             else
             {
@@ -236,7 +236,7 @@ namespace Client.Database
 
             node.SetParent(this);
             _nodes.Add(node);
-            //nldebug ( "CDB: Attaching node" );
+            //_client.GetLogger().Debug ( "CDB: Attaching node" );
             _nodesByName.Add(node);
             _sorted = false;
 

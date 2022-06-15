@@ -35,6 +35,8 @@ namespace Client.Commands
 
             // TODO: Dump entities.
 
+            ryzomClient.GetPhraseManager().Write(dumpName + "_phrases.rec");
+
             return "";
         }
 

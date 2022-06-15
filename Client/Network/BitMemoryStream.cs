@@ -26,7 +26,17 @@ namespace Client.Network
         private readonly List<BitMemoryStreamSerialInfo> _debugData = new List<BitMemoryStreamSerialInfo>();
 
         /// <summary>
-        /// constructor differentiating between input and output stream and specifying the size of the stream
+        /// Constructor differentiating between input and output stream and specifying the size of the stream
+        /// </summary>
+        public BitMemoryStream(byte[] input)
+        {
+            _contentBits = new bool[0];
+            _inputStream = true;
+            MemCpy(input);
+        }
+
+        /// <summary>
+        /// Constructor differentiating between input and output stream and specifying the size of the stream
         /// </summary>
         public BitMemoryStream(bool inputStream = false, int defaultcapacity = 32)
         {
@@ -116,7 +126,7 @@ namespace Client.Network
         public void Serial(ref int obj)
         {
             if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.Int, new StackTrace(true)));
-            
+
             if (IsReading())
             {
                 var newBits = ReadFromArray(32);
@@ -152,7 +162,7 @@ namespace Client.Network
         public void Serial(ref uint obj)
         {
             if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.UInt, new StackTrace(true)));
-            
+
             if (IsReading())
             {
                 var newBits = ReadFromArray(32);
@@ -195,7 +205,7 @@ namespace Client.Network
 
             if (IsReading())
             {
-               var bits = ReadFromArray(nbits);
+                var bits = ReadFromArray(nbits);
 
                 var newBits = new bool[16];
                 Array.Copy(bits, 0, newBits, 16 - bits.Length, bits.Length);
@@ -293,7 +303,7 @@ namespace Client.Network
         public void Serial(ref long obj)
         {
             if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 64, BitMemoryStreamSerialInfo.SerialType.Long, new StackTrace(true)));
-            
+
             if (IsReading())
             {
                 var newBits = ReadFromArray(64);
@@ -313,7 +323,7 @@ namespace Client.Network
         public void Serial(ref byte[] obj)
         {
             if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, obj.Length * 8, BitMemoryStreamSerialInfo.SerialType.ByteArray, new StackTrace(true)));
-            
+
             if (IsReading())
             {
                 var newBits = ReadFromArray(obj.Length * 8);
@@ -338,7 +348,7 @@ namespace Client.Network
 
             if (IsReading())
             {
-               // direct read
+                // direct read
                 obj = _contentBits[_bitPos];
                 _bitPos++;
             }

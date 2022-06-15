@@ -57,6 +57,7 @@ namespace Client
         private readonly PhraseManager _phraseManager;
         private readonly SkillManager _skillManager;
         private readonly BrickManager _brickManager;
+        private readonly SheetIdFactory _sheetIdFactory;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -200,10 +201,11 @@ namespace Client
             _sheetManager = new SheetManager(this);
             _skillManager = new SkillManager();
             _brickManager = new BrickManager();
+            _sheetIdFactory = new SheetIdFactory();
             _networkConnection = new NetworkConnection(this, _databaseManager);
-            _phraseManager = new PhraseManager(_sheetManager, _stringManager, _interfaceManager, _databaseManager);
+            _phraseManager = new PhraseManager(_sheetManager, _stringManager, _interfaceManager, _databaseManager, _sheetIdFactory);
             _interfaceManager = new InterfaceManager(this, _databaseManager, _skillManager, _brickManager, _phraseManager);
-            _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager, _phraseManager);
+            _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager, _phraseManager, _sheetIdFactory);
 
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");
@@ -220,6 +222,8 @@ namespace Client
             // copy local_database.xml from resources
             if (!File.Exists("./data/local_database.xml")) ResourceHelper.WriteResourceToFile("local_database", "./data/local_database.xml");
 
+            // copy sheet_id.bin from resources
+            if (!File.Exists("./data/sheet_id.bin")) ResourceHelper.WriteResourceToFile("sheet_id", "./data/sheet_id.bin");
 
             // Start the main client
             if (autoStart)
@@ -444,11 +448,11 @@ namespace Client
             // TODO: Read the ligo primitive class file
 
             // Initialize Sheet IDs
-            SheetId.Init(ClientConfig.UpdatePackedSheet, this);
+            _sheetIdFactory.Init(ClientConfig.UpdatePackedSheet, this, Constants.SheetsIdBinPath);
 
             // Initialize Packed Sheets
             _sheetManager.SetOutputDataPath("../../client/data");
-            _sheetManager.Load(null, ClientConfig.UpdatePackedSheet, ClientConfig.NeedComputeVS, ClientConfig.DumpVSIndex);
+            _sheetManager.Load(null, ClientConfig.UpdatePackedSheet, ClientConfig.NeedComputeVs, ClientConfig.DumpVsIndex, _sheetIdFactory);
 
             // TODO: Initialize bricks
 
@@ -590,6 +594,12 @@ namespace Client
                         {
                             // BAD ! preselected char does not exist
                             throw new InvalidOperationException("preselected char does not exist");
+
+                            // TODO: Create char if non existant
+
+                            //ActionHandlerRenameChar.Execute((byte)charSelect, _networkManager);
+
+                            //ActionHandlerAskCreateChar.Execute("faafaa", 1, _networkManager);
                         }
 
                         // Clear sending buffer that may contain previous QUIT_GAME when getting back to the char selection screen
@@ -599,12 +609,6 @@ namespace Client
                         _networkManager.CanSendCharSelection = false;
 
                         ActionHandlerLaunchGame.Execute(charSelect.ToString(), _networkManager);
-
-                        //ActionHandlerRenameChar.Execute((byte)charSelect, _networkManager);
-
-                        //ActionHandlerAskCreateChar.Execute("faafaa", 1, _networkManager);
-
-                        //ActionHandlerLaunchGame.Execute(1.ToString(), _networkManager);
                     }
                 }
 

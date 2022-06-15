@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Client.Client;
 using Client.Database;
@@ -76,6 +77,7 @@ namespace Client.Phrase
         private readonly StringManager _stringManager;
         private readonly InterfaceManager _interfaceManager;
         private readonly DatabaseManager _databaseManager;
+        private readonly SheetIdFactory _sheetIdFactory;
 
         // Shortcut To Phrases Leaves
         private DatabaseNodeLeaf[] _bookDbLeaves;
@@ -110,21 +112,21 @@ namespace Client.Phrase
         /// <summary>map each phrase to its sheet id</summary>
         private readonly Dictionary<PhraseCom, int> _phraseToSheet = new Dictionary<PhraseCom, int>();
 
-        /// <summary> extra client data </summary>
+        /// <summary>extra client data </summary>
         private readonly List<PhraseClient> _phraseClient = new List<PhraseClient>();
 
         private readonly List<MemoryLine> _memories = new List<MemoryLine>();
 
-
         /// <summary>
         /// Constructor
         /// </summary>
-        public PhraseManager(SheetManager sheetManager, StringManager stringManager, InterfaceManager interfaceManager, DatabaseManager databaseManager)
+        public PhraseManager(SheetManager sheetManager, StringManager stringManager, InterfaceManager interfaceManager, DatabaseManager databaseManager, SheetIdFactory sheetIdFactory)
         {
             _sheetManager = sheetManager;
             _stringManager = stringManager;
             _interfaceManager = interfaceManager;
             _databaseManager = databaseManager;
+            _sheetIdFactory = sheetIdFactory;
 
             Reset();
 
@@ -246,7 +248,7 @@ namespace Client.Phrase
             // compute and the progression phrase, and update DB
             ComputePhraseProgression();
 
-            _enchantWeaponMainBrick = new SheetId("bsxea10.sbrick");
+            _enchantWeaponMainBrick = _sheetIdFactory.SheetId("bsxea10.sbrick");
 
             // build map that gives its description for each built-in phrase
             // slow test on all sheets here ...
@@ -268,10 +270,10 @@ namespace Client.Phrase
         /// </summary>
         internal void BuildPhraseFromSheet(ref PhraseCom phrase, uint sheetId)
         {
-            if (_sheetManager.Get(new SheetId(sheetId)) is PhraseSheet phraseSheet)
+            if (_sheetManager.Get(_sheetIdFactory.SheetId(sheetId)) is PhraseSheet phraseSheet)
             {
                 // get localized Name
-                phrase.Name = _stringManager.GetSPhraseLocalizedName(new SheetId(sheetId));
+                phrase.Name = _stringManager.GetSPhraseLocalizedName(_sheetIdFactory.SheetId(sheetId));
 
                 // Build bricks
                 phrase.Bricks.Clear();
@@ -329,7 +331,6 @@ namespace Client.Phrase
             {
                 UpdateBookDb();
             }
-
         }
 
         /// <summary>
@@ -500,6 +501,41 @@ namespace Client.Phrase
         internal void UpdateAllActionRegen()
         {
 
+        }
+
+        public void Write(string fileName)
+        {
+            if (_memories != null)
+            {
+                var f = new StreamWriter(fileName, false);
+
+                var m = 0;
+
+                foreach (var memory in _memories)
+                {
+                    var s = 0;
+
+                    foreach (var slot in memory.Slot)
+                    {
+                        if (_phraseMap.ContainsKey((int)slot.Id))
+                        {
+                            var phrase = _phraseMap[(int)slot.Id];
+
+                            f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase?.Name}\t{phrase?.Bricks?.Count}");
+                        }
+
+                        s++;
+                    }
+
+                    m++;
+                }
+
+                f.Close();
+            }
+            else
+            {
+                RyzomClient.GetInstance().GetLogger().Warn($"<CCDBSynchronised::write> can't write {fileName} : the database has not been initialized");
+            }
         }
     }
 }

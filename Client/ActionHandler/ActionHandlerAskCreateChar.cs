@@ -9,6 +9,7 @@
 using Client.Client;
 using Client.Messages;
 using Client.Network;
+using Client.Sheet;
 
 namespace Client.ActionHandler
 {
@@ -20,7 +21,7 @@ namespace Client.ActionHandler
         /// <summary>
         /// Execute the answer to the action
         /// </summary>
-        public static void Execute(string name, byte slot, NetworkManager networkManager)
+        public static void Execute(string name, byte slot, NetworkManager networkManager, SheetIdFactory sheetIdFactory)
         {
             //CInterfaceManager pIM = CInterfaceManager.getInstance();
 
@@ -60,7 +61,7 @@ namespace Client.ActionHandler
             // Create the message to send to the server from the character summary
             var createCharMsg = new CreateCharMsg();
 
-            createCharMsg.SetupFromCharacterSummary(cs);
+            createCharMsg.SetupFromCharacterSummary(cs, sheetIdFactory);
 
             // Slot
             //{
