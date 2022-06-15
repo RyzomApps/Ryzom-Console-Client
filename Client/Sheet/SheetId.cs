@@ -8,6 +8,7 @@
 
 using Client.Network;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Client.Sheet
 {
@@ -21,7 +22,7 @@ namespace Client.Sheet
     /// This class is case unsensitive. It means that you can call build() and 
     /// buildIdVector() with string with anycase, it'll work.
     /// </remarks>
-    public class SheetId
+    public class SheetId : IComparable<SheetId>
     {
         private readonly SheetIdFactory _sheetIdFactory;
 
@@ -69,6 +70,11 @@ namespace Client.Sheet
         internal void Serial(BitStreamFile s)
         {
             s.Serial(out _id);
+        }
+
+        public int CompareTo([AllowNull] SheetId other)
+        {
+            return Id.CompareTo(other.Id);
         }
     }
 }

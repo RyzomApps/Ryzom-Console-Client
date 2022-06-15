@@ -53,12 +53,41 @@ namespace Client.Sheet
                 throw new Exception("ENewerStream(*this)");
         }
 
+        internal void Serial(out string sTmp)
+        {
+            var tmp = new byte[4];
+            Array.Copy(_fileBytes, _filePointer, tmp, 0, tmp.Length);
+            var contLen = BitConverter.ToInt32(tmp);
+            _filePointer += 4;
+
+            tmp = new byte[contLen];
+            Array.Copy(_fileBytes, _filePointer, tmp, 0, tmp.Length);
+            sTmp = System.Text.Encoding.UTF8.GetString(tmp);
+            _filePointer += (uint)contLen;
+        }
+
+        private void Serial(out ulong value)
+        {
+            var tmp = new byte[8];
+            Array.Copy(_fileBytes, _filePointer, tmp, 0, tmp.Length);
+            _filePointer += (uint)tmp.Length;
+            value = BitConverter.ToUInt64(tmp);
+        }
+
         public void Serial(out uint value)
         {
             var tmp = new byte[4];
             Array.Copy(_fileBytes, _filePointer, tmp, 0, tmp.Length);
             _filePointer += (uint)tmp.Length;
             value = BitConverter.ToUInt32(tmp);
+        }
+
+        public void Serial(out ushort value)
+        {
+            var tmp = new byte[2];
+            Array.Copy(_fileBytes, _filePointer, tmp, 0, tmp.Length);
+            _filePointer += (uint)tmp.Length;
+            value = BitConverter.ToUInt16(tmp);
         }
 
         public void Serial(out byte value)
@@ -69,11 +98,61 @@ namespace Client.Sheet
             value = tmp[0];
         }
 
-        public void SerialBuffer(ref byte[] b, in uint dependBlockSize)
+        public void SerialBuffer(out byte[] b, in uint dependBlockSize)
         {
             b = new byte[dependBlockSize];
             Array.Copy(_fileBytes, _filePointer, b, 0, b.Length);
             _filePointer += dependBlockSize;
+        }
+
+        internal void Serial(out bool value)
+        {
+            var tmp = new byte[1];
+            Array.Copy(_fileBytes, _filePointer, tmp, 0, tmp.Length);
+            _filePointer += (uint)tmp.Length;
+            value = BitConverter.ToBoolean(tmp, 0);
+        }
+
+        internal void SerialCont(out List<ushort> container)
+        {
+            container = new List<ushort>();
+
+            Serial(out uint len);
+
+            for (var i = 0; i < len; i++)
+            {
+                Serial(out ushort value);
+
+                container.Add(value);
+            }
+        }
+
+        internal void SerialCont(out List<string> container)
+        {
+            container = new List<string>();
+
+            Serial(out uint len);
+
+            for (var i = 0; i < len; i++)
+            {
+                Serial(out string value);
+
+                container.Add(value);
+            }
+        }
+
+        internal void SerialCont(out List<ulong> container)
+        {
+            container = new List<ulong>();
+
+            Serial(out uint len);
+
+            for (var i = 0; i < len; i++)
+            {
+                Serial(out ulong value);
+
+                container.Add(value);
+            }
         }
 
         public void SerialCont(ref SortedDictionary<SheetId, SheetManagerEntry> container, SheetIdFactory sheetIdFactory)
@@ -90,7 +169,7 @@ namespace Client.Sheet
 
                 var type = (EntitySheet.TType)intType;
 
-                EntitySheet es;
+                EntitySheet es = null;
 
                 switch (type)
                 {
@@ -148,7 +227,6 @@ namespace Client.Sheet
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-
 
                 container.Add(s, new SheetManagerEntry() { EntitySheet = es });
             }

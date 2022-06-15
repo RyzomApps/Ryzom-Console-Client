@@ -6,7 +6,6 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
 using Client.Network;
 using Client.Sheet;
 
@@ -135,7 +134,21 @@ namespace Client.Phrase
 
         public override void Serial(BitStreamFile s)
         {
-            //throw new NotImplementedException();
+            uint len = 0;
+            s.Serial(out len);
+
+            Bricks = new SheetId[len];
+
+            for (var i = 0; i < len; i++)
+            {
+                var value = new SheetId(_sheetIdFactory);
+                value.Serial(s);
+                Bricks[i] = value;
+            }
+
+            s.Serial(out Castable);
+            s.Serial(out ShowInActionProgression);
+            s.Serial(out ShowInApOnlyIfLearnt);
         }
     }
 }

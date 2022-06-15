@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices.ComTypes;
 
 namespace Client.Sheet
 {
@@ -109,8 +108,7 @@ namespace Client.Sheet
         /// <summary>
         /// this structure is fill by the loadForm() function and will contain all the sheets needed
         /// </summary>
-        private readonly SortedDictionary<SheetId, SheetManagerEntry> _entitySheetContainer =
-            new SortedDictionary<SheetId, SheetManagerEntry>();
+        private readonly SortedDictionary<SheetId, SheetManagerEntry> _entitySheetContainer = new SortedDictionary<SheetId, SheetManagerEntry>();
 
         // Associate sheet to visual slots
         //protected SortedDictionary<ItemSheet, List<Tuple<EVisualSlot, uint>>> _SheetToVS = new SortedDictionary<ItemSheet, List<Tuple<EVisualSlot, uint>>>();
@@ -158,8 +156,7 @@ namespace Client.Sheet
         /// <summary>
         /// Load all sheets
         /// </summary>
-        public void Load(object callBack, bool updatePackedSheet, bool needComputeVS, bool dumpVSIndex,
-            SheetIdFactory sheetIdFactory)
+        public void Load(object callBack, bool updatePackedSheet, bool needComputeVS, bool dumpVSIndex, SheetIdFactory sheetIdFactory)
         {
             // Initialize the Sheet DB.
             LoadAllSheet(callBack, updatePackedSheet, sheetIdFactory, needComputeVS, dumpVSIndex);
@@ -173,8 +170,7 @@ namespace Client.Sheet
         /// <summary>
         /// Load all sheets
         /// </summary>
-        public void LoadAllSheet(object callBack, bool updatePackedSheet, SheetIdFactory sheetIdFactory,
-            bool needComputeVS, bool dumpVSIndex, bool forceRecompute = false, List<string> userExtensions = null)
+        public void LoadAllSheet(object callBack, bool updatePackedSheet, SheetIdFactory sheetIdFactory, bool needComputeVS, bool dumpVSIndex, bool forceRecompute = false, List<string> userExtensions = null)
         {
             //callBack.progress(0);
             //callBack.pushCropedValues(0, 0.5f);
@@ -208,8 +204,7 @@ namespace Client.Sheet
                     {
                         for (var l = 0; l < userExtensions.Count; ++l)
                         {
-                            if (string.Compare(userExtensions[l], TypeVersion[i].Type,
-                                StringComparison.OrdinalIgnoreCase) == 0)
+                            if (string.Compare(userExtensions[l], TypeVersion[i].Type, StringComparison.OrdinalIgnoreCase) == 0)
                             {
                                 found = true;
                             }
@@ -244,13 +239,12 @@ namespace Client.Sheet
                         //}
 
                         if (path.Contains("sbrick.packed_sheets") || path.Contains("sphrase.packed_sheets"))
-                            loadForm(extensions, path, entitySheetContainer, sheetIdFactory, updatePackedSheet);
-
+                            LoadForm(extensions, path, entitySheetContainer, sheetIdFactory, updatePackedSheet);
 
                         foreach (var entitySheet in entitySheetContainer)
                         {
                             _entitySheetContainer[entitySheet.Key] = entitySheet.Value;
-                            entitySheet.Value.EntitySheet = null; //_sheetIdFactory.EntitySheet(0);
+                            //entitySheet.Value.EntitySheet = null; //_sheetIdFactory.EntitySheet(0);
                         }
                     }
                 }
@@ -298,25 +292,17 @@ namespace Client.Sheet
             //callBack.popCropedValues();
         }
 
-        private void loadForm(in List<string> sheetFilters, string packedFilename,
-            SortedDictionary<SheetId, SheetManagerEntry> container, SheetIdFactory _sheetIdFactory,
-            bool updatePackedSheet = true, bool errorIfPackedSheetNotGood = true)
+        private void LoadForm(in List<string> sheetFilters, string packedFilename, SortedDictionary<SheetId, SheetManagerEntry> container, SheetIdFactory _sheetIdFactory, bool updatePackedSheet = true, bool errorIfPackedSheetNotGood = true)
         {
             List<string> dictionnary = new List<string>();
-            SortedDictionary<string,
-                uint> dictionnaryIndex = new SortedDictionary<string,
-                uint>();
-            SortedDictionary<SheetId,
-                List<uint>> dependencies = new SortedDictionary<SheetId,
-                List<uint>>();
+            SortedDictionary<string, uint> dictionnaryIndex = new SortedDictionary<string, uint>();
+            SortedDictionary<SheetId, List<uint>> dependencies = new SortedDictionary<SheetId, List<uint>>();
             List<uint> dependencyDates = new List<uint>();
 
             // check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
             Debug.Assert(packedFilename.IndexOf(".packed_sheets", StringComparison.Ordinal) != -1);
 
-            string
-                packedFilenamePath =
-                    "./data/" + packedFilename; //Path.lookup(File.getFilename(packedFilename), false, false);
+            string packedFilenamePath = "./data/" + packedFilename; //Path.lookup(File.getFilename(packedFilename), false, false);
 
             if (string.IsNullOrEmpty(packedFilenamePath))
             {
@@ -327,29 +313,31 @@ namespace Client.Sheet
             //_sheetIdFactory.Init(updatePackedSheet);
 
             // load the packed sheet if exists
-            try
-            {
+            //try
+            //{
                 BitStreamFile ifile = new BitStreamFile();
                 //ifile.SetCacheFileOnOpen(true);
-                //
+
                 if (!ifile.Open(packedFilenamePath))
                 {
                     throw new Exception($"can't open PackedSheet {packedFilenamePath}");
                 }
 
                 //// an exception will be launch if the file is not the good version or if the file is not found
-                //
+
                 ////nlinfo ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
-                //
+
                 // read the header
                 uint PACKED_SHEET_HEADER = 1347113800;
                 ifile.SerialCheck(PACKED_SHEET_HEADER);
+
                 uint PACKED_SHEET_VERSION = 5;
                 ifile.SerialCheck(PACKED_SHEET_VERSION);
+
                 uint PACKED_SHEET_VERSION_COMPATIBLE = 0;
                 ifile.SerialVersion(PACKED_SHEET_VERSION_COMPATIBLE);
-                //
-                //// Read depend block size
+
+                // Read depend block size
                 ifile.Serial(out uint dependBlockSize);
 
                 //// Read the dependencies only if update packed sheet
@@ -377,51 +365,45 @@ namespace Client.Sheet
                 //else
                 if (dependBlockSize > 0)
                 {
-                    byte[] bigBlock = new byte[dependBlockSize];
-                    ifile.SerialBuffer(ref bigBlock, dependBlockSize);
+                    //byte[] bigBlock = new byte[dependBlockSize];
+                    ifile.SerialBuffer(out byte[] bigBlock, dependBlockSize);
                 }
 
-                
+
                 // read the packed sheet data
                 ifile.Serial(out uint nbEntries);
                 ifile.Serial(out uint ver);
-                
+
                 //if (ver != T.getVersion())
                 //{
                 //    throw Exception("The packed sheet version in stream is different of the code");
                 //}
-                
-                // TODO ifile.SerialCont(ref container, _sheetIdFactory);
-                ifile.Close();
-            }
-            catch (Exception e)
-            {
-                // clear the container because it can contains partially loaded sheet so we must clean it before continue
-                container.Clear();
-                if (!updatePackedSheet)
-                {
-                    if (errorIfPackedSheetNotGood)
-                    {
-                        _client.GetLogger()
-                            .Error(
-                                $"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
-                    }
-                    else
-                    {
-                        _client.GetLogger()
-                            .Info(
-                                $"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
-                    }
 
-                    return;
-                }
-                else
-                {
-                    _client.GetLogger()
-                        .Info(
-                            $"loadForm(): Exception during reading the packed file, I'll reconstruct it ({e.Message})");
-                }
-            }
+                ifile.SerialCont(ref container, _sheetIdFactory);
+                ifile.Close();
+            //}
+            //catch (Exception e)
+            //{
+            //    // clear the container because it can contains partially loaded sheet so we must clean it before continue
+            //    container.Clear();
+            //    if (!updatePackedSheet)
+            //    {
+            //        if (errorIfPackedSheetNotGood)
+            //        {
+            //            _client.GetLogger().Error($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
+            //        }
+            //        else
+            //        {
+            //            _client.GetLogger().Info($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
+            //        }
+
+            //        return;
+            //    }
+            //    else
+            //    {
+            //        _client.GetLogger().Info($"loadForm(): Exception during reading the packed file, I'll reconstruct it ({e.Message})");
+            //    }
+            //}
 
             // if we don't want to update packed sheet, we have nothing more to do
             if (!updatePackedSheet)
@@ -709,7 +691,6 @@ namespace Client.Sheet
             //  load all forms
             //global::loadFormNoPackedSheet(extensions, _EntitySheetContainer, wildcardFilter);
 
-            //
             //callBack.popCropedValues();
         }
 

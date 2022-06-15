@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Client.Brick;
 using Client.Client;
 using Client.Database;
 using Client.Sheet;
@@ -521,7 +522,14 @@ namespace Client.Phrase
                         {
                             var phrase = _phraseMap[(int)slot.Id];
 
-                            f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase?.Name}\t{phrase?.Bricks?.Count}");
+                            f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase?.Name}\t{phrase?.Bricks?.Count}:");
+
+                            foreach (var brick in phrase?.Bricks)
+                            {
+                                BrickSheet bs = (BrickSheet)_sheetManager.Get(brick);
+
+                                f.WriteLine($"\t{brick.AsInt()}\t{brick.Type}\t{bs.IdIcon}");
+                            }
                         }
 
                         s++;
