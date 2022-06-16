@@ -23,14 +23,6 @@ namespace Client.Database
         private int _idx;
 
         /// <summary>
-        /// Default constructor
-        /// </summary>
-        public TextId()
-        {
-            _idx = 0;
-        }
-
-        /// <summary>
         /// Init this text id from a string
         /// </summary>
         public TextId(string str)

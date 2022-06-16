@@ -16,13 +16,11 @@ namespace Client.Sheet
 {
     public class SheetIdFactory
     {
-        private readonly RyzomClient _ryzomClient;
+        private IClient _client;
 
         // Use 24 bits id and 8 bits file types
         private const int NlSheetIdIdBits = 24;
         private const int NlSheetIdTypeBits = 32 - NlSheetIdIdBits;
-
-        private IClient _client;
 
         private bool _initialised;
 
@@ -40,7 +38,6 @@ namespace Client.Sheet
         /// </summary>
         public SheetIdFactory(RyzomClient ryzomClient)
         {
-            _ryzomClient = ryzomClient;
         }
 
         /// <summary>

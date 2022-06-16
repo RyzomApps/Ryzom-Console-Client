@@ -36,7 +36,9 @@ namespace Client.Database
 
         internal DatabaseNodeBranch Parent;
 
-        /// <summary>is the branch an atomic group, or is the leaf a member of an atomic group</summary>
+        /// <summary>
+        /// is the branch an atomic group, or is the leaf a member of an atomic group
+        /// </summary>
         private bool _atomicFlag;
 
         /// <summary>
@@ -56,14 +58,6 @@ namespace Client.Database
         /// </summary>
         /// <returns>idx is the database node index</returns>
         internal abstract DatabaseNodeBase GetNode(ushort idx);
-
-        /// <summary>
-        /// Get a database node index
-        /// </summary>
-        /// <param name="databaseNode">database node is a pointer to the databaseNode</param>
-        /// <param name="index">index is a reference that receive the result</param>
-        /// <returns>true if the databaseNode was found</returns>
-        internal abstract bool GetNodeIndex(DatabaseNodeBase databaseNode, ref uint index);
 
         /// <summary>
         /// Return the value of a property (the update flag is set to false)
@@ -105,15 +99,9 @@ namespace Client.Database
         /// <summary>
         /// Get a database node . Create it if it does not exist yet
         /// </summary>
-        /// <param id="id">the TextId identifying the database node</param>
+        /// <param name="id">the TextId identifying the database node</param>
+        /// <param name="bCreate">true, if a new one should created, if missing</param>
         internal abstract DatabaseNodeBase GetNode(TextId id, bool bCreate = true);
-
-        /// <summary>
-        /// Add a new sub node
-        /// </summary>
-        /// <param id="node">is the new subnode</param>
-        /// <param id="nodeName">is the name of the node</param>
-        internal abstract void AttachChild(DatabaseNodeBase node, string nodeName);
 
         /// <summary>
         /// Reset all leaf data from this point

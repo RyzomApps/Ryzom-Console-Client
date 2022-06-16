@@ -19,7 +19,7 @@ namespace Client.Skill
 
         public void InitInGame()
         {
-
+            // TODO
         }
     }
 }

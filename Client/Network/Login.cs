@@ -38,18 +38,14 @@ namespace Client.Network
 
             var cryptedPassword = Crypt(password, salt);
 
-            var urlLogin =
-                $"{url}?cmd=login&login={login}&password={cryptedPassword}&clientApplication={clientApp}&cp=2&lg={ClientConfig.LanguageCode}{customParameters}";
+            var urlLogin = $"{url}?cmd=login&login={login}&password={cryptedPassword}&clientApplication={clientApp}&cp=2&lg={ClientConfig.LanguageCode}{customParameters}";
 
             var request = WebRequest.CreateHttp(urlLogin);
             request.Method = "GET";
 
             using var response = (HttpWebResponse)request.GetResponse();
 
-            using var reader =
-                new StreamReader(
-                    response.GetResponseStream() ?? throw new InvalidOperationException("Can't send (error code 2)"),
-                    Encoding.UTF8);
+            using var reader = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException("Can't send (error code 2)"), Encoding.UTF8);
 
             // Read stream content as string
             var responseString = reader.ReadToEnd();
@@ -93,8 +89,7 @@ namespace Client.Network
                     var lines = responseString.Split('\n');
 
                     if (lines.Length != 2)
-                        throw new InvalidOperationException(
-                            $"Invalid server return, found {lines.Length} lines, want 2");
+                        throw new InvalidOperationException($"Invalid server return, found {lines.Length} lines, want 2");
 
                     var parts = lines[0].Split('#');
 
@@ -147,10 +142,7 @@ namespace Client.Network
 
             using var responseSalt = (HttpWebResponse)requestSalt.GetResponse();
 
-            using var readerSalt =
-                new StreamReader(
-                    responseSalt.GetResponseStream() ??
-                    throw new InvalidOperationException("Can't send (error code 60)"), Encoding.UTF8);
+            using var readerSalt = new StreamReader(responseSalt.GetResponseStream() ?? throw new InvalidOperationException("Can't send (error code 60)"), Encoding.UTF8);
 
             // Read stream content as string
             var res = readerSalt.ReadToEnd();

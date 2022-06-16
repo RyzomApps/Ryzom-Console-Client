@@ -3,11 +3,6 @@
     public static class Constants
     {
         /// <summary>
-        /// Number of shortcut
-        /// </summary>
-        public const int RyzomMaxShortcut = 20;
-
-        /// <summary>
         /// game_share chat_group
         /// </summary>
         public const int MaxDynChanPerPlayer = 8;

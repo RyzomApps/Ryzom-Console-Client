@@ -32,11 +32,15 @@ namespace Client.Database
         /// <summary>true if this value has changed</summary>
         bool _changed;
 
+        /// <summary>
+        /// constructor
+        /// </summary>
         public DatabaseNodeLeaf(string name)
         {
             Name = name;
         }
 
+        /// <inheritdoc />
         internal override void Init(XmlElement node, Action progressCallBack, bool mapBanks = false, BankHandler bankHandler = null)
         {
             var type = node.GetAttribute("type");
@@ -98,9 +102,7 @@ namespace Client.Database
             }
         }
 
-        /// <summary>
-        /// readDelta
-        /// </summary>
+        /// <inheritdoc />
         internal override void ReadDelta(uint gc, BitMemoryStream f)
         {
             // If the property Type is valid.
@@ -169,16 +171,13 @@ namespace Client.Database
             SetValue64(newVal);
         }
 
+        /// <inheritdoc />
         internal override DatabaseNodeBase GetNode(ushort idx)
         {
             throw new NotImplementedException();
         }
 
-        internal override bool GetNodeIndex(DatabaseNodeBase databaseNode, ref uint index)
-        {
-            throw new NotImplementedException();
-        }
-
+        /// <inheritdoc />
         internal override long GetProp(TextId id)
         {
             // assert that there are no lines left in the textid
@@ -200,16 +199,13 @@ namespace Client.Database
             return null;
         }
 
+        /// <inheritdoc />
         internal override DatabaseNodeBase GetNode(TextId id, bool bCreate = true)
         {
             throw new NotImplementedException();
         }
 
-        internal override void AttachChild(DatabaseNodeBase node, string nodeName)
-        {
-            throw new NotImplementedException();
-        }
-
+        /// <inheritdoc />
         internal override void ResetData(uint gc, bool forceReset = false)
         {
             if (forceReset)
@@ -217,28 +213,31 @@ namespace Client.Database
                 _lastChangeGc = 0;
                 SetValue64(0);
             }
-            else if (gc >= _lastChangeGc)   // apply only if happens after the DB change
+            else if (gc >= _lastChangeGc)   
             {
+                // apply only if happens after the DB change
                 _lastChangeGc = gc;
                 SetValue64(0);
             }
         }
 
+        /// <summary>
+        /// Set the value of the property (set '_Changed' flag with 'true').
+        /// </summary>
         public void SetValue64(long prop)
         {
-            if (_property != prop)
+            if (_property == prop) return;
+
+            if (!_changed)
             {
-                if (!_changed)
-                {
-                    _changed = true;
-                }
-
-                _oldProperty = _property;
-                _property = prop;
-
-                // notify observer
-                NotifyObservers();
+                _changed = true;
             }
+
+            _oldProperty = _property;
+            _property = prop;
+
+            // notify observer
+            NotifyObservers();
         }
 
         /// <summary>
@@ -250,17 +249,20 @@ namespace Client.Database
             return 1;
         }
 
-        /// <summary>Return the value of the property.</summary>
+        /// <summary>
+        /// Return the value of the property
+        /// </summary>
         public long GetValue64() { return _property; }
 
+        /// <summary>
+        /// notify all observers
+        /// </summary>
         public void NotifyObservers()
         {
-            //Debug.Print("NotifyObservers");
+            // TODO "NotifyObservers"
         }
 
-        /// <summary>
-        /// write
-        /// </summary>
+        /// <inheritdoc />
         internal override void Write(string id, StreamWriter f)
         {
             f.WriteLine($"{_property}\t{id}");

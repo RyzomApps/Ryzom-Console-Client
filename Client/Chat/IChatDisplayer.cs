@@ -19,12 +19,11 @@ namespace Client.Chat
         /// <param name="ucstr">processed message</param>
         /// <param name="senderName">name of the sender of the message</param>
         /// <param name="bubbleTimer">timespan the bubble should be displayed</param>
-        public void DisplayChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode,
-            uint dynChatId, string senderName, uint bubbleTimer = 0);
+        public void DisplayChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, uint dynChatId, string senderName, uint bubbleTimer = 0);
 
         /// <summary>
         /// display a player tell message
         /// </summary>
-        public void DisplayTell( /*TDataSetIndex senderIndex, */ string ucstr, string senderName);
+        public void DisplayTell(string ucstr, string senderName);
     }
 }

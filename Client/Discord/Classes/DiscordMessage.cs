@@ -18,34 +18,34 @@ namespace Client.Discord.Classes
             Embeds = new List<DiscordEmbed>();
         }
 
-        [JsonPropertyName("content")]
         /// <summary>
         /// Message content
         /// </summary>
+        [JsonPropertyName("content")]
         public string Content { get; set; }
 
-        [JsonPropertyName("tts")]
         /// <summary>
         /// Read message to everyone on the channel
         /// </summary>
-        public bool TTS { get; set; }
+        [JsonPropertyName("tts")]
+        public bool Tts { get; set; }
 
-        [JsonPropertyName("username")]
         /// <summary>
         /// Webhook profile username to be shown
         /// </summary>
+        [JsonPropertyName("username")]
         public string Username { get; set; }
 
-        [JsonPropertyName("avatar_url")]
         /// <summary>
         /// Webhook profile avater to be shown
         /// </summary>
+        [JsonPropertyName("avatar_url")]
         public string AvatarUrl { get; set; }
 
-        [JsonPropertyName("embeds")]
         /// <summary>
         /// List of embeds
         /// </summary>
+        [JsonPropertyName("embeds")]
         public List<DiscordEmbed> Embeds { get; set; }
     }
 }

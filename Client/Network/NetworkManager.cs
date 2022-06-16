@@ -189,7 +189,7 @@ namespace Client.Network
                 // Delete an entity
                 else if (change.Property == (byte)PropertyType.RemoveOldEntity)
                 {
-                    // Remove the old entity
+                    // TODO: see why "Remove the old entity" is removing actual entities
                     //_entitiesManager.Remove(change.ShortId, true);
 
                     //_client.GetLogger().Debug($"CNetManager::remove old entity : {(_entitiesManager.GetEntity(change.ShortId) != null ? _entitiesManager.GetEntity(change.ShortId).GetDisplayName().Trim() : "unnamed")}");
@@ -1078,12 +1078,12 @@ namespace Client.Network
 
         private void ImpulsePermanentUnban(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Warn($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulsePermanentBan(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"§cImpulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Warn($"§cImpulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             // WHAAAAAAAAAAAAAAAAAAAAAAAAAAA!!!
         }

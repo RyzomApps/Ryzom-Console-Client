@@ -10,12 +10,21 @@ namespace Client.Phrase
 {
     public class MemorySlot
     {
-        // Is this a macro
+        /// <summary>
+        /// Is this a macro
+        /// </summary>
         public bool IsMacro;
-        // Is his visual dirty?
+
+        /// <summary>
+        /// Is his visual dirty?
+        /// </summary>
         public bool IsMacroVisualDirty;
-        // Macro or PhraseId
+
+        /// <summary>
+        /// Macro or PhraseId
+        /// </summary>
         public uint Id;
+
         public MemorySlot()
         {
             IsMacro = false;
@@ -23,17 +32,12 @@ namespace Client.Phrase
             Id = 0;
         }
 
-        public bool isEmpty()
+        public bool IsEmpty()
         {
             return Id == 0 && IsMacro == false;
         }
 
-        public bool isMacro()
-        {
-            return IsMacro;
-        }
-
-        public bool isPhrase()
+        public bool IsPhrase()
         {
             return !IsMacro && Id != 0;
         }

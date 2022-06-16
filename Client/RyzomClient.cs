@@ -596,8 +596,7 @@ namespace Client
                         _networkManager.WaitServerAnswer = false;
 
                         // check that the pre selected character is available
-                        if (_networkManager.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown ||
-                            charSelect > 4)
+                        if (_networkManager.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown || charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
                             throw new InvalidOperationException("preselected char does not exist");

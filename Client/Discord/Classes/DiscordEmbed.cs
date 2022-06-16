@@ -20,31 +20,31 @@ namespace Client.Discord.Classes
             Fields = new List<EmbedField>();
         }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("title")]
         /// <summary>
         /// Embed title
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("title")]
         public string Title { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("description")]
         /// <summary>
         /// Embed description
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("url")]
         /// <summary>
         /// Embed url
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("url")]
         public string Url { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         /// <summary>
         /// Embed timestamp
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public DateTime? Timestamp
         {
             get => DateTime.Parse(StringTimestamp);
@@ -55,10 +55,10 @@ namespace Client.Discord.Classes
         [JsonPropertyName("timestamp")]
         public string StringTimestamp { get; private set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         /// <summary>
         /// Embed color
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public Color? Color
         {
             get => HexColor.ToColor();
@@ -69,53 +69,53 @@ namespace Client.Discord.Classes
         [JsonPropertyName("color")]
         public int? HexColor { get; private set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("footer")]
         /// <summary>
         /// Embed footer
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("footer")]
         public EmbedFooter Footer { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("image")]
         /// <summary>
         /// Embed image
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("image")]
         public EmbedMedia Image { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("thumbnail")]
         /// <summary>
         /// Embed thumbnail
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("thumbnail")]
         public EmbedMedia Thumbnail { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("video")]
         /// <summary>
         /// Embed video
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("video")]
         public EmbedMedia Video { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("provider")]
         /// <summary>
         /// Embed provider
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("provider")]
         public EmbedProvider Provider { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("author")]
         /// <summary>
         /// Embed author
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("author")]
         public EmbedAuthor Author { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("fields")]
         /// <summary>
         /// Embed fields list
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("fields")]
         public List<EmbedField> Fields { get; set; }
     }
 }

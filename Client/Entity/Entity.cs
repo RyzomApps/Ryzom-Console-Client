@@ -61,7 +61,7 @@ namespace Client.Entity
         /// <summary>
         /// Slot of the entity
         /// </summary>
-        internal byte _slot;
+        private byte _slot;
 
         /// <summary>
         /// Slot of the target or CLFECOMMON::INVALID_SLOT if there is no target.
@@ -112,17 +112,14 @@ namespace Client.Entity
 
         public void SetName(uint id, string value)
         {
-            //RyzomClient.GetInstance().GetLogger().Info($"{_slot} received a name: {value} ({id})");
-
             _entityName = value;
         }
 
         private void SetGuildName(uint id, string value)
         {
-            //RyzomClient.GetInstance().GetLogger().Info($"{_slot} received a guild name: {value} ({id})");
-
             _entityGuildName = value;
         }
+
 
         /// <summary>
         /// Default constructor
@@ -385,10 +382,7 @@ namespace Client.Entity
                     break;
 
                 case PropertyType.TargetList:
-                    //case PropertyType.TargetList1:
-                    //case PropertyType.TargetList2:
-                    //case PropertyType.TargetList3:
-                    //    //UpdateVisualPropertyTargetList(gameCycle, nodeProp.GetValue64(), prop - PropertyType.TargetList0);
+                    //UpdateVisualPropertyTargetList(gameCycle, nodeProp.GetValue64(), prop - PropertyType.TargetList0);
                     break;
 
                 case PropertyType.VisualFx:
@@ -440,18 +434,14 @@ namespace Client.Entity
 
         private void UpdateVisualPropertyBars(uint gameCycle, long prop, RyzomClient client)
         {
-            //// Encode HP to 7 bits
-            //barInfo.Score[SCORES::hit_points]
+            // Encode HP to 7 bits
             var hitPoints = (sbyte)((prop & 0x7ff) * 127 / 1023);
-            //// NB: barInfo are sint8, but no problem, since anything following is 7 bits.
-            //barInfo.Score[SCORES::stamina]
+
+            // NB: barInfo are sint8, but no problem, since anything following is 7 bits.
             var stamina = (byte)((prop >> 11) & 0x7f);
-            //barInfo.Score[SCORES::sap]
             var sap = (byte)((prop >> 18) & 0x7f);
-            //barInfo.Score[SCORES::focus]
             var focus = (byte)((prop >> 25) & 0x7f);
 
-            //client.GetLogger().Info($"{_entityName} {hitPoints} {stamina} {sap} {focus}");
             client.Plugins.OnEntityUpdateBars(gameCycle, prop, _slot, hitPoints, stamina, sap, focus);
         }
 
@@ -492,14 +482,14 @@ namespace Client.Entity
             // Store the name Id
             _nameId = nameId;
 
-            //	STRING_MANAGER::CStringManagerClient::instance()->waitString(nameId, this, &_Name);
             client.GetStringManager().WaitString(nameId, SetName, client.GetNetworkManager());
 
-            //if(!getEntityName().empty())
-            //	nlwarning("CH::updateVPName:%d: name Id '%d' received but no name allocated.", _Slot, nameId);
-            //else if(verboseVP(this))
-            //	nlinfo("(%05d,%03d) CH::updateVPName:%d: name '%s(%d)' received.", sint32(T1%100000), NetMngr.getCurrentServerTick(), _Slot, getEntityName().toString().c_str(), nameId);
-            //updateMissionTarget();
+            // if(GetEntityName().empty())
+            // 	nlwarning("CH::updateVPName:%d: name Id '%d' received but no name allocated.", _Slot, nameId);
+            // else if(verboseVP(this))
+            // 	nlinfo("(%05d,%03d) CH::updateVPName:%d: name '%s(%d)' received.", sint32(T1%100000), NetMngr.getCurrentServerTick(), _Slot, getEntityName().toString().c_str(), nameId);
+            
+            // TODO: updateMissionTarget();
         }
 
 

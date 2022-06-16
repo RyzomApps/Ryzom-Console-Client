@@ -15,6 +15,7 @@ namespace Client.Messages
     {
         public MessageField(MessageFieldType type, byte bitSize = 0)
         {
+            // TODO: implementation
         }
     }
 }

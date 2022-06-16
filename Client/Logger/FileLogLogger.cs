@@ -10,7 +10,6 @@ using System;
 using System.IO;
 using API.Chat;
 using API.Helper;
-using Client.Chat;
 
 namespace Client.Logger
 {

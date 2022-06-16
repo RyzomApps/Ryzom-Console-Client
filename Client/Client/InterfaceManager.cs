@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using System.Xml;
 using Client.Brick;
 using Client.Database;
@@ -69,23 +68,23 @@ namespace Client.Client
                 file.Load(fileName);
                 file.Load(fileName);
 
-                //Parse the parser output!!!
+                // Parse the parser output!!!
                 var localNode = new DatabaseNodeBranch("LOCAL");
                 localNode.Init(file.DocumentElement, null);
                 _databaseManager.GetDb().AttachChild(localNode, "LOCAL");
 
                 //// Create the observers for auto-copy SERVER->LOCAL of inventory
                 //ServerToLocalAutoCopyInventory.init("INVENTORY");
-                //
+
                 //// Create the observers for auto-copy SERVER->LOCAL of exchange
                 //ServerToLocalAutoCopyExchange.init("EXCHANGE");
-                //
+
                 //// Create the observers for auto-copy SERVER->LOCAL of dm (animator) gift
                 //ServerToLocalAutoCopyDMGift.init("DM_GIFT");
-                //
+
                 //// Create the observers for auto-copy SERVER->LOCAL of context menu
                 //ServerToLocalAutoCopyContextMenu.init("TARGET:CONTEXT_MENU");
-                //
+
                 //// Create the observers for auto-copy SERVER->LOCAL of Skill Points
                 //ServerToLocalAutoCopySkillPoints.init("USER");
             }

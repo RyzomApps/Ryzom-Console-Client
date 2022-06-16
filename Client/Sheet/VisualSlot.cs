@@ -13,17 +13,17 @@ namespace Client.Sheet
     /// </summary>
     public enum VisualSlot
     {
-        HIDDEN_SLOT = 0,
-        CHEST_SLOT,
-        LEGS_SLOT,
-        HEAD_SLOT,
-        ARMS_SLOT,
-        FACE_SLOT,
-        HANDS_SLOT,
-        FEET_SLOT,
-        RIGHT_HAND_SLOT,
-        LEFT_HAND_SLOT,
+        HiddenSlot = 0,
+        ChestSlot,
+        LegsSlot,
+        HeadSlot,
+        ArmsSlot,
+        FaceSlot,
+        HandsSlot,
+        FeetSlot,
+        RightHandSlot,
+        LeftHandSlot,
 
-        NB_SLOT
+        NbSlot
     }
 }

@@ -60,11 +60,11 @@ namespace Client.Network
                         break;
                     case 1:
                         lAck = LastAck1;
-                        channel = (uint) (receivedPacket & 1);
+                        channel = (uint)(receivedPacket & 1);
                         break;
                     case 2:
                         lAck = LastAck2;
-                        channel = (uint) (receivedPacket & 3);
+                        channel = (uint)(receivedPacket & 3);
                         break;
                 }
 
@@ -74,7 +74,7 @@ namespace Client.Network
 
                 var lastAck = lAck[channel];
 
-                for (;;)
+                for (; ; )
                 {
                     var next = false;
                     inbox.Serial(ref next);
@@ -101,21 +101,18 @@ namespace Client.Network
                     if (keep)
                     {
                         actions.Add(action);
-                        RyzomClient.GetInstance().GetLogger()?.Debug(
-                            $"ImpulseDecoder: received new impulsion {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
+                        RyzomClient.GetInstance().GetLogger()?.Debug($"ImpulseDecoder: received new impulsion {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                     }
                     else
                     {
-                        RyzomClient.GetInstance().GetLogger()?.Warn(
-                            $"ImpulseDecoder: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
+                        RyzomClient.GetInstance().GetLogger()?.Warn($"ImpulseDecoder: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                         ActionFactory.Remove(action);
                     }
                 }
 
                 if (checkOnce)
                 {
-                    RyzomClient.GetInstance().GetLogger()?.Debug(
-                        $"ImpulseDecoder: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
+                    RyzomClient.GetInstance().GetLogger()?.Debug($"ImpulseDecoder: at level {level} (channel {channel}), {num} actions{(keep ? "" : " (discarded)")} (ReceivedAck={receivedAck}/lastAck={lastAck}/nextSentPacket={nextSentPacket})");
                 }
             }
         }

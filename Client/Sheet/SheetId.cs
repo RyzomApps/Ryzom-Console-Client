@@ -76,5 +76,11 @@ namespace Client.Sheet
         {
             return Id.CompareTo(other.Id);
         }
+
+        public void BuildSheetId(int serialCompBrick, EntitySheet.TType sbrick)
+        {
+            //throw new NotImplementedException();
+            // TODO: BuildSheetId implementation!
+        }
     }
 }

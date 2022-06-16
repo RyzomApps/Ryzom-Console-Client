@@ -76,7 +76,6 @@ namespace Client.Phrase
 
         private readonly SheetManager _sheetManager;
         private readonly StringManager _stringManager;
-        private readonly InterfaceManager _interfaceManager;
         private readonly DatabaseManager _databaseManager;
         private readonly SheetIdFactory _sheetIdFactory;
 
@@ -84,9 +83,6 @@ namespace Client.Phrase
         private DatabaseNodeLeaf[] _bookDbLeaves;
         private DatabaseNodeLeaf[] _memoryDbLeaves;
         private DatabaseNodeLeaf[] _memoryAltDbLeaves;
-
-        private DatabaseNodeLeaf _nextExecuteLeaf;
-        private DatabaseNodeLeaf _nextExecuteIsCyclicLeaf;
 
         // Shortcut To PhraseSheets Leaves in BotChat
         private DatabaseNodeLeaf[] _botChatPhraseSheetLeaves;
@@ -125,7 +121,6 @@ namespace Client.Phrase
         {
             _sheetManager = client.GetSheetManager();
             _stringManager =  client.GetStringManager();
-            _interfaceManager =  client.GetInterfaceManager();
             _databaseManager =  client.GetDatabaseManager();
             _sheetIdFactory =  client.GetSheetIdFactory();
 
@@ -142,7 +137,7 @@ namespace Client.Phrase
         /// </summary>
         private void Reset()
         {
-
+            // TODO
         }
 
         //static bool _registerClassDone;
@@ -220,11 +215,9 @@ namespace Client.Phrase
             // init the UI Next Execute slot
             var node2 = _databaseManager.GetDbProp(PHRASE_DB_EXECUTE_NEXT);
             node2.SetValue32(0);
-            _nextExecuteLeaf = node2;
 
             node2 = _databaseManager.GetDbProp(PHRASE_DB_EXECUTE_NEXT_IS_CYCLIC);
             node2.SetValue32(0);
-            _nextExecuteIsCyclicLeaf = node2;
 
             // Init BotChat leaves
             _botChatPhraseSheetLeaves = new DatabaseNodeLeaf[PHRASE_MAX_BOTCHAT_SLOT];
@@ -524,12 +517,14 @@ namespace Client.Phrase
 
                             f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase?.Name}\t{phrase?.Bricks?.Count}:");
 
-                            foreach (var brick in phrase?.Bricks)
-                            {
-                                BrickSheet bs = (BrickSheet)_sheetManager.Get(brick);
+                            if (phrase?.Bricks != null)
 
-                                f.WriteLine($"\t{brick.AsInt()}\t{brick.Type}\t{bs.IdIcon}");
-                            }
+                                foreach (var brick in phrase?.Bricks)
+                                {
+                                    var bs = (BrickSheet) _sheetManager.Get(brick);
+
+                                    f.WriteLine($"\t{brick.AsInt()}\t{brick.Type}\t{bs.IdIcon}");
+                                }
                         }
 
                         s++;

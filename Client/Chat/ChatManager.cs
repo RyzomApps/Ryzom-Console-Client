@@ -6,11 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using API.Chat;
-using API.Entity;
 using Client.Client;
 using Client.Database;
 using Client.Messages;
@@ -38,7 +36,7 @@ namespace Client.Chat
             _databaseManager = networkManager.GetDatabaseManager();
 
             // default to NULL
-            for (int i = 0; i < Constants.MaxDynChanPerPlayer; i++)
+            for (var i = 0; i < Constants.MaxDynChanPerPlayer; i++)
             {
                 _dynamicChannelIdLeaf[i] = null;
             }
@@ -49,8 +47,6 @@ namespace Client.Chat
         /// </summary>
         public void InitInGame()
         {
-            //CInterfaceManager pIM = CInterfaceManager.getInstance();
-
             for (var i = 0; i < Constants.MaxDynChanPerPlayer; i++)
             {
                 // default

@@ -244,7 +244,7 @@ namespace Client.Entity
         public void Assist(byte slot)
         {
             // Check the current target
-            if (slot == Constants.InvalidSlot || slot == _slot)
+            if (slot == Constants.InvalidSlot || slot == Slot())
             {
                 return;
             }
@@ -260,7 +260,7 @@ namespace Client.Entity
             // Check the new slot.
             var newSlot = target.TargetSlot();
 
-            if (newSlot == Constants.InvalidSlot || newSlot == _slot)
+            if (newSlot == Constants.InvalidSlot || newSlot == Slot())
             {
                 return;
             }

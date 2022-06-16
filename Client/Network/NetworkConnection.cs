@@ -1473,7 +1473,7 @@ namespace Client.Network
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            Byte quit = (byte)SystemMessageType.SystemQuitCode;
+            var quit = (byte)SystemMessageType.SystemQuitCode;
 
             message.Serial(ref quit);
             message.Serial(ref _quitId);

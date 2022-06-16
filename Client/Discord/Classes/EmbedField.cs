@@ -11,24 +11,24 @@ using System.Text.Json.Serialization;
 namespace Client.Discord.Classes
 {
     public class EmbedField
-    {
-        [JsonPropertyName("name")]
+    {        
         /// <summary>
         /// Field name
         /// </summary>
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonPropertyName("value")]
         /// <summary>
         /// Field value
         /// </summary>
+        [JsonPropertyName("value")]
         public string Value { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("inline")]
         /// <summary>
         /// Field align
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("inline")]
         public bool? InLine { get; set; }
     }
 }

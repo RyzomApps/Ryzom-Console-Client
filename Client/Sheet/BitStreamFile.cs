@@ -6,6 +6,7 @@ using Client.Phrase;
 
 namespace Client.Sheet
 {
+    // TODO: BitMemoryStream and BitStreamFile should use the same interface
     public class BitStreamFile
     {
         byte[] _fileBytes;

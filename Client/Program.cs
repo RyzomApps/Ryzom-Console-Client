@@ -207,7 +207,7 @@ namespace Client
                 assembly = Assembly.GetExecutingAssembly();
             }
 
-            return assembly.GetTypes().Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal))
+            return assembly.GetTypes().Where(t => string.Equals(t.Namespace, nameSpace, StringComparison.Ordinal))
                 .ToArray();
         }
 

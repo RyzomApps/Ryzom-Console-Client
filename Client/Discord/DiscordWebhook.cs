@@ -42,7 +42,7 @@ namespace Client.Discord
         private static void SetFile(MemoryStream stream, string bound, int index, FileInfo file)
         {
             var cDisposition = $"Content-Disposition: form-data; name=\"file_{index}\"; filename=\"{file.Name}\"\r\n";
-            var cType = "Content-Type: application/octet-stream\r\n\r\n";
+            const string cType = "Content-Type: application/octet-stream\r\n\r\n";
             AddField(stream, bound, cDisposition, cType, File.ReadAllBytes(file.FullName));
         }
 
@@ -52,7 +52,7 @@ namespace Client.Discord
         public void Send(DiscordMessage message, params FileInfo[] files)
         {
             if (string.IsNullOrEmpty(Url))
-                throw new ArgumentNullException("Url", @"Invalid Webhook URL.");
+                throw new NullReferenceException(@"Invalid Webhook URL.");
 
             var bound = "------------------------" + DateTime.Now.Ticks.ToString("x");
 
@@ -60,6 +60,7 @@ namespace Client.Discord
             webhook.Headers.Add("Content-Type", "multipart/form-data; boundary=" + bound);
 
             var stream = new MemoryStream();
+
             for (var i = 0; i < files.Length; i++)
                 SetFile(stream, bound, i, files[i]);
 
@@ -75,6 +76,7 @@ namespace Client.Discord
             {
                 throw new WebException(ex.Response.GetResponseStream().Decode());
             }
+
             stream.Dispose();
         }
     }

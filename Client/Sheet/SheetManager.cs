@@ -122,8 +122,6 @@ namespace Client.Sheet
         {
             _client = client;
 
-            //_nbEyesColor = 0; // Default is no color available for the eyes.
-
             //// Slot 0 is invalid.
             //for (uint i = 0; i < NB_SLOT; ++i)
             //{
@@ -313,8 +311,8 @@ namespace Client.Sheet
             //_sheetIdFactory.Init(updatePackedSheet);
 
             // load the packed sheet if exists
-            //try
-            //{
+            try
+            {
                 BitStreamFile ifile = new BitStreamFile();
                 //ifile.SetCacheFileOnOpen(true);
 
@@ -328,14 +326,14 @@ namespace Client.Sheet
                 ////nlinfo ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
 
                 // read the header
-                uint PACKED_SHEET_HEADER = 1347113800;
-                ifile.SerialCheck(PACKED_SHEET_HEADER);
+                const uint packedSheetHeader = 1347113800;
+                ifile.SerialCheck(packedSheetHeader);
 
-                uint PACKED_SHEET_VERSION = 5;
-                ifile.SerialCheck(PACKED_SHEET_VERSION);
+                const uint packedSheetVersion = 5;
+                ifile.SerialCheck(packedSheetVersion);
 
-                uint PACKED_SHEET_VERSION_COMPATIBLE = 0;
-                ifile.SerialVersion(PACKED_SHEET_VERSION_COMPATIBLE);
+                const uint packedSheetVersionCompatible = 0;
+                ifile.SerialVersion(packedSheetVersionCompatible);
 
                 // Read depend block size
                 ifile.Serial(out uint dependBlockSize);
@@ -381,29 +379,30 @@ namespace Client.Sheet
 
                 ifile.SerialCont(ref container, _sheetIdFactory);
                 ifile.Close();
-            //}
-            //catch (Exception e)
-            //{
-            //    // clear the container because it can contains partially loaded sheet so we must clean it before continue
-            //    container.Clear();
-            //    if (!updatePackedSheet)
-            //    {
-            //        if (errorIfPackedSheetNotGood)
-            //        {
-            //            _client.GetLogger().Error($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
-            //        }
-            //        else
-            //        {
-            //            _client.GetLogger().Info($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
-            //        }
+            }
+            catch (Exception e)
+            {
+                // clear the container because it can contains partially loaded sheet so we must clean it before continue
+                container.Clear();
 
-            //        return;
-            //    }
-            //    else
-            //    {
-            //        _client.GetLogger().Info($"loadForm(): Exception during reading the packed file, I'll reconstruct it ({e.Message})");
-            //    }
-            //}
+                //if (!updatePackedSheet)
+                //{
+                    if (errorIfPackedSheetNotGood)
+                    {
+                        _client.GetLogger().Error($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
+                    }
+                    else
+                    {
+                        _client.GetLogger().Info($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
+                    }
+
+                    return;
+                //}
+                //else
+                //{
+                //    _client.GetLogger().Info($"loadForm(): Exception during reading the packed file, I'll reconstruct it ({e.Message})");
+                //}
+            }
 
             // if we don't want to update packed sheet, we have nothing more to do
             if (!updatePackedSheet)

@@ -226,9 +226,9 @@ namespace Client.Database
         /// <summary>
         /// Add a new sub database node
         /// </summary>
-        /// <param id="databaseNode">is the new subnode</param>
-        /// <param id="nodeName">is the name of the database node</param>
-        internal override void AttachChild(DatabaseNodeBase node, string nodeName)
+        /// <param name="node">is the new subnode</param>
+        /// <param name="nodeName">is the name of the database node</param>
+        internal virtual void AttachChild(DatabaseNodeBase node, string nodeName)
         {
             Debug.Assert(Parent == null);
 
@@ -246,7 +246,7 @@ namespace Client.Database
         /// <summary>
         /// Get a database node. Return null if out of bounds (no warning)
         /// </summary>
-        /// <param id="idx">is the database node index</param>
+        /// <param name="idx">is the database node index</param>
         internal override DatabaseNodeBase GetNode(ushort idx)
         {
             return idx < _nodes.Count ? _nodes[idx] : null;
@@ -255,8 +255,9 @@ namespace Client.Database
         /// <summary>
         /// Get a database node index
         /// </summary>
-        /// <param id="databaseNode">is a pointer to the database node</param>
-        internal override bool GetNodeIndex(DatabaseNodeBase databaseNode, ref uint index)
+        /// <param name="databaseNode">is a pointer to the database node</param>
+        /// <param name="index">referenced index</param>
+        internal virtual bool GetNodeIndex(DatabaseNodeBase databaseNode, ref uint index)
         {
             foreach (var it in _nodes)
             {
@@ -355,7 +356,9 @@ namespace Client.Database
             return pDatabaseNode.GetProp(id);
         }
 
-        /// <summary>Clear the databaseNode and his children</summary>
+        /// <summary>
+        /// Clear the databaseNode and his children
+        /// </summary>
         public void Clear()
         {
             throw new NotImplementedException();
@@ -513,6 +516,7 @@ namespace Client.Database
             return null;
         }
 
+        /// <inheritdoc />
         internal override void Write(string id, StreamWriter f)
         {
             foreach (var node in _nodes)

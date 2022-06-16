@@ -24,38 +24,36 @@ namespace Client.Client
     /// </summary>
     public class StringManager : IStringManager
     {
-        private readonly Dictionary<uint, string> ReceivedStrings = new Dictionary<uint, string>();
-        private readonly HashSet<uint> WaitingStrings = new HashSet<uint>();
+        private readonly Dictionary<uint, string> _receivedStrings = new Dictionary<uint, string>();
+        private readonly HashSet<uint> _waitingStrings = new HashSet<uint>();
 
-        private readonly Dictionary<uint, DynamicStringInfo> ReceivedDynStrings = new Dictionary<uint, DynamicStringInfo>();
+        private readonly Dictionary<uint, DynamicStringInfo> _receivedDynStrings = new Dictionary<uint, DynamicStringInfo>();
 
-        private readonly Dictionary<uint, DynamicStringInfo> WaitingDynStrings = new Dictionary<uint, DynamicStringInfo>();
+        private readonly Dictionary<uint, DynamicStringInfo> _waitingDynStrings = new Dictionary<uint, DynamicStringInfo>();
 
         /// <summary>
         /// String waiting the string value from the server.
         /// </summary>
-        private readonly Dictionary<uint, StringWaiter> StringsWaiters = new Dictionary<uint, StringWaiter>();
+        private readonly Dictionary<uint, StringWaiter> _stringsWaiters = new Dictionary<uint, StringWaiter>();
 
         /// <summary>
         /// String waiting the dyn string value from the server.
         /// </summary>
-        private readonly Dictionary<uint, StringWaiter> DynStringsWaiters = new Dictionary<uint, StringWaiter>();
+        private readonly Dictionary<uint, StringWaiter> _dynStringsWaiters = new Dictionary<uint, StringWaiter>();
 
         /// <summary>
         /// Callback for string value from the server
         /// </summary>
-        private readonly Dictionary<uint, Action<uint, string>> StringsCallbacks =
-            new Dictionary<uint, Action<uint, string>>();
+        private readonly Dictionary<uint, Action<uint, string>> _stringsCallbacks = new Dictionary<uint, Action<uint, string>>();
 
         /// <summary>
         /// Callback for dyn string value from the server
         /// </summary>
-        private readonly Dictionary<uint, StringWaitCallback> DynStringsCallbacks =
-            new Dictionary<uint, StringWaitCallback>();
+        private readonly Dictionary<uint, StringWaitCallback> _dynStringsCallbacks = new Dictionary<uint, StringWaitCallback>();
 
-        private readonly Dictionary<string, string> DynStrings = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _dynStrings = new Dictionary<string, string>();
 
-        private readonly List<CachedString> CacheStringToSave = new List<CachedString>();
+        private readonly List<CachedString> _cacheStringToSave = new List<CachedString>();
 
         private string _shardId;
         private string _languageCode;
@@ -65,11 +63,18 @@ namespace Client.Client
 
         private readonly RyzomClient _client;
 
+        /// <summary>
+        /// constructor
+        /// </summary>
+        /// <param name="client"></param>
         public StringManager(RyzomClient client)
         {
             _client = client;
         }
-
+        /// <summary>
+        /// Prepare the string manager to use a persistent string cache.
+        /// There is one cache file for each language and for each encountered shard.
+        /// </summary>
         public void InitCache(string shardId, string languageCode)
         {
             _shardId = shardId;
@@ -82,6 +87,11 @@ namespace Client.Client
                 _cacheInited = false;
         }
 
+        /// <summary>
+        /// Clear the current string table and load the content of the cache file.
+	    /// This method is called after receiving the impulse RELOAD_CACHE from IOS.
+	    /// If the received timestamp and the file timestamp differ, the file cache is reseted.
+        /// </summary>
         public void LoadCache(in int timestamp)
         {
             if (!_cacheInited) return;
@@ -133,12 +143,13 @@ namespace Client.Client
                 }
 
                 // clear all current data.
-                ReceivedStrings.Clear();
-                ReceivedDynStrings.Clear();
+                _receivedStrings.Clear();
+                _receivedDynStrings.Clear();
+
                 // NB : we keep the waiting strings and dyn strings
 
                 // insert the empty string.
-                ReceivedStrings.Add(0, "");
+                _receivedStrings.Add(0, "");
 
                 // load the cache file
                 using var fileStream2 = new FileStream(_cacheFilename, FileMode.Open);
@@ -148,7 +159,6 @@ namespace Client.Client
                 fileStream2.Read(timeBytes2, 0, 4);
 
                 _timestamp = BitConverter.ToUInt32(timeBytes2);
-                //Debug.Assert(_Timestamp == timestamp);
 
                 while (fileStream2.Position < fileStream2.Length)
                 {
@@ -169,10 +179,10 @@ namespace Client.Client
                     var id = BitConverter.ToUInt32(idBytes);
                     var str = Encoding.UTF8.GetString(strBytes).Replace("\0", "");
 
-                    //_client.GetLogger().Debug($"SM : loading string [{id}] as [{str}] in cache");
+                    _client.GetLogger().Debug($"SM : loading string [{id}] as [{str}] in cache");
 
-                    if (!ReceivedStrings.ContainsKey(id))
-                        ReceivedStrings.Add(id, str);
+                    if (!_receivedStrings.ContainsKey(id))
+                        _receivedStrings.Add(id, str);
                 }
             }
             catch (Exception e)
@@ -185,15 +195,15 @@ namespace Client.Client
         }
 
         /// <summary>
-        /// flush the server string cache
+        /// Force the cache to be saved
         /// </summary>
         public void FlushStringCache()
         {
-            if (CacheStringToSave.Count <= 0) return;
+            if (_cacheStringToSave.Count <= 0) return;
 
             using var fileStream = new FileStream(_cacheFilename, FileMode.Append);
 
-            foreach (var cacheString in CacheStringToSave)
+            foreach (var cacheString in _cacheStringToSave)
             {
                 var idBytes = BitConverter.GetBytes(cacheString.StringId);
                 var lenBytes = BitConverter.GetBytes(cacheString.String.Length);
@@ -209,13 +219,13 @@ namespace Client.Client
                 }
             }
 
-            CacheStringToSave.Clear();
+            _cacheStringToSave.Clear();
         }
 
         /// <summary>
         /// extract the dynamic string from the stream and check if it is complete
         /// </summary>
-        public void ReceiveDynString(BitMemoryStream bms, NetworkManager _networkManager)
+        public void ReceiveDynString(BitMemoryStream bms, NetworkManager networkManager)
         {
             var dynInfo = new DynamicStringInfo { Status = StringStatus.Received };
 
@@ -225,41 +235,41 @@ namespace Client.Client
 
             // read the base string Id
             uint stringId = 0;
-            bms.Serial( /*dynInfo.*/ref stringId);
+            bms.Serial(ref stringId);
             dynInfo.StringId = stringId;
 
             // try to build the string
             dynInfo.Message = bms;
-            BuildDynString(dynInfo, _networkManager);
+            BuildDynString(dynInfo, networkManager);
 
             if (dynInfo.Status == StringStatus.Complete)
             {
                 _client.GetLogger()?.Debug($"DynString {dynId} available : [{dynInfo.String}]");
 
-                if (ReceivedDynStrings.ContainsKey(dynId))
-                    ReceivedDynStrings[dynId] = dynInfo;
+                if (_receivedDynStrings.ContainsKey(dynId))
+                    _receivedDynStrings[dynId] = dynInfo;
                 else
-                    ReceivedDynStrings.Add(dynId, dynInfo);
+                    _receivedDynStrings.Add(dynId, dynInfo);
 
                 // security, if dynstring Message received twice, it is possible that the dynstring is still in waiting list
-                WaitingDynStrings.Remove(dynId);
+                _waitingDynStrings.Remove(dynId);
 
                 // update the waiting dyn strings
-                if (DynStringsWaiters.ContainsKey(dynId))
+                if (_dynStringsWaiters.ContainsKey(dynId))
                 {
-                    DynStringsWaiters[dynId].Result = dynInfo.String;
-                    DynStringsWaiters.Remove(dynId);
+                    _dynStringsWaiters[dynId].Result = dynInfo.String;
+                    _dynStringsWaiters.Remove(dynId);
                 }
 
                 // callback the waiting dyn strings
-                if (DynStringsCallbacks.ContainsKey(dynId))
+                if (_dynStringsCallbacks.ContainsKey(dynId))
                 {
-                    DynStringsCallbacks[dynId].OnDynStringAvailable(dynId, dynInfo.String);
-                    DynStringsCallbacks.Remove(dynId);
+                    _dynStringsCallbacks[dynId].OnDynStringAvailable(dynId, dynInfo.String);
+                    _dynStringsCallbacks.Remove(dynId);
                 }
             }
             else
-                if (!WaitingDynStrings.ContainsKey(dynId)) WaitingDynStrings.Add(dynId, dynInfo);
+                if (!_waitingDynStrings.ContainsKey(dynId)) _waitingDynStrings.Add(dynId, dynInfo);
 
             // Fire an Event
             _client.Plugins.OnPhraseSend(dynInfo);
@@ -268,7 +278,7 @@ namespace Client.Client
         /// <summary>
         /// assemble the dynamic string from DynamicStringInfo
         /// </summary>
-        private bool BuildDynString(DynamicStringInfo dynInfo, NetworkManager _networkManager)
+        private bool BuildDynString(DynamicStringInfo dynInfo, NetworkManager networkManager)
         {
             if (dynInfo.Status == StringStatus.Received)
             {
@@ -279,117 +289,122 @@ namespace Client.Client
                 }
 
                 // ok, we have the base string, we can serial the parameters
-                for (int i = 0; i < dynInfo.String.Length - 1; i++)
+                for (var i = 0; i < dynInfo.String.Length - 1; i++)
                 {
                     var character = dynInfo.String[i];
 
-                    if (character == '%')
+                    if (character != '%') continue;
+
+                    i++;
+                    character = dynInfo.String[i];
+
+                    if (character == '%') continue;
+
+                    // we have a replacement point.
+                    var param = new ParamValue
                     {
-                        i++;
-                        character = dynInfo.String[i];
+                        ReplacementPoint = i - 1 //(character - 1) - dynInfo.String.begin();
+                    };
 
-                        if (character != '%')
-                        {
-                            // we have a replacement point.
-                            ParamValue param = new ParamValue
+                    switch (character)
+                    {
+                        case 's':
+                            param.Type = ParamType.StringID;
+                            try
                             {
-                                ReplacementPoint = i - 1 //(character - 1) - dynInfo.String.begin();
-                            };
-
-                            switch (character)
+                                param.StringId = 0;
+                                dynInfo.Message.Serial(ref param.StringId);
+                            }
+                            catch (Exception)
                             {
-                                case 's':
-                                    param.Type = ParamType.StringID;
-                                    try
-                                    {
-                                        param.StringId = 0;
-                                        dynInfo.Message.Serial(ref param.StringId);
-                                    }
-                                    catch (Exception)
-                                    {
-                                    }
-
-                                    break;
-
-                                case 'i':
-                                    param.Type = ParamType.Integer;
-                                    try
-                                    {
-                                        param.Integer = 0;
-                                        dynInfo.Message.Serial(ref param.Integer);
-                                    }
-                                    catch (Exception)
-                                    {
-                                    }
-
-                                    break;
-
-                                case 't':
-                                    param.Type = ParamType.Time;
-                                    try
-                                    {
-                                        param.Time = 0;
-                                        dynInfo.Message.Serial(ref param.Time);
-                                    }
-                                    catch (Exception)
-                                    {
-                                    }
-
-                                    break;
-
-                                case '$':
-                                    param.Type = ParamType.Money;
-                                    try
-                                    {
-                                        param.Money = 0;
-                                        byte[] moneyArr = new byte[64];
-                                        dynInfo.Message.Serial(ref moneyArr);
-                                        param.Money = BitConverter.ToUInt64(moneyArr);
-                                    }
-                                    catch (Exception)
-                                    {
-                                    }
-
-                                    break;
-
-                                case 'm':
-                                    param.Type = ParamType.DynStringID;
-                                    try
-                                    {
-                                        param.DynStringId = 0;
-                                        dynInfo.Message.Serial(ref param.DynStringId);
-                                    }
-                                    catch (Exception)
-                                    {
-                                    }
-
-                                    break;
-
-                                default:
-                                    _client.GetLogger().Warn($"Error: unknown replacement tag {character}");
-                                    return false;
+                                // ignored
                             }
 
-                            dynInfo.Params.Add(param);
-                        }
+                            break;
+
+                        case 'i':
+                            param.Type = ParamType.Integer;
+                            try
+                            {
+                                param.Integer = 0;
+                                dynInfo.Message.Serial(ref param.Integer);
+                            }
+                            catch (Exception)
+                            {
+                                // ignored
+                            }
+
+                            break;
+
+                        case 't':
+                            param.Type = ParamType.Time;
+                            try
+                            {
+                                param.Time = 0;
+                                dynInfo.Message.Serial(ref param.Time);
+                            }
+                            catch (Exception)
+                            {
+                                // ignored
+                            }
+
+                            break;
+
+                        case '$':
+                            param.Type = ParamType.Money;
+                            try
+                            {
+                                param.Money = 0;
+                                byte[] moneyArr = new byte[64];
+                                dynInfo.Message.Serial(ref moneyArr);
+                                param.Money = BitConverter.ToUInt64(moneyArr);
+                            }
+                            catch (Exception)
+                            {
+                                // ignored
+                            }
+
+                            break;
+
+                        case 'm':
+                            param.Type = ParamType.DynStringID;
+                            try
+                            {
+                                param.DynStringId = 0;
+                                dynInfo.Message.Serial(ref param.DynStringId);
+                            }
+                            catch (Exception)
+                            {
+                                // ignored
+                            }
+
+                            break;
+
+                        default:
+                            _client.GetLogger().Warn($"Error: unknown replacement tag {character}");
+                            return false;
                     }
+
+                    dynInfo.Params.Add(param);
                 }
 
                 dynInfo.Status = StringStatus.Serialized;
             }
 
-            if (dynInfo.Status == StringStatus.Serialized)
+            switch (dynInfo.Status)
             {
-                // try to retreive all string parameter to build the string.
-                var temp = new StringBuilder();
-
-                var move = 0;
-
-                foreach (var param in dynInfo.Params)
+                case StringStatus.Serialized:
                 {
-                    switch (param.Type)
+                    // try to retreive all string parameter to build the string.
+                    var temp = new StringBuilder();
+
+                    var move = 0;
+
+                    foreach (var param in dynInfo.Params)
                     {
-                        case ParamType.StringID:
+                        switch (param.Type)
+                        {
+                            case ParamType.StringID:
                             {
                                 if (!GetString(param.StringId, out string str, ((RyzomClient)_client).GetNetworkManager()))
                                     return false;
@@ -403,21 +418,24 @@ namespace Client.Client
                                 }
 
                                 // If the string is a player name, we may have to remove the shard name (if the string looks like a player name)
-                                if (str.Length != 0 && _networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length > 0)
+                                if (str.Length != 0 && networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length > 0)
                                 {
                                     // fast pre-test
                                     if (str[^1] == ')')
                                     {
                                         // the player name must be at least bigger than the string with ()
-                                        if (str.Length > _networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length)
+                                        if (str.Length > networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length)
                                         {
                                             // If the shard name is the same as the player home shard name, remove it
-                                            uint len = (uint)_networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length;
-                                            uint start = (uint)str.Length - len;
+                                            var len = networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length;
+                                            var start = str.Length - len;
 
-                                            // TODO remove the shard from player name
-                                            //if (ucstrnicmp(str, start, len, _networkManager.PlayerSelectedHomeShardNameWithParenthesis) == 0)
-                                            //	str.resize(start);
+                                            // Unicode case-insensitive compare two same-sized strings
+                                            // compare 2 ucstring s0 and s1, without regard to case. give start and size for sequence p0 // OLD
+                                            // const ucstring &s0, uint p0, uint n0, const ucstring &s1
+                                            // return -1 if s1>s0, 1 if s0>s1, or 0 if equals
+                                            if(string.Compare(str.Substring(start, len), networkManager.PlayerSelectedHomeShardNameWithParenthesis, StringComparison.OrdinalIgnoreCase) == 0)
+                                            	str = str[start..];
                                         }
                                     }
                                 }
@@ -441,172 +459,116 @@ namespace Client.Client
                                 temp.Append(str);
                                 move = param.ReplacementPoint + 2;
                             }
-                            break;
+                                break;
 
-                        case ParamType.Integer:
+                            case ParamType.Integer:
                             {
-                                //char value[1024];
-                                //sprintf(value, "%d", param.Integer);
-                                //temp.append(move, src + param.ReplacementPoint);
-                                //temp += string(value);
-                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
                                 var str = $"{param.Integer}";
                                 temp.Append(dynInfo.String[move..param.ReplacementPoint]);
                                 temp.Append(str);
                                 move = param.ReplacementPoint + 2;
                             }
-                            break;
+                                break;
 
-                        case ParamType.Time:
+                            case ParamType.Time:
                             {
-                                //string value;
-                                //uint time = (uint)param.Time;
-                                //if (time >= (10 * 60 * 60))
-                                //{
-                                //	uint nbHours = time / (10 * 60 * 60);
-                                //	time -= nbHours * 10 * 60 * 60;
-                                //	value = toString("%d ", nbHours) + CI18N.get("uiMissionTimerHour") + " ";
-                                //
-                                //	uint nbMinutes = time / (10 * 60);
-                                //	time -= nbMinutes * 10 * 60;
-                                //	value = value + toString("%d ", nbMinutes) + CI18N.get("uiMissionTimerMinute") + " ";
-                                //}
-                                //else if (time >= (10 * 60))
-                                //{
-                                //	uint nbMinutes = time / (10 * 60);
-                                //	time -= nbMinutes * 10 * 60;
-                                //	value = value + toString("%d ", nbMinutes) + CI18N.get("uiMissionTimerMinute") + " ";
-                                //}
-                                //uint nbSeconds = time / 10;
-                                //value = value + toString("%d", nbSeconds) + CI18N.get("uiMissionTimerSecond");
-                                //temp.append(move, src + param.ReplacementPoint);
-                                //temp += value;
-                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
                                 var str = $"{param.Time}";
                                 temp.Append(dynInfo.String[move..param.ReplacementPoint]);
                                 temp.Append(str);
                                 move = param.ReplacementPoint + 2;
                             }
-                            break;
+                                break;
 
-                        case ParamType.Money:
-                            ///\todo nicoB/Boris : this is a temp patch that display money as integers
+                            case ParamType.Money:
                             {
-                                //char value[1024];
-                                //sprintf(value, "%u", (uint)param.Money);
-                                //temp.append(move, src + param.ReplacementPoint);
-                                //temp += string(value);
-                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
                                 var str = $"{param.Money}";
                                 temp.Append(dynInfo.String[move..param.ReplacementPoint]);
                                 temp.Append(str);
                                 move = param.ReplacementPoint + 2;
                             }
-                            // TODO (from ryzom code)
-                            //					temp.append(move, src+param.ReplacementPoint);
-                            //					move = dynInfo.String.begin()+param.ReplacementPoint+2;
-                            break;
+                                break;
 
-                        case ParamType.DynStringID:
+                            case ParamType.DynStringID:
                             {
-                                if (!GetDynString(param.DynStringId, out string dynStr, _networkManager))
+                                if (!GetDynString(param.DynStringId, out string dynStr, networkManager))
                                     return false;
-                                //temp.append(move, src + param.ReplacementPoint);
-                                //temp += dynStr;
-                                //move = dynInfo.String.begin() + param.ReplacementPoint + 2;
 
                                 var str = $"{dynStr}";
                                 temp.Append(dynInfo.String[move..param.ReplacementPoint]);
                                 temp.Append(str);
                                 move = param.ReplacementPoint + 2;
                             }
-                            break;
+                                break;
 
-                        default:
-                            _client.GetLogger().Warn("Unknown parameter type.");
-                            break;
+                            default:
+                                _client.GetLogger().Warn("Unknown parameter type.");
+                                break;
+                        }
                     }
+
+                    // append the rest of the string
+                    temp.Append(dynInfo.String[move..]);
+
+                    // apply any 'delete' character in the string and replace double '%'
+                    temp = temp.Replace("" + (char)8, "");
+                    temp = temp.Replace("%%", "");
+                    
+                    dynInfo.Status = StringStatus.Complete;
+                    dynInfo.Message = null;
+                    dynInfo.String = temp.ToString();
+                    return true;
                 }
 
-                // append the rest of the string
-                temp.Append(dynInfo.String[move..]);
+                case StringStatus.Complete:
+                    return true;
 
-                // apply any 'delete' character in the string and replace double '%'
-                //{
-                //	uint i = 0;
-                //	while (i < temp.size())
-                //	{
-                //		if (temp[i] == 8)
-                //		{
-                //			// remove the 'delete' char AND the next char
-                //			temp.erase(i, 2);
-                //		}
-                //		else if (temp[i] == '%' && i < temp.size() - 1 && temp[i + 1] == '%')
-                //		{
-                //			temp.erase(i, 1);
-                //		}
-                //		else
-                //			++i;
-                //	}
-                //}
-
-                dynInfo.Status = StringStatus.Complete;
-                dynInfo.Message = null;
-                dynInfo.String = temp.ToString();
-                return true;
+                default:
+                    _client.GetLogger()?.Warn($"Inconsistent dyn string status : {dynInfo.Status}");
+                    return false;
             }
-
-            if (dynInfo.Status == StringStatus.Complete)
-                return true;
-
-            _client.GetLogger()?.Warn($"Inconsistent dyn string status : {dynInfo.Status}");
-            return false;
         }
 
-        public bool GetDynString(uint dynStringId, out string result, NetworkManager _networkManager)
+        public bool GetDynString(uint dynStringId, out string result, NetworkManager networkManager)
         {
             result = "";
 
             if (dynStringId == 0)
                 return true;
 
-            if (ReceivedDynStrings.ContainsKey(dynStringId))
+            if (_receivedDynStrings.ContainsKey(dynStringId))
             {
                 // ok, we have the string with all the parts.
-                result = ReceivedDynStrings[dynStringId].String;
+                result = _receivedDynStrings[dynStringId].String;
 
                 // security/antiloop checking
-                if (WaitingDynStrings.ContainsKey(dynStringId))
-                {
-                    _client.GetLogger()?.Warn(
-                        $"CStringManager::getDynString : the string {dynStringId} is received but still in _WaintingDynStrings !");
-                    WaitingDynStrings.Remove(dynStringId);
-                }
+                if (!_waitingDynStrings.ContainsKey(dynStringId)) return true;
+
+                _client.GetLogger()?.Warn(
+                    $"CStringManager::getDynString : the string {dynStringId} is received but still in _WaintingDynStrings !");
+                _waitingDynStrings.Remove(dynStringId);
 
                 return true;
             }
-            else
+
+            // check to see if the string is available now.
+            if (!_waitingDynStrings.ContainsKey(dynStringId))
             {
-                // check to see if the string is available now.
-                if (!WaitingDynStrings.ContainsKey(dynStringId))
-                {
-                    result = "";
-                    return false;
-                }
-
-                if (BuildDynString(WaitingDynStrings[dynStringId], _networkManager))
-                {
-                    result = WaitingDynStrings[dynStringId].String;
-                    ReceivedDynStrings.Add(dynStringId, WaitingDynStrings[dynStringId]);
-                    WaitingDynStrings.Remove(dynStringId);
-
-                    return true;
-                }
-
                 result = "";
-
                 return false;
             }
+
+            if (BuildDynString(_waitingDynStrings[dynStringId], networkManager))
+            {
+                result = _waitingDynStrings[dynStringId].String;
+                _receivedDynStrings.Add(dynStringId, _waitingDynStrings[dynStringId]);
+                _waitingDynStrings.Remove(dynStringId);
+
+                return true;
+            }
+
+            result = "";
+
+            return false;
         }
 
         /// <inheritdoc cref="GetString(uint, out string, NetworkManager)"/>
@@ -623,17 +585,11 @@ namespace Client.Client
         /// </summary>
         public bool GetString(uint stringId, out string result, NetworkManager networkManager)
         {
-            //if (stringId == 93402 || stringId == 93403) // TODO: why do this ids lead to a disconnect?
-            //{
-            //    result = string.Empty;
-            //    return false;
-            //}
-
-            if (!ReceivedStrings.ContainsKey(stringId))
+            if (!_receivedStrings.ContainsKey(stringId))
             {
-                if (!WaitingStrings.Contains(stringId))
+                if (!_waitingStrings.Contains(stringId))
                 {
-                    WaitingStrings.Add(stringId);
+                    _waitingStrings.Add(stringId);
 
                     // need to ask for this string.
                     var bms = new BitMemoryStream();
@@ -653,48 +609,44 @@ namespace Client.Client
                     }
                 }
 
-                // result.erase(); // = _WaitString;
                 result = string.Empty;
 
                 return false;
             }
 
-            result = ReceivedStrings[stringId];
+            result = _receivedStrings[stringId];
 
             if (result.Length <= 9 || result.Substring(0, 9) != "<missing:") return true;
 
-            if (DynStrings.ContainsKey(result[9..^1]))
+            if (_dynStrings.ContainsKey(result[9..^1]))
             {
-                result = DynStrings[result[9..^1]];
+                result = _dynStrings[result[9..^1]];
             }
 
             return true;
         }
 
-        internal void ReceiveString(uint stringId, string str, NetworkManager _networkManager)
+        internal void ReceiveString(uint stringId, string str, NetworkManager networkManager)
         {
-            //H_AUTO(CStringManagerClient_receiveString)
-
-            if (WaitingStrings.Contains(stringId))
+            if (_waitingStrings.Contains(stringId))
             {
-                WaitingStrings.Remove(stringId);
+                _waitingStrings.Remove(stringId);
             }
 
             var updateCache = true;
 
-            if (ReceivedStrings.ContainsKey(stringId))
+            if (_receivedStrings.ContainsKey(stringId))
             {
-                _client.GetLogger().Warn(
-                    $"Receiving stringID {stringId} ({str}), already in received string ({ReceivedStrings[stringId]}), replacing with new value.");
+                _client.GetLogger().Warn($"Receiving stringID {stringId} ({str}), already in received string ({_receivedStrings[stringId]}), replacing with new value.");
 
-                if (ReceivedStrings[stringId] != str)
-                    ReceivedStrings[stringId] = str;
+                if (_receivedStrings[stringId] != str)
+                    _receivedStrings[stringId] = str;
                 else
                     updateCache = false;
             }
             else
             {
-                ReceivedStrings.Add(stringId, str);
+                _receivedStrings.Add(stringId, str);
             }
 
             if (updateCache)
@@ -707,33 +659,33 @@ namespace Client.Client
                         StringId = stringId,
                         String = str
                     };
-                    CacheStringToSave.Add(cs);
+                    _cacheStringToSave.Add(cs);
                 }
             }
 
             // update the waiting strings
-            if (StringsWaiters.ContainsKey(stringId))
+            if (_stringsWaiters.ContainsKey(stringId))
             {
-                StringsWaiters[stringId].Result = str;
-                StringsWaiters.Remove(stringId);
+                _stringsWaiters[stringId].Result = str;
+                _stringsWaiters.Remove(stringId);
             }
 
             // callback the waiter
-            if (StringsCallbacks.ContainsKey(stringId))
+            if (_stringsCallbacks.ContainsKey(stringId))
             {
-                StringsCallbacks[stringId](stringId, str);
-                StringsCallbacks.Remove(stringId);
+                _stringsCallbacks[stringId](stringId, str);
+                _stringsCallbacks.Remove(stringId);
             }
 
             // TODO: try to complete any pending dyn string
-            bool restartLoop = false;
+            var restartLoop = false;
 
             while (restartLoop)
             {
-                foreach (var dynString in WaitingDynStrings)
+                foreach (var dynString in _waitingDynStrings)
                 {
                     /// Warning: if getDynString() return true, 'first' is erased => don't use it after in this loop
-                    if (GetDynString(dynString.Key, out string value, _networkManager))
+                    if (GetDynString(dynString.Key, out string value, networkManager))
                     {
                         var number = dynString.Key;
 
@@ -741,12 +693,12 @@ namespace Client.Client
 
                         // this dyn string is now complete !
                         // update the waiting dyn strings
-                        DynStringsWaiters[number].Result = str; // is that correct?
-                        DynStringsWaiters.Remove(number);
+                        _dynStringsWaiters[number].Result = str; // is that correct?
+                        _dynStringsWaiters.Remove(number);
 
                         // callback the waiting dyn strings
-                        DynStringsCallbacks[number].OnDynStringAvailable(number, value);
-                        DynStringsCallbacks.Remove(number);
+                        _dynStringsCallbacks[number].OnDynStringAvailable(number, value);
+                        _dynStringsCallbacks.Remove(number);
 
                         restartLoop = true;
                     }
@@ -766,13 +718,13 @@ namespace Client.Client
             else
             {
                 // wait for the string
-                if (StringsCallbacks.ContainsKey(stringId))
+                if (_stringsCallbacks.ContainsKey(stringId))
                 {
-                    StringsCallbacks[stringId] = pcallback;
+                    _stringsCallbacks[stringId] = pcallback;
                 }
                 else
                 {
-                    StringsCallbacks.Add(stringId, pcallback);
+                    _stringsCallbacks.Add(stringId, pcallback);
                 }
             }
         }
@@ -784,15 +736,14 @@ namespace Client.Client
 
         public string GetSpecialWord(string label, bool women = false)
         {
-            //if (label.empty())
-            //{
-            //    static string emptyString = new static();
-            //    return emptyString.c_str();
-            //}
-            //
+            if (label.Length == 0)
+            {
+                return "";
+            }
+            
             //if (label[0] == '#')
             //{
-            //    return getLocalizedName(label.substr(1, label.size() - 1));
+            //    return GetLocalizedName(label[1..]);
             //}
 
             // avoid case problems

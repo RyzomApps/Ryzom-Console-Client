@@ -140,6 +140,9 @@ namespace Client.Database
             }
         }
 
+        /// <summary>
+        /// Size of the mapping from client database index to bank IDs (first-level nodes)
+        /// </summary>
         internal int GetUnifiedIndexToBankSize()
         {
             return _unifiedIndexToBank.Count;

@@ -80,6 +80,7 @@ namespace Client.Config
         public static bool LogToFile = false;
         public static string LogFile = "console-log.txt";
         public static bool PrependTimestamp = false;
+
         public static string DiscordWebhook = "";
 
         // Other Settings
@@ -275,6 +276,14 @@ namespace Client.Config
 
                 case "sendposition":
                     SendPosition = bool.Parse(argValue);
+                    break;
+
+                case "logtofile":
+                    LogToFile = bool.Parse(argValue);
+                    break;
+
+                case "logfile":
+                    LogFile = argValue;
                     break;
 
                 default:

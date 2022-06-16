@@ -12,24 +12,24 @@ namespace Client.Discord.Classes
 {
     public class EmbedFooter
     {
-        [JsonPropertyName("text")]
         /// <summary>
         /// Footer text
         /// </summary>
+        [JsonPropertyName("text")]
         public string Text { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("icon_url")]
         /// <summary>
         /// Footer icon
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("icon_url")]
         public string IconUrl { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("proxy_icon_url")]
         /// <summary>
         /// Footer icon proxy
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("proxy_icon_url")]
         public string ProxyIconUrl { get; set; }
     }
 }

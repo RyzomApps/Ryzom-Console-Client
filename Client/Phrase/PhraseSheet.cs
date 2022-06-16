@@ -20,7 +20,7 @@ namespace Client.Phrase
     public class PhraseSheet : EntitySheet
     {
         private readonly SheetIdFactory _sheetIdFactory;
-        public const int SPHRASE_MAX_BRICK = 100;
+        public const int SphraseMaxBrick = 100;
 
         // <summary>
         // All these values are sheet id
@@ -108,7 +108,7 @@ namespace Client.Phrase
 
             uint i;
 
-            for (i = 0; i < SPHRASE_MAX_BRICK; ++i)
+            for (i = 0; i < SphraseMaxBrick; ++i)
             {
                 //sTmp2 = "brick " + i;
                 //

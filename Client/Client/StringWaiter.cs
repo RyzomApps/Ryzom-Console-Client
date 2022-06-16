@@ -1,8 +1,16 @@
-﻿namespace Client.Client
+﻿///////////////////////////////////////////////////////////////////
+// This file contains modified code from 'Ryzom - MMORPG Framework'
+// http://dev.ryzom.com/projects/ryzom/
+// which is released under GNU Affero General Public License.
+// http://www.gnu.org/licenses/
+// Copyright 2010 Winch Gate Property Limited
+///////////////////////////////////////////////////////////////////
+
+namespace Client.Client
 {
     public class StringWaiter
     {
-        /// Pointer to the ucstring to fill
+        /// <summary>Pointer to the ucstring to fill</summary>
         public string Result;
-    };
+    }
 }

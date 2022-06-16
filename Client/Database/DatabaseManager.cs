@@ -30,7 +30,7 @@ namespace Client.Database
         /// <summary>
         /// Database bank identifiers (please change BankNames in cpp accordingly)
         /// </summary>
-        public enum BankIdentifiers { CDBPlayer = 0, CDBGuild = 1, /* CDBContinent, */ CDBOutpost = 2, /* CDBGlobal, */ NB_CDB_BANKS = 3, INVALID_CDB_BANK = 4 };
+        public enum BankIdentifiers { CdbPlayer = 0, CdbGuild = 1, /* CDBContinent, */ CdbOutpost = 2, /* CDBGlobal, */ NbCdbBanks = 3, InvalidCdbBank = 4 };
 
         /// <summary>
         /// Names of the bank identifiers
@@ -48,8 +48,10 @@ namespace Client.Database
         /// </summary>
         protected BankHandler BankHandler;
 
+        // TODO: check server and client database structures
         private DatabaseNodeBranch _serverDatabase;
 
+        // TODO: non static database
         private static DatabaseNodeBranch _database;
 
         /// <summary>Pointer to the ryzom client</summary>
@@ -65,7 +67,7 @@ namespace Client.Database
             //_database = new DatabaseNodeBranch("ROOT");
             _serverDatabase = new DatabaseNodeBranch("SERVER");
 
-            BankHandler = new BankHandler((uint)BankIdentifiers.NB_CDB_BANKS);
+            BankHandler = new BankHandler((uint)BankIdentifiers.NbCdbBanks);
 
             _initInProgress = true;
             _initDeltaReceived = 0;
@@ -80,7 +82,6 @@ namespace Client.Database
         /// <summary>
         ///  Returns the root branch of the database.
         /// </summary>
-        /// <returns></returns>
         public DatabaseNodeBranch GetDb()
         {
             return _database ??= new DatabaseNodeBranch("ROOT");
@@ -90,7 +91,7 @@ namespace Client.Database
         /// Build the structure of the database from a file
         /// </summary>
         /// <param name="fileName">is the name of file containing the database structure</param>
-        /// <param name="progressCallBack"></param>
+        /// <param name="progressCallBack">progress callback</param>
         public void Init(string fileName, Action progressCallBack)
         {
             try
@@ -102,7 +103,7 @@ namespace Client.Database
 
                 // Parse the parser output!!!
                 BankHandler.ResetNodeBankMapping(); // in case the game is restarted from start
-                BankHandler.FillBankNames(BankNames, (uint)(BankIdentifiers.INVALID_CDB_BANK + 1));
+                BankHandler.FillBankNames(BankNames, (uint)(BankIdentifiers.InvalidCdbBank + 1));
 
                 _serverDatabase ??= new DatabaseNodeBranch("SERVER"); // redundant?
 
@@ -137,6 +138,7 @@ namespace Client.Database
         /// <summary>
         /// Update the database from a stream coming from the FE
         /// </summary>
+        /// <param name="gc">game cycle</param>
         /// <param name="s">the stream</param>
         /// <param name="bank">The banks we want to update</param>
         public void ReadDelta(uint gc, BitMemoryStream s, uint bank)
@@ -162,20 +164,26 @@ namespace Client.Database
             }
         }
 
-        /// <summary>Return true while the first database packet has not been completely received</summary>
+        /// <summary>
+        /// Return true while the first database packet has not been completely received
+        /// </summary>
         public bool InitInProgress() { return _initInProgress; }
 
-        /// <summary>Reset the init state (if you relauch the game from scratch)</summary>
-        public void ResetInitState() { _initDeltaReceived = 0; _initInProgress = true; WriteInitInProgressIntoUIDB(); }
+        /// <summary>
+        /// Reset the init state (if you relauch the game from scratch)
+        /// </summary>
+        public void ResetInitState() { _initDeltaReceived = 0; _initInProgress = true; WriteInitInProgressIntoUiDb(); }
 
-        /// <summary>Called after flushObserversCalls() as it calls the observers for branches</summary>
+        /// <summary>
+        /// Called after flushObserversCalls() as it calls the observers for branches
+        /// </summary>
         public void SetChangesProcessed()
         {
             if (!AllInitPacketReceived())
                 return;
 
             _initInProgress = false;
-            WriteInitInProgressIntoUIDB(); // replaced by DECLARE_INTERFACE_USER_FCT(isDBInitInProgress)
+            WriteInitInProgressIntoUiDb(); // replaced by DECLARE_INTERFACE_USER_FCT(isDBInitInProgress)
         }
 
         /// <summary>
@@ -186,11 +194,20 @@ namespace Client.Database
             // TODO FlushObserverCalls: branchObservingHandler.flushObserverCalls();
         }
 
+        /// <summary>
+        /// Increment the number of "init database packet" received
+        /// </summary>
         public void SetInitPacketReceived() { ++_initDeltaReceived; }
 
-        private bool AllInitPacketReceived() { return _initDeltaReceived == 2; } // Classic database + inventory
+        /// <summary>
+        /// Classic database + inventory
+        /// </summary>
+        private bool AllInitPacketReceived() { return _initDeltaReceived == 2; }
 
-        private void WriteInitInProgressIntoUIDB()
+        /// <summary>
+        /// replaced by DECLARE_INTERFACE_USER_FCT(isDBInitInProgress)
+        /// </summary>
+        private void WriteInitInProgressIntoUiDb()
         {
             //TODO: implementation of WriteInitInProgressIntoUIDB -> UI:VARIABLES:CDB_INIT_IN_PROGRESS
         }

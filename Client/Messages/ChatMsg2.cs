@@ -8,7 +8,7 @@
 
 using API.Chat;
 
-namespace Client.Chat
+namespace Client.Messages
 {
     public class ChatMsg2
     {

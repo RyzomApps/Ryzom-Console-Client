@@ -35,6 +35,7 @@ namespace Client.Brick
         public override void Serial(BitStreamFile s)
         {
             s.Serial(out uint UsedSkills);
+
             for (int i = 0; i < UsedSkills; i++)
             {
                 s.Serial(out uint Skill);
@@ -92,19 +93,19 @@ namespace Client.Brick
             s.Serial(out uint ActionNature);
 
             s.Serial(out uint numRequiredOneOfSkills);
-            for (int i = 0; i < numRequiredOneOfSkills; i++)
+            for (var i = 0; i < numRequiredOneOfSkills; i++)
             {
                 s.SerialBuffer(out byte[] arr1, 8);
             }
 
             s.Serial(out uint numRequiredSkills);
-            for (int i = 0; i < numRequiredSkills; i++)
+            for (var i = 0; i < numRequiredSkills; i++)
             {
                 s.SerialBuffer(out byte[] arr2, 8);
             }
 
             s.Serial(out uint numRequiredBricks);
-            for (int i = 0; i < numRequiredBricks; i++)
+            for (var i = 0; i < numRequiredBricks; i++)
             {
                 s.SerialBuffer(out byte[] arr3, 4);
             }

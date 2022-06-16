@@ -39,7 +39,7 @@ namespace Client.Phrase
             // Get the type of .sbrick
             if (ret._serialSbrickType == 0)
             {
-                //_serialSbrickType = CSheetId.typeFromFileExtension("sbrick");
+                //_serialSbrickType = SheetId.TypeFromFileExtension("sbrick");
             }
 
             // read
@@ -79,7 +79,7 @@ namespace Client.Phrase
                 }
                 else
                 {
-                    // TODO Bricks[i].BuildSheetId(_serialCompBricks[i] - 1, _serialSbrickType);
+                    ret.Bricks[i].BuildSheetId(serialCompBricks[i] - 1, EntitySheet.TType.SBRICK /*serialSbrickType*/);
                 }
             }
 

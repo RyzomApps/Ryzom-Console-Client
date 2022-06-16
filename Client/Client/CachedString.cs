@@ -12,5 +12,5 @@ namespace Client.Client
     {
         public string String;
         public uint StringId;
-    };
+    }
 }

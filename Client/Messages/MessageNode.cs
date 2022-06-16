@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 using API.Helper;
-using Client.Helper;
 using Client.Network;
 
 namespace Client.Messages
@@ -68,27 +67,18 @@ namespace Client.Messages
                 // only setup description and format if leaf
 
                 // setup node description
-                //CXMLAutoPtr description(xmlGetProp (xmlNode, (xmlChar*)"description"));
                 if (xmlNode.GetAttribute("description") != "")
                 {
-                    //    Description = (const char*)description;
                     Description = xmlNode.GetAttribute("description");
                 }
 
-                //
-                //// setup node description
-                //CXMLAutoPtr sendto(xmlGetProp (xmlNode, (xmlChar*)"sendto"));
+                // setup node sendto
                 if (xmlNode.GetAttribute("sendto") != "")
                 {
-                    //    SendTo = (const char*)sendto;
                     SendTo = xmlNode.GetAttribute("sendto");
                 }
 
-                //
-                //// setup node description
-                //CXMLAutoPtr usecycle(xmlGetProp (xmlNode, (xmlChar*)"usecycle"));
-                //
-                //if (bool(usecycle) && !strcmp((const char*)usecycle, "yes"))
+                // setup node usecycle
                 if (xmlNode.GetAttribute("usecycle") != "")
                 {
                     UseCycle = xmlNode.GetAttribute("usecycle") == "yes";
@@ -110,7 +100,7 @@ namespace Client.Messages
                                 else
                                 {
                                     // here consider s as sint
-                                    var numBits = (byte) int.Parse(scan[1..]);
+                                    var numBits = (byte)int.Parse(scan[1..]);
 
                                     if (numBits == 8)
                                         Format.Add(new MessageField(MessageFieldType.Sint8, numBits));
@@ -134,7 +124,7 @@ namespace Client.Messages
                                 else
                                 {
                                     // here consider s as sint
-                                    byte numBits = (byte) int.Parse(scan[1..]);
+                                    byte numBits = (byte)int.Parse(scan[1..]);
 
                                     if (numBits == 8)
                                         Format.Add(new MessageField(MessageFieldType.Uint8, numBits));
@@ -175,7 +165,7 @@ namespace Client.Messages
             }
             else
             {
-                //// only parse children if not leaf
+                // only parse children if not leaf
                 foreach (XmlNode xmlChild in xmlNode.ChildNodes)
                 {
                     // check node is leaf or branch
@@ -184,7 +174,7 @@ namespace Client.Messages
                     if (xmlChild.NodeType != XmlNodeType.Element) break;
 
                     // create a node from the child xml node
-                    var child = new MessageNode((XmlElement) xmlChild, childValue);
+                    var child = new MessageNode((XmlElement)xmlChild, childValue);
 
                     // check node doesn't exist yet in parent
                     if (!NodesByName.ContainsKey(child.Name))
@@ -274,7 +264,6 @@ namespace Client.Messages
             return null;
         }
 
-
         /// <summary>
         /// select node using bits stream
         /// </summary>
@@ -294,7 +283,7 @@ namespace Client.Messages
                     return null;
                 }
 
-                node = node.Nodes[(int) index];
+                node = node.Nodes[(int)index];
             }
 
             return node;
@@ -306,10 +295,10 @@ namespace Client.Messages
         ~MessageNode()
         {
             uint i;
+
             for (i = 0; i < Nodes.Count; ++i)
             {
-                //    delete Nodes[i];
-                Nodes[(int) i] = null;
+                Nodes[(int)i] = null;
             }
         }
     }
