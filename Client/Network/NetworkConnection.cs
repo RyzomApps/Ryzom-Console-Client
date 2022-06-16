@@ -253,12 +253,12 @@ namespace Client.Network
         /// <summary>
         /// Constructor
         /// </summary>
-        public NetworkConnection(RyzomClient client, DatabaseManager databaseManager)
+        public NetworkConnection(RyzomClient client)
         {
             _connectionState = ConnectionState.NotInitialized;
 
             _client = client;
-            _databaseManager = databaseManager;
+            _databaseManager = client.GetDatabaseManager();
 
             Reset();
 

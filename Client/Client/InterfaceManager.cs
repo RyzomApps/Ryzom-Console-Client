@@ -33,13 +33,13 @@ namespace Client.Client
         /// <summary>
         /// Constructor
         /// </summary>
-        public InterfaceManager(RyzomClient client, DatabaseManager databaseManager, SkillManager skillManager, BrickManager brickManager, PhraseManager phraseManager)
+        public InterfaceManager(RyzomClient client)
         {
             _client = client;
-            _databaseManager = databaseManager;
-            _skillManager = skillManager;
-            _brickManager = brickManager;
-            _phraseManager = phraseManager;
+            _databaseManager = client.GetDatabaseManager();
+            _skillManager = client.GetSkillManager();
+            _brickManager = client.GetBrickManager();
+            _phraseManager = client.GetPhraseManager();
         }
 
         /// <summary>

@@ -91,23 +91,28 @@ namespace Client.Network
 
         public NetworkConnection GetNetworkConnection() => _networkConnection;
 
+
+        public StringManager GetStringManager() => _stringManager;
+
+        public DatabaseManager GetDatabaseManager() => _databaseManager;
+
         /// <inheritdoc />
         public uint GetCurrentServerTick() => _networkConnection.GetCurrentServerTick();
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public NetworkManager(RyzomClient client, NetworkConnection networkConnection, StringManager stringManager, DatabaseManager databaseManager, PhraseManager phraseManager, SheetIdFactory sheetIdFactory)
+        public NetworkManager(RyzomClient client)
         {
-            _messageHeaderManager = new GenericMessageHeaderManager();
-            _chatManager = new ChatManager(this, stringManager, databaseManager);
-            _entitiesManager = new EntityManager(client);
+            _networkConnection = client.GetNetworkConnection();
+            _stringManager = client.GetStringManager();
+            _databaseManager = client.GetDatabaseManager();
+            _phraseManager = client.GetPhraseManager();
+            _sheetIdFactory = client.GetSheetIdFactory();
 
-            _networkConnection = networkConnection;
-            _stringManager = stringManager;
-            _databaseManager = databaseManager;
-            _phraseManager = phraseManager;
-            _sheetIdFactory = sheetIdFactory;
+            _messageHeaderManager = new GenericMessageHeaderManager();
+            _chatManager = new ChatManager(this);
+            _entitiesManager = new EntityManager(client);
 
             _client = client;
         }

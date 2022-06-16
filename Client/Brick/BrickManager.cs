@@ -10,6 +10,13 @@ namespace Client.Brick
 {
     public class BrickManager
     {
+        private readonly RyzomClient _ryzomClient;
+
+        public BrickManager(RyzomClient ryzomClient)
+        {
+            _ryzomClient = ryzomClient;
+        }
+
         public void InitInGame()
         {
 

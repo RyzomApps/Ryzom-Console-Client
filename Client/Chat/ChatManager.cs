@@ -30,25 +30,17 @@ namespace Client.Chat
         private readonly DatabaseManager _databaseManager;
 
         private readonly List<DatabaseNodeLeaf> _dynamicChannelIdLeaf = new List<DatabaseNodeLeaf>(new DatabaseNodeLeaf[Constants.MaxDynChanPerPlayer]);
-        private readonly List<DatabaseNodeLeaf> _dynamicChannelNameLeaf = new List<DatabaseNodeLeaf>(new DatabaseNodeLeaf[Constants.MaxDynChanPerPlayer]);
 
-        public ChatManager(NetworkManager networkManager, StringManager stringManager, DatabaseManager databaseManager)
+        public ChatManager(NetworkManager networkManager)
         {
             _networkManager = networkManager;
-            _stringManager = stringManager;
-            _databaseManager = databaseManager;
-
-            //_ChatMode = (uint8)CChatGroup::nbChatMode;
-            //_ChatDynamicChannelId = 0;
-            //_NumTellPeople = 0;
-            //_MaxNumTellPeople = 5;
+            _stringManager = networkManager.GetStringManager();
+            _databaseManager = networkManager.GetDatabaseManager();
 
             // default to NULL
             for (int i = 0; i < Constants.MaxDynChanPerPlayer; i++)
             {
-                _dynamicChannelNameLeaf[i] = null;
                 _dynamicChannelIdLeaf[i] = null;
-                //_DynamicChannelIdCache[i] = DynamicChannelEmptyId;
             }
         }
 
@@ -62,9 +54,7 @@ namespace Client.Chat
             for (var i = 0; i < Constants.MaxDynChanPerPlayer; i++)
             {
                 // default
-                _dynamicChannelNameLeaf[i] = null;
                 _dynamicChannelIdLeaf[i] = null;
-                //_DynamicChannelIdCache[i] = DynamicChannelEmptyId;
 
                 // get
                 var name = _databaseManager?.GetDbProp($"SERVER:DYN_CHAT:CHANNEL{i}:NAME", false);
@@ -72,7 +62,6 @@ namespace Client.Chat
 
                 if (name != null && id != null)
                 {
-                    _dynamicChannelNameLeaf[i] = name;
                     _dynamicChannelIdLeaf[i] = id;
                 }
             }
@@ -115,7 +104,7 @@ namespace Client.Chat
             // before displaying anything, must ensure dynamic channels are up to date
             // NB: only processChatString() have to do this. Other methods cannot be in dyn_chat mode
 
-            // TODO updateDynamicChatChannels(chatDisplayer); // in ProcessChatString
+            // TODO UpdateDynamicChatChannels(chatDisplayer) for ProcessChatString
 
             // serial
             var chatMsg = new ChatMsg();
@@ -228,36 +217,37 @@ namespace Client.Chat
                 if (type == ChatGroupType.DynChat)
                 {
                     // retrieve the DBIndex from the dynamic chat id
-                    int dbIndex = GetDynamicChannelDbIndexFromId(itMsg.DynChatChanID);
+                    var dbIndex = GetDynamicChannelDbIndexFromId(itMsg.DynChatChanID);
+
                     // if the client database is not yet up to date, leave the chat message in buffer
                     if (dbIndex < 0)
                         complete = false;
                 }
 
                 // if complete, process
-                if (complete)
+                if (!complete) continue;
+
+                string ucstr;
+
+                if (itMsg.SenderNameId == 0)
                 {
-                    string ucstr;
-                    if (itMsg.SenderNameId == 0)
-                    {
-                        ucstr = content;
-                    }
-                    else
-                    {
-                        if (itMsg.DisplayAsTell)
-                            ChatManagerHelper.BuildTellSentence(sender, content, out ucstr);
-                        else
-                            ChatManagerHelper.BuildChatSentence(sender, content, type, out ucstr);
-                    }
-
-                    // display
-                    if (itMsg.DisplayAsTell)
-                        chatDisplayer.DisplayTell(ucstr, sender);
-                    else
-                        chatDisplayer.DisplayChat(itMsg.CompressedIndex, ucstr, content, type, itMsg.DynChatChanID, sender);
-
-                    _chatBuffer.Remove(itMsg);
+                    ucstr = content;
                 }
+                else
+                {
+                    if (itMsg.DisplayAsTell)
+                        ChatManagerHelper.BuildTellSentence(sender, content, out ucstr);
+                    else
+                        ChatManagerHelper.BuildChatSentence(sender, content, type, out ucstr);
+                }
+
+                // display
+                if (itMsg.DisplayAsTell)
+                    chatDisplayer.DisplayTell(ucstr, sender);
+                else
+                    chatDisplayer.DisplayChat(itMsg.CompressedIndex, ucstr, content, type, itMsg.DynChatChanID, sender);
+
+                _chatBuffer.Remove(itMsg);
             }
         }
     }

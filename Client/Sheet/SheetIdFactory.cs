@@ -16,9 +16,11 @@ namespace Client.Sheet
 {
     public class SheetIdFactory
     {
+        private readonly RyzomClient _ryzomClient;
+
         // Use 24 bits id and 8 bits file types
-        private const int NL_SHEET_ID_ID_BITS = 24;
-        private const int NL_SHEET_ID_TYPE_BITS = 32 - NL_SHEET_ID_ID_BITS;
+        private const int NlSheetIdIdBits = 24;
+        private const int NlSheetIdTypeBits = 32 - NlSheetIdIdBits;
 
         private IClient _client;
 
@@ -28,6 +30,18 @@ namespace Client.Sheet
         bool _dontHaveSheetKnowledge = false;
 
         public SheetId Unknown;
+
+        private string[] _fileExtensions;
+        private Dictionary<uint, string> _sheetIdToName;
+        private Dictionary<string, uint> _sheetNameToId;
+
+        /// <summary>
+        /// constructor
+        /// </summary>
+        public SheetIdFactory(RyzomClient ryzomClient)
+        {
+            _ryzomClient = ryzomClient;
+        }
 
         /// <summary>
         /// create an SheetId from a numeric reference
@@ -88,10 +102,6 @@ namespace Client.Sheet
             _initialised = true;
         }
 
-        private string[] _fileExtensions;
-        private Dictionary<uint, string> _sheetIdToName;
-        private Dictionary<string, uint> _sheetNameToId;
-
         /// <summary>
         /// Load sheet_id.bin file
         /// </summary>
@@ -114,7 +124,7 @@ namespace Client.Sheet
                 _sheetNameToId = new Dictionary<string, uint>();
 
                 // reserve space for the vector of file extensions
-                Array.Resize(ref _fileExtensions, 1 << NL_SHEET_ID_TYPE_BITS);
+                Array.Resize(ref _fileExtensions, 1 << NlSheetIdTypeBits);
 
                 // Get the map from the file
                 var tempMap = new Dictionary<uint, string>();

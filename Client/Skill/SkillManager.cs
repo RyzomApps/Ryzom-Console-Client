@@ -10,6 +10,13 @@ namespace Client.Skill
 {
     public class SkillManager
     {
+        private readonly RyzomClient _ryzomClient;
+
+        public SkillManager(RyzomClient ryzomClient)
+        {
+            _ryzomClient = ryzomClient;
+        }
+
         public void InitInGame()
         {
 

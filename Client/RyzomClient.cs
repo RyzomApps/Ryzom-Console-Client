@@ -179,6 +179,13 @@ namespace Client
 
         public PhraseManager GetPhraseManager() { return _phraseManager; }
 
+        public InterfaceManager GetInterfaceManager() { return _interfaceManager; }
+
+        public SheetIdFactory GetSheetIdFactory() { return _sheetIdFactory; }
+
+        public BrickManager GetBrickManager() { return _brickManager; }
+
+        public SkillManager GetSkillManager() { return _skillManager; }
         #endregion
 
         #region Console Client - Initialization
@@ -199,13 +206,13 @@ namespace Client
 
             _stringManager = new StringManager(this);
             _sheetManager = new SheetManager(this);
-            _skillManager = new SkillManager();
-            _brickManager = new BrickManager();
-            _sheetIdFactory = new SheetIdFactory();
-            _networkConnection = new NetworkConnection(this, _databaseManager);
-            _phraseManager = new PhraseManager(_sheetManager, _stringManager, _interfaceManager, _databaseManager, _sheetIdFactory);
-            _interfaceManager = new InterfaceManager(this, _databaseManager, _skillManager, _brickManager, _phraseManager);
-            _networkManager = new NetworkManager(this, _networkConnection, _stringManager, _databaseManager, _phraseManager, _sheetIdFactory);
+            _skillManager = new SkillManager(this);
+            _brickManager = new BrickManager(this);
+            _sheetIdFactory = new SheetIdFactory(this);
+            _networkConnection = new NetworkConnection(this);
+            _phraseManager = new PhraseManager(this);
+            _interfaceManager = new InterfaceManager(this);
+            _networkManager = new NetworkManager(this);
 
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");

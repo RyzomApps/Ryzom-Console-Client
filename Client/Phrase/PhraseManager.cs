@@ -121,13 +121,13 @@ namespace Client.Phrase
         /// <summary>
         /// Constructor
         /// </summary>
-        public PhraseManager(SheetManager sheetManager, StringManager stringManager, InterfaceManager interfaceManager, DatabaseManager databaseManager, SheetIdFactory sheetIdFactory)
+        public PhraseManager(RyzomClient client)
         {
-            _sheetManager = sheetManager;
-            _stringManager = stringManager;
-            _interfaceManager = interfaceManager;
-            _databaseManager = databaseManager;
-            _sheetIdFactory = sheetIdFactory;
+            _sheetManager = client.GetSheetManager();
+            _stringManager =  client.GetStringManager();
+            _interfaceManager =  client.GetInterfaceManager();
+            _databaseManager =  client.GetDatabaseManager();
+            _sheetIdFactory =  client.GetSheetIdFactory();
 
             Reset();
 
