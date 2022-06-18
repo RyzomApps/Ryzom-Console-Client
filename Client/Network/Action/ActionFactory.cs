@@ -76,8 +76,8 @@ namespace Client.Network.Action
             //if (RegisteredAction[code].Value == null)
             //{
             // no action left in the store
-            var action =
-                (ActionBase)Activator.CreateInstance(RegisteredAction[code].Key); // execute the factory function
+            // execute the factory function
+            var action = (ActionBase)Activator.CreateInstance(RegisteredAction[code].Key);
 
             if (action == null) return null;
 

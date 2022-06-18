@@ -185,6 +185,8 @@ namespace Client.Network
         private long _latestQuitTime;
         private bool _receivedAckQuit;
 
+        private byte _impulseMultiPartNumber;
+
         readonly Dictionary<uint, byte> _idMap = new Dictionary<uint, byte>();
 
         /// <summary>
@@ -1712,7 +1714,31 @@ namespace Client.Network
             }
             else
             {
-                throw new NotImplementedException("Generic ActionBase is too big to get pushed to the stream.");
+                ActionBase casted = ag;
+                ActionFactory.Remove(casted);
+
+                // MultiPart impulsion
+                var agmp = (ActionGenericMultiPart)ActionFactory.Create(Constants.InvalidSlot, ActionCode.ActionGenericMultiPartCode);
+                var minimumBitSizeForMp = ActionFactory.Size(agmp);
+
+                // (in bytes)
+                var availableSize = (maxImpulseBitSize - minimumBitSizeForMp) / 8;
+
+                var nbBlock = (bytelen + availableSize - 1) / availableSize;
+
+                var num = _impulseMultiPartNumber++;
+
+                for (var i = 0; i < nbBlock; i++)
+                {
+                    if (i != 0)
+                    {
+                        agmp = (ActionGenericMultiPart)ActionFactory.Create(Constants.InvalidSlot, ActionCode.ActionGenericMultiPartCode);
+                    }
+
+                    agmp.Set(num, (short)i, msg.Buffer(), bytelen, availableSize, (short)nbBlock);
+
+                    Push(agmp);
+                }
             }
         }
 
@@ -2010,7 +2036,7 @@ namespace Client.Network
             ats.Slot = slot;
 
             // ensure the value is good for the FE
-            switch (targetOrPickup) 
+            switch (targetOrPickup)
             {
                 case TargettingType.None:
                     ats.TargetOrPickup = 0;
