@@ -24,6 +24,6 @@ namespace Client.Chat
         /// <summary>
         /// display a player tell message
         /// </summary>
-        public void DisplayTell(string ucstr, string senderName);
+        public void DisplayTell(string formattedMessage, string senderName, string rawMessage);
     }
 }

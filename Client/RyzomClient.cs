@@ -328,11 +328,11 @@ namespace Client
             Plugins.OnChat(compressedSenderIndex, ucstr, rawMessage, mode, dynChatId, senderName, bubbleTimer);
         }
 
-        public void DisplayTell(string ucstr, string senderName)
+        public void DisplayTell(string formattedMessage, string senderName, string rawMessage)
         {
-            Log.Chat(ucstr);
+            Log.Chat(formattedMessage);
 
-            Plugins.OnTell(ucstr, senderName);
+            Plugins.OnTell(rawMessage, senderName);
         }
 
         #endregion IChatDisplayer

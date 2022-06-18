@@ -89,7 +89,7 @@ namespace Client.Chat
 
             // display
             ChatManagerHelper.BuildTellSentence(senderStr, chatMsg.Content, out var ucstr);
-            chatDisplayer.DisplayTell(ucstr, senderStr);
+            chatDisplayer.DisplayTell(ucstr, senderStr, chatMsg.Content);
         }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace Client.Chat
 
                 // display
                 if (itMsg.DisplayAsTell)
-                    chatDisplayer.DisplayTell(ucstr, sender);
+                    chatDisplayer.DisplayTell(ucstr, sender, content);
                 else
                     chatDisplayer.DisplayChat(itMsg.CompressedIndex, ucstr, content, type, itMsg.DynChatChanID, sender);
 
