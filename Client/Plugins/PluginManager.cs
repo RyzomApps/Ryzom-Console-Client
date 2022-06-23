@@ -348,7 +348,10 @@ namespace Client.Plugins
         /// <inheritdoc/>
         public IPlugin GetPlugin(string name)
         {
-            return _lookupNames[name.Replace(' ', '_')];
+            if(_lookupNames.ContainsKey(name.Replace(' ', '_')))
+                return _lookupNames[name.Replace(' ', '_')];
+
+            return null;
         }
 
         /// <inheritdoc/>

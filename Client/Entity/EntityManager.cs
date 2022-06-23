@@ -174,6 +174,8 @@ namespace Client.Entity
 
                 propty.Value = _client.GetDatabaseManager().GetProp(propName);
 
+                _client.GetLogger().Info($"EM:updateVP: backup the property {prop} as long as the entity {slot} is not allocated.");
+
                 //TBackupedChanges.iterator it = _BackupedChanges.find(slot);
                 //// Entity does not have any changes backuped for the time.
                 //if (it == _BackupedChanges.end())
