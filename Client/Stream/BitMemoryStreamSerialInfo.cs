@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Client.Network
+namespace Client.Stream
 {
     /// <summary>
     /// Item of CBMSDbgInfo

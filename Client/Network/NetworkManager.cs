@@ -23,6 +23,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Threading;
 using Client.Sheet;
+using Client.Stream;
 
 namespace Client.Network
 {
@@ -90,7 +91,6 @@ namespace Client.Network
         public ChatManager GetChatManager() => _chatManager;
 
         public NetworkConnection GetNetworkConnection() => _networkConnection;
-
 
         public StringManager GetStringManager() => _stringManager;
 
@@ -616,7 +616,7 @@ namespace Client.Network
 
             foreach (var phrase in phrases)
             {
-                if (phrase.PhraseSheetId != _sheetIdFactory.Unknown)
+                if (phrase.PhraseSheetId != SheetId.Unknown)
                 {
                     var phraseCom = new PhraseCom();
                     _phraseManager.BuildPhraseFromSheet(ref phraseCom, phrase.PhraseSheetId.AsInt());
@@ -996,7 +996,7 @@ namespace Client.Network
             {
                 //UserEntity.SetSpeedServerAdjust(-0.2f);
 
-                _client.GetLogger().Warn($"impulseCorrectPos: SetSpeedServerAdjust");
+                _client.GetLogger().Warn("impulseCorrectPos: SetSpeedServerAdjust");
             }
             else
             {

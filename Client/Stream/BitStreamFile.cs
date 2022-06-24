@@ -1,10 +1,17 @@
-﻿using System;
+﻿///////////////////////////////////////////////////////////////////
+// This file contains modified code from 'Ryzom - MMORPG Framework'
+// http://dev.ryzom.com/projects/ryzom/
+// which is released under GNU Affero General Public License.
+// http://www.gnu.org/licenses/
+// Copyright 2010 Winch Gate Property Limited
+///////////////////////////////////////////////////////////////////
+
+using System;
 using System.Collections.Generic;
 using System.IO;
-using Client.Brick;
-using Client.Phrase;
+using Client.Sheet;
 
-namespace Client.Sheet
+namespace Client.Stream
 {
     // TODO: BitMemoryStream and BitStreamFile should use the same interface
     public class BitStreamFile
@@ -156,97 +163,23 @@ namespace Client.Sheet
             }
         }
 
-        public void SerialCont(ref SortedDictionary<SheetId, SheetManagerEntry> container, SheetIdFactory sheetIdFactory)
+        public void SerialCont(out SortedDictionary<SheetId, SheetManagerEntry> container, SheetIdFactory sheetIdFactory, SheetManager sheetManager)
         {
             Serial(out uint len);
+
+            container = new SortedDictionary<SheetId, SheetManagerEntry>();
 
             for (var i = 0; i < len; i++)
             {
                 Serial(out uint sheetId);
 
-                Serial(out uint intType);
+                var sme = new SheetManagerEntry(sheetManager);
 
-                SheetId s = sheetIdFactory.SheetId(sheetId);
+                sme.Serial(this);
 
-                var type = (EntitySheet.TType)intType;
-
-                EntitySheet es = null;
-
-                switch (type)
-                {
-                    case EntitySheet.TType.SBRICK:
-                        es = new BrickSheet(sheetIdFactory);
-                        InitSheet(es, this, type);
-                        break;
-
-                    case EntitySheet.TType.SPHRASE:
-                        es = new PhraseSheet(sheetIdFactory);
-                        InitSheet(es, this, type);
-                        break;
-
-                    case EntitySheet.TType.@sbyte:
-                    case EntitySheet.TType.FAUNA:
-                    case EntitySheet.TType.FLORA:
-                    case EntitySheet.TType.OBJECT:
-                    case EntitySheet.TType.FX:
-                    case EntitySheet.TType.BUILDING:
-                    case EntitySheet.TType.ITEM:
-                    case EntitySheet.TType.PLANT:
-                    case EntitySheet.TType.MISSION:
-                    case EntitySheet.TType.RACE_STATS:
-                    case EntitySheet.TType.PACT:
-                    case EntitySheet.TType.LIGHT_CYCLE:
-                    case EntitySheet.TType.WEATHER_SETUP:
-                    case EntitySheet.TType.CONTINENT:
-                    case EntitySheet.TType.WORLD:
-                    case EntitySheet.TType.WEATHER_FUNCTION_PARAMS:
-                    case EntitySheet.TType.UNKNOWN:
-                    case EntitySheet.TType.BOTCHAT:
-                    case EntitySheet.TType.MISSION_ICON:
-                    case EntitySheet.TType.SKILLS_TREE:
-                    case EntitySheet.TType.UNBLOCK_TITLES:
-                    case EntitySheet.TType.SUCCESS_TABLE:
-                    case EntitySheet.TType.AUTOMATON_LIST:
-                    case EntitySheet.TType.ANIMATION_SET_LIST:
-                    case EntitySheet.TType.SPELL:
-                    case EntitySheet.TType.SPELL_LIST:
-                    case EntitySheet.TType.CAST_FX:
-                    case EntitySheet.TType.EMOT:
-                    case EntitySheet.TType.ANIMATION_FX:
-                    case EntitySheet.TType.ID_TO_STRING_ARRAY:
-                    case EntitySheet.TType.FORAGE_SOURCE:
-                    case EntitySheet.TType.CREATURE_ATTACK:
-                    case EntitySheet.TType.ANIMATION_FX_SET:
-                    case EntitySheet.TType.ATTACK_LIST:
-                    case EntitySheet.TType.SKY:
-                    case EntitySheet.TType.TEXT_EMOT:
-                    case EntitySheet.TType.OUTPOST:
-                    case EntitySheet.TType.OUTPOST_SQUAD:
-                    case EntitySheet.TType.OUTPOST_BUILDING:
-                    case EntitySheet.TType.FACTION:
-                    case EntitySheet.TType.TypeCount:
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                container.Add(s, new SheetManagerEntry() { EntitySheet = es });
+                container.Add(sheetIdFactory.SheetId(sheetId), sme);
             }
         }
-
-        /// <summary>
-        /// Useful for serial
-        /// </summary>
-        public void InitSheet(EntitySheet pES, BitStreamFile s, EntitySheet.TType type)
-        {
-            if (pES != null)
-            {
-                pES.Id.Serial(s);
-                pES.Serial(s);
-                pES.Type = type;
-                //SheetMngr.processSheet(pES);
-            }
-        }
-
 
         public void Close()
         {

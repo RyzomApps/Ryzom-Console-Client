@@ -15,6 +15,7 @@ using API.Entity;
 using API.Network;
 using Client.Network;
 using Client.Sheet;
+using Client.Stream;
 using static Client.Client.DynamicStringInfo;
 
 namespace Client.Client
@@ -730,6 +731,11 @@ namespace Client.Client
         }
 
         public string GetSPhraseLocalizedName(SheetId id)
+        {
+            return GetSpecialWord(id.ToString());
+        }
+
+        internal string GetItemLocalizedName(SheetId id)
         {
             return GetSpecialWord(id.ToString());
         }

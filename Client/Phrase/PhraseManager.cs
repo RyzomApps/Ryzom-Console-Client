@@ -251,7 +251,7 @@ namespace Client.Phrase
 
             foreach (var (key, value) in sm)
             {
-                if (value.EntitySheet == null || value.EntitySheet.Type != EntitySheet.TType.SPHRASE)
+                if (value.EntitySheet == null || value.EntitySheet.Type != EntitySheet.SheetType.SPHRASE)
                     continue;
 
                 BuildPhraseFromSheet(ref tmpPhrase, key.AsInt());
@@ -459,42 +459,32 @@ namespace Client.Phrase
 
         private void ComputePhraseProgression()
         {
-
+            // TODO: Implementation
         }
 
         private void LoadSuccessTable()
         {
-
+            // TODO: Implementation
         }
 
         private void UpdateAllMemoryCtrlState()
         {
-
+            // TODO: Implementation
         }
 
         private void UpdateMemoryDbAll()
         {
-
-        }
-
-        private void UpdateMemoryCtrlState(in int memorySlot)
-        {
-
-        }
-
-        private void UpdateMemoryDbSlot(in int memorySlot)
-        {
-
+            // TODO: Implementation
         }
 
         internal void UpdateEquipInvalidation(uint v)
         {
-
+            // TODO: Implementation
         }
 
         internal void UpdateAllActionRegen()
         {
-
+            // TODO: Implementation
         }
 
         public void Write(string fileName)

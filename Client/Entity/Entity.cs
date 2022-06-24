@@ -12,6 +12,7 @@ using System.Numerics;
 using API.Entity;
 using Client.Database;
 using Client.Property;
+using Client.Sheet;
 
 namespace Client.Entity
 {
@@ -41,12 +42,12 @@ namespace Client.Entity
         /// <summary>
         /// Primitive type
         /// </summary>
-        private readonly EntityType _type;
+        protected EntityType _type;
 
         /// <summary>
         /// Current Name for the entity
         /// </summary>
-        private string _entityName;
+        protected string _entityName;
 
         /// <summary>
         /// Current guild name of the entity
@@ -61,7 +62,7 @@ namespace Client.Entity
         /// <summary>
         /// Slot of the entity
         /// </summary>
-        private byte _slot;
+        protected byte _slot;
 
         /// <summary>
         /// Slot of the target or CLFECOMMON::INVALID_SLOT if there is no target.
@@ -102,6 +103,11 @@ namespace Client.Entity
         /// Direction the entity is facing
         /// </summary>
         public Vector3 Dir { get; set; }
+
+        /// <summary>
+        /// Local DB Branch for this entity
+        /// </summary>
+        protected DatabaseNodeBranch _DBEntry;
 
         public void SetHeadPitch(double hp)
         {
@@ -474,7 +480,7 @@ namespace Client.Entity
         /// <summary>
         /// Received the name Id.
         /// </summary>
-        private void UpdateVisualPropertyName(uint _, long prop, RyzomClient client)
+        protected virtual void UpdateVisualPropertyName(uint _, long prop, RyzomClient client)
         {
             // Update the entity name (do not need to be managed with LCT).
             var nameId = (uint)prop;
@@ -488,7 +494,7 @@ namespace Client.Entity
             // 	nlwarning("CH::updateVPName:%d: name Id '%d' received but no name allocated.", _Slot, nameId);
             // else if(verboseVP(this))
             // 	nlinfo("(%05d,%03d) CH::updateVPName:%d: name '%s(%d)' received.", sint32(T1%100000), NetMngr.getCurrentServerTick(), _Slot, getEntityName().toString().c_str(), nameId);
-            
+
             // TODO: updateMissionTarget();
         }
 
@@ -563,6 +569,14 @@ namespace Client.Entity
             Dir = Front;
 
             client.Plugins.OnEntityUpdateOrient(gameCycle, prop);
+        }
+
+        /// <summary>
+        /// Build the entity from an external script
+        /// </summary>
+        public virtual bool Build(EntitySheet sheet, RyzomClient client)
+        {
+            return true;
         }
     }
 }

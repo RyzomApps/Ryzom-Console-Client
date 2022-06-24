@@ -9,6 +9,7 @@
 using System;
 using System.Xml;
 using Client.Network;
+using Client.Stream;
 
 namespace Client.Messages
 {

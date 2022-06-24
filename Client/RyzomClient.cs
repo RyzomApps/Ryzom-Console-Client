@@ -37,6 +37,7 @@ using System.Threading;
 using Client.Brick;
 using Client.Phrase;
 using Client.Skill;
+using Client.Stream;
 
 namespace Client
 {
@@ -455,7 +456,7 @@ namespace Client
             // TODO: Read the ligo primitive class file
 
             // Initialize Sheet IDs
-            _sheetIdFactory.Init(ClientConfig.UpdatePackedSheet, this, Constants.SheetsIdBinPath);
+            _sheetIdFactory.Init(ClientConfig.UpdatePackedSheet, Constants.SheetsIdBinPath);
 
             // Initialize Packed Sheets
             _sheetManager.SetOutputDataPath("../../client/data");

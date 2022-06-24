@@ -66,7 +66,7 @@
         /// Debugging for the memory stream
         /// </summary>
 #if DEBUG
-        public const bool BitMemoryStreamDebugEnabled = true;
+        public const bool BitMemoryStreamDebugEnabled = false;
 #else
         public const bool BitMemoryStreamDebugEnabled = false;
 #endif

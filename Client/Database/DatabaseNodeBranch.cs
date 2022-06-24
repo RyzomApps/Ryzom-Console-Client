@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using Client.Network;
+using Client.Stream;
 
 namespace Client.Database
 {

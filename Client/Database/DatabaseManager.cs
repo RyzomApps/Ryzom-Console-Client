@@ -11,6 +11,7 @@ using System.IO;
 using System.Xml;
 using API.Database;
 using Client.Network;
+using Client.Stream;
 
 namespace Client.Database
 {

@@ -8,6 +8,7 @@
 
 using Client.Network;
 using Client.Sheet;
+using Client.Stream;
 
 namespace Client.Phrase
 {
@@ -19,9 +20,6 @@ namespace Client.Phrase
     /// <date>2003 September</date>
     public class PhraseSheet : EntitySheet
     {
-        private readonly SheetIdFactory _sheetIdFactory;
-        public const int SphraseMaxBrick = 100;
-
         // <summary>
         // All these values are sheet id
         // </summary>
@@ -45,10 +43,10 @@ namespace Client.Phrase
         /// <summary>
         /// Constructor
         /// </summary>
-        public PhraseSheet(SheetIdFactory sheetIdFactory) : base(sheetIdFactory)
+        public PhraseSheet(/*SheetIdFactory sheetIdFactory*/) : base(/*sheetIdFactory*/)
         {
-            _sheetIdFactory = sheetIdFactory;
-            _type = TType.SPHRASE;
+            //_sheetIdFactory = sheetIdFactory;
+            _type = SheetType.SPHRASE;
             Castable = true;
             ShowInActionProgression = true;
             ShowInApOnlyIfLearnt = false;
@@ -67,7 +65,7 @@ namespace Client.Phrase
 
             for (var i = 0; i < len; i++)
             {
-                var value = new SheetId(_sheetIdFactory);
+                var value = new SheetId();
                 value.Serial(s);
                 Bricks[i] = value;
             }
@@ -80,7 +78,7 @@ namespace Client.Phrase
         /// <summary>
         /// Valid if Bricks not empty and all Bricks sheetId != NULL
         /// </summary>
-        public bool IsValid(SheetIdFactory sheetIdFactory)
+        public bool IsValid()
         {
             if (Bricks.Length == 0)
             {
@@ -89,7 +87,7 @@ namespace Client.Phrase
 
             for (uint i = 0; i < Bricks.Length; i++)
             {
-                if (Bricks[i] == sheetIdFactory.Unknown)
+                if (Bricks[i] == SheetId.Unknown)
                 {
                     return false;
                 }
@@ -98,10 +96,32 @@ namespace Client.Phrase
             return true;
         }
 
+        public override void Serial(BitStreamFile s)
+        {
+            s.Serial(out uint len);
+
+            Bricks = new SheetId[len];
+
+            for (var i = 0; i < len; i++)
+            {
+                var value = new SheetId();
+                value.Serial(s);
+                Bricks[i] = value;
+            }
+
+            s.Serial(out Castable);
+            s.Serial(out ShowInActionProgression);
+            s.Serial(out ShowInApOnlyIfLearnt);
+        }
+
+        //private readonly SheetIdFactory _sheetIdFactory;
+        public const int SphraseMaxBrick = 100;
+
         /// <summary>
         /// Build the entity from an external script
+        /// TODO: entity?
         /// </summary>
-        public override void Build(object root)
+        public bool Build(EntitySheet root)
         {
             //string sTmp;
             //string sTmp2;
@@ -111,9 +131,9 @@ namespace Client.Phrase
             for (i = 0; i < SphraseMaxBrick; ++i)
             {
                 //sTmp2 = "brick " + i;
-                //
+
                 //root.GetValueByName(sTmp, sTmp2);
-                //
+
                 //if (!string.IsNullOrEmpty(sTmp))
                 //{
                 //    SheetId id = new SheetId(sTmp);
@@ -123,32 +143,14 @@ namespace Client.Phrase
 
             //// read castable
             //TRANSLATE_VAL(Castable, "castable");
-            //
+
             //// read ShowInActionProgression
             //TRANSLATE_VAL(ShowInActionProgression, "ShowInActionProgression");
-            //
+
             //// read ShowInAPOnlyIfLearnt
             //TRANSLATE_VAL(ShowInAPOnlyIfLearnt, "ShowInAPOnlyIfLearnt");
 
-        }
-
-        public override void Serial(BitStreamFile s)
-        {
-            uint len = 0;
-            s.Serial(out len);
-
-            Bricks = new SheetId[len];
-
-            for (var i = 0; i < len; i++)
-            {
-                var value = new SheetId(_sheetIdFactory);
-                value.Serial(s);
-                Bricks[i] = value;
-            }
-
-            s.Serial(out Castable);
-            s.Serial(out ShowInActionProgression);
-            s.Serial(out ShowInApOnlyIfLearnt);
+            return true;
         }
     }
 }

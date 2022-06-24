@@ -6,9 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using Client.Network;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Client.Stream;
 
 namespace Client.Sheet
 {
@@ -19,12 +19,14 @@ namespace Client.Sheet
     /// <author>Nevrax France</author>
     /// <date>2002</date>
     /// <remarks>
-    /// This class is case unsensitive. It means that you can call build() and 
+    /// This class is case insensitive. It means that you can call build() and 
     /// buildIdVector() with string with anycase, it'll work.
     /// </remarks>
     public class SheetId : IComparable<SheetId>
     {
-        private readonly SheetIdFactory _sheetIdFactory;
+        public static SheetId Unknown = new SheetId();
+
+        //private readonly SheetIdFactory _sheetIdFactory;
 
         internal uint _id;
         internal uint _type;
@@ -44,10 +46,7 @@ namespace Client.Sheet
         /// <summary>
         /// Constructor
         /// </summary>
-        public SheetId(SheetIdFactory sheetIdFactory)
-        {
-            _sheetIdFactory = sheetIdFactory;
-        }
+        public SheetId() { }
 
         /// <summary>
         /// Return the **whole** sheet id (id+type)
@@ -62,11 +61,12 @@ namespace Client.Sheet
         /// </summary>
         public void Serial(BitMemoryStream f)
         {
-            //Debug.Assert(!_sheetIdFactory._dontHaveSheetKnowledge);
-
             f.Serial(ref _id);
         }
 
+        /// <summary>
+        /// Serial
+        /// </summary>
         internal void Serial(BitStreamFile s)
         {
             s.Serial(out _id);
@@ -77,9 +77,8 @@ namespace Client.Sheet
             return Id.CompareTo(other.Id);
         }
 
-        public void BuildSheetId(int serialCompBrick, EntitySheet.TType sbrick)
+        public void BuildSheetId(int serialCompBrick, EntitySheet.SheetType sbrick)
         {
-            //throw new NotImplementedException();
             // TODO: BuildSheetId implementation!
         }
     }

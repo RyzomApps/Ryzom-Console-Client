@@ -18,6 +18,7 @@ using Client.Config;
 using Client.Database;
 using Client.Network.Action;
 using Client.Property;
+using Client.Stream;
 
 namespace Client.Network
 {

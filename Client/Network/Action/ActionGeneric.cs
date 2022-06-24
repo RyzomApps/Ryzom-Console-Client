@@ -6,6 +6,8 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using Client.Stream;
+
 namespace Client.Network.Action
 {
     /// <summary>

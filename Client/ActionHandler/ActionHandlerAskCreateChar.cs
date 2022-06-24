@@ -10,6 +10,7 @@ using Client.Client;
 using Client.Messages;
 using Client.Network;
 using Client.Sheet;
+using Client.Stream;
 
 namespace Client.ActionHandler
 {

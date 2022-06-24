@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using Client.Property;
+using Client.Stream;
 
 namespace Client.Network.Action
 {

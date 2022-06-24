@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using API.Entity;
+using Client.Forage;
 using Client.Property;
+using Client.Sheet;
 
 namespace Client.Entity
 {
@@ -35,6 +37,8 @@ namespace Client.Entity
         // Contain all entities.
         private Entity[] _entities;
 
+        private readonly Dictionary<uint, Dictionary<uint, Property>> _backupedChanges = new Dictionary<uint, Dictionary<uint, Property>>();
+
         /// <inheritdoc />
         public List<IEntity> GetApiEntities() => new List<IEntity>(_entities);
 
@@ -53,12 +57,6 @@ namespace Client.Entity
             _nbMaxEntity = nbMaxEntity;
 
             _entities = new Entity[_nbMaxEntity];
-
-            //if (_nbMaxEntity > 0)
-            //{
-            //    for (var i = 0; i < _nbMaxEntity; i++)
-            //        _entities[i] = null;
-            //}
 
             // TODO: Add an observer on the mission database
             // TODO: Add an Observer to the Team database
@@ -99,18 +97,72 @@ namespace Client.Entity
             // Remove the old one (except the user).
             if (slot != 0) _entities[slot] = null;
 
-            // TODO CEntitySheet *entitySheet = SheetMngr.get((CSheetId)form); USE SHEET TO CREATE ENTITY
+            // Check parameter: form
+            var sheetId = _client.GetSheetIdFactory().SheetId(form);
+            var entitySheet = _client.GetSheetManager().Get(sheetId);
 
-            // Create the entity according to the type.
-            if (slot != 0)
-                _entities[slot] = new Entity();
+            if (entitySheet == null)
+            {
+                _client.GetLogger().Debug($"EM:create: Attempt on create an entity with a bad form number {form} ({sheetId}) for the slot '{slot}' trying to compute the default one.");
+
+                if (slot != 0)
+                {
+                    _entities[slot] = new Entity();
+                }
+                else
+                {
+                    UserEntity = new UserEntity(_client) { Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
+                    _entities[slot] = UserEntity;
+                }
+            }
             else
             {
-                UserEntity = new UserEntity(_client)
+                // Create the entity according to the type.
+                // TODO: Create the right classes here
+
+                switch (entitySheet.Type)
                 {
-                    Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition()
-                };
-                _entities[0] = UserEntity;
+                    case EntitySheet.SheetType.RACE_STATS:
+                    case EntitySheet.SheetType.CHAR:
+                        if (slot != 0)
+                            _entities[slot] = new Entity();
+                        else
+                        {
+                            UserEntity = new UserEntity(_client) { Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
+                            _entities[slot] = UserEntity;
+                        }
+                        break;
+
+                    case EntitySheet.SheetType.FAUNA:
+                        //CharacterSheet *sheet = NLMISC::safe_cast<CCharacterSheet *>(entitySheet);
+                        //if (!sheet->R2Npc) _Entities[slot] = new CCharacterCL;
+                        //else _entities[slot] = new CPlayerR2CL;
+                        _entities[slot] = new Entity();
+                        break;
+
+                    case EntitySheet.SheetType.FLORA:
+                        //_entities[slot] = new CCharacterCL;
+                        _entities[slot] = new Entity();
+                        break;
+
+                    case EntitySheet.SheetType.FX:
+                        //_entities[slot] = new CFxCL;
+                        _entities[slot] = new Entity();
+                        break;
+
+                    case EntitySheet.SheetType.ITEM:
+                        //_entities[slot] = new CItemCL;
+                        _entities[slot] = new Entity();
+                        break;
+
+                    case EntitySheet.SheetType.FORAGE_SOURCE:
+                        _entities[slot] = new ForageSourceEntity();
+                        break;
+
+                    default:
+                        _client.GetLogger().Warn($"Unknown Form Type '{entitySheet.Type}' -> entity not created.");
+                        return new Entity();
+                }
             }
 
             // If the entity has been right created.
@@ -127,11 +179,16 @@ namespace Client.Entity
 
                 // Set the Mission Giver Alias
                 _entities[slot].NpcAlias(newEntityInfo.Alias);
+
+                // Build the entity from a sheet.
+                if (_entities[slot].Build(entitySheet, _client))
+                {
+                    // Apply properties backuped;
+                    ApplyBackupedProperties(slot);
+                }
             }
 
             _client.Plugins.OnEntityCreate(slot, form, newEntityInfo);
-
-            // TODO: Implementation
 
             return _entities[slot];
         }
@@ -174,33 +231,28 @@ namespace Client.Entity
 
                 propty.Value = _client.GetDatabaseManager().GetProp(propName);
 
-                _client.GetLogger().Info($"EM:updateVP: backup the property {prop} as long as the entity {slot} is not allocated.");
+                _client.GetLogger().Debug($"EM:updateVP: backup the property {prop} as long as the entity {slot} is not allocated.");
 
-                //TBackupedChanges.iterator it = _BackupedChanges.find(slot);
-                //// Entity does not have any changes backuped for the time.
-                //if (it == _BackupedChanges.end())
-                //{
-                //    TProperties propMap = new TProperties();
-                //    propMap.insert(Tuple.Create(prop, propty));
-                //    _BackupedChanges.insert(Tuple.Create(slot, propMap));
-                //}
-                //// Entity already have some changes backuped.
-                //else
-                //{
-                //    TProperties properties = it.second;
-                //    TProperties.iterator itProp = properties.find(prop);
-                //    // This properties is still not backuped for this entity.
-                //    if (itProp == properties.end())
-                //    {
-                //        properties.Add(prop, propty);
-                //    }
-                //    // There is already a backuped value
-                //    else
-                //    {
-                //        _client.GetLogger().Warn($"EM:updateVP:{slot}: property '{prop}' already backuped.");
-                //        itProp.second = propty;
-                //    }
-                //}
+                // Entity does not have any changes backuped for the time.
+                if (!_backupedChanges.ContainsKey(slot))
+                {
+                    _backupedChanges.Add(slot, new Dictionary<uint, Property> { { prop, propty } });
+                }
+                // Entity already have some changes backuped.
+                else
+                {
+                    // This properties is still not backuped for this entity.
+                    if (!_backupedChanges[slot].ContainsKey(prop))
+                    {
+                        _backupedChanges[slot].Add(prop, propty);
+                    }
+                    // There is already a backuped value
+                    else
+                    {
+                        _client.GetLogger().Debug($"EM:updateVP:{slot}: property '{prop}' already backuped.");
+                        _backupedChanges[slot][prop] = propty;
+                    }
+                }
             }
             // Entity already allocated -> apply values.
             else
@@ -212,6 +264,21 @@ namespace Client.Entity
             _client.Plugins.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval);
 
             // TODO: Implementation
+        }
+
+        /// <summary>
+        /// Writes the properties that were already received before the entity was created to the entity
+        /// </summary>
+        public void ApplyBackupedProperties(uint slot)
+        {
+            if (!_backupedChanges.ContainsKey(slot)) return;
+
+            foreach (var (key, property) in _backupedChanges[slot])
+            {
+                _entities[slot].UpdateVisualProperty(property.GameCycle, key, 0, _client);
+            }
+
+            _backupedChanges.Remove(slot);
         }
 
         /// <inheritdoc />

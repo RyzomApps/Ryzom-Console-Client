@@ -4,6 +4,7 @@ using API;
 using API.Commands;
 using API.Entity;
 using Client.Network;
+using Client.Stream;
 
 namespace Client.Commands
 {

@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Client.Stream;
 
 namespace Client.Sheet
 {
@@ -196,13 +197,13 @@ namespace Client.Sheet
                 for (uint i = 0; i < nb; ++i)
                 {
                     // see if extension is wanted
-                    bool found = false;
+                    var found = false;
 
                     if (userExtensions != null)
                     {
-                        for (var l = 0; l < userExtensions.Count; ++l)
+                        foreach (var ext in userExtensions)
                         {
-                            if (string.Compare(userExtensions[l], TypeVersion[i].Type, StringComparison.OrdinalIgnoreCase) == 0)
+                            if (string.Compare(ext, TypeVersion[i].Type, StringComparison.OrdinalIgnoreCase) == 0)
                             {
                                 found = true;
                             }
@@ -236,8 +237,8 @@ namespace Client.Sheet
                         //    path = Path.standardizePath(_OutputDataPath) + TypeVersion[i].Type + ".packed_sheets";
                         //}
 
-                        if (path.Contains("sbrick.packed_sheets") || path.Contains("sphrase.packed_sheets"))
-                            LoadForm(extensions, path, entitySheetContainer, sheetIdFactory, updatePackedSheet);
+                        if (path.Contains("sbrick.packed_sheets") || path.Contains("sphrase.packed_sheets") || path.Contains("forage_source.packed_sheets"))
+                            LoadForm(extensions, path, ref entitySheetContainer, sheetIdFactory, updatePackedSheet);
 
                         foreach (var entitySheet in entitySheetContainer)
                         {
@@ -290,7 +291,7 @@ namespace Client.Sheet
             //callBack.popCropedValues();
         }
 
-        private void LoadForm(in List<string> sheetFilters, string packedFilename, SortedDictionary<SheetId, SheetManagerEntry> container, SheetIdFactory _sheetIdFactory, bool updatePackedSheet = true, bool errorIfPackedSheetNotGood = true)
+        private void LoadForm(in List<string> sheetFilters, string packedFilename, ref SortedDictionary<SheetId, SheetManagerEntry> container, SheetIdFactory _sheetIdFactory, bool updatePackedSheet = true, bool errorIfPackedSheetNotGood = true)
         {
             List<string> dictionnary = new List<string>();
             SortedDictionary<string, uint> dictionnaryIndex = new SortedDictionary<string, uint>();
@@ -313,7 +314,7 @@ namespace Client.Sheet
             // load the packed sheet if exists
             try
             {
-                BitStreamFile ifile = new BitStreamFile();
+                var ifile = new BitStreamFile();
                 //ifile.SetCacheFileOnOpen(true);
 
                 if (!ifile.Open(packedFilenamePath))
@@ -377,7 +378,7 @@ namespace Client.Sheet
                 //    throw Exception("The packed sheet version in stream is different of the code");
                 //}
 
-                ifile.SerialCont(ref container, _sheetIdFactory);
+                ifile.SerialCont(out container, _sheetIdFactory, this);
                 ifile.Close();
             }
             catch (Exception e)
@@ -387,16 +388,16 @@ namespace Client.Sheet
 
                 //if (!updatePackedSheet)
                 //{
-                    if (errorIfPackedSheetNotGood)
-                    {
-                        _client.GetLogger().Error($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
-                    }
-                    else
-                    {
-                        _client.GetLogger().Info($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
-                    }
+                if (errorIfPackedSheetNotGood)
+                {
+                    _client.GetLogger().Error($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
+                }
+                else
+                {
+                    _client.GetLogger().Info($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
+                }
 
-                    return;
+                return;
                 //}
                 //else
                 //{
@@ -865,12 +866,7 @@ namespace Client.Sheet
         /// <returns>pointer on the sheet according to the param or 0 if any pb</returns>
         public EntitySheet Get(SheetId num)
         {
-            if (_entitySheetContainer.ContainsKey(num))
-            {
-                return _entitySheetContainer[num].EntitySheet;
-            }
-
-            return null;
+            return _entitySheetContainer.ContainsKey(num) ? _entitySheetContainer[num].EntitySheet : null;
         }
 
         /// <summary>

@@ -8,6 +8,7 @@
 
 using System;
 using System.Diagnostics;
+using Client.Stream;
 
 namespace Client.Network.Action
 {

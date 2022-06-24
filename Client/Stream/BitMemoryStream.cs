@@ -13,7 +13,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Client.Network
+namespace Client.Stream
 {
     /// <summary>
     /// (de)serializes data for server communication

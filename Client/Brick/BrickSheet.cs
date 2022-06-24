@@ -10,19 +10,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Client.Network;
 using Client.Sheet;
+using Client.Stream;
 
 namespace Client.Brick
 {
+    // TODO: Implementation
     internal class BrickSheet : EntitySheet
     {
         public string IdIcon;
 
-        public BrickSheet(SheetIdFactory sheetIdFactory) : base(sheetIdFactory)
-        {
-
-        }
-
-        public override void Build(object item)
+        public BrickSheet() : base()
         {
 
         }

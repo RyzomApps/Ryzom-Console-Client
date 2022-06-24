@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using Client.Network.Action;
+using Client.Stream;
 
 namespace Client.Network
 {

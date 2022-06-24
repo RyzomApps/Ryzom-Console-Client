@@ -8,6 +8,7 @@
 
 using Client.Config;
 using Client.Network;
+using Client.Stream;
 
 namespace Client.ActionHandler
 {

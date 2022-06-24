@@ -8,6 +8,7 @@
 
 using Client.Network;
 using Client.Sheet;
+using Client.Stream;
 
 namespace Client.Phrase
 {
@@ -26,7 +27,7 @@ namespace Client.Phrase
         /// </summary>
         public static PhraseSlot Serial(BitMemoryStream impulse, SheetIdFactory sheetIdFactory)
         {
-            var ret = new PhraseSlot { Phrase = PhraseCom.Serial(impulse, sheetIdFactory) };
+            var ret = new PhraseSlot { Phrase = PhraseCom.Serial(impulse) };
 
             impulse.Serial(ref ret.KnownSlot);
 

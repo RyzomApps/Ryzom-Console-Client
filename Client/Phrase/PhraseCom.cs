@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using Client.Network;
 using Client.Sheet;
+using Client.Stream;
 
 namespace Client.Phrase
 {
@@ -25,7 +26,7 @@ namespace Client.Phrase
 
         public static PhraseCom EmptyPhrase = new PhraseCom();
 
-        public static PhraseCom Serial(BitMemoryStream impulse, SheetIdFactory sheetIdFactory)
+        public static PhraseCom Serial(BitMemoryStream impulse)
         {
             var ret = new PhraseCom();
 
@@ -43,8 +44,9 @@ namespace Client.Phrase
             }
 
             // read
-            //impulse.SerialCont(ref _serialCompBricks);
-            int len = 0;
+            // workaround for impulse.SerialCont(ref _serialCompBricks);
+
+            var len = 0;
             impulse.Serial(ref len);
 
             // 16 bits compression of the Bricks
@@ -64,9 +66,9 @@ namespace Client.Phrase
 
             ret.Bricks.Clear();
 
-            for (int i = 0; i < serialCompBricks.Count; i++)
+            for (var i = 0; i < serialCompBricks.Count; i++)
             {
-                ret.Bricks.Add(new SheetId(sheetIdFactory));
+                ret.Bricks.Add(new SheetId());
             }
 
             // end workaround
@@ -79,7 +81,7 @@ namespace Client.Phrase
                 }
                 else
                 {
-                    ret.Bricks[i].BuildSheetId(serialCompBricks[i] - 1, EntitySheet.TType.SBRICK /*serialSbrickType*/);
+                    ret.Bricks[i].BuildSheetId(serialCompBricks[i] - 1, EntitySheet.SheetType.SBRICK);
                 }
             }
 

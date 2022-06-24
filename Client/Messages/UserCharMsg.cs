@@ -8,6 +8,7 @@
 
 using API.Helper;
 using Client.Network;
+using Client.Stream;
 
 namespace Client.Messages
 {

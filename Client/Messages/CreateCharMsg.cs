@@ -10,6 +10,7 @@ using System.Diagnostics;
 using Client.Client;
 using Client.Network;
 using Client.Sheet;
+using Client.Stream;
 
 namespace Client.Messages
 {
@@ -69,11 +70,10 @@ namespace Client.Messages
         // 102 Leanon       de
         // 103 Arispotle    en
         // 301 Yubo         yubo
-
         internal void SetupFromCharacterSummary(CharacterSummary cs, SheetIdFactory sheetIdFactory)
         {
             Slot = 1;
-            SheetId = sheetIdFactory.Unknown;
+            SheetId = SheetId.Unknown;
             Mainland = 101; //cs.Mainland; TODO remove tests
             Name = cs.Name;
             People = 3; // Zorai //(byte)cs.People; TODO remove tests

@@ -45,7 +45,7 @@ namespace Client.Discord
             return ColorTranslator.FromHtml(hex.Value.ToString("X6"));
         }
 
-        public static string Decode(this Stream source)
+        public static string Decode(this System.IO.Stream source)
         {
             using var reader = new StreamReader(source);
             return reader.ReadToEnd();
