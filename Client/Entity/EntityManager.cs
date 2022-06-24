@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using API.Entity;
 using Client.Forage;
 using Client.Property;
@@ -284,15 +285,28 @@ namespace Client.Entity
         /// <inheritdoc />
         public IEntity GetEntityByName(string name, bool caseSensitive, bool complete)
         {
+            var minDistance = float.MaxValue;
+            IEntity minEntity = null;
+
             foreach (var entity in _entities)
             {
                 if (entity != null && entity.GetDisplayName().Contains(name, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
                 {
-                    return entity;
+                    if (UserEntity == null)
+                        return entity;
+
+                    // Try to get the closest
+                    var distance = Vector3.Distance(entity.Pos, UserEntity.Pos);
+
+                    if (distance < minDistance && distance < 500)
+                    {
+                        minEntity = entity;
+                        minDistance = distance;
+                    }
                 }
             }
 
-            return null;
+            return minEntity;
         }
 
         public Entity GetEntity(byte slot)

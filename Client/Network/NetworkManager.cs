@@ -189,10 +189,10 @@ namespace Client.Network
                 // Delete an entity
                 else if (change.Property == (byte)PropertyType.RemoveOldEntity)
                 {
+                    //_client.GetLogger().Info($"CNetManager::remove old entity : {(_entitiesManager.GetEntity(change.ShortId) != null ? _entitiesManager.GetEntity(change.ShortId).GetDisplayName().Trim() : "unnamed id " + change.ShortId)}");
+
                     // TODO: see why "Remove the old entity" is removing actual entities
                     //_entitiesManager.Remove(change.ShortId, true);
-
-                    //_client.GetLogger().Debug($"CNetManager::remove old entity : {(_entitiesManager.GetEntity(change.ShortId) != null ? _entitiesManager.GetEntity(change.ShortId).GetDisplayName().Trim() : "unnamed")}");
                 }
                 // Lag detected
                 else if (change.Property == (byte)PropertyType.LagDetected)
