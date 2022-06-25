@@ -41,7 +41,7 @@ namespace Client.Entity
         private readonly Dictionary<uint, Dictionary<uint, Property>> _backupedChanges = new Dictionary<uint, Dictionary<uint, Property>>();
 
         /// <inheritdoc />
-        public List<IEntity> GetApiEntities() => new List<IEntity>(_entities);
+        public List<IEntity> GetApiEntities() => _entities.ToList<IEntity>();
 
         public EntityManager(RyzomClient client)
         {
@@ -75,7 +75,7 @@ namespace Client.Entity
         {
             if (slot >= _nbMaxEntity)
             {
-                _client.GetLogger().Warn("EM:create: Cannot create the entity, the slot '" + slot + "' is invalid.");
+                _client.GetLogger().Warn($"EM:create: Cannot create the entity, the slot '{slot}' is invalid.");
                 return null;
             }
 

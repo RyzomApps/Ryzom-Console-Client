@@ -6,6 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
@@ -22,7 +23,7 @@ namespace Client.Property
     internal class PropertyDecoder
     {
         /// <summary>The entity entries</summary>
-        private readonly List<EntityEntry> _entities = new List<EntityEntry>();
+        private EntityEntry[] _entities = new EntityEntry[0];
 
         private ushort _refBitsX;
         private ushort _refBitsY;
@@ -38,14 +39,15 @@ namespace Client.Property
 
         private void Clear()
         {
-            var sz = (uint)_entities.Count;
-            _entities.Clear();
-            _entities.Resize((int)sz);
+            for (int i = 0; i < _entities.Length; i++)
+            {
+                _entities[i] = new EntityEntry();
+            }
         }
 
         private void SetMaximumEntities(uint maximum)
         {
-            _entities.Resize((int)maximum);
+            Array.Resize(ref _entities, (int)maximum);
         }
 
         internal ushort GetAssociationBits(byte entity)
@@ -72,7 +74,7 @@ namespace Client.Property
 
         internal void AddEntity(byte entity, uint sheet)
         {
-            Debug.Assert(entity < _entities.Count && !_entities[entity].EntryUsed);
+            Debug.Assert(entity < _entities.Length && !_entities[entity].EntryUsed);
 
             _entities[entity].EntryUsed = true;
             _entities[entity].Sheet = sheet;
@@ -80,7 +82,7 @@ namespace Client.Property
 
         internal bool RemoveEntity(byte entity)
         {
-            Debug.Assert(entity < _entities.Count, "entity=" + (ushort)entity + "u size=" + _entities.Count);
+            Debug.Assert(entity < _entities.Length, "entity=" + (ushort)entity + "u size=" + _entities.Length);
 
             //Workaround: assert converted to test when failure in vision from the server
             if (_entities[entity].EntryUsed)

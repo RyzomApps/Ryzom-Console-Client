@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using Client.Stream;
 
 namespace Client.Sheet
@@ -319,7 +320,7 @@ namespace Client.Sheet
 
                 if (!ifile.Open(packedFilenamePath))
                 {
-                    throw new Exception($"can't open PackedSheet {packedFilenamePath}");
+                    throw new IOException($"Can't open PackedSheet '{packedFilenamePath}'.");
                 }
 
                 //// an exception will be launch if the file is not the good version or if the file is not found

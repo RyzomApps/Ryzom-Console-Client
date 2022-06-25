@@ -947,8 +947,7 @@ namespace Client.Network
         /// </summary>
         private void ReceiveNormalMessage(BitMemoryStream msgin)
         {
-            _client.GetLogger()
-                .Debug($"CNET: received normal message Packet={_lastReceivedNumber} Ack={_lastReceivedAck}");
+            _client.GetLogger().Debug($"CNET: received normal message Packet={_lastReceivedNumber} Ack={_lastReceivedAck}");
             _client.GetLogger().Debug($"{msgin}");
 
             var actions = new List<ActionBase>();
@@ -958,7 +957,7 @@ namespace Client.Network
             while (_actions.Count != 0 && _actions[0].FirstPacket != 0 && _actions[0].FirstPacket <= _lastReceivedAck)
             {
                 // CActionBlock automatically remove() actions when deleted
-                _client.GetLogger().Debug($"removed action {_actions[0]}");
+                _client.GetLogger().Debug($"removed action {_actions[0].FirstPacket}");
                 _actions.RemoveAt(0);
             }
 
@@ -967,6 +966,7 @@ namespace Client.Network
 
             // TODO: receiveNormalMessage PacketStamps implementation
 
+
             // Decode the actions received in the impulsions
             foreach (var action in actions)
             {
@@ -974,7 +974,7 @@ namespace Client.Network
                 {
                     case ActionCode.ActionDisconnectionCode:
                         // Self disconnection
-                        _client.GetLogger().Info("You were disconnected by the server");
+                        _client.GetLogger().Warn("You were disconnected by the server");
                         // will send disconnection message
                         Disconnect();
                         break;
@@ -1010,9 +1010,11 @@ namespace Client.Network
 
             try
             {
+                var loop = 0;
+
                 while (true)
                 {
-                    // Check if there is a new block to read - sizeof(TCLEntityId)
+                    // Check if there is a new block to read - sizeof(TCLEntityId -> byte)
                     if (msgin.GetPosInBit() + 8 * 8 > msgin.Length * 8)
                         return;
 
@@ -1026,7 +1028,7 @@ namespace Client.Network
                     if (AssociationBitsHaveChanged(slot, associationBits))
                     {
                         //displayBitStream( msgin, beginbitpos, msgin.getPosInBit() );
-                        _client.Log.Debug("Disassociating S" + (ushort)slot + "u (AB " + associationBits + ")");
+                        _client.Log.Debug($"Disassociating S{(ushort)slot}u (AB {associationBits}) L {loop}");
 
                         if (_propertyDecoder.IsUsed(slot))
                         {
@@ -1042,7 +1044,7 @@ namespace Client.Network
                         }
                         else
                         {
-                            _client.Log.Debug("Cannot disassociate slot " + (ushort)slot + "u: sheet not received yet");
+                            _client.Log.Debug($"Cannot disassociate slot {(ushort)slot}u: sheet not received yet");
                         }
                     }
 
@@ -1080,7 +1082,7 @@ namespace Client.Network
                         // Set into property database
                         if (ap.Position[0] == 0 || ap.Position[1] == 0)
                         {
-                            _client.Log.Warn("S" + (ushort)slot + "u: Receiving an invalid position");
+                            _client.Log.Warn($"S{(ushort)slot}u: Receiving an invalid position");
                         }
 
                         var nodeRoot = (DatabaseNodeBranch)_databaseManager?.GetNodePtr().GetNode(0);
@@ -1099,18 +1101,20 @@ namespace Client.Network
                             Debug.Assert(node != null);
                             node.SetValue64(ap.Position[2]);
 
-                            _client.Log.Debug($"recvd position ({ap.Position[0]}, {ap.Position[1]}) for slot {(ushort)slot}u, date {timestamp}u");
+                            _client.Log.Debug($"recvd position ({ap.Position[0]}, {ap.Position[1]}) for slot {(ushort)slot}u, date {timestamp}u L {loop}");
                         }
 
                         var interior = ap.Interior;
 
                         ActionFactory.Remove(ap);
 
+                        // TODO: Statistical prediction of time before next position update: set PredictedInterval
+
                         // Add into the changes vector
                         var thechange = new PropertyChange(slot, (byte)PropertyType.Position, timestamp)
                         {
                             PositionInfo = { PredictedInterval = 0, IsInterior = interior }
-                            // TODO Statistical prediction of time before next position update: set PredictedInterval
+
                         };
 
                         _changes.Add(thechange);
@@ -1126,7 +1130,7 @@ namespace Client.Network
                         if (currentNode.A().BranchHasPayload)
                         {
                             var ac = (ActionLong)ActionFactory.CreateByPropIndex(slot, (byte)PropertyType.Orientation);
-                            ac.Unpack(msgin); // TODO: ap unpack
+                            ac.Unpack(msgin);
 
                             // Process orientation
                             var thechange = new PropertyChange(slot, (byte)PropertyType.Orientation, timestamp);
@@ -1140,9 +1144,8 @@ namespace Client.Network
                                 Debug.Assert(node != null);
                                 node.SetValue64(ac.GetValue());
 
-                                _client.Log.Debug($"CLIENT: recvd property {(byte)PropertyType.Orientation}u ({PropertyType.Orientation}) for slot {(ushort)slot}u, date {timestamp}");
+                                _client.Log.Debug($"CLIENT: recvd property {(byte)PropertyType.Orientation}u ({PropertyType.Orientation}) for slot {(ushort)slot}u, date {timestamp} L {loop}");
                             }
-
 
                             ActionFactory.Remove(ac);
                         }
@@ -1154,6 +1157,8 @@ namespace Client.Network
                         // Discreet properties
                         currentNode.B().DecodeDiscreetProperties(msgin);
                     }
+
+                    loop++;
                 }
             }
             catch (Exception e)
@@ -1168,7 +1173,7 @@ namespace Client.Network
         /// </summary>
         private bool AssociationBitsHaveChanged(byte slot, uint associationBits)
         {
-            var res = ((ushort)associationBits != _propertyDecoder.GetAssociationBits(slot));
+            var res = (ushort)associationBits != _propertyDecoder.GetAssociationBits(slot);
             _propertyDecoder.SetAssociationBits(slot, (ushort)associationBits);
             return res;
         }
@@ -1234,22 +1239,15 @@ namespace Client.Network
             msgin.Serial(ref checkMsgXml);
             msgin.Serial(ref checkDatabaseXml);
 
-            var xmlInvalid = !checkMsgXml.SequenceEqual(_msgXmlMD5) ||
-                             !checkDatabaseXml.SequenceEqual(_databaseXmlMD5);
+            var xmlInvalid = !checkMsgXml.SequenceEqual(_msgXmlMD5) || !checkDatabaseXml.SequenceEqual(_databaseXmlMD5);
 
             if (xmlInvalid && !_alreadyWarned)
             {
                 _alreadyWarned = true;
-                _client.GetLogger()
-                    .Warn(
-                        "XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
+                _client.GetLogger().Warn("XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
 
-                _client.GetLogger()
-                    .Warn(
-                        $"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
-                _client.GetLogger()
-                    .Warn(
-                        $"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
+                _client.GetLogger().Warn($"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
+                _client.GetLogger().Warn($"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
             }
 
             _msPerTick = 100;
@@ -1315,15 +1313,13 @@ namespace Client.Network
             if (_currentReceivedNumber > _lastReceivedNumber + 1)
             {
                 // we lost some messages...
-                _client.Log.Debug(
-                    $"CNET: lost messages server->client [{_lastReceivedNumber + 1};{_currentReceivedNumber - 1}]");
+                _client.Log.Debug($"CNET: lost messages server->client [{_lastReceivedNumber + 1};{_currentReceivedNumber - 1}]");
                 _meanLoss.Update(_currentReceivedNumber - _lastReceivedNumber - 1, Misc.GetLocalTime());
             }
 
             // don't acknowledge system messages and normal messages in
             // because this will disturb impulsion from frontend, that will interpret it as if previous messages were ok
-            var ackBool = (!_systemMode && (_connectionState == ConnectionState.Connected ||
-                                            _connectionState == ConnectionState.Synchronize));
+            var ackBool = (!_systemMode && (_connectionState == ConnectionState.Connected || _connectionState == ConnectionState.Synchronize));
             var ackBit = (ackBool ? (uint)1 : 0);
 
             if (_currentReceivedNumber - _lastReceivedNumber < 32)
@@ -1991,7 +1987,7 @@ namespace Client.Network
                             else
                             {
                                 // TODO: fix Received mode with null pos
-                                //RyzomClient.GetInstance().GetLogger().Warn($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos"); // TEMP
+                                RyzomClient.GetInstance().GetLogger().Warn($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos"); // TEMP
                             }
                         }
                     }

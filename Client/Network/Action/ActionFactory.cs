@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Client.Property;
 using Client.Stream;
 
@@ -201,6 +202,7 @@ namespace Client.Network.Action
                     }
                 default:
                     {
+                        Debug.Assert(propIndex < 28);
                         action = Create(slot, ActionCode.ActionSint64);
                         ((ActionLong)action).SetNbBits(propIndex);
                         break;

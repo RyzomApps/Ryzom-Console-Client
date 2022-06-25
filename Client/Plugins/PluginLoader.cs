@@ -146,21 +146,21 @@ namespace Client.Plugins
 
             plugin.GetLogger().Info("Enabling " + plugin.GetDescription().GetFullName());
 
-            var jPlugin = (Plugin)(plugin);
-            var pluginName = jPlugin.GetDescription().GetName();
+            var csPlugin = (Plugin)(plugin);
+            var pluginName = csPlugin.GetDescription().GetName();
 
             if (!_loaders.ContainsKey(pluginName))
             {
-                _loaders.Add(pluginName, jPlugin.GetClassLoader());
+                _loaders.Add(pluginName, csPlugin.GetClassLoader());
             }
 
             try
             {
-                jPlugin.SetEnabled(true);
+              csPlugin.SetEnabled(true);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Handler.GetLogger().Error($"Error occurred while enabling {plugin.GetDescription().GetFullName()} (Is it up to date?)");
+                Handler.GetLogger().Error($"Error occurred while enabling {plugin.GetDescription().GetFullName()} (Is it up to date?)\r\n{e.Message}");
             }
 
             // Perhaps abort here, rather than continue going, but as it stands,
