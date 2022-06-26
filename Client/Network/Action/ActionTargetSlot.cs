@@ -34,7 +34,7 @@ namespace Client.Network.Action
         /// </summary>
         public override int Size()
         {
-            return sizeof(byte) * 8 + 2;
+            return /*sizeof(byte)*/ 8 * 8 + 2;
         }
 
         public override void Reset()

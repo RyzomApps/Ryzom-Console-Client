@@ -78,7 +78,7 @@ namespace Client
             Banner();
 
             Console.Title = $@"[RCC] {Version}";
-            ConsoleIO.WriteLineFormatted($"§bConsole Client for Ryzom §av{Version}§b - By bierdosenhalter & Contributors");
+            ConsoleIO.WriteLineFormatted($"§bConsole Client for Ryzom §av{Version}§r");
 
             // Debug input ?
             if (args.Length == 1 && args[0] == "--keyboard-debug")
@@ -90,6 +90,7 @@ namespace Client
             // Setup ConsoleIO
             ConsoleIO.EnableTimestamps = true;
             ConsoleIO.LogPrefix = "§7[§fR§eC§cC§7] §r";
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || args.Length >= 1 && args[^1] == "BasicIO" || args.Length >= 1 && args[^1] == "BasicIO-NoColor")
             {
                 if (args.Length >= 1 && args[^1] == "BasicIO-NoColor")

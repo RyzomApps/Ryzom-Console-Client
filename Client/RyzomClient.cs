@@ -38,6 +38,7 @@ using Client.Brick;
 using Client.Phrase;
 using Client.Skill;
 using Client.Stream;
+using API.Entity;
 
 namespace Client
 {
@@ -821,7 +822,12 @@ namespace Client
                 }
 
                 // Stats2Title
-                Console.Title = $@"[RCC] Version: {Program.Version} - State: {_networkConnection.ConnectionState} - Down: {_networkConnection.GetMeanDownload():0.00} kbps - Up: {_networkConnection.GetMeanUpload():0.00} kbps - Loss: {_networkConnection.GetMeanPacketLoss():0.00}";
+                var name = GetNetworkManager()?.PlayerSelectedHomeShardName;
+                name = EntityHelper.RemoveTitleAndShardFromName(name);
+                if (name.Trim().Length > 0)
+                    name = " - " + name;
+
+                Console.Title = $@"[RCC] Version: {Program.Version}{name} - State: {_networkConnection.ConnectionState} - Down: {_networkConnection.GetMeanDownload():0.00} kbps - Up: {_networkConnection.GetMeanUpload():0.00} kbps - Loss: {_networkConnection.GetMeanPacketLoss():0.00}";
 
                 // Update Ryzom Client stuff ~10 times per second -> Execute Tasks (like commands and listener stuff)
                 if (Math.Abs(Misc.GetLocalTime() - _lastClientUpdate) > 100)
