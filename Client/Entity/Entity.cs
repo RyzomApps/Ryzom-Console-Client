@@ -42,12 +42,12 @@ namespace Client.Entity
         /// <summary>
         /// Primitive type
         /// </summary>
-        protected EntityType _type;
+        protected internal EntityType _type;
 
         /// <summary>
         /// Current Name for the entity
         /// </summary>
-        protected string _entityName;
+        protected internal string _entityName;
 
         /// <summary>
         /// Current guild name of the entity

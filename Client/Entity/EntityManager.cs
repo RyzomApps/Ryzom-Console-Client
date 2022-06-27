@@ -126,7 +126,9 @@ namespace Client.Entity
                     case EntitySheet.SheetType.RACE_STATS:
                     case EntitySheet.SheetType.CHAR:
                         if (slot != 0)
-                            _entities[slot] = new Entity();
+                        {
+                            _entities[slot] = new Entity { _type = EntityType.Player };
+                        }
                         else
                         {
                             UserEntity = new UserEntity(_client) { Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
@@ -138,7 +140,7 @@ namespace Client.Entity
                         //CharacterSheet *sheet = NLMISC::safe_cast<CCharacterSheet *>(entitySheet);
                         //if (!sheet->R2Npc) _Entities[slot] = new CCharacterCL;
                         //else _entities[slot] = new CPlayerR2CL;
-                        _entities[slot] = new Entity();
+                        _entities[slot] = new Entity { _type = EntityType.Fauna };
                         break;
 
                     case EntitySheet.SheetType.FLORA:
@@ -328,7 +330,7 @@ namespace Client.Entity
 
             for (var i = 1; i < nb; ++i)
             {
-                strTmp = _entities[i] == null ? $"// {i}\n" : $"\"{_entities[i].SheetId()}\",\t\"{_entities[i].Pos.X}\", \"{_entities[i].Pos.Y}\", \"{_entities[i].Pos.Z}\", \"{_entities[i].Front.X}\", \"{_entities[i].Front.Y}\", \"{_entities[i].Front.Z}\",\t// {i} {_entities[i].GetDisplayName()}\n";
+                strTmp = _entities[i] == null ? $"// {i}\n" : $"\"{_entities[i].SheetId()}\",\t\"{_entities[i].Pos.X}\", \"{_entities[i].Pos.Y}\", \"{_entities[i].Pos.Z}\", \"{_entities[i].Front.X}\", \"{_entities[i].Front.Y}\", \"{_entities[i].Front.Z}\",\t// {i} {_entities[i].GetDisplayName()} {_entities[i].GetEntityType()}\n";
                 file.Write(strTmp);
             }
 

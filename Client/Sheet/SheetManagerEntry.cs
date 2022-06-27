@@ -14,17 +14,32 @@ using Client.Stream;
 
 namespace Client.Sheet
 {
+    /// <summary>
+    /// Class to manage all sheets.
+    /// </summary>
+    /// <author>Guillaume PUZIN</author>
+    /// <author>Nevrax France</author>
+    /// <date>2001</date>
     public class SheetManagerEntry
     {
         private readonly SheetManager _sheetManager;
 
+        /// <summary>
+        /// The data which will be filled in readGeorges and serial
+        /// </summary>
         public EntitySheet EntitySheet { get; internal set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public SheetManagerEntry(SheetManager sheetManager)
         {
             _sheetManager = sheetManager;
         }
 
+        /// <summary>
+        /// Load/Save the values using the serial system
+        /// </summary>
         public void Serial(BitStreamFile stream)
         {
             stream.Serial(out uint intType);
@@ -50,6 +65,11 @@ namespace Client.Sheet
                     InitSheet(EntitySheet, stream, type);
                     break;
 
+                case EntitySheet.SheetType.RACE_STATS:
+                    EntitySheet = new RaceStatsSheet();
+                    InitSheet(EntitySheet, stream, type);
+                    break;
+
                 case EntitySheet.SheetType.CHAR:
                 case EntitySheet.SheetType.FAUNA:
                 case EntitySheet.SheetType.FLORA:
@@ -59,7 +79,6 @@ namespace Client.Sheet
                 case EntitySheet.SheetType.ITEM:
                 case EntitySheet.SheetType.PLANT:
                 case EntitySheet.SheetType.MISSION:
-                case EntitySheet.SheetType.RACE_STATS:
                 case EntitySheet.SheetType.PACT:
                 case EntitySheet.SheetType.LIGHT_CYCLE:
                 case EntitySheet.SheetType.WEATHER_SETUP:

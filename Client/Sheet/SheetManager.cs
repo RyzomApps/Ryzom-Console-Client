@@ -238,12 +238,13 @@ namespace Client.Sheet
                         //    path = Path.standardizePath(_OutputDataPath) + TypeVersion[i].Type + ".packed_sheets";
                         //}
 
-                        if (path.Contains("sbrick.packed_sheets") || path.Contains("sphrase.packed_sheets") || path.Contains("forage_source.packed_sheets"))
+                        //if (path.Contains("sbrick.packed_sheets") || path.Contains("sphrase.packed_sheets") || path.Contains("forage_source.packed_sheets"))
+                        if (File.Exists("./data/" + path))
                             LoadForm(extensions, path, ref entitySheetContainer, sheetIdFactory, updatePackedSheet);
 
-                        foreach (var entitySheet in entitySheetContainer)
+                        foreach (var (key, value) in entitySheetContainer)
                         {
-                            _entitySheetContainer[entitySheet.Key] = entitySheet.Value;
+                            _entitySheetContainer[key] = value;
                             //entitySheet.Value.EntitySheet = null; //_sheetIdFactory.EntitySheet(0);
                         }
                     }

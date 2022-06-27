@@ -146,19 +146,25 @@ namespace Client.Forage
         /// </summary>
         protected override void UpdateVisualPropertyName(uint gameCycle, long prop, RyzomClient client)
         {
-            var rmSheetId = client.GetSheetIdFactory().SheetId((uint)prop);
+            //var rmSheetId = client.GetSheetIdFactory().SheetId((uint)prop);
+            
+            //var name = client.GetStringManager().GetItemLocalizedName(rmSheetId);
 
-            var name = client.GetStringManager().GetItemLocalizedName(rmSheetId);
+            // TODO: fix this hack
+            var name = "Raw Material Source";
 
-            if (name == "") return;
+            if (name == "") 
+                return;
 
             _entityName = name;
 
-            if (_ProspectorSlot == 255) return;
+            if (_ProspectorSlot == 255) 
+                return;
 
             var prospector = client.GetNetworkManager().GetEntityManager().GetEntity(_ProspectorSlot);
 
-            if (prospector == null) return;
+            if (prospector == null) 
+                return;
 
             var prospectorName = prospector.GetDisplayName();
 
