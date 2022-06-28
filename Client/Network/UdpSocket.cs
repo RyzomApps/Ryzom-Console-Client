@@ -15,13 +15,11 @@ namespace Client.Network
     /// <summary>
     /// wrapper for the udpclient class to have a synch connection the the server
     /// </summary>
-    internal class UdpSocket
+    internal class UdpSocket : IUdpSocket
     {
         private UdpClient _udpMain;
 
-        /// <summary>
-        /// connect to a given frontend address containing a host and a port in the string
-        /// </summary>
+        /// <inheritdoc />
         public void Connect(string frontendAddress)
         {
             ParseHostString(frontendAddress, out var host, out var port);
@@ -30,9 +28,19 @@ namespace Client.Network
             _udpMain.Connect(host, port);
         }
 
-        /// <summary>
-        /// get host and port from a address string
-        /// </summary>
+        /// <inheritdoc />
+        public bool IsConnected()
+        {
+            return _udpMain.Client.Connected;
+        }
+
+        /// <inheritdoc />
+        public bool IsDataAvailable()
+        {
+            return _udpMain.Client?.Available > 0;
+        }
+
+        /// <inheritdoc />
         public void ParseHostString(string hostString, out string hostName, out int port)
         {
             hostName = hostString;
@@ -48,33 +56,7 @@ namespace Client.Network
             int.TryParse(hostParts[1], out port);
         }
 
-        /// <summary>
-        /// checks if the udp client is connected
-        /// </summary>
-        public bool Connected()
-        {
-            return _udpMain.Client.Connected;
-        }
-
-        /// <summary>
-        /// send buffer data to the server
-        /// </summary>
-        public void Send(byte[] buffer, in int length)
-        {
-            _udpMain.Send(buffer, length);
-        }
-
-        /// <summary>
-        /// checks if data is available at the client
-        /// </summary>
-        public bool IsDataAvailable()
-        {
-            return _udpMain.Client?.Available > 0;
-        }
-
-        /// <summary>
-        /// receives available data
-        /// </summary>
+        /// <inheritdoc />
         public bool Receive(ref byte[] receiveBuffer, bool throwException)
         {
             var remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
@@ -96,9 +78,13 @@ namespace Client.Network
             return true;
         }
 
-        /// <summary>
-        /// Closes the UDP connection
-        /// </summary>
+        /// <inheritdoc />
+        public void Send(byte[] buffer, in int length)
+        {
+            _udpMain.Send(buffer, length);
+        }
+
+        /// <inheritdoc />
         public void Close()
         {
             _udpMain.Close();

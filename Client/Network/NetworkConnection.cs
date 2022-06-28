@@ -10,8 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using System.Threading;
 using API.Helper;
 using Client.Config;
@@ -38,7 +40,7 @@ namespace Client.Network
         /// <summary>
         /// The UDP connection to the frontend
         /// </summary>
-        private readonly UdpSocket _connection = new UdpSocket();
+        private IUdpSocket _connection;
 
         /// <summary>
         /// The current state of the connection
@@ -357,7 +359,7 @@ namespace Client.Network
         /// Connects to the front-end (using or not the login system, depending on what was specified at init())
         /// Start the connection state machine - Udp socket will connect at this point
         /// </summary>
-        internal void Connect()
+        internal void Connect(bool proxied = false)
         {
             if (ConnectionState != ConnectionState.NotConnected)
             {
@@ -366,9 +368,42 @@ namespace Client.Network
             }
 
             // S12: connect to the FES. Note: In UDP mode, it's the user that have to send the cookie to the front end
+
             try
             {
-                _connection.Connect(_frontendAddress);
+                if (proxied)
+                {
+                    // Open the proxies file to read from.
+                    string[] proxies = File.ReadAllLines("./data/proxies.txt", Encoding.UTF8);
+
+                    Random rnd = new Random(DateTime.Now.Millisecond);
+
+                    var working = false;
+
+                    while (!working)
+                    {
+                        int index = rnd.Next(proxies.Length);
+                        var proxy = proxies[index];
+
+                        _client.GetLogger().Info($"Trying to use SOCKS5 proxy server '{proxy}'.");
+
+                        try
+                        {
+                            _connection = new UdpSocketProxied(proxy);
+                            _connection.Connect(_frontendAddress);
+                            working = true;
+                        }
+                        catch (Exception innerE)
+                        {
+                            _client.GetLogger().Info($"Proxy errot '{innerE.Message}'.");
+                        }
+                    }
+                }
+                else
+                {
+                    _connection = new UdpSocket();
+                    _connection.Connect(_frontendAddress);
+                }
             }
             catch (Exception e)
             {
@@ -417,7 +452,7 @@ namespace Client.Network
             // Yoyo. OnUpdate the Smooth ServerTick.
             UpdateSmoothServerTick();
 
-            if (!_connection.Connected())
+            if (!_connection.IsConnected())
             {
                 _client.GetLogger().Warn("CNET: update() attempted whereas socket is not connected !");
                 return false;
@@ -1445,7 +1480,7 @@ namespace Client.Network
 
             message.Serial(ref disconnection);
 
-            if (_connection.Connected())
+            if (_connection.IsConnected())
             {
                 try
                 {

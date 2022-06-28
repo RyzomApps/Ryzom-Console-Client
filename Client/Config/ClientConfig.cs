@@ -83,6 +83,9 @@ namespace Client.Config
 
         public static string DiscordWebhook = "";
 
+        // Proxy
+        public static bool UseProxy = false;
+
         // Other Settings
         public static char InternalCmdChar = '/';
 
@@ -280,6 +283,10 @@ namespace Client.Config
 
                 case "logtofile":
                     LogToFile = bool.Parse(argValue);
+                    break;
+
+                case "useproxy":
+                    UseProxy = bool.Parse(argValue);
                     break;
 
                 case "logfile":

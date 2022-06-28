@@ -234,6 +234,9 @@ namespace Client
             // copy sheet_id.bin from resources
             if (!File.Exists("./data/sheet_id.bin")) ResourceHelper.WriteResourceToFile("sheet_id", "./data/sheet_id.bin");
 
+            // copy proxies.txt from resources
+            if (!File.Exists("./data/proxies.txt")) ResourceHelper.WriteResourceToFile("proxies", "./data/proxies.txt");
+
             // Start the main client
             if (autoStart)
             {
@@ -519,7 +522,7 @@ namespace Client
             {
                 try
                 {
-                    _networkConnection.Connect();
+                    _networkConnection.Connect(ClientConfig.UseProxy);
                 }
                 catch (Exception e)
                 {
