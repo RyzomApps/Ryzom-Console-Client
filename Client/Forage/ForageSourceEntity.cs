@@ -328,9 +328,9 @@ namespace Client.Forage
         }
 
         /// <inheritdoc />
-        public float GetCurrentBarValue(TfsBarIndex index)
+        public byte GetCurrentBarValue(TfsBarIndex index)
         {
-            return (int)index < (int)TfsBarIndex.NbFsBarIndices ? _barCurrentValues[(int)index] : float.NaN;
+            return 0 <= index && index < TfsBarIndex.NbFsBarIndices ? _barDestValues[(int)index] : byte.MaxValue;
         }
     }
 }
