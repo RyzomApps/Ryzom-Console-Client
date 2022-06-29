@@ -8,7 +8,6 @@
 
 using Client.Network.Proxy;
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
@@ -20,11 +19,11 @@ namespace Client.Network
     internal class UdpSocketProxied : IUdpSocket
     {
         private UdpClient _udpMain;
-        Socket socks5Socket;
-        IPAddress _ip;
-        ushort _port;
-        byte[] socksUdpHeader = new byte[0];
-        private string _proxyAddress;
+        private Socket _socks5Socket;
+        private IPAddress _ip;
+        private ushort _port;
+        private byte[] _socksUdpHeader = new byte[0];
+        private readonly string _proxyAddress;
 
         /// <summary>
         /// Constuctor
@@ -38,76 +37,58 @@ namespace Client.Network
         public void Connect(string frontendAddress)
         {
             // Proxy Address
-            ParseHostString(_proxyAddress, out var proxyHost, out var proxyPort);
+            UdpSocket.ParseHostString(_proxyAddress, out var proxyHost, out var proxyPort);
+
+            var proxyIp = Dns.GetHostAddresses(proxyHost)[0];
 
             // Ryzom Address
-            ParseHostString(frontendAddress, out var host, out var port);
+            UdpSocket.ParseHostString(frontendAddress, out var host, out var port);
 
             _ip = Dns.GetHostAddresses(host)[0];
             _port = (ushort)port;
 
-            socks5Socket = SocksProxy.ConnectToSocks5Proxy(proxyHost, (ushort)proxyPort, _ip.ToString(), _port, "", "", out string udpAddress, out ushort udpPort);
+            // Try to establish a socks5 proxy connection and get port and ip for udp
+            _socks5Socket = Socks5Proxy.EstablishConnection(proxyIp.ToString(), (ushort)proxyPort, _ip.ToString(), _port, "", "", out var udpAddress, out var udpPort);
 
+            // use the proxy host if no other address is given
             if (udpAddress == "\0")
                 udpAddress = proxyHost;
 
-            _udpMain = new UdpClient();
+            // connect the udp client to the proxy
+            _udpMain = new UdpClient { Client = { ReceiveTimeout = 3000, SendTimeout = 30000 } };
+
             _udpMain.Connect(udpAddress, udpPort);
-        }
-
-        /// <inheritdoc />
-        public void ParseHostString(string hostString, out string hostName, out int port)
-        {
-            hostName = hostString;
-            port = -1;
-
-            if (!hostString.Contains(":")) return;
-
-            var hostParts = hostString.Split(':');
-
-            if (hostParts.Length != 2) return;
-
-            hostName = hostParts[0];
-            int.TryParse(hostParts[1], out port);
         }
 
         /// <inheritdoc />
         public bool IsConnected()
         {
-            return _udpMain.Client.Connected;
+            return _udpMain.Client.Connected && _socks5Socket.Connected;
         }
 
         /// <inheritdoc />
         public void Send(byte[] buffer, in int length)
         {
-            if (socksUdpHeader.Length != 10)
+            if (_socksUdpHeader.Length != 10)
             {
-                socksUdpHeader = new byte[10];
+                _socksUdpHeader = new byte[10];
 
                 // Type of IP V4 address
-                socksUdpHeader[3] = 1;
+                _socksUdpHeader[3] = 1;
 
                 // IP
-                Array.Copy(_ip.GetAddressBytes(), 0, socksUdpHeader, 4, 4);
+                Array.Copy(_ip.GetAddressBytes(), 0, _socksUdpHeader, 4, 4);
 
                 // Port
                 var portBytes = BitConverter.GetBytes(_port);
 
-                Array.Copy(portBytes, 1, socksUdpHeader, 8, 1);
-                Array.Copy(portBytes, 0, socksUdpHeader, 9, 1);
+                Array.Copy(portBytes, 1, _socksUdpHeader, 8, 1);
+                Array.Copy(portBytes, 0, _socksUdpHeader, 9, 1);
             }
 
-            byte[] combination = Combine(socksUdpHeader, buffer);
+            var combination = Combine(_socksUdpHeader, buffer);
 
-            _udpMain.Send(combination, socksUdpHeader.Length + length);
-        }
-
-        public static byte[] Combine(byte[] first, byte[] second)
-        {
-            byte[] bytes = new byte[first.Length + second.Length];
-            Buffer.BlockCopy(first, 0, bytes, 0, first.Length);
-            Buffer.BlockCopy(second, 0, bytes, first.Length, second.Length);
-            return bytes;
+            _udpMain.Send(combination, _socksUdpHeader.Length + length);
         }
 
         /// <inheritdoc />
@@ -142,7 +123,18 @@ namespace Client.Network
         public void Close()
         {
             _udpMain.Close();
-            socks5Socket.Close();
+            _socks5Socket.Close();
+        }
+
+        /// <summary>
+        /// Function to combine two byte arrays
+        /// </summary>
+        public static byte[] Combine(byte[] first, byte[] second)
+        {
+            var bytes = new byte[first.Length + second.Length];
+            Buffer.BlockCopy(first, 0, bytes, 0, first.Length);
+            Buffer.BlockCopy(second, 0, bytes, first.Length, second.Length);
+            return bytes;
         }
     }
 }

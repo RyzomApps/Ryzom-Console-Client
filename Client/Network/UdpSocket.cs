@@ -24,7 +24,7 @@ namespace Client.Network
         {
             ParseHostString(frontendAddress, out var host, out var port);
 
-            _udpMain = new UdpClient();
+            _udpMain = new UdpClient {Client = {ReceiveTimeout = 30000, SendTimeout = 30000}};
             _udpMain.Connect(host, port);
         }
 
@@ -40,8 +40,10 @@ namespace Client.Network
             return _udpMain.Client?.Available > 0;
         }
 
-        /// <inheritdoc />
-        public void ParseHostString(string hostString, out string hostName, out int port)
+        /// <summary>
+        /// Splits an address into host and port
+        /// </summary>
+        public static void ParseHostString(string hostString, out string hostName, out int port)
         {
             hostName = hostString;
             port = -1;

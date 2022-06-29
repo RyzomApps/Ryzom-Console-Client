@@ -31,11 +31,6 @@ namespace Client.Network
         public bool IsDataAvailable();
 
         /// <summary>
-        /// get host and port from a address string
-        /// </summary>
-        public void ParseHostString(string hostString, out string hostName, out int port);
-
-        /// <summary>
         /// receives available data
         /// </summary>
         public bool Receive(ref byte[] receiveBuffer, bool throwException);

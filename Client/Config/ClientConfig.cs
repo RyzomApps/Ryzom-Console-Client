@@ -85,6 +85,7 @@ namespace Client.Config
 
         // Proxy
         public static bool UseProxy = false;
+        public static string OnlineProxyList = "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt";
 
         // Other Settings
         public static char InternalCmdChar = '/';
@@ -291,6 +292,10 @@ namespace Client.Config
 
                 case "logfile":
                     LogFile = argValue;
+                    break;
+
+                case "onlineproxylist":
+                    OnlineProxyList = argValue;
                     break;
 
                 default:

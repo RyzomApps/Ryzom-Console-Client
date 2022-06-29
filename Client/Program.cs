@@ -78,7 +78,7 @@ namespace Client
             Banner();
 
             Console.Title = $@"[RCC] {Version}";
-            ConsoleIO.WriteLineFormatted($"§bConsole Client for Ryzom §av{Version}§r");
+            ConsoleIO.WriteLineFormatted($"§bRyzom Console Client §av{Version}§r");
 
             // Debug input ?
             if (args.Length == 1 && args[0] == "--keyboard-debug")

@@ -46,7 +46,7 @@ released under GNU Affero General Public License http://www.gnu.org/licenses/
 Copyright 2010 Winch Gate Property Limited
 
 ### Bukkit - A Minecraft Server API (https://github.com/Bukkit/Bukkit)
-released under GNU General Public License v3.0 https://www.gnu.org/licenses/gpl-3.0.en.html
+released under GNU General Public License v3.0 http://www.gnu.org/licenses/
 
 Copyright 2021 Bukkit Team
 
@@ -57,6 +57,11 @@ Copyright 2019 by aannenko
 Copyright 2013 by James F. Bellinger 
 
 ### CSharpDiscordWebhook (https://github.com/N4T4NM/CSharpDiscordWebhook)
-released under MIT License https://github.com/N4T4NM/CSharpDiscordWebhook/blob/master/LICENSE
+released under MIT License https://mit-license.org
 
 Copyright 2021 by N4T4NM
+
+### L2 .NET (https://github.com/devmvalvm/L2Net)
+released under GNU General Public License v2.0 http://www.gnu.org/licenses/
+
+Copyright 2018 devmvalvm

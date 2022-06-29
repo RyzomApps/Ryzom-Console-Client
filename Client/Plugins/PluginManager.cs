@@ -348,7 +348,7 @@ namespace Client.Plugins
         /// <inheritdoc/>
         public IPlugin GetPlugin(string name)
         {
-            if(_lookupNames.ContainsKey(name.Replace(' ', '_')))
+            if (_lookupNames.ContainsKey(name.Replace(' ', '_')))
                 return _lookupNames[name.Replace(' ', '_')];
 
             return null;
@@ -483,6 +483,49 @@ namespace Client.Plugins
 
                 if (_client.IsInGame())
                     DispatchListenerEvent(listener => listener.OnGameJoined(), new[] { (ListenerBase)newListener });
+            }
+        }
+
+        /// <summary>
+        /// Dispatch a listener event with automatic exception handling
+        /// </summary>
+        /// <example>
+        /// Example for calling SomeEvent() on all automata at once:
+        /// DispatchAutomatonEvent(listener => listener.SomeEvent());
+        /// </example>
+        /// <param name="action">ActionBase to execute on each listener</param>
+        /// <param name="listenerList">Only fire the event for the specified listener list (default: all listeners)</param>
+        public void DispatchListenerEvent(Action<ListenerBase> action, IEnumerable<ListenerBase> listenerList = null)
+        {
+            if (listenerList == null)
+            {
+                // call for all listeners
+                CallEvent(action);
+                return;
+            }
+
+            // call only for specific listeners
+            foreach (var listener in listenerList)
+            {
+                try
+                {
+                    action(listener);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        //Retrieve parent method name to determine which event caused the exception
+                        var frame = new System.Diagnostics.StackFrame(1);
+                        var method = frame.GetMethod();
+                        var parentMethodName = method?.Name;
+
+                        //Display a meaningful error message to help debugging the listener
+                        _client?.GetLogger().Error($"{parentMethodName}: Got error from {listener}: {e}");
+                    }
+                    // ThreadAbortException should not be caught here as in can happen when disconnecting from server
+                    else throw;
+                }
             }
         }
 
@@ -816,49 +859,14 @@ namespace Client.Plugins
             DispatchListenerEvent(listener => listener.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval));
         }
 
-        #endregion
-
         /// <summary>
-        /// Dispatch a listener event with automatic exception handling
+        /// called when the server phrase execution acknowledgement has been received
         /// </summary>
-        /// <example>
-        /// Example for calling SomeEvent() on all automata at once:
-        /// DispatchAutomatonEvent(listener => listener.SomeEvent());
-        /// </example>
-        /// <param name="action">ActionBase to execute on each listener</param>
-        /// <param name="listenerList">Only fire the event for the specified listener list (default: all listeners)</param>
-        public void DispatchListenerEvent(Action<ListenerBase> action, IEnumerable<ListenerBase> listenerList = null)
+        public void OnPhraseAckExecute(bool cyclic, byte counterValue, bool ok)
         {
-            if (listenerList == null)
-            {
-                // call for all listeners
-                CallEvent(action);
-                return;
-            }
-
-            // call only for specific listeners
-            foreach (var listener in listenerList)
-            {
-                try
-                {
-                    action(listener);
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        //Retrieve parent method name to determine which event caused the exception
-                        var frame = new System.Diagnostics.StackFrame(1);
-                        var method = frame.GetMethod();
-                        var parentMethodName = method?.Name;
-
-                        //Display a meaningful error message to help debugging the listener
-                        _client?.GetLogger().Error($"{parentMethodName}: Got error from {listener}: {e}");
-                    }
-                    // ThreadAbortException should not be caught here as in can happen when disconnecting from server
-                    else throw;
-                }
-            }
+            DispatchListenerEvent(listener => listener.OnPhraseAckExecute(cyclic, counterValue, ok));
         }
+
+        #endregion
     }
 }

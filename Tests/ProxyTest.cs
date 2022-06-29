@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using Xunit;
 using Client.Network.Proxy;
-using System.Net.Sockets;
 
 namespace Tests
 {
@@ -10,9 +8,13 @@ namespace Tests
         [Fact]
         public void Socks5Test()
         {
-            var socket = SocksProxy.ConnectToSocks5Proxy("79.143.187.168", 7497, "164.132.202.87", 53, "", "", out string udpAdress, out ushort udpPort);
+            Socks5Proxy.EstablishConnection("79.143.187.168", 7497, "164.132.202.87", 53, "", "", out var udpAdress, out var udpPort);
 
-            Debug.Print(udpAdress + " " + udpPort);
+            Assert.NotNull(udpAdress);
+
+            Assert.Equal("\0", udpAdress);
+
+            Assert.Equal(7497, udpPort);
         }
     }
 }

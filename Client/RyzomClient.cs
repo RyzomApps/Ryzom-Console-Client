@@ -828,9 +828,13 @@ namespace Client
                 var name = GetNetworkManager()?.PlayerSelectedHomeShardName;
                 name = EntityHelper.RemoveTitleAndShardFromName(name);
                 if (name.Trim().Length > 0)
-                    name = " - " + name;
+                    name += " - ";
 
-                Console.Title = $@"[RCC] Version: {Program.Version}{name} - State: {_networkConnection.ConnectionState} - Down: {_networkConnection.GetMeanDownload():0.00} kbps - Up: {_networkConnection.GetMeanUpload():0.00} kbps - Loss: {_networkConnection.GetMeanPacketLoss():0.00}";
+                var country = GetNetworkManager()?.GetNetworkConnection()?.ProxyCountry;
+                if (country != null && country.Trim().Length > 0)
+                    country += " - ";
+
+                Console.Title = $@"[RCC] {name}{country}{_networkConnection.ConnectionState} - Ping: {_networkConnection.GetPing()} ms - Down: {_networkConnection.GetMeanDownload():0.0} kbps - Up: {_networkConnection.GetMeanUpload():0.0} kbps - Loss: {_networkConnection.GetMeanPacketLoss():0} pps - Version: {Program.Version}";
 
                 // Update Ryzom Client stuff ~10 times per second -> Execute Tasks (like commands and listener stuff)
                 if (Math.Abs(Misc.GetLocalTime() - _lastClientUpdate) > 100)

@@ -106,7 +106,7 @@ namespace Client.Network
                     }
                     else
                     {
-                        RyzomClient.GetInstance().GetLogger()?.Warn($"ImpulseDecoder: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
+                        RyzomClient.GetInstance().GetLogger()?.Debug($"ImpulseDecoder: discarded action {action.Code} (len={ActionFactory.Size(action)}) at level {level} (channel {channel})");
                         ActionFactory.Remove(action);
                     }
                 }

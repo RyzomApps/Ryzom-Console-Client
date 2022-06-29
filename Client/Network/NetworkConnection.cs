@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Numerics;
 using System.Text;
 using System.Threading;
@@ -19,6 +20,7 @@ using API.Helper;
 using Client.Config;
 using Client.Database;
 using Client.Network.Action;
+using Client.Network.Proxy;
 using Client.Property;
 using Client.Stream;
 
@@ -192,6 +194,8 @@ namespace Client.Network
 
         readonly Dictionary<uint, byte> _idMap = new Dictionary<uint, byte>();
 
+        private static List<byte> _targetSlotsList = new List<byte>(256);
+
         /// <summary>
         /// /// Mean download (payload bytes)
         /// </summary>
@@ -211,6 +215,11 @@ namespace Client.Network
         /// Mean lost
         /// </summary>
         private readonly MeanComputer _meanLoss = new MeanComputer(5000);
+
+        /// <summary>
+        /// Uncorrected Ping
+        /// </summary>
+        private Queue<int> _ping = new Queue<int>(10);
 
         /// <summary>
         /// Main client reference
@@ -254,6 +263,11 @@ namespace Client.Network
                 _connectionState = value;
             }
         }
+
+        /// <summary>
+        /// Return the country code of the proxy currently used. Empty string if no proxy is used.
+        /// </summary>
+        public string ProxyCountry { get; internal set; } = "";
 
         /// <summary>
         /// Constructor
@@ -348,6 +362,8 @@ namespace Client.Network
 
             _meanPackets.MeanPeriod = 5000;
             _meanLoss.MeanPeriod = 5000;
+
+            _ping = new Queue<int>(10);
         }
 
         private void InitTicks()
@@ -368,22 +384,40 @@ namespace Client.Network
             }
 
             // S12: connect to the FES. Note: In UDP mode, it's the user that have to send the cookie to the front end
-
             try
             {
                 if (proxied)
                 {
-                    // Open the proxies file to read from.
-                    string[] proxies = File.ReadAllLines("./data/proxies.txt", Encoding.UTF8);
+                    // Download and open the proxies file to read from.
+                    string[] proxies;
 
-                    Random rnd = new Random(DateTime.Now.Millisecond);
+                    try
+                    {
+                        proxies = new WebClient().DownloadString(ClientConfig.OnlineProxyList).Split("\n");
+                        proxies = proxies.Distinct().ToArray();
+                        Array.Sort(proxies);
+                        File.WriteAllLines("./data/proxies.txt", proxies, Encoding.UTF8);
+                    }
+                    catch
+                    {
+                        _client.GetLogger().Warn("Download of proxy server list failed. Using local list.");
+                        proxies = File.ReadAllLines("./data/proxies.txt", Encoding.UTF8);
+                    }
 
+                    var rnd = new Random(DateTime.Now.Millisecond);
                     var working = false;
 
+                    // try connections to the proxies until one is working
                     while (!working)
                     {
-                        int index = rnd.Next(proxies.Length);
+                        var index = rnd.Next(proxies.Length);
                         var proxy = proxies[index];
+
+                        if (proxy.Trim().Length == 0 || proxy.Trim().StartsWith("#"))
+                            continue;
+
+                        UdpSocket.ParseHostString(proxy, out var name, out _);
+
 
                         _client.GetLogger().Info($"Trying to use SOCKS5 proxy server '{proxy}'.");
 
@@ -391,11 +425,12 @@ namespace Client.Network
                         {
                             _connection = new UdpSocketProxied(proxy);
                             _connection.Connect(_frontendAddress);
+                            ProxyCountry = IpInfoIo.GetUserCountryByIp(name);
                             working = true;
                         }
                         catch (Exception innerE)
                         {
-                            _client.GetLogger().Info($"Proxy errot '{innerE.Message}'.");
+                            _client.GetLogger().Warn(innerE.Message);
                         }
                     }
                 }
@@ -1001,6 +1036,14 @@ namespace Client.Network
 
             // TODO: receiveNormalMessage PacketStamps implementation
 
+            // get the send time of the acknowledged packet
+            var ackedPacketTime = Math.Max(_latestLoginTime, Math.Max(_latestSyncTime, Math.Max(_latestProbeTime, _lastSendTime)));
+
+            // update ping
+            while (_ping.Count >= 10)
+                _ping.Dequeue();
+
+            _ping.Enqueue((int)(_updateTime - ackedPacketTime));
 
             // Decode the actions received in the impulsions
             foreach (var action in actions)
@@ -1822,14 +1865,20 @@ namespace Client.Network
         }
 
         /// <summary>
+        /// Retrieve the averaged ping value
+        /// </summary>
+        public int GetPing()
+        {
+            return (int)Math.Round(_ping.Average());
+        }
+
+        /// <summary>
         /// Set player's reference position
         /// </summary>
         public void SetReferencePosition(Vector3 position)
         {
             _propertyDecoder.SetReferencePosition(position);
         }
-
-        private static List<byte> _targetSlotsList = new List<byte>(256);
 
         public void DecodeDiscreetProperty(BitMemoryStream msgin, byte propIndex)
         {

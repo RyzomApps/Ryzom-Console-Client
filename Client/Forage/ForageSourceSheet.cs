@@ -6,9 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
-using Client.Network;
 using Client.Sheet;
 using Client.Stream;
 
@@ -22,53 +20,45 @@ namespace Client.Forage
     /// <date>2003</date>
     public class ForageSourceSheet : EntitySheet
     {
-        string FxFilename;
-        string FxSafeFilename;
+        private string _fxFilename;
+        private string _fxSafeFilename;
+        private List<string> _icons;
+
         public byte Knowledge;
-        List<string> Icons;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public ForageSourceSheet() : base()
-        {
-
-        }
 
         /// <summary>
         /// Serialize character sheet into binary data file.
         /// </summary>
-        /// <param name="f"></param>
         public override void Serial(BitMemoryStream f)
         {
-            f.Serial(ref FxFilename);
-            f.Serial(ref FxSafeFilename);
+            f.Serial(ref _fxFilename);
+            f.Serial(ref _fxSafeFilename);
             f.Serial(ref Knowledge);
 
             // workaround
-            Icons = new List<string>();
+            _icons = new List<string>();
+
             uint len = 0;
             f.Serial(ref len);
 
             for (var i = 0; i < len; i++)
             {
-                string value = "";
+                var value = "";
                 f.Serial(ref value);
 
-                Icons.Add(value);
+                _icons.Add(value);
             }
         }
 
         /// <summary>
         /// Serialize character sheet into binary data file.
         /// </summary>
-        /// <param name="s"></param>
         public override void Serial(BitStreamFile s)
         {
-            s.Serial(out FxFilename);
-            s.Serial(out FxSafeFilename);
+            s.Serial(out _fxFilename);
+            s.Serial(out _fxSafeFilename);
             s.Serial(out Knowledge);
-            s.SerialCont(out Icons);
+            s.SerialCont(out _icons);
         }
     }
 }

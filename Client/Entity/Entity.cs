@@ -360,7 +360,7 @@ namespace Client.Entity
                     break;
 
                 case PropertyType.TargetID:
-                    UpdateVisualPropertyTarget(gameCycle, nodeProp.GetValue64());
+                    UpdateVisualPropertyTarget(gameCycle, nodeProp.GetValue64(), client);
                     break;
 
                 case PropertyType.Mode:
@@ -392,7 +392,7 @@ namespace Client.Entity
                     break;
 
                 case PropertyType.VisualFx:
-                    //UpdateVisualPropertyVisualFX(gameCycle, nodeProp.GetValue64());
+                    UpdateVisualPropertyVisualFX(gameCycle, nodeProp.GetValue64(), client);
                     break;
 
                 // Property to update the contextual menu, and some important status
@@ -438,7 +438,10 @@ namespace Client.Entity
             }
         }
 
-        private void UpdateVisualPropertyBars(uint gameCycle, long prop, RyzomClient client)
+        /// <summary>
+        /// Update Entity Bars
+        /// </summary>
+        protected virtual void UpdateVisualPropertyBars(uint gameCycle, long prop, RyzomClient client)
         {
             // Encode HP to 7 bits
             var hitPoints = (sbyte)((prop & 0x7ff) * 127 / 1023);
@@ -454,7 +457,7 @@ namespace Client.Entity
         /// <summary>
         /// Received the new target for the entity.
         /// </summary>
-        private void UpdateVisualPropertyTarget(uint _, long prop)
+        protected virtual void UpdateVisualPropertyTarget(uint _, long prop, RyzomClient client)
         {
             // New target Received.
             var targ = (int)prop;
@@ -561,7 +564,7 @@ namespace Client.Entity
         /// <summary>
         /// Received a new orientation.
         /// </summary>
-        private unsafe void UpdateVisualPropertyOrient(uint gameCycle, long prop, RyzomClient client)
+        protected virtual unsafe void UpdateVisualPropertyOrient(uint gameCycle, long prop, RyzomClient client)
         {
             // TODO: Implement properly
             var ori = *(float*)&prop;
@@ -577,6 +580,11 @@ namespace Client.Entity
         public virtual bool Build(EntitySheet sheet, RyzomClient client)
         {
             return true;
+        }
+
+        protected virtual void UpdateVisualPropertyVisualFX(uint _, long prop, RyzomClient client)
+        {
+            // TODO: Not implemented for base entity
         }
     }
 }
