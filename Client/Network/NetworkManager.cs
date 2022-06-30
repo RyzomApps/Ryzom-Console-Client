@@ -575,20 +575,10 @@ namespace Client.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        /// <summary>
-        /// server confirm/infirm the cyclic execution of a phrase
-        /// </summary>
+
         private void ImpulseItemInfoSet(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
-
-            byte counter = 0;
-            var ok = false;
-
-            impulse.Serial(ref ok);
-            impulse.Serial(ref counter);
-
-            _client.Plugins.OnPhraseAckExecute(true, counter, ok);
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         /// <summary>
@@ -607,9 +597,20 @@ namespace Client.Network
             _client.Plugins.OnPhraseAckExecute(false, counter, ok);
         }
 
+        /// <summary>
+        /// server confirm/infirm the cyclic execution of a phrase
+        /// </summary>
         private void ImpulsePhraseAckExecuteCyclic(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            byte counter = 0;
+            var ok = false;
+
+            impulse.Serial(ref ok);
+            impulse.Serial(ref counter);
+
+            _client.Plugins.OnPhraseAckExecute(true, counter, ok);
         }
 
         private void ImpulsePhraseConfirmBuy(BitMemoryStream impulse)

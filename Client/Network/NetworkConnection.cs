@@ -630,9 +630,10 @@ namespace Client.Network
                     _loginAttempts = 0;
                     // will send disconnection message
                     Disconnect();
-                    _client.GetLogger().Warn("CNET: Too many LOGIN attempts, connection problem");
-                    // exit now from loop, don't expect a new state
-                    return true;
+                    //_client.GetLogger().Warn("CNET: Too many LOGIN attempts, connection problem");
+                    //// exit now from loop, don't expect a new state
+                    //return true;
+                    throw new NetworkLoginException("CNET: Too many LOGIN attempts, connection problem");
                 }
 
                 ++_loginAttempts;
@@ -2133,5 +2134,10 @@ namespace Client.Network
             ats.TargetOrPickup = (uint)targetOrPickup;
             Push(ats);
         }
+    }
+
+    internal class NetworkLoginException : Exception
+    {
+        public NetworkLoginException(string message) : base (message) { }
     }
 }

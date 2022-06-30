@@ -25,6 +25,9 @@ namespace Client.Network
         private byte[] _socksUdpHeader = new byte[0];
         private readonly string _proxyAddress;
 
+        private const int Timeout = 30000;
+        private DateTime _lastDataAvailable = DateTime.MinValue;
+
         /// <summary>
         /// Constuctor
         /// </summary>
@@ -55,7 +58,7 @@ namespace Client.Network
                 udpAddress = proxyHost;
 
             // connect the udp client to the proxy
-            _udpMain = new UdpClient { Client = { ReceiveTimeout = 3000, SendTimeout = 30000 } };
+            _udpMain = new UdpClient { Client = { ReceiveTimeout = Timeout, SendTimeout = Timeout } };
 
             _udpMain.Connect(udpAddress, udpPort);
         }
@@ -94,7 +97,20 @@ namespace Client.Network
         /// <inheritdoc />
         public bool IsDataAvailable()
         {
-            return _udpMain.Client?.Available > 0;
+            var ret = _udpMain.Client?.Available > 0;
+
+            if (_lastDataAvailable != DateTime.MinValue)
+            {
+                if ((DateTime.Now - _lastDataAvailable).TotalMilliseconds > Timeout)
+                {
+                    _udpMain.Client?.Disconnect(false);
+                    _socks5Socket.Disconnect(false);
+                }
+            }
+
+            _lastDataAvailable = DateTime.Now;
+
+            return ret;
         }
 
         /// <inheritdoc />

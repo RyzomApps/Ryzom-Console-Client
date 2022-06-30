@@ -563,6 +563,10 @@ namespace Client
                     if (!firewallTimeout)
                         _networkManager.Update();
                 }
+                catch (NetworkLoginException)
+                {
+                    throw;
+                }
                 catch
                 {
                     if (_networkConnection.ConnectionState == ConnectionState.Disconnect)

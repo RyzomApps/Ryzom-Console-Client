@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -11,7 +10,7 @@ namespace Client.Commands
     {
         public override string CmdName => "executePhrase";
 
-        public override string CmdUsage => "<[memoryId] [slotId]>";
+        public override string CmdUsage => "/executePhrase <memoryId> <slotId> [cyclic]";
 
         public override string CmdDesc => "Command to send the execution message for a phrase to the server.";
 
@@ -20,37 +19,25 @@ namespace Client.Commands
             if (!(handler is RyzomClient ryzomClient))
                 throw new Exception("Command handler is not a Ryzom client.");
 
-            const bool cyclic = false;
-
             var args = GetArgs(command);
 
-            if (args.Length < 1)
-                return "";
+            if (args.Length != 2 && args.Length != 3)
+                return "Please specify two or three arguments.";
 
-            byte memoryId = 0;
-            byte slotId = 0;
+            var cyclic = false;
 
-            if (args.Length == 2)
-            {
-                var worked = byte.TryParse(args[0], out memoryId);
-                worked &= byte.TryParse(args[1], out slotId);
+            var worked = byte.TryParse(args[0], out var memoryId);
+            worked &= byte.TryParse(args[1], out var slotId);
 
-                if (!worked)
-                {
-                    return "One of the arguments could not be parsed.";
-                }
-            }
-            else if (args.Length == 1 || args.Length > 2)
-            {
-                return "Please specify zero or two arguments.";
-            }
+            if (args.Length == 3)
+                worked &= bool.TryParse(args[2], out cyclic);
 
-            // before, append the execution counter to the list of ACK to wait
-            //appendCurrentToAckExecute(cyclic);
+            if (!worked)
+                return "One of the arguments could not be parsed.";
 
             // send msg
             var out2 = new BitMemoryStream();
-            const string msgName = cyclic ? "PHRASE:EXECUTE_CYCLIC" : "PHRASE:EXECUTE";
+            var msgName = cyclic ? "PHRASE:EXECUTE_CYCLIC" : "PHRASE:EXECUTE";
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {

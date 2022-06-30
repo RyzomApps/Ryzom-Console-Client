@@ -36,6 +36,9 @@ namespace Client.Network.Proxy
             "Unknown error."
         };
 
+        private const int ConnectionTimeout = 200;
+        private const int OperationTimeout = 30000;
+
         /// <summary>
         /// Open a TCP connection to the appropriate SOCKS5 port on the SOCKS5 server system using UDP associcate command
         /// </summary>
@@ -53,13 +56,13 @@ namespace Client.Network.Proxy
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
             {
                 // short timeouts to filter proxies with bad pings
-                ReceiveTimeout = 1000,
-                SendTimeout = 1000
+                ReceiveTimeout = ConnectionTimeout,
+                SendTimeout = ConnectionTimeout
             };
 
             var result = socket.BeginConnect(proxyEndPoint, null, null);
 
-            result.AsyncWaitHandle.WaitOne(1000, true);
+            result.AsyncWaitHandle.WaitOne(ConnectionTimeout, true);
 
             if (socket.Connected)
             {
@@ -256,8 +259,8 @@ namespace Client.Network.Proxy
             udpPort = BitConverter.ToUInt16(new[] { port[1], port[0] });
 
             // set timeouts higher for the normal connection
-            socket.ReceiveTimeout = 30000;
-            socket.SendTimeout = 30000;
+            socket.ReceiveTimeout = OperationTimeout;
+            socket.SendTimeout = OperationTimeout;
 
             // return the socket after the successful connection
             return socket;
