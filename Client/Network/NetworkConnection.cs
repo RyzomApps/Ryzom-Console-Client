@@ -547,6 +547,10 @@ namespace Client.Network
                     };
                 } while (stateBroke); // && _TotalMessages<5);
             }
+            catch (NetworkLoginException)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 _client.GetLogger().Error("Exception: " + e.Message);

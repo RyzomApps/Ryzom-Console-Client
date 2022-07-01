@@ -563,9 +563,10 @@ namespace Client
                     if (!firewallTimeout)
                         _networkManager.Update();
                 }
-                catch (NetworkLoginException)
+                catch (NetworkLoginException ex)
                 {
-                    throw;
+                    GetLogger().Error(ex);
+                    return InterfaceState.QuitTheGame;
                 }
                 catch
                 {
