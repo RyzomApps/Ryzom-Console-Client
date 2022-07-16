@@ -494,14 +494,29 @@ namespace Client
             while (interfaceState != InterfaceState.GoInTheGame &&
                    interfaceState != InterfaceState.QuitTheGame)
             {
-                interfaceState = interfaceState switch
+                try
                 {
-                    InterfaceState.AutoLogin => AutoLogin(cookie, fsaddr, _firstConnection),
-                    InterfaceState.GlobalMenu =>
-                        // Interface to choose a char
-                        GlobalMenu(),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
+                    interfaceState = interfaceState switch
+                    {
+                        InterfaceState.AutoLogin => AutoLogin(cookie, fsaddr, _firstConnection),
+                        InterfaceState.GlobalMenu =>
+                            // Interface to choose a char
+                            GlobalMenu(),
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                }
+                catch (NetworkLoginException e)
+                {
+                    GetLogger().Error(e.Message);
+
+                    // login exception
+                    if (ClientConfig.UseProxy)
+                        // udp proxy may be bad - try another one
+                        interfaceState = InterfaceState.AutoLogin;
+                    else
+                        // connection may be bad - quit
+                        interfaceState = InterfaceState.QuitTheGame;
+                }
             }
 
             _firstConnection = false;
@@ -563,10 +578,9 @@ namespace Client
                     if (!firewallTimeout)
                         _networkManager.Update();
                 }
-                catch (NetworkLoginException ex)
+                catch (NetworkLoginException)
                 {
-                    GetLogger().Error(ex);
-                    return InterfaceState.QuitTheGame;
+                    throw;
                 }
                 catch
                 {
@@ -579,6 +593,7 @@ namespace Client
                         Thread.Sleep(30);
                     }
                 }
+
                 _databaseManager?.FlushObserverCalls();
 
                 // check if we can send another dated block

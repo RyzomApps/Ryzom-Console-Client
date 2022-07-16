@@ -26,7 +26,7 @@ namespace Client.Network
         private readonly string _proxyAddress;
 
         private const int Timeout = 30000;
-        private DateTime _lastDataAvailable = DateTime.MinValue;
+        private DateTime _lastDataReceived = DateTime.MinValue;
 
         /// <summary>
         /// Constuctor
@@ -99,16 +99,15 @@ namespace Client.Network
         {
             var ret = _udpMain.Client?.Available > 0;
 
-            if (_lastDataAvailable != DateTime.MinValue)
+            if (_lastDataReceived != DateTime.MinValue)
             {
-                if ((DateTime.Now - _lastDataAvailable).TotalMilliseconds > Timeout)
+                if ((DateTime.Now - _lastDataReceived).TotalMilliseconds > Timeout)
                 {
                     _udpMain.Client?.Disconnect(false);
                     _socks5Socket.Disconnect(false);
+                    throw new TimeoutException("Connection Timeout.");
                 }
             }
-
-            _lastDataAvailable = DateTime.Now;
 
             return ret;
         }
@@ -123,6 +122,9 @@ namespace Client.Network
                 var bytes = _udpMain.Receive(ref remoteIpEndPoint);
                 Array.Reverse(bytes, 10, bytes.Length - 10);
                 receiveBuffer = bytes;
+
+                if(receiveBuffer.Length > 0)
+                    _lastDataReceived = DateTime.Now;
             }
             catch
             {

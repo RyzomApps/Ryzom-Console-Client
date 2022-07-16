@@ -16,11 +16,11 @@ namespace Client.Network.Proxy
     /// <summary>
     /// Provides SOCKS5 UDP associcate functionality to clients.
     /// </summary>
-    /// <remarks>Socks 5 description is available at <a fref="http://www.faqs.org/rfcs/rfc1928.html">RFC 1928</a>.</remarks>
+    /// <remarks>Socks 5 description is available at <a href="http://www.faqs.org/rfcs/rfc1928.html">RFC 1928</a>.</remarks>
     /// <date>23 Jan 2004</date>
     /// <author>zahmed</author>
-    /// <author>bierdosenhalter</author>
     /// <date>2022</date>
+    /// <author>bierdosenhalter</author>
     public class Socks5Proxy
     {
         private static readonly string[] ErrorMsgs = {
