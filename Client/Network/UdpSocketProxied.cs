@@ -129,7 +129,9 @@ namespace Client.Network
             catch
             {
                 if (throwException)
+                {
                     throw;
+                }
 
                 return false;
             }
