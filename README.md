@@ -2,7 +2,6 @@
 
 [![nightly-release](https://github.com/RyzomApps/RCC/actions/workflows/dotnet.yml/badge.svg)](https://github.com/RyzomApps/RCC/actions/workflows/dotnet.yml)
 [![last commit](https://img.shields.io/github/last-commit/RyzomApps/RCC)](https://github.com/RyzomApps/Ryzom-Console-Client/commits/main)
-![lines of code](https://img.shields.io/github/downloads/RyzomApps/Ryzom-Console-Client/total)
 [![reddit](https://img.shields.io/reddit/subreddit-subscribers/Ryzom)](https://old.reddit.com/r/Ryzom/)
 ![lines of code](https://tokei.rs/b1/github/RyzomApps/RCC)
 ![repo size](https://img.shields.io/github/languages/code-size/RyzomApps/RCC.svg?label=repo%20size)
