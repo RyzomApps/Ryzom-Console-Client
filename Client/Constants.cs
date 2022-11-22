@@ -48,7 +48,7 @@
         public const string MsgXmlPath = "./data/msg.xml";
 
         /// <summary>
-        /// Path to the sheet_id.bin file
+        /// Path to the leveldesign.bnp@sheet_id.bin file
         /// </summary>
         public static string SheetsIdBinPath = "./data/sheet_id.bin";
 

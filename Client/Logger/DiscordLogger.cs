@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using API.Chat;
 using API.Helper;
-using Client.Chat;
 using Client.Discord;
 using Client.Discord.Classes;
 

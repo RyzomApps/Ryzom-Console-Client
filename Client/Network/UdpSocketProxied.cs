@@ -14,7 +14,7 @@ using System.Net.Sockets;
 namespace Client.Network
 {
     /// <summary>
-    /// wrapper for the udpclient class to have a synch connection the the server
+    /// wrapper for the udp client class to have a synchron connection the server
     /// </summary>
     internal class UdpSocketProxied : IUdpSocket
     {
@@ -29,7 +29,7 @@ namespace Client.Network
         private DateTime _lastDataReceived = DateTime.MinValue;
 
         /// <summary>
-        /// Constuctor
+        /// Constructor
         /// </summary>
         public UdpSocketProxied(string proxyAddress)
         {

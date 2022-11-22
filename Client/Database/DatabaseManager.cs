@@ -132,7 +132,7 @@ namespace Client.Database
             }
             else
             {
-                RyzomClient.GetInstance().GetLogger().Warn($"<CCDBSynchronised::write> can't write {fileName} : the database has not been initialized");
+                _client.GetLogger().Warn($"<CCDBSynchronised::write> can't write {fileName} : the database has not been initialized");
             }
         }
 

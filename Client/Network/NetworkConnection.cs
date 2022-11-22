@@ -389,23 +389,11 @@ namespace Client.Network
                 if (proxied)
                 {
                     // Download and open the proxies file to read from.
-                    string[] proxies;
-
-                    try
-                    {
-                        proxies = new WebClient().DownloadString(ClientConfig.OnlineProxyList).Split("\n");
-                        proxies = proxies.Distinct().ToArray();
-                        Array.Sort(proxies);
-                        File.WriteAllLines("./data/proxies.txt", proxies, Encoding.UTF8);
-                    }
-                    catch
-                    {
-                        _client.GetLogger().Warn("Download of proxy server list failed. Using local list.");
-                        proxies = File.ReadAllLines("./data/proxies.txt", Encoding.UTF8);
-                    }
+                    var proxies = DownloadProxyList();
 
                     var rnd = new Random(DateTime.Now.Millisecond);
                     var working = false;
+                    var retryCounter = 1;
 
                     // try connections to the proxies until one is working
                     while (!working)
@@ -413,13 +401,12 @@ namespace Client.Network
                         var index = rnd.Next(proxies.Length);
                         var proxy = proxies[index];
 
-                        if (proxy.Trim().Length == 0 || proxy.Trim().StartsWith("#"))
+                        if (proxy.Trim().Length == 0 || proxy.Trim().StartsWith("#") || !IPAddress.TryParse(proxy.Split(':')[0], out _))
                             continue;
 
                         UdpSocket.ParseHostString(proxy, out var name, out _);
 
-
-                        _client.GetLogger().Info($"Trying to use SOCKS5 proxy server '{proxy}'.");
+                        _client.GetLogger().Info($"[{retryCounter}] Trying to use SOCKS5 proxy server '{proxy}'.");
 
                         try
                         {
@@ -432,6 +419,8 @@ namespace Client.Network
                         {
                             _client.GetLogger().Warn(innerE.Message);
                         }
+
+                        retryCounter++;
                     }
                 }
                 else
@@ -451,6 +440,63 @@ namespace Client.Network
             _latestSyncTime = _latestLoginTime;
             _latestProbeTime = _latestLoginTime;
             _loginAttempts = 0;
+        }
+
+        /// <summary>
+        /// Downloads all proxy lists, saves them into a file and returns the list.
+        /// </summary>
+        /// <returns>string array of proxy server addresses</returns>
+        private string[] DownloadProxyList()
+        {
+            var ret = new List<string>();
+
+            if (!File.Exists("./data/proxies.txt") || (DateTime.Now - File.GetLastWriteTime("./data/proxies.txt")).TotalMinutes > 60)
+                foreach (var proxyUrl in ClientConfig.OnlineProxyList)
+                {
+                    try
+                    {
+                        var proxies = new WebClient().DownloadString(proxyUrl).Split('\r', '\n');
+
+                        foreach (var tmpProxy in proxies)
+                        {
+                            // local copy
+                            var proxy = tmpProxy;
+
+                            if (proxy.Contains(" "))
+                            {
+                                // list with other parameters - assume first row is proxy address
+                                proxy = proxy.Split(" ")[0];
+                            }
+
+                            if (proxy.Trim().Length == 0 ||
+                                proxy.Trim().StartsWith("#") ||
+                                !proxy.Contains(":") ||
+                                !IPAddress.TryParse(proxy.Split(':')[0], out _))
+                                continue;
+
+                            if (!ret.Contains(proxy))
+                                ret.Add(proxy);
+                        }
+                    }
+                    catch
+                    {
+                        _client.GetLogger().Warn($"Error while processing proxy list from '{proxyUrl}'.");
+                    }
+                }
+
+            if (ret.Count > 0)
+            {
+                _client.GetLogger().Info($"Download of proxy server list successful. {ret.Count} proxies total.");
+                ret.Sort();
+                File.WriteAllLines("./data/proxies.txt", ret, Encoding.UTF8);
+            }
+            else
+            {
+                _client.GetLogger().Info("Proxy server list is not old enough or download failed. Using local list.");
+                ret = File.ReadAllLines("./data/proxies.txt", Encoding.UTF8).ToList();
+            }
+
+            return ret.ToArray();
         }
 
         /// <summary>
@@ -2142,6 +2188,6 @@ namespace Client.Network
 
     internal class NetworkLoginException : Exception
     {
-        public NetworkLoginException(string message) : base (message) { }
+        public NetworkLoginException(string message) : base(message) { }
     }
 }

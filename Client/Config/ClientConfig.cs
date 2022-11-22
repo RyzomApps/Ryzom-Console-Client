@@ -85,7 +85,30 @@ namespace Client.Config
 
         // Proxy
         public static bool UseProxy = false;
-        public static string OnlineProxyList = "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt";
+
+        public static string[] OnlineProxyList = {
+            "https://raw.githubusercontent.com/hanwayTech/free-proxy-list/main/socks5.txt",
+            "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt",
+            "https://raw.githubusercontent.com/HyperBeats/proxy-list/main/socks5.txt",
+            "https://raw.githubusercontent.com/manuGMG/proxy-365/main/SOCKS5.txt",
+            "https://raw.githubusercontent.com/saschazesiger/Free-Proxies/master/proxies/socks5.txt",
+            "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks5.txt",
+            "https://raw.githubusercontent.com/UptimerBot/proxy-list/main/proxies/socks5.txt",
+            "https://raw.githubusercontent.com/Zaeem20/FREE_PROXIES_LIST/master/socks5.txt",
+        };
+
+        // public static string OnlineProxyList = "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-socks5.txt";
+        // public static string OnlineProxyList = "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt";
+        // public static string OnlineProxyList = "https://raw.githubusercontent.com/mmpx12/proxy-list/master/socks5.txt";
+        // public static string OnlineProxyList = "https://raw.githubusercontent.com/roosterkid/openproxylist/main/SOCKS5_RAW.txt";
+
+        // public static string OnlineProxyList = "https://www.proxy-list.download/api/v1/get?type=socks5";
+        // public static string OnlineProxyList = "https://openproxylist.xyz/socks5.txt";
+        // public static string OnlineProxyList = "https://api.proxyscrape.com/?request=displayproxies&proxytype=socks5";
+        // public static string OnlineProxyList = "https://proxyspace.pro/socks5.txt";
+        // public static string OnlineProxyList = "https://spys.me/socks.txt";
+
+        // JSON: https://www.proxy-list.download/api/v2/get?l=en&t=socks5
 
         // Other Settings
         public static char InternalCmdChar = '/';
@@ -95,7 +118,6 @@ namespace Client.Config
         {
             // OLD STUFF Here for compatibility
             {"RG", "0   0   0   255 normal"}, // Black to see when there is an error
-            //{ "BC", "0   0   0   255 normal" }, // Black to see when there is an error
             {"JA", "0   0   0   255 normal"}, // Black to see when there is an error
             {"BL", "0   0   0   255 normal"}, // Black to see when there is an error
             {"VE", "0   0   0   255 normal"}, // Black to see when there is an error
@@ -104,7 +126,7 @@ namespace Client.Config
             // NEW System Info Categories
             {"SYS", "255 255 255 255 normal"}, // Default system messages
             {"BC", "255 255 255 255 centeraround"}, // Broadcast messages
-            {"TAGBC", "255 255 255 255 centeraround"}, // Taged broadcast messages : color should remain white as some word are tagged
+            {"TAGBC", "255 255 255 255 centeraround"}, // Tagged broadcast messages : color should remain white as some word are tagged
             {"XP", "255 255 64  255 over"}, // XP Gain
             {"SP", "255 255 64  255 over"}, // SP Gain
             {"TTL", "255 255 64  255 over"}, // Title
@@ -124,8 +146,8 @@ namespace Client.Config
             {"EMT", "255 150 150 255 normal"}, // Emote
             {"MTD", "255 255 0   255 over"}, // Message Of The Day
             {"FORLD", "64  255 64  255 overonly"}, // Forage Locate Deposit
-            {"CHK", "255 120 60  255 center"}, // Tous ce qui ne remplit pas une condition
-            {"CHKCB", "255 255  0  255 center"}, // Tous ce qui ne remplit pas une condition en combat (trop loin, cible invalide, pas assez de mana, etc.)
+            {"CHK", "255 120 60  255 center"}, // All that does not meet a condition
+            {"CHKCB", "255 255  0  255 center"}, // Anything that does not meet a condition in combat (too far away, invalid target, not enough mana, etc.)
             {"PVPTM", "255 120 60  255 overonly"}, // PVP timer
             {"THM", "255 255 64  255 over misc_levelup.ps"}, // Thema finished
             {"AMB", "255 255 64  255 center"}, // Ambiance
@@ -295,7 +317,8 @@ namespace Client.Config
                     break;
 
                 case "onlineproxylist":
-                    OnlineProxyList = argValue;
+                    argValue = argValue.Replace("{", "").Replace("}", "").Trim();
+                    OnlineProxyList = argValue.Split(",");
                     break;
 
                 default:

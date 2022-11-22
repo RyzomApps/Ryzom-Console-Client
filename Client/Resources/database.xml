@@ -556,6 +556,14 @@
         <!-- same as hand -->
       </branch>
     </branch>
+    <branch name="HOTBAR">
+      <branch name=""
+              count="5">
+        <leaf name="INDEX_IN_BAG"
+              type="I9" />
+        <!-- same as hand -->
+      </branch>
+    </branch>
     <branch name="TEMP">
       <!-- used for harvest loot and bag full -->
       <leaf name="TYPE"

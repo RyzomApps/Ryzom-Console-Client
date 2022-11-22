@@ -22,7 +22,7 @@ namespace Client.Messages
         /// </summary>
         public void Init(string filename)
         {
-            // open xml file
+            // open XML file
             var file = new XmlDocument();
 
             try
@@ -92,7 +92,7 @@ namespace Client.Messages
             // check callback
             else if (node.Callback == null)
             {
-                RyzomClient.GetInstance().GetLogger()?.Warn($"Can't execute msg '{node.Name}', no callback set");
+                RyzomClient.GetInstance().GetLogger()?.Warn($"Can't execute message '{node.Name}', no callback set");
             }
             // execute callback
             else

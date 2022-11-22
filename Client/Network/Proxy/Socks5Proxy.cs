@@ -14,7 +14,7 @@ using System.Text;
 namespace Client.Network.Proxy
 {
     /// <summary>
-    /// Provides SOCKS5 UDP associcate functionality to clients.
+    /// Provides SOCKS5 UDP associate functionality to clients.
     /// </summary>
     /// <remarks>Socks 5 description is available at <a href="http://www.faqs.org/rfcs/rfc1928.html">RFC 1928</a>.</remarks>
     /// <date>23 Jan 2004</date>
@@ -26,7 +26,7 @@ namespace Client.Network.Proxy
         private static readonly string[] ErrorMsgs = {
             "Operation completed successfully.",
             "General SOCKS server failure.",
-            "Connection not allowed by ruleset.",
+            "Connection not allowed by rule set.",
             "Network unreachable.",
             "Host unreachable.",
             "Connection refused.",
@@ -36,11 +36,11 @@ namespace Client.Network.Proxy
             "Unknown error."
         };
 
-        private const int ConnectionTimeout = 200;
+        private const int ConnectionTimeout = 500; // Ultra Fast (<0.5s Ping)
         private const int OperationTimeout = 30000;
 
         /// <summary>
-        /// Open a TCP connection to the appropriate SOCKS5 port on the SOCKS5 server system using UDP associcate command
+        /// Open a TCP connection to the appropriate SOCKS5 port on the SOCKS5 server system using UDP associate command
         /// </summary>
         /// <returns>TCP socket</returns>
         public static Socket EstablishConnection(string proxyAddress, ushort proxyPort, string destAddress, ushort destPort, string userName, string password, out string udpAdress, out ushort udpPort)
@@ -87,7 +87,7 @@ namespace Client.Network.Proxy
             // no authentication required
             request[nIndex++] = 0x00;
 
-            // username and password
+            // user name and password
             request[nIndex++] = 0x02;
 
             // send the authentication negotiation request
@@ -118,7 +118,7 @@ namespace Client.Network.Proxy
                 case 0x00:
                     break;
 
-                // username / password
+                // user name / password
                 case 0x02:
                     request = new byte[256];
                     nIndex = 0;
@@ -136,7 +136,7 @@ namespace Client.Network.Proxy
                     rawBytes.CopyTo(request, nIndex);
                     nIndex += (ushort)rawBytes.Length;
 
-                    // send the username/password request
+                    // send the user name / password request
                     socket.Send(request, 0, nIndex, SocketFlags.None);
 
                     // 2 byte response
@@ -152,7 +152,7 @@ namespace Client.Network.Proxy
                     if (response[1] != 0x00)
                     {
                         socket.Close();
-                        throw new ConnectionException("Bad username or password.");
+                        throw new ConnectionException("Bad user name or password.");
                     }
 
                     break;
@@ -168,14 +168,14 @@ namespace Client.Network.Proxy
                     throw new ConnectionException($"Proxy server is using an authentication method (0x{response[1]:X2}) that is not supported by the client.");
             }
 
-            // send connect request with udp associcate command
+            // send connect request with udp associate command
             nIndex = 0;
             request = new byte[256];
 
             // version 5.
             request[nIndex++] = 0x05;
 
-            // UDP associcate command
+            // UDP associate command
             request[nIndex++] = 0x03;
 
             // reserved
@@ -188,7 +188,7 @@ namespace Client.Network.Proxy
             rawBytes.CopyTo(request, nIndex);
             nIndex += (ushort)rawBytes.Length;
 
-            // using big-edian byte order
+            // using big-endian byte order
             var portBytes = BitConverter.GetBytes(destPort);
 
             for (var i = portBytes.Length - 1; i >= 0; i--)
@@ -209,7 +209,7 @@ namespace Client.Network.Proxy
             if (rep[0] != 0x00)
             {
                 socket.Close();
-                throw new ConnectionException($"Proxy server UDP assocication failed: {ErrorMsgs[rep[0]]}");
+                throw new ConnectionException($"Proxy server UDP association failed: {ErrorMsgs[rep[0]]}");
             }
 
             // reserved
@@ -249,7 +249,7 @@ namespace Client.Network.Proxy
 
                 default:
                     socket.Close();
-                    throw new ConnectionException($"Proxy server is using an address format (0x{atyp[0]:X2}) that not supported by the client.");
+                    throw new ConnectionException($"Proxy server is using an address format (0x{atyp[0]:X2}) that is not supported by the client.");
             }
 
             // server bound port in network octet order

@@ -144,7 +144,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// Buffers a bitmemstream, that will be converted into a generic action, to be sent later to the server (at next
+        /// Buffers a BitMemoryStream, that will be converted into a generic action, to be sent later to the server (at next
         /// update).
         /// </summary>
         public void Push(BitMemoryStream msg)
@@ -153,8 +153,8 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// Updates the whole connection with the frontend.
-        /// Call this method evently.
+        /// Updates the whole connection with the front end.
+        /// Call this method periodically.
         /// </summary>
         /// <returns>'true' if data were sent/received.</returns>
         public bool Update()
@@ -233,8 +233,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// ImpulseCallBack :
-        /// The Impulse callback to receive all msg from the frontend.
+        /// The Impulse callback to receive all messages from the front end.
         /// </summary>
         public void ImpulseCallBack(BitMemoryStream impulse)
         {
@@ -623,6 +622,8 @@ namespace Client.Network
         /// </summary>
         private void ImpulsePhraseDownload(BitMemoryStream impulse)
         {
+            return; // TODO: fix ImpulsePhraseDownload and enable again
+
             // Read Known Phrases
             // workaround for: impulse.serialCont(phrases);
             var len = 0;
