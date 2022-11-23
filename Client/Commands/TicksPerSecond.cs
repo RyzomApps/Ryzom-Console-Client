@@ -44,8 +44,8 @@ namespace Client.Commands
         {
             var percentage = tps / RollingAverage.GameTps;
 
-            return (percentage > 0.9 ? ChatColor.GREEN : percentage > 0.8 ? ChatColor.YELLOW : ChatColor.RED) + (percentage > 1.0 ? "*" : "")
-                + string.Format(CultureInfo.InvariantCulture, "{0:0.0}", Math.Min(Math.Round(tps * 100.0) / 100.0, RollingAverage.GameTps));
+            return (percentage > 0.9 ? ChatColor.GREEN : percentage > 0.8 ? ChatColor.YELLOW : ChatColor.RED) /*+ (percentage > 1.0 ? "*" : "")*/
+                + string.Format(CultureInfo.InvariantCulture, "{0:0.00}", /*Math.Min(*/Math.Round(tps * 100.0) / 100.0 /*, RollingAverage.GameTps)*/);
         }
     }
 }

@@ -36,8 +36,9 @@ namespace Client.Network.Proxy
             "Unknown error."
         };
 
-        private const int ConnectionTimeout = 1000; // Ultra Fast (<0.5s Ping)
-        private const int OperationTimeout = 30000;
+        private const int ConnectionTimeout = 500; // Ultra Fast (<0.5s Ping)
+        private const int NegotiationTimeout = 5000; // 5 s
+        private const int OperationTimeout = 30000; // 30 s
 
         /// <summary>
         /// Open a TCP connection to the appropriate SOCKS5 port on the SOCKS5 server system using UDP associate command
@@ -57,7 +58,7 @@ namespace Client.Network.Proxy
             {
                 // short timeouts to filter proxies with bad pings
                 ReceiveTimeout = ConnectionTimeout,
-                SendTimeout = ConnectionTimeout
+                SendTimeout = ConnectionTimeout,
             };
 
             var result = socket.BeginConnect(proxyEndPoint, null, null);
@@ -73,6 +74,10 @@ namespace Client.Network.Proxy
                 socket.Close();
                 throw new ConnectionException("Proxy server connection could not be established.");
             }
+
+            // set timeouts higher for the negotiation phase
+            socket.ReceiveTimeout = NegotiationTimeout;
+            socket.SendTimeout = NegotiationTimeout;
 
             // Request
             var request = new byte[256];

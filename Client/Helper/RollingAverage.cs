@@ -6,24 +6,29 @@
 // Copyright 2020 SpigotMC
 ///////////////////////////////////////////////////////////////////
 
+using System.Threading;
+
 namespace Client.Helper
 {
     public class RollingAverage
     {
         public const int GameTps = 10;
-        public const long SecInNano = 1000000000;
+
+        public const double SecInNano = 1E9;
 
         private readonly int _size;
 
-        private long _time;
+        private int _index;
+
+        private double _time;
 
         private double _total;
 
-        private int _index;
-
         private double[] _samples;
 
-        private long[] _times;
+        private double[] _times;
+
+        private readonly Mutex _guard = new Mutex();
 
         /// <summary>
         /// Sum of data over time per time period.
@@ -38,17 +43,21 @@ namespace Client.Helper
         // Reset the counters
         internal void Reset()
         {
+            _guard.WaitOne();
+
             _time = _size * SecInNano;
-            _total = (double)_time * GameTps;
+            _total = _time * GameTps;
 
             _samples = new double[_size];
-            _times = new long[_size];
+            _times = new double[_size];
 
             for (var i = 0; i < _size; i++)
             {
                 _samples[i] = GameTps;
                 _times[i] = SecInNano;
             }
+
+            _guard.ReleaseMutex();
         }
 
         /// <summary>
@@ -58,19 +67,27 @@ namespace Client.Helper
         /// <param name="t">time</param>
         public void Add(double x, long t)
         {
+            _guard.WaitOne();
+
+            // remove values from old index
             _time -= _times[_index];
             _total -= _samples[_index] * _times[_index];
 
+            // update at index
             _samples[_index] = x;
             _times[_index] = t;
 
+            // add new values
             _time += t;
             _total += x * t;
 
-            if (++_index == _size)
+            // overflow
+            if (++_index >= _size)
             {
                 _index = 0;
             }
+
+            _guard.ReleaseMutex();
         }
 
         /// <summary>

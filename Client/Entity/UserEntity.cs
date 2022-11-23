@@ -307,7 +307,7 @@ namespace Client.Entity
 
         public void CorrectPos(Vector3 dest)
         {
-            Debug.Print($"UE:correctPos: new user position {dest.X} {dest.Y} {dest.Z}");
+            _client.GetLogger().Debug($"UE:correctPos: new user position {dest.X} {dest.Y} {dest.Z}");
 
             Pos = dest;
 

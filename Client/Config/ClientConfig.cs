@@ -86,7 +86,7 @@ namespace Client.Config
         // Proxy
         public static bool UseProxy = false;
 
-        public static long OnlineProxyListExpiration = 10 * 60; // [s]
+        public static long OnlineProxyListExpiration = 0; //10 * 60; // [s]
 
         public static string[] OnlineProxyList = {
             "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=1000&country=all&ssl=all&anonymity=all",
@@ -98,20 +98,10 @@ namespace Client.Config
             "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks5.txt",
             "https://raw.githubusercontent.com/UptimerBot/proxy-list/main/proxies/socks5.txt",
             "https://raw.githubusercontent.com/Zaeem20/FREE_PROXIES_LIST/master/socks5.txt",
+            //"https://www.proxy-list.download/api/v1/get?type=socks5",
+            //"https://openproxylist.xyz/socks5.txt",
+            //"https://proxyspace.pro/socks5.txt",
         };
-
-        // "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-socks5.txt",
-        // "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt",
-        // "https://raw.githubusercontent.com/mmpx12/proxy-list/master/socks5.txt",
-        // "https://raw.githubusercontent.com/roosterkid/openproxylist/main/SOCKS5_RAW.txt",
-
-        // "https://api.proxyscrape.com/?request=displayproxies&proxytype=socks5",
-        // "https://www.proxy-list.download/api/v1/get?type=socks5",
-        // "https://openproxylist.xyz/socks5.txt",
-        // "https://proxyspace.pro/socks5.txt",
-
-        // with text: "https://spys.me/socks.txt",
-        // JSON: https://www.proxy-list.download/api/v2/get?l=en&t=socks5
 
         // Other Settings
         public static char InternalCmdChar = '/';
