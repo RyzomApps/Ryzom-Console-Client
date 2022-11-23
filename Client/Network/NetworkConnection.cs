@@ -450,7 +450,7 @@ namespace Client.Network
         {
             var ret = new List<string>();
 
-            if (!File.Exists("./data/proxies.txt") || (DateTime.Now - File.GetLastWriteTime("./data/proxies.txt")).TotalMinutes > 60)
+            if (!File.Exists("./data/proxies.txt") || (DateTime.Now - File.GetLastWriteTime("./data/proxies.txt")).TotalSeconds > ClientConfig.OnlineProxyListExpiration)
                 foreach (var proxyUrl in ClientConfig.OnlineProxyList)
                 {
                     try
@@ -492,7 +492,7 @@ namespace Client.Network
             }
             else
             {
-                _client.GetLogger().Info("Proxy server list is not old enough or download failed. Using local list.");
+                _client.GetLogger().Info("Local proxy server list has not yet expired or download of the list failed. Using local list.");
                 ret = File.ReadAllLines("./data/proxies.txt", Encoding.UTF8).ToList();
             }
 
@@ -510,15 +510,15 @@ namespace Client.Network
         /// <summary>
         /// Updates the whole connection with the frontend.
         ///
-        /// Behaviour in login state when a firewall does not grant the sending:
+        /// Behavior in login state when a firewall does not grant the sending:
         /// - When a sending is refused (error "Blocking operation interrupted")
         /// the exception EBlockedByFirewall in thrown. The first time, a time-out is armed.
         /// - In a later attempt, if the time-out expired, the function sets state to
         /// Disconnect, then throws EBlockedByFirewall.
         ///
-        /// tests the connection state and inits the state machine
+        /// tests the connection state and initializes the state machine
         /// </summary>
-        /// <returns>bool 'true' if data were sent/received.</returns>
+        /// <returns>True, if data was sent/received.</returns>
         public bool Update()
         {
             _updateTime = Misc.GetLocalTime();

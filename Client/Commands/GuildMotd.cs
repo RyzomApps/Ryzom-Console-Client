@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         public override string CmdName => "guildmotd";
 
-        public override string CmdUsage => "<msg of the day>";
+        public override string CmdUsage => "<message>";
 
         public override string CmdDesc => "Set or see the guild message of the day";
 

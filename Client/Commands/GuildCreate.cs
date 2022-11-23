@@ -14,7 +14,7 @@ namespace Client.Commands
     {
         public override string CmdName => "GuildCreate";
 
-        public override string CmdUsage => "<guild name>";
+        public override string CmdUsage => "<guildName>";
 
         public override string CmdDesc => "Client wants to create a guild (name of new guild, guild icon descriptor, description of the guild)";
 
@@ -26,7 +26,7 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length != 1) 
-                return "Please specify a name."; // TODO: guild create
+                return "Please specify a name.";
 
             const string msgName = "GUILD:CREATE";
             var out2 = new BitMemoryStream();

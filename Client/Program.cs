@@ -108,12 +108,12 @@ namespace Client
                 Console.OutputEncoding = Console.InputEncoding = Encoding.Unicode;
             }
 
-            // Process ini configuration file
+            // Process INI configuration file
             if (args.Length >= 1 && File.Exists(args[0]) && Path.GetExtension(args[0]).ToLower() == ".cfg")
             {
                 ClientConfig.LoadFile(args[0]);
 
-                // remove ini configuration file from arguments array
+                // remove INI configuration file from arguments array
                 var argsTmp = args.ToList();
                 argsTmp.RemoveAt(0);
                 args = argsTmp.ToArray();
@@ -124,7 +124,7 @@ namespace Client
             }
             else ClientConfig.WriteDefaultSettings("client.cfg");
 
-            // Asking the user to type in missing data such as Username and Password
+            // Asking the user to type in missing data such as user name and password
             if (ClientConfig.Username == "")
             {
                 ConsoleIO.WriteLineFormatted("§dPlease enter your username:");
@@ -163,7 +163,7 @@ namespace Client
         }
 
         /// <summary>
-        /// Reduest user to submit password.
+        /// Request user to submit password.
         /// </summary>
         private static void RequestPassword()
         {

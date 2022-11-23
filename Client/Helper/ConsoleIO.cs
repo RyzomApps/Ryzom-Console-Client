@@ -68,7 +68,7 @@ namespace Client.Helper
         }
 
         /// <summary>
-        /// Set an auto-completion engine for TAB autocompletion.
+        /// Set an auto-completion engine for TAB auto completion.
         /// </summary>
         /// <param name="engine">Engine implementing the IAutoComplete interface</param>
         public static void SetAutoCompleteEngine(IAutoComplete engine)

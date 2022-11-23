@@ -9,7 +9,7 @@ namespace Client.Commands
     {
         public override string CmdName => "assist";
 
-        public override string CmdUsage => "[<name>]";
+        public override string CmdUsage => "[name]";
 
         public override string CmdDesc => "Targets the target of the targeted entity.";
 

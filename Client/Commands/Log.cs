@@ -12,7 +12,7 @@ namespace Client.Commands
     {
         public override string CmdName => "log";
 
-        public override string CmdUsage => "/log <chat, debug, info, error, warn>";
+        public override string CmdUsage => "<chat|debug|info|error|warn>";
 
         public override string CmdDesc => "Toggle Positive/Negative Filters for different log types";
 

@@ -36,7 +36,7 @@ namespace Client.Network.Proxy
             "Unknown error."
         };
 
-        private const int ConnectionTimeout = 500; // Ultra Fast (<0.5s Ping)
+        private const int ConnectionTimeout = 1000; // Ultra Fast (<0.5s Ping)
         private const int OperationTimeout = 30000;
 
         /// <summary>

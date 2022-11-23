@@ -11,7 +11,7 @@ namespace Client.Commands
     public class Dump : CommandBase
     {
         public override string CmdName => "dump";
-        public override string CmdUsage => "<dump name>";
+        public override string CmdUsage => "<dump_name>";
         public override string CmdDesc => "Command to create a file with the current state of the client";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)

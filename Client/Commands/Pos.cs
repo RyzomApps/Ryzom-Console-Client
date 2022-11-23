@@ -16,9 +16,9 @@ namespace Client.Commands
     {
         public override string CmdName => "pos";
 
-        public override string CmdUsage => "/pos <x, y, (z)> OR 1 name of 'tp.teleport_list'. or a bot name";
+        public override string CmdUsage => "[x|teleportListName|botName] [y] [z]";
 
-        public override string CmdDesc => "Change the position of the user.";
+        public override string CmdDesc => "Retrieve or change the position of the user.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -32,7 +32,6 @@ namespace Client.Commands
             switch (args.Length)
             {
                 case 0:
-
                     // Display the position
                     var user = ryzomClient?.GetApiNetworkManager()?.GetApiEntityManager()?.GetApiUserEntity();
                     return user != null ? user.Pos.ToString() : "User entity missing.";

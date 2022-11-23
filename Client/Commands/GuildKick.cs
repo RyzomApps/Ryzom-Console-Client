@@ -11,9 +11,9 @@ namespace Client.Commands
     {
         public override string CmdName => "GuildKick";
 
-        public override string CmdUsage => "<player name> <counter>";
+        public override string CmdUsage => "<playerName> <counter>";
 
-        public override string CmdDesc => "Client (lead, ho, of) wants to kick member specifying its index. Last param is the counter";
+        public override string CmdDesc => "Client (lead, ho, of) wants to kick member specifying its index. Last parameter is the counter.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -24,7 +24,8 @@ namespace Client.Commands
 
             if (args.Length != 1) return "";
 
-            const string msgName = "GUILD:KICK_MEMBER"; // TODO GUKick right arguments
+            const string msgName = "GUILD:KICK_MEMBER"; 
+            // TODO GUKick right arguments
             var out2 = new BitMemoryStream();
 
             if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))

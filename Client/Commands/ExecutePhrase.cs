@@ -10,7 +10,7 @@ namespace Client.Commands
     {
         public override string CmdName => "executePhrase";
 
-        public override string CmdUsage => "/executePhrase <memoryId> <slotId> [cyclic]";
+        public override string CmdUsage => "<memoryId> <slotId> [cyclic]";
 
         public override string CmdDesc => "Command to send the execution message for a phrase to the server.";
 

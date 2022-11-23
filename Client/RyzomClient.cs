@@ -30,8 +30,10 @@ using Client.Property;
 using Client.Sheet;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using Client.Brick;
@@ -45,7 +47,7 @@ namespace Client
     /// <summary>
     /// The main client class, used to connect to a Ryzom server
     /// </summary>
-    public class RyzomClient : IChatDisplayer, IClient
+    public class RyzomClient : IAutoComplete, IChatDisplayer, IClient
     {
         #region Variables
 
@@ -271,7 +273,7 @@ namespace Client
 
             Log.Debug("StartConsoleClient()");
 
-            // Load commands from Commands namespace
+            // Load commands from Commands name space
             LoadCommands();
 
             // Load plugin manager
@@ -947,7 +949,7 @@ namespace Client
         /// </summary>
         public void OnUpdate()
         {
-            // execute all the pluginmanger listener scripts
+            // execute all the plugin manger listener scripts
             Plugins.OnUpdate();
 
             // process the queued chat messages
@@ -1060,6 +1062,8 @@ namespace Client
             }
 
             _commandsLoaded = true;
+
+            ConsoleIO.SetAutoCompleteEngine(this);
         }
 
         /// <summary>
@@ -1219,6 +1223,39 @@ namespace Client
         }
 
         /// <summary>
+        /// Auto complete text while typing command
+        /// </summary>
+        public IEnumerable<string> AutoComplete(string behindCursor)
+        {
+            var ret = new List<string>();
+
+            if (string.IsNullOrEmpty(behindCursor))
+                return ret;
+
+            if (behindCursor.StartsWith(ClientConfig.InternalCmdChar))
+            {
+                var args = behindCursor[1..].Split(' ');
+
+                if (_cmdNames.Contains(args[0].ToLower()) && behindCursor.EndsWith(' '))
+                {
+                    // command is complete, so show the command arguments
+                    var argsPossible = _cmds[args[0].ToLower()].CmdUsage.Split(' ');
+
+                    // only if arguments left
+                    if (argsPossible.Length > args.Length - 2)
+                        ret.Add(argsPossible[args.Length - 2]);
+                }
+                else if (!behindCursor.Contains(' '))
+                {
+                    // tab completion on an uncompleted command
+                    ret.AddRange(from cmdName in _cmdNames where cmdName.StartsWith(behindCursor[1..], StringComparison.InvariantCultureIgnoreCase) select ClientConfig.InternalCmdChar + cmdName);
+                }
+            }
+
+            return ret;
+        }
+
+        /// <summary>
         /// Disconnect the client from the server (initiated from RCC)
         /// </summary>
         public void Disconnect()
@@ -1307,7 +1344,6 @@ namespace Client
         {
             return _clientThread?.ManagedThreadId ?? -1;
         }
-
         #endregion
     }
 }

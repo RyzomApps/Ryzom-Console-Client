@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         public override string CmdName => "GuildBuildingTeleport";
 
-        public override string CmdUsage => "building index";
+        public override string CmdUsage => "<buildingIndex>";
 
         public override string CmdDesc => "Client wants to teleport somewhere in guild flats";
 

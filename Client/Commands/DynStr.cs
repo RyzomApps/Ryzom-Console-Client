@@ -12,7 +12,7 @@ namespace Client.Commands
     {
         public override string CmdName => "dynStr";
 
-        public override string CmdUsage => "/dynStr <string_id>";
+        public override string CmdUsage => "<string_id>";
 
         public override string CmdDesc => "Display a dyn string value";
 

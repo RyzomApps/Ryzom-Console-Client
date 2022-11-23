@@ -13,7 +13,7 @@ namespace Client.Commands
     {
         public override string CmdName => "db";
 
-        public override string CmdUsage => "/db <Property> <Value>";
+        public override string CmdUsage => "<Property> <Value>";
 
         public override string CmdDesc => "Modify Database";
 

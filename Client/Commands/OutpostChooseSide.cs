@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         public override string CmdName => "outpostChooseSide";
 
-        public override string CmdUsage => "[<side 0=Owner 1=Attacker>]";
+        public override string CmdUsage => "<0=D|1=A|2=N>";
 
         public override string CmdDesc => "Lets the client chose a side in an outpost war";
 
@@ -28,6 +28,12 @@ namespace Client.Commands
                 return "";
 
             var pvpSide = int.Parse(args[0]);
+
+            if (pvpSide < 0 || pvpSide > 1)
+            {
+                pvpSide = 0;
+                bNeutral = true;
+            }
 
             const string msgName = "OUTPOST:SIDE_CHOSEN";
             var out2 = new BitMemoryStream();

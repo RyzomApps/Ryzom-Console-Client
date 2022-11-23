@@ -12,7 +12,7 @@ namespace Client.Commands
     {
         public override string CmdName => "serverStr";
 
-        public override string CmdUsage => "/serverstr <string_id>";
+        public override string CmdUsage => "<dynId>";
 
         public override string CmdDesc => "Display a server string value";
 

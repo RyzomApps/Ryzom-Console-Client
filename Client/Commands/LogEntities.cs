@@ -9,10 +9,10 @@ namespace Client.Commands
     {
         public override string CmdName => "logEntities";
 
-        public override string CmdUsage => "/logEntities";
+        public override string CmdUsage => "";
 
         public override string CmdDesc =>
-            "Write the position and orientation af all entities in the vision in the file 'entities.txt'";
+            "Write the position and orientation of all entities in the vision in the file 'entities.txt'";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

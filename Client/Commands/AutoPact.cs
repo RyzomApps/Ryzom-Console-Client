@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         public override string CmdName => "AutoPact";
 
-        public override string CmdUsage => "<u8>";
+        public override string CmdUsage => "<bool>";
 
         public override string CmdDesc => "Client want to set AUTOPACT to TRUE or FALSE";
 

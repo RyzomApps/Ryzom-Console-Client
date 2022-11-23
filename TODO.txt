@@ -1,0 +1,4 @@
+- non static ClientConfig
+- remove all GetInstance() and add a reference to the client
+- non static ConsoleIO
+- save string cache periodically

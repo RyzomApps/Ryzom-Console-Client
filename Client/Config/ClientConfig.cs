@@ -34,7 +34,7 @@ namespace Client.Config
         public static string StartupPage = "/login/r2_login.php";
         public static string LanguageCode = "en";
 
-        // ryzom_live -> atys
+        // ryzom_live -> ATYS
         // ryzom_dev -> server error: You don't have sufficient privilege to connect to YUBO now, please try later (3014)
         // ryzom_test -> server error: Your account needs a proper subscription to connect (3011)
         public static string ApplicationServer = "ryzom_live";
@@ -68,7 +68,7 @@ namespace Client.Config
         public static bool DebugEnabled;
         public static bool SendPosition;
 
-        // Custom app variables 
+        // Custom App variables 
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
 
         // Filtering
@@ -86,7 +86,10 @@ namespace Client.Config
         // Proxy
         public static bool UseProxy = false;
 
+        public static long OnlineProxyListExpiration = 60 * 60; // [s]
+
         public static string[] OnlineProxyList = {
+            "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=1000&country=all&ssl=all&anonymity=all",
             "https://raw.githubusercontent.com/hanwayTech/free-proxy-list/main/socks5.txt",
             "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt",
             "https://raw.githubusercontent.com/HyperBeats/proxy-list/main/socks5.txt",
@@ -97,17 +100,17 @@ namespace Client.Config
             "https://raw.githubusercontent.com/Zaeem20/FREE_PROXIES_LIST/master/socks5.txt",
         };
 
-        // public static string OnlineProxyList = "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-socks5.txt";
-        // public static string OnlineProxyList = "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt";
-        // public static string OnlineProxyList = "https://raw.githubusercontent.com/mmpx12/proxy-list/master/socks5.txt";
-        // public static string OnlineProxyList = "https://raw.githubusercontent.com/roosterkid/openproxylist/main/SOCKS5_RAW.txt";
+        // "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-socks5.txt",
+        // "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt",
+        // "https://raw.githubusercontent.com/mmpx12/proxy-list/master/socks5.txt",
+        // "https://raw.githubusercontent.com/roosterkid/openproxylist/main/SOCKS5_RAW.txt",
 
-        // public static string OnlineProxyList = "https://www.proxy-list.download/api/v1/get?type=socks5";
-        // public static string OnlineProxyList = "https://openproxylist.xyz/socks5.txt";
-        // public static string OnlineProxyList = "https://api.proxyscrape.com/?request=displayproxies&proxytype=socks5";
-        // public static string OnlineProxyList = "https://proxyspace.pro/socks5.txt";
-        // public static string OnlineProxyList = "https://spys.me/socks.txt";
+        // "https://api.proxyscrape.com/?request=displayproxies&proxytype=socks5",
+        // "https://www.proxy-list.download/api/v1/get?type=socks5",
+        // "https://openproxylist.xyz/socks5.txt",
+        // "https://proxyspace.pro/socks5.txt",
 
+        // with text: "https://spys.me/socks.txt",
         // JSON: https://www.proxy-list.download/api/v2/get?l=en&t=socks5
 
         // Other Settings

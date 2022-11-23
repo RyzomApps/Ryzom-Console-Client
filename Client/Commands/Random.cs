@@ -14,7 +14,7 @@ namespace Client.Commands
     {
         public override string CmdName => "random";
 
-        public override string CmdUsage => "/random [<min>] <max>";
+        public override string CmdUsage => "[min] <max>";
 
         public override string CmdDesc => "Roll a dice and say the result around";
 

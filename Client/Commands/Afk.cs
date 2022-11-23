@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         public override string CmdName => "afk";
 
-        public override string CmdUsage => "[<custom text>]";
+        public override string CmdUsage => "[customText]";
 
         public override string CmdDesc => "Set the player as 'away from keyboard'";
 

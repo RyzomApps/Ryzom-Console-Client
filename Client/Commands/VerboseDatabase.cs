@@ -12,7 +12,7 @@ namespace Client.Commands
     {
         public override string CmdName => "verboseDatabase";
 
-        public override string CmdUsage => "/verboseDatabase";
+        public override string CmdUsage => "";
 
         public override string CmdDesc => "Enable/Disable the log for the database.";
 

@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         public override string CmdName => "ignore";
 
-        public override string CmdUsage => "<player name>";
+        public override string CmdUsage => "<playerName>";
 
         public override string CmdDesc => "Add or remove a player from the ignore list";
 
@@ -25,7 +25,7 @@ namespace Client.Commands
             // Check parameters.
             if (args.Length < 1) return "";
 
-            // NB: playernames cannot have special characters
+            // NB: player names cannot have special characters
             var playerName = new string(args[0]);
 
             // add to the ignore list

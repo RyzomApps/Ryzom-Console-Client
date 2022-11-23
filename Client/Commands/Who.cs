@@ -10,7 +10,7 @@ namespace Client.Commands
     public class Who : CommandBase
     {
         public override string CmdName => "who";
-        public override string CmdUsage => "[<options (GM, channel name)>]";
+        public override string CmdUsage => "[GM|channelName]";
         public override string CmdDesc => "Display all players currently in region";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)

@@ -24,7 +24,7 @@ namespace Client.Commands
 
             if (args.Length != 1)
             {
-                handler.GetLogger().Warn($"Please specify an outpostSheetId.");
+                handler.GetLogger().Warn("Please specify an outpostSheetId.");
                 return "";
             }
 

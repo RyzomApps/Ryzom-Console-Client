@@ -13,7 +13,7 @@ namespace Client.Commands
     {
         public override string CmdName => "em";
 
-        public override string CmdUsage => "<custom emote text>";
+        public override string CmdUsage => "<customText>";
 
         public override string CmdDesc => "Creates an emote without using an animation.";
 

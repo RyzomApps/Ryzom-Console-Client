@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         public override string CmdName => "sit";
 
-        public override string CmdUsage => "<[sit state]>";
+        public override string CmdUsage => "[sitState]";
 
         public override string CmdDesc => "client send to the server the sitting state";
 
@@ -35,7 +35,7 @@ namespace Client.Commands
                 return "Please specify zero or one argument.";
             }
 
-            // send afk state
+            // send AFK state
             const string msgName = "COMMAND:SIT";
             var out2 = new BitMemoryStream();
 
