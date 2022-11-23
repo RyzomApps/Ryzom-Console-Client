@@ -942,7 +942,7 @@ namespace Client
 
         #endregion
 
-        #region Console Client Methods 
+        #region Console Client Methods
 
         /// <summary>
         /// Called ~10 times per second by the game loop

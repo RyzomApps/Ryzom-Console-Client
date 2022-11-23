@@ -43,7 +43,7 @@ namespace Client.Network
         public bool WaitServerAnswer;
 
         /// <summary>
-        /// This is the mainland selected at the CREATE perso!!
+        /// This is the mainland selected at the create person screen
         /// </summary>
         public uint MainlandSelected = 0;
 
@@ -67,7 +67,7 @@ namespace Client.Network
         private readonly SheetIdFactory _sheetIdFactory;
 
         /// <summary>
-        /// was the inital server season received
+        /// was the initial server season received
         /// </summary>
         public bool ServerSeasonReceived;
 
@@ -98,6 +98,9 @@ namespace Client.Network
 
         /// <inheritdoc />
         public uint GetCurrentServerTick() => _networkConnection.GetCurrentServerTick();
+
+        /// <inheritdoc />
+        public double[] GetTps() => _networkConnection.GetTps();
 
         /// <summary>
         /// Constructor
@@ -144,8 +147,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// Buffers a BitMemoryStream, that will be converted into a generic action, to be sent later to the server (at next
-        /// update).
+        /// Buffers a BitMemoryStream, that will be converted into a generic action, to be sent later to the server (at next update).
         /// </summary>
         public void Push(BitMemoryStream msg)
         {
@@ -153,8 +155,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// Updates the whole connection with the front end.
-        /// Call this method periodically.
+        /// Updates the whole connection with the front end. Call this method periodically.
         /// </summary>
         /// <returns>'true' if data were sent/received.</returns>
         public bool Update()

@@ -86,7 +86,7 @@ namespace Client.Config
         // Proxy
         public static bool UseProxy = false;
 
-        public static long OnlineProxyListExpiration = 60 * 60; // [s]
+        public static long OnlineProxyListExpiration = 10 * 60; // [s]
 
         public static string[] OnlineProxyList = {
             "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=1000&country=all&ssl=all&anonymity=all",

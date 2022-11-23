@@ -19,6 +19,7 @@ using System.Threading;
 using API.Helper;
 using Client.Config;
 using Client.Database;
+using Client.Helper;
 using Client.Network.Action;
 using Client.Network.Proxy;
 using Client.Property;
@@ -50,7 +51,7 @@ namespace Client.Network
         private ConnectionState _connectionState;
 
         /// <summary>
-        /// Generic action multipart handling structures
+        /// Generic action multi part handling structures
         /// </summary>
         private readonly List<GenericMultiPartTemp> _genericMultiPartTemp = new List<GenericMultiPartTemp>();
 
@@ -79,7 +80,7 @@ namespace Client.Network
         private int _userKey;
 
         /// <summary>
-        /// is an uint uniq for each account (an account could have more than one avatar)
+        /// is an uint unique for each account (an account could have more than one avatar)
         /// </summary>
         private int _userId;
 
@@ -103,7 +104,7 @@ namespace Client.Network
         private int _lastReceivedNumber;
 
         /// <summary>
-        /// this mask contains ack of old messages received by the server
+        /// this mask contains ACK of old messages received by the server
         /// </summary>
         private uint _ackBitMask;
 
@@ -227,14 +228,84 @@ namespace Client.Network
         private readonly RyzomClient _client;
 
         /// <summary>
-        /// Ingame Database Manager
+        /// In game Database Manager
         /// </summary>
         private readonly DatabaseManager _databaseManager;
 
         /// <summary>
-        /// the last tick sent by the server
+        /// Get the last tick sent by the server
         /// </summary>
         public uint GetCurrentServerTick() => _currentServerTick;
+
+        /// <summary>
+        /// last TPS check time
+        /// </summary>
+        private long _tickSectionTime = NanoTime();
+
+        /// <summary>
+        /// last TPS check tick
+        /// </summary>
+        private long _tickSectionTick;
+
+        /// <summary>
+        /// TPS last 1 minute
+        /// </summary>
+        internal RollingAverage Tps1 = new RollingAverage(60);
+
+        /// <summary>
+        /// TPS last 5 minutes
+        /// </summary>
+        internal RollingAverage Tps5 = new RollingAverage(60 * 5);
+
+        /// <summary>
+        /// TPS last 15 minutes
+        /// </summary>
+        internal RollingAverage Tps15 = new RollingAverage(60 * 15);
+
+        /// <summary>
+        /// Gets the current server TPS
+        /// </summary>
+        public double[] GetTps()
+        {
+            return new[] { Tps1.GetAverage(), Tps5.GetAverage(), Tps15.GetAverage() };
+        }
+
+        /// <summary>
+        /// Set the last tick sent by the server
+        /// </summary>
+        /// <param name="tick">tick number</param>
+        private void SetCurrentServerTick(uint tick)
+        {
+            _currentServerTick = tick;
+
+            var curTime = NanoTime();
+
+            if (_currentServerTick > _tickSectionTick + RollingAverage.GameTps /*_currentServerTick % RollingAverage.GameTps == 0*/)
+            {
+                var diff = curTime - _tickSectionTime;
+                var currentTps = (double)RollingAverage.SecInNano / diff * (_currentServerTick - _tickSectionTick) /*RollingAverage.GameTps*/;
+
+                Debug.Print(currentTps + " " + (_currentServerTick - _tickSectionTick));
+
+                Tps1.Add(currentTps, diff);
+                Tps5.Add(currentTps, diff);
+                Tps15.Add(currentTps, diff);
+
+                _tickSectionTime = curTime;
+                _tickSectionTick = _currentServerTick;
+            }
+        }
+
+        /// <summary>
+        /// The current value of the system timer in nanoseconds.
+        /// </summary>
+        private static long NanoTime()
+        {
+            var nano = 10000L * Stopwatch.GetTimestamp();
+            nano /= TimeSpan.TicksPerMillisecond;
+            nano *= 100L;
+            return nano;
+        }
 
         /// <summary>
         /// Get the changes since last clear
@@ -285,10 +356,10 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// Init the connection with the cookie from the login server and game server address - registers all action codes
+        /// Initialize the connection with the cookie from the login server and game server address - registers all action codes
         /// </summary>
-        /// <param name="cookie">cookie it s the cookie in string format that was passed to the exe command line (given by the nel_launcher)</param>
-        /// <param name="addr">addr it s the front end address in string format that was passed to the exe command line (given by the nel_launcher)</param>
+        /// <param name="cookie">the cookie in string format that was passed as command line parameter (given by the nel_launcher)</param>
+        /// <param name="addr">the front end address in string format that was passed as command line parameter (given by the nel_launcher)</param>
         public void Init(string cookie, string addr)
         {
             if (ConnectionState != ConnectionState.NotInitialized &&
@@ -440,6 +511,11 @@ namespace Client.Network
             _latestSyncTime = _latestLoginTime;
             _latestProbeTime = _latestLoginTime;
             _loginAttempts = 0;
+
+            // reset TPS counters
+            Tps1.Reset();
+            Tps5.Reset();
+            Tps15.Reset();
         }
 
         /// <summary>
@@ -530,7 +606,7 @@ namespace Client.Network
                 return false;
             }
 
-            // Yoyo. OnUpdate the Smooth ServerTick.
+            // YOYO: OnUpdate the Smooth ServerTick.
             UpdateSmoothServerTick();
 
             if (!_connection.IsConnected())
@@ -1083,7 +1159,7 @@ namespace Client.Network
             }
 
             Debug.Assert(_currentReceivedNumber * 2 + _synchronize > _currentServerTick);
-            _currentServerTick = (uint)(_currentReceivedNumber * 2 + _synchronize);
+            SetCurrentServerTick((uint)(_currentReceivedNumber * 2 + _synchronize));
 
             // TODO: receiveNormalMessage PacketStamps implementation
 
@@ -1350,7 +1426,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// Sync state - deserialise info from stream - send ack
+        /// Sync state - deserialize info from stream - send ack
         /// </summary>
         private void ReceiveSystemSync(BitMemoryStream msgin)
         {
@@ -1381,7 +1457,7 @@ namespace Client.Network
 
             _msPerTick = 100;
 
-            _currentServerTick = (uint)(_synchronize + _currentReceivedNumber * 2);
+            SetCurrentServerTick((uint)(_synchronize + _currentReceivedNumber * 2));
 
             _currentClientTick = (uint)(_currentServerTick - (_lct + _msPerTick) / _msPerTick);
             _currentClientTime = _updateTime - (_lct + _msPerTick);
@@ -1390,7 +1466,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// Receive available data and convert it to a bitmemstream
+        /// Receive available data and convert it to a BitMemoryStream
         /// </summary>
         private bool BuildStream(BitMemoryStream msgin)
         {
