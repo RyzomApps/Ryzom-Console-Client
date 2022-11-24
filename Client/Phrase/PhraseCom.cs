@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using Client.Network;
 using Client.Sheet;
 using Client.Stream;
 
@@ -18,11 +17,20 @@ namespace Client.Phrase
     {
         private readonly uint _serialSbrickType = 0;
 
-        //private readonly List<ushort> _serialCompBricks = new List<ushort>();
-
+        /// <summary>
+        /// Name Of the Phrase. Saved on server, read on client.
+        /// </summary>
         public string Name;
 
+        /// <summary>
+        /// List Of SBricks composing the phrase.
+        /// </summary>
         public List<SheetId> Bricks = new List<SheetId>();
+
+        /// <summary>
+        /// Index into Bricks to use as icon (if out of range, then automatic icon selection)
+        /// </summary>
+        public byte IconIndex;
 
         public static PhraseCom EmptyPhrase = new PhraseCom();
 
@@ -84,6 +92,8 @@ namespace Client.Phrase
                     ret.Bricks[i].BuildSheetId(serialCompBricks[i] - 1, EntitySheet.SheetType.SBRICK);
                 }
             }
+            
+            impulse.Serial(ref ret.IconIndex);
 
             return ret;
         }

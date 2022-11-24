@@ -86,7 +86,7 @@ namespace Client.Config
         // Proxy
         public static bool UseProxy = false;
 
-        public static long OnlineProxyListExpiration = 0; //10 * 60; // [s]
+        public static long OnlineProxyListExpiration = 10 * 60; // [s]
 
         public static string[] OnlineProxyList = {
             "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=1000&country=all&ssl=all&anonymity=all",
@@ -98,9 +98,9 @@ namespace Client.Config
             "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks5.txt",
             "https://raw.githubusercontent.com/UptimerBot/proxy-list/main/proxies/socks5.txt",
             "https://raw.githubusercontent.com/Zaeem20/FREE_PROXIES_LIST/master/socks5.txt",
-            //"https://www.proxy-list.download/api/v1/get?type=socks5",
-            //"https://openproxylist.xyz/socks5.txt",
-            //"https://proxyspace.pro/socks5.txt",
+            // "https://www.proxy-list.download/api/v1/get?type=socks5",
+            // "https://openproxylist.xyz/socks5.txt",
+            // "https://proxyspace.pro/socks5.txt",
         };
 
         // Other Settings

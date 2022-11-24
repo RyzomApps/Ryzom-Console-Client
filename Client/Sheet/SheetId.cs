@@ -77,9 +77,11 @@ namespace Client.Sheet
             return Id.CompareTo(other.Id);
         }
 
-        public void BuildSheetId(int serialCompBrick, EntitySheet.SheetType sbrick)
+        public void BuildSheetId(int shortId, EntitySheet.SheetType type)
         {
             // TODO: BuildSheetId implementation!
+            _id = (uint)shortId;
+            _type = (uint)type;
         }
     }
 }

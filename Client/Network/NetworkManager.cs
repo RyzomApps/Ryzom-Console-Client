@@ -623,8 +623,6 @@ namespace Client.Network
         /// </summary>
         private void ImpulsePhraseDownload(BitMemoryStream impulse)
         {
-            return; // TODO: fix ImpulsePhraseDownload and enable again
-
             // Read Known Phrases
             // workaround for: impulse.serialCont(phrases);
             var len = 0;

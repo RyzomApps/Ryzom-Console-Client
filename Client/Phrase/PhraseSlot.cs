@@ -29,12 +29,12 @@ namespace Client.Phrase
         {
             var ret = new PhraseSlot { Phrase = PhraseCom.Serial(impulse) };
 
-            impulse.Serial(ref ret.KnownSlot);
+            impulse.Serial(ref ret.KnownSlot); // 2
 
             uint sheetid = 0;
             impulse.Serial(ref sheetid);
 
-            ret.PhraseSheetId = sheetIdFactory.SheetId(sheetid);
+            ret.PhraseSheetId = sheetIdFactory.SheetId(sheetid); // 124195 - 35 4** - 0x0000022087057e1f
 
             return ret;
         }
