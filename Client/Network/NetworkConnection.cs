@@ -625,8 +625,7 @@ namespace Client.Network
 
             if (!_connection.IsConnected())
             {
-                _client.GetLogger().Warn("CNET: update() attempted whereas socket is not connected !");
-                return false;
+                throw new Exception("CNET: update() attempted whereas socket is not connected!");
             }
 
             try

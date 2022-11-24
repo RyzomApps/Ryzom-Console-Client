@@ -30,7 +30,6 @@ using Client.Property;
 using Client.Sheet;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -115,7 +114,7 @@ namespace Client
         #region Properties
 
         /// <summary>
-        /// Current ingame chat channel of the client used for outgoing chat messages
+        /// Current in-game chat channel of the client used for outgoing chat messages
         /// </summary>
         public ChatGroupType Channel
         {
@@ -359,11 +358,11 @@ namespace Client
             // Log the client and choose from shard
             if (!Login())
             {
-                Log?.Error("Could not login!");
+                Log?.Error("Could not log in!");
                 return;
             }
 
-            // init message database
+            // initialize the message database
             PostLoginInit();
 
             var ok = true;
@@ -376,7 +375,7 @@ namespace Client
                     break;
                 }
 
-                // sends connection rdy to the server
+                // sends 'connection ready' to the server
                 InitMainLoop();
 
                 //////////////////////////////////////////////////
@@ -392,7 +391,7 @@ namespace Client
         }
 
         /// <summary>
-        /// Initialize the application before loginmeine
+        /// Initialize the application before the login
         /// </summary>
         private static void PreLoginInit()
         {
@@ -448,7 +447,7 @@ namespace Client
         /// <summary>
         /// Initialize the application after login
         /// </summary>
-        /// <remarks>if the init fails, call nlerror</remarks>
+        /// <remarks>if the initialization fails, call NLERROR</remarks>
         private void PostLoginInit()
         {
             _networkManager.GetMessageHeaderManager().Init(Constants.MsgXmlPath);
@@ -459,7 +458,7 @@ namespace Client
             // TODO: Initialize Chat Manager
             // ChatManager.init(CPath::lookup("chat_static.cdb"));
 
-            // TODO: Read the ligo primitive class file
+            // TODO: Read the LIGO primitive class file
 
             // Initialize Sheet IDs
             _sheetIdFactory.Init(ClientConfig.UpdatePackedSheet, Constants.SheetsIdBinPath);
@@ -482,7 +481,7 @@ namespace Client
         {
             _networkManager.GameExit = false;
 
-            // Init global variables
+            // Initialize global variables
             //_networkManager.UserChar = false;
             //_networkManager.NoUserChar = false;
             //_networkManager.ConnectInterf = true;
@@ -528,7 +527,7 @@ namespace Client
         }
 
         /// <summary>
-        /// Establish network connection, set callbacks for server messages and init the string manager
+        /// Establish network connection, set callbacks for server messages and initialize the string manager
         /// </summary>
         private InterfaceState AutoLogin(string cookie, string fsaddr, in bool firstConnection)
         {
@@ -547,14 +546,14 @@ namespace Client
                     return InterfaceState.QuitTheGame;
                 }
 
-                // Ok the client is connected
+                // OK, the client is connected
                 // Set the impulse callback.
                 _networkConnection.SetImpulseCallback(_networkManager.ImpulseCallBack);
 
                 // Set the database. - maybe not needed for console client
                 // _networkConnection.SetDataBase(_databaseManager.GetNodePtr());
 
-                // init the string manager cache.
+                // Initialize the string manager cache.
                 _stringManager.InitCache(fsaddr, ClientConfig.LanguageCode);
             }
 
@@ -622,23 +621,23 @@ namespace Client
 
                         _networkManager.WaitServerAnswer = false;
 
-                        // check that the pre selected character is available
+                        // check that the preselected character is available
                         if (_networkManager.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown || charSelect > 4)
                         {
                             // BAD ! preselected char does not exist
                             throw new InvalidOperationException("preselected char does not exist");
 
-                            // TODO: Create char if non existant
+                            // TODO: Create char if non existent
 
                             //ActionHandlerRenameChar.Execute((byte)charSelect, _networkManager);
 
-                            //ActionHandlerAskCreateChar.Execute("faafaa", 1, _networkManager);
+                            //ActionHandlerAskCreateChar.Execute("NAME", 1, _networkManager);
                         }
 
                         // Clear sending buffer that may contain previous QUIT_GAME when getting back to the char selection screen
                         _networkConnection.FlushSendBuffer();
 
-                        // Auto-selection for fast launching (dev only)
+                        // Auto-selection for fast launching (developer only)
                         _networkManager.CanSendCharSelection = false;
 
                         ActionHandlerLaunchGame.Execute(charSelect.ToString(), _networkManager);
@@ -647,7 +646,7 @@ namespace Client
 
                 if (_networkManager.ServerReceivedReady)
                 {
-                    //nlinfo("impulseCallBack : received serverReceivedReady");
+                    Log?.Debug("impulseCallBack : received serverReceivedReady");
                     _networkManager.ServerReceivedReady = false;
                     _networkManager.WaitServerAnswer = false;
                     playerWantToGoInGame = true;
@@ -667,10 +666,8 @@ namespace Client
                     return InterfaceState.QuitTheGame;
             }
 
-            //  Init the current Player Name
+            // Initialize the current Player Name
             var playerName = _networkManager.CharacterSummaries[_networkManager.PlayerSelectedSlot].Name;
-
-            // Init the current Player name
             _networkManager.PlayerSelectedHomeShardName = playerName;
             _networkManager.PlayerSelectedHomeShardNameWithParenthesis = '(' + playerName + ')';
 
@@ -690,7 +687,7 @@ namespace Client
             if (_databaseManager != null)
             {
                 Log.Info("Initializing XML Database ...");
-                _databaseManager.Init(@"data\database.xml", null);
+                _databaseManager.Init(@"data/database.xml", null);
 
                 var textId = new TextId("SERVER");
 
@@ -715,7 +712,7 @@ namespace Client
                     _databaseManager.GetDb().RemoveNode(textId);
                 }
 
-                _interfaceManager.CreateLocalBranch(@"data\local_database.xml");
+                _interfaceManager.CreateLocalBranch(@"data/local_database.xml");
             }
 
             // Initialize Sound System
@@ -835,7 +832,7 @@ namespace Client
                         }
                         else
                         {
-                            GetLogger().Warn("mainloop: unknown message named 'DEBUG:PING'.");
+                            GetLogger().Warn("main loop: unknown message named 'DEBUG:PING'.");
                         }
                     }
 
@@ -856,7 +853,7 @@ namespace Client
                 if (country != null && country.Trim().Length > 0)
                     country += " - ";
 
-                Console.Title = $@"[RCC] {name}{country}{_networkConnection.ConnectionState} - Ping: {_networkConnection.GetPing()} ms - Down: {_networkConnection.GetMeanDownload():0.0} kbps - Up: {_networkConnection.GetMeanUpload():0.0} kbps - Loss: {_networkConnection.GetMeanPacketLoss():0} pps - Version: {Program.Version}";
+                Console.Title = $@"[RCC] {name}{country}{_networkConnection.ConnectionState} - Ping: {_networkConnection.GetPing()} ms - Down: {_networkConnection.GetMeanDownload():0.0} KB/s - Up: {_networkConnection.GetMeanUpload():0.0} KB/s - Loss: {_networkConnection.GetMeanPacketLoss():0} P/s - Version: {Program.Version}";
 
                 // Update Ryzom Client stuff ~10 times per second -> Execute Tasks (like commands and listener stuff)
                 if (Math.Abs(Misc.GetLocalTime() - _lastClientUpdate) > 100)
@@ -892,8 +889,8 @@ namespace Client
         #region Watchdogs
 
         /// <summary>
-        /// Periodically checks for server keepalives and consider that connection has been lost
-        /// if the last received keepalive is too old.
+        /// Periodically checks for server keep-alive and consider that connection has been lost
+        /// if the last received keep-alive is too old.
         /// </summary>
         private void TimeoutDetector()
         {
@@ -1000,7 +997,7 @@ namespace Client
                     bms.Serial(ref mode);
                     bms.Serial(ref dynamicChannelId);
                     _networkManager.Push(bms);
-                    //nlinfo("impulseCallBack : %s %d sent", msgType.c_str(), mode);
+                    Log?.Debug($"impulseCallBack : {msgType} {mode} sent");
                 }
                 else
                 {
@@ -1008,7 +1005,7 @@ namespace Client
                     return false;
                 }
 
-                // send str to IOS
+                // send STR to IOS
                 msgType = "STRING:CHAT";
 
                 var out2 = new BitMemoryStream();
@@ -1301,9 +1298,9 @@ namespace Client
         /// </summary>
         /// <param name="task">Task to run with any type or return value</param>
         /// <returns>Any result returned from task, result type is inferred from the task</returns>
-        /// <example>bool result = InvokeOnMainThread(methodThatReturnsAbool);</example>
-        /// <example>bool result = InvokeOnMainThread(() => methodThatReturnsAbool(argument));</example>
-        /// <example>int result = InvokeOnMainThread(() => { yourCode(); return 42; });</example>
+        /// <example>BOOL result = InvokeOnMainThread(methodThatReturnsAbool);</example>
+        /// <example>BOOL result = InvokeOnMainThread(() => methodThatReturnsAbool(argument));</example>
+        /// <example>INT result = InvokeOnMainThread(() => { yourCode(); return 42; });</example>
         /// <typeparam name="T">Type of the return value</typeparam>
         public T InvokeOnMainThread<T>(Func<T> task)
         {

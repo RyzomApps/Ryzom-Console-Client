@@ -79,22 +79,22 @@ namespace Client.Network
             switch (responseString[0])
             {
                 case 'H':
-                    throw new InvalidOperationException("missing response body (error code 65)");
+                    throw new InvalidOperationException("Missing response body (error code 65).");
 
                 case '0':
                     // server returns an error
-                    throw new InvalidOperationException($"server error: {responseString[2..]}");
+                    throw new InvalidOperationException($"Server error: {responseString[2..]}");
 
                 case '1':
                     var lines = responseString.Split('\n');
 
                     if (lines.Length != 2)
-                        throw new InvalidOperationException($"Invalid server return, found {lines.Length} lines, want 2");
+                        throw new InvalidOperationException($"Invalid server return, found {lines.Length} lines, want 2.");
 
                     var parts = lines[0].Split('#');
 
                     if (parts.Length < 5)
-                        throw new InvalidOperationException("Invalid server return, missing cookie and/or Ring URLs");
+                        throw new InvalidOperationException("Invalid server return, missing cookie and/or Ring URLs.");
 
                     // server returns ok, we have the cookie
 
