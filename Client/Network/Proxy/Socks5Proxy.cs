@@ -24,24 +24,24 @@ namespace Client.Network.Proxy
     public class Socks5Proxy
     {
         private static readonly string[] ErrorMsgs = {
-            "Operation completed successfully.",
-            "General SOCKS server failure.",
-            "Connection not allowed by rule set.",
-            "Network unreachable.",
-            "Host unreachable.",
-            "Connection refused.",
-            "TTL expired.",
-            "Command not supported.",
-            "Address type not supported.",
-            "Unknown error."
+            "Operation completed successfully.",   // 0x00
+            "General SOCKS server failure.",       // 0x01
+            "Connection not allowed by rule set.", // 0x02
+            "Network unreachable.",                // 0x03
+            "Host unreachable.",                   // 0x04
+            "Connection refused.",                 // 0x05
+            "TTL expired.",                        // 0x06
+            "Command not supported.",              // 0x07
+            "Address type not supported.",         // 0x08
+            "Unknown error."                       // 0x09
         };
 
-        private const int ConnectionTimeout = 500; // Ultra Fast (<0.5s Ping)
-        private const int NegotiationTimeout = 5000; // 5 s
-        private const int OperationTimeout = 30000; // 30 s
+        private const int ConnectionTimeout = 500;   // 0.5 s for connection phase
+        private const int NegotiationTimeout = 5000; //   5 s for negotiation phase
+        public const int OperationTimeout = 30000;  //  30 s for normal connection
 
         /// <summary>
-        /// Open a TCP connection to the appropriate SOCKS5 port on the SOCKS5 server system using UDP associate command
+        /// Open a TCP connection to the appropriate SOCKS5 port on the SOCKS5 server system using the UDP associate command
         /// </summary>
         /// <returns>TCP socket</returns>
         public static Socket EstablishConnection(string proxyAddress, ushort proxyPort, string destAddress, ushort destPort, string userName, string password, out string udpAdress, out ushort udpPort)
@@ -72,14 +72,14 @@ namespace Client.Network.Proxy
             else
             {
                 socket.Close();
-                throw new ConnectionException("Proxy server connection could not be established.");
+                throw new ConnectionException("Could not connect to the proxy server.");
             }
 
             // set timeouts higher for the negotiation phase
             socket.ReceiveTimeout = NegotiationTimeout;
             socket.SendTimeout = NegotiationTimeout;
 
-            // Request
+            // request
             var request = new byte[256];
             ushort nIndex = 0;
 
@@ -106,14 +106,14 @@ namespace Client.Network.Proxy
             if (nGot != 2)
             {
                 socket.Close();
-                throw new ConnectionException("Bad response received from proxy server.");
+                throw new ConnectionException("An incorrect authentication negotiation response was received from the proxy server.");
             }
 
             // check version
             if (response[0] != 0x05)
             {
                 socket.Close();
-                throw new ConnectionException($"Proxy server version 0x{response[0]:X2} is not supported by the client.");
+                throw new ConnectionException($"The proxy server version (0x{response[0]:X2}) is not supported by the client.");
             }
 
             // authentication
@@ -122,7 +122,7 @@ namespace Client.Network.Proxy
                 // none
                 case 0x00:
                     break;
-
+                    
                 // user name / password
                 case 0x02:
                     request = new byte[256];
@@ -151,13 +151,13 @@ namespace Client.Network.Proxy
                     if (nGot != 2)
                     {
                         socket.Close();
-                        throw new ConnectionException("Bad response received from proxy server.");
+                        throw new ConnectionException("An incorrect authentication response was received from the proxy server.");
                     }
 
                     if (response[1] != 0x00)
                     {
                         socket.Close();
-                        throw new ConnectionException("Bad user name or password.");
+                        throw new ConnectionException("Incorrect user name or password.");
                     }
 
                     break;
@@ -165,12 +165,15 @@ namespace Client.Network.Proxy
                 // no authentication method was accepted close the socket.
                 case 0xFF:
                     socket.Close();
-                    throw new ConnectionException("None of the authentication method was accepted by proxy server.");
+                    throw new ConnectionException("The requested authentication method was not accepted by the proxy server.");
 
                 // different method than requested
                 default:
+                    // 0x01: GSSAPI
+                    // 0x03–0x7F: methods assigned by IANA
+                    // 0x80–0xFE: methods reserved for private use
                     socket.Close();
-                    throw new ConnectionException($"Proxy server is using an authentication method (0x{response[1]:X2}) that is not supported by the client.");
+                    throw new ConnectionException($"The proxy server is using an authentication method (0x{response[1]:X2}) that is not supported by the client.");
             }
 
             // send connect request with udp associate command
@@ -189,6 +192,7 @@ namespace Client.Network.Proxy
             // address in IPV4 format
             request[nIndex++] = 0x01;
 
+            // port number
             rawBytes = destIP.GetAddressBytes();
             rawBytes.CopyTo(request, nIndex);
             nIndex += (ushort)rawBytes.Length;
@@ -199,7 +203,7 @@ namespace Client.Network.Proxy
             for (var i = portBytes.Length - 1; i >= 0; i--)
                 request[nIndex++] = portBytes[i];
 
-            // send connect request.
+            // send connect request
             socket.Send(request, nIndex, SocketFlags.None);
 
             // get server response
@@ -207,7 +211,7 @@ namespace Client.Network.Proxy
             var ver = new byte[1];
             socket.Receive(ver, 0, 1, SocketFlags.None);
 
-            // reply field
+            // reply status
             var rep = new byte[1];
             socket.Receive(rep, 0, 1, SocketFlags.None);
 

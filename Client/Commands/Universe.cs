@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         public override string CmdName => "universe";
 
-        public override string CmdUsage => "<text>";
+        public override string CmdUsage => "[text]";
 
         public override string CmdDesc => "This command sends a message to the universe channel, which is visible to everyone online at that moment.";
 

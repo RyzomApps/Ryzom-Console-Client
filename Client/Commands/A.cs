@@ -11,7 +11,7 @@ namespace Client.Commands
     /// This command is use to do all admin execution commands on you<br />
     /// For example: "/a God 1" will set you in god mode
     /// </summary>
-    /// TODO check if the command is working right
+    /// TODO check if the command is working right on the test server
     public class A : CommandBase
     {
         public override string CmdName => "a";

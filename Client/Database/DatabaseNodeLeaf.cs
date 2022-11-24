@@ -260,7 +260,7 @@ namespace Client.Database
         /// </summary>
         public void NotifyObservers()
         {
-            // TODO "NotifyObservers"
+            // TODO NotifyObservers
         }
 
         /// <inheritdoc />

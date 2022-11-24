@@ -1080,14 +1080,13 @@ namespace Client
                 var responseMsg = "";
                 var command = ClientConfig.InternalCmdChar == ' ' ? text : text[1..];
 
-                if (!PerformInternalCommand( /*ClientConfig.ExpandVars(*/command /*)*/, ref responseMsg) &&
-                    ClientConfig.InternalCmdChar == '/')
+                if (!PerformInternalCommand( /*ClientConfig.ExpandVars(*/command /*)*/, ref responseMsg) && ClientConfig.InternalCmdChar == '/')
                 {
                     SendText(text);
                 }
                 else if (responseMsg.Length > 0)
                 {
-                    Log.Info(responseMsg);
+                    Log.Info("§f" + responseMsg);
                 }
             }
             else SendText(text);
@@ -1109,6 +1108,7 @@ namespace Client
             {
                 if (string.IsNullOrEmpty(text))
                     return;
+
                 if (text.Length > maxLength) //Message is too long?
                 {
                     if (text[0] == '/')
@@ -1172,6 +1172,8 @@ namespace Client
             return true;
         }
 
+        private static string helpCommand = "help";
+
         /// <inheritdoc />
         public bool PerformInternalCommand(string command, ref string responseMsg, Dictionary<string, object> localVars = null)
         {
@@ -1186,19 +1188,20 @@ namespace Client
                 {
                     var helpCmdname = CommandBase.GetArgs(command)[0].ToLower();
 
-                    if (helpCmdname == "help")
+                    if (helpCmdname == helpCommand)
                     {
-                        responseMsg = "help <cmdname>: show brief help about a command.";
+                        responseMsg = "{helpCommand} <cmdname>: show brief help about a command.";
                     }
                     else if (_cmds.ContainsKey(helpCmdname))
                     {
-                        responseMsg = _cmds[helpCmdname].GetCmdDescTranslated();
+                        responseMsg = "§e" + ClientConfig.InternalCmdChar + _cmds[helpCmdname].GetCmdDescTranslated();
                     }
-                    else responseMsg = $"Unknown command '{commandName}'. Use 'help' for command list.";
+                    else responseMsg = $"Unknown command '{helpCmdname}'. Use '{helpCommand}' for command list.";
                 }
                 else
                     responseMsg =
-                        $"help <cmdname>. Available commands: {string.Join(", ", _cmdNames.ToArray())}. For server help, use '{ClientConfig.InternalCmdChar}send /help' instead.";
+                        "§e--- §fCommands §e---§r\r\n" +
+                        $"{string.Join(", ", _cmdNames.ToArray())}.";
             }
             else if (_cmds.ContainsKey(commandName))
             {
@@ -1249,6 +1252,11 @@ namespace Client
                 {
                     // tab completion on an uncompleted command
                     ret.AddRange(from cmdName in _cmdNames where cmdName.StartsWith(behindCursor[1..], StringComparison.InvariantCultureIgnoreCase) select ClientConfig.InternalCmdChar + cmdName);
+
+                    if (helpCommand.StartsWith(behindCursor[1..], StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        ret.Add(ClientConfig.InternalCmdChar + helpCommand);
+                    }
                 }
             }
 

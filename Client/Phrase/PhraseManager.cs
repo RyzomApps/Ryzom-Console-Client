@@ -137,7 +137,7 @@ namespace Client.Phrase
         /// </summary>
         private void Reset()
         {
-            // TODO
+            // TODO Reset implementation
         }
 
         //static bool _registerClassDone;

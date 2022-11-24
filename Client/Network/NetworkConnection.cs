@@ -1295,7 +1295,7 @@ namespace Client.Network
                     {
                         var ap = (ActionPosition)ActionFactory.Create(slot, ActionCode.ActionPositionCode);
 
-                        ap.Unpack(msgin); // TODO: ap unpack
+                        ap.Unpack(msgin);
                         _propertyDecoder.Receive(_currentReceivedNumber, ap);
 
                         // Set into property database

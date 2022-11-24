@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         public override string CmdName => "region";
 
-        public override string CmdUsage => "<text>";
+        public override string CmdUsage => "[text]";
 
         public override string CmdDesc => "This command sends a message visible to all who are in the same region as you at the time.";
 

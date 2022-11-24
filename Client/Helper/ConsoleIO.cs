@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using API.Chat;
+using TextCopy;
 
 namespace Client.Helper
 {
@@ -29,6 +30,7 @@ namespace Client.Helper
         private static bool _reading;
         private static string _buffer = "";
         private static string _buffer2 = "";
+        private static int _prefixLength = 2;
 
         /// <summary>
         /// Determines whether to use interactive IO or basic IO.
@@ -137,8 +139,7 @@ namespace Client.Helper
 
             lock (IoLock)
             {
-                var prefix = RyzomClient.GetInstance().Channel.ToString()[0];
-                Console.Write(prefix);
+                WritePrefix();
                 _reading = true;
                 _buffer = "";
                 _buffer2 = "";
@@ -292,23 +293,35 @@ namespace Client.Helper
                             var buf = _buffer;
                             var buf2 = _buffer2;
                             ClearLineAndBuffer();
-                            if (Console.CursorLeft == 0)
+
+                            for (var i = 0; i < _prefixLength; i++)
                             {
-                                Console.CursorLeft = Console.BufferWidth - 1;
-                                Console.CursorTop--;
-                                Console.Write(@" ");
-                                Console.CursorLeft = Console.BufferWidth - 1;
-                                Console.CursorTop--;
+                                if (Console.CursorLeft == 0)
+                                {
+                                    Console.CursorLeft = Console.BufferWidth - 1;
+                                    if (Console.CursorTop > 0)
+                                        Console.CursorTop--;
+
+                                    Console.Write(" \b\n");
+
+                                    Console.CursorLeft = Console.BufferWidth - 1;
+                                    if (Console.CursorTop > 0)
+                                        Console.CursorTop--;
+                                }
+                                else
+                                {
+                                    Console.Write("\b \b");
+                                }
                             }
-                            else Console.Write("\b \b");
 
                             Console.Write(text);
                             _buffer = buf;
                             _buffer2 = buf2;
 
-                            var prefix = RyzomClient.GetInstance().Channel.ToString()[0];
+                            WritePrefix();
 
-                            Console.Write(prefix + _buffer);
+                            Console.Write(_buffer);
+
                             if (_buffer2.Length > 0)
                             {
                                 Console.Write($"{_buffer2} \b");
@@ -329,6 +342,49 @@ namespace Client.Helper
                 }
             }
             else Console.Write(text);
+        }
+
+        /// <summary>
+        /// Output the custom prefix to the console
+        /// </summary>
+        private static void WritePrefix()
+        {
+            const string sepStart = "<";
+            const string sepEnd = "> ";
+
+            var prefix = RyzomClient.GetInstance().Channel.ToString();
+            _prefixLength = sepStart.Length + prefix.Length + sepEnd.Length;
+
+            var color = Console.ForegroundColor;
+
+            if (!BasicIoNoColor)
+                Console.ForegroundColor = ConsoleColor.Gray;
+
+            Console.Write(sepStart);
+
+            // get the channel color
+            try
+            {
+                if (!BasicIoNoColor)
+                    Console.ForegroundColor = ChatColor.GetConsoleColorFromMinecraftColor(ChatColor.GetMinecraftColorForChatGroupType(RyzomClient.GetInstance().Channel)[1]);
+            }
+            catch
+            {
+                // ignored
+            }
+
+            Console.Write(prefix);
+
+            if (!BasicIoNoColor)
+                Console.ForegroundColor = ConsoleColor.Gray;
+
+            Console.Write(sepEnd);
+
+            // reset the color
+            if (!BasicIoNoColor)
+                Console.ForegroundColor = color;
+
+
         }
 
         /// <summary>
@@ -431,12 +487,11 @@ namespace Client.Helper
         /// <returns>String from the Windows clipboard</returns>
         private static string ReadClipboard()
         {
-            string clipdata = "";
+            var clipdata = "";
             var staThread = new Thread(new ThreadStart(
                 delegate
                 {
-                    // TODO Clipboard
-                    //clipdata = Clipboard.GetText();
+                    clipdata = ClipboardService.GetText();
                 }
             ));
             staThread.SetApartmentState(ApartmentState.STA);
@@ -447,7 +502,7 @@ namespace Client.Helper
 
         #endregion
 
-        #region Subfunctions
+        #region Sub functions
 
         /// <summary>
         /// Clear all text inside the input prompt
@@ -483,7 +538,7 @@ namespace Client.Helper
                     /* Console was resized!? */
                 }
 
-                _buffer = _buffer[0..^1];
+                _buffer = _buffer[..^1];
 
                 if (_buffer2.Length > 0)
                 {
@@ -507,6 +562,7 @@ namespace Client.Helper
             {
                 if (Console.CursorLeft == 0)
                 {
+                    // TODO: reverse line break error here
                     Console.CursorLeft = Console.BufferWidth - 1;
                     if (Console.CursorTop > 0)
                         Console.CursorTop--;

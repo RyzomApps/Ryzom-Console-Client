@@ -185,7 +185,7 @@ namespace Client.Sheet
             //uint sizeTypeVersion = sizeof(TypeVersion);
 
             //uint nb = sizeTypeVersion / sizeTypeVersion;
-            uint nb = 34; // todo size of type version
+            uint nb = 34; // TODO size of type version
 
             {
                 if (userExtensions == null)

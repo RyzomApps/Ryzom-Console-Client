@@ -10,7 +10,7 @@ namespace Client.Commands
     {
         public override string CmdName => "shout";
 
-        public override string CmdUsage => "<text>";
+        public override string CmdUsage => "[text]";
 
         public override string CmdDesc => "This command will make your messages have a 50m range and will appear red (by default) for you.";
 

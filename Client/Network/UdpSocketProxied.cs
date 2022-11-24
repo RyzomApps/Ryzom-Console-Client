@@ -50,8 +50,8 @@ namespace Client.Network
             _ip = Dns.GetHostAddresses(host)[0];
             _port = (ushort)port;
 
-            // Try to establish a socks5 proxy connection and get port and ip for udp
-            _socks5Socket = Socks5Proxy.EstablishConnection(proxyIp.ToString(), (ushort)proxyPort, _ip.ToString(), _port, "", "", out var udpAddress, out var udpPort);
+            // Try to establish a socks5 proxy connection and get port and IP for udp
+            _socks5Socket = Socks5Proxy.EstablishConnection(proxyIp.ToString(), (ushort)proxyPort, _ip.ToString(), _port, "anonymous", "", out var udpAddress, out var udpPort);
 
             // use the proxy host if no other address is given
             if (udpAddress == "\0")
@@ -103,9 +103,13 @@ namespace Client.Network
             {
                 if ((DateTime.Now - _lastDataReceived).TotalMilliseconds > Timeout)
                 {
-                    _udpMain.Client?.Disconnect(false);
-                    _socks5Socket.Disconnect(false);
-                    throw new TimeoutException("Connection Timeout.");
+                    if (_udpMain.Client?.Connected == true)
+                        _udpMain.Client?.Disconnect(false);
+
+                    if (_socks5Socket.Connected)
+                        _socks5Socket.Disconnect(false);
+
+                    throw new TimeoutException("SOCKS5 Proxy Connection Timeout.");
                 }
             }
 
@@ -123,7 +127,7 @@ namespace Client.Network
                 Array.Reverse(bytes, 10, bytes.Length - 10);
                 receiveBuffer = bytes;
 
-                if(receiveBuffer.Length > 0)
+                if (receiveBuffer.Length > 0)
                     _lastDataReceived = DateTime.Now;
             }
             catch

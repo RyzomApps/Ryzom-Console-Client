@@ -490,7 +490,7 @@ namespace Client.Plugins
         /// Dispatch a listener event with automatic exception handling
         /// </summary>
         /// <example>
-        /// Example for calling SomeEvent() on all automata at once:
+        /// Example for calling SomeEvent() on all listeners at once:
         /// DispatchAutomatonEvent(listener => listener.SomeEvent());
         /// </example>
         /// <param name="action">ActionBase to execute on each listener</param>
@@ -673,7 +673,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server sends a new respawn point
+        /// called when the server sends a new re-spawn point
         /// </summary>
         public void OnDeathRespawnPoint(int x, int y)
         {
@@ -794,7 +794,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the client receives the shard id and the webhost from the server
+        /// called when the client receives the shard id and the web host from the server
         /// </summary>
         public void OnShardID(uint shardId, string webHost)
         {
@@ -826,7 +826,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// Called when the ingame database was received
+        /// Called when the in-game database was received
         /// TODO: we have this two times
         /// </summary>
         internal void OnIngameDatabaseInitialized()
@@ -860,7 +860,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server phrase execution acknowledgement has been received
+        /// called when the server phrase execution acknowledgment has been received
         /// </summary>
         public void OnPhraseAckExecute(bool cyclic, byte counterValue, bool ok)
         {
