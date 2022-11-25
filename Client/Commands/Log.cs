@@ -38,7 +38,7 @@ namespace Client.Commands
                     // Debug log system.
                     ryzomClient.Log.DebugEnabled = !ryzomClient.Log.DebugEnabled;
                     return ryzomClient.Log.DebugEnabled ? "enabled" : "disabled";
-                
+
                 case "info":
                     // Info log system.
                     ryzomClient.Log.InfoEnabled = !ryzomClient.Log.InfoEnabled;

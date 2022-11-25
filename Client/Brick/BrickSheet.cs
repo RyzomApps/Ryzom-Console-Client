@@ -19,7 +19,7 @@ namespace Client.Brick
     {
         public string IdIcon;
 
-        public BrickSheet() : base()
+        public BrickSheet(SheetIdFactory _sheetIdFactory) : base(_sheetIdFactory)
         {
 
         }

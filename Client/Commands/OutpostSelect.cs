@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -24,7 +23,7 @@ namespace Client.Commands
 
             if (args.Length != 1)
             {
-                handler.GetLogger().Warn("Please specify an outpostSheetId.");
+                handler.GetLogger().Warn("Please specify an outpost sheet ID.");
                 return "";
             }
 
@@ -40,7 +39,9 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
+            {
                 return $"Unknown message named '{msgName}'.";
+            }
 
             return "";
         }

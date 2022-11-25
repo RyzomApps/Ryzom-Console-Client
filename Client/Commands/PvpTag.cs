@@ -6,18 +6,13 @@ using Client.Stream;
 
 namespace Client.Commands
 {
-    public class AskRespawn : CommandBase
+    public class PvpTag : CommandBase
     {
-        public override string CmdName => "AskRespawn";
+        public override string CmdName => "PvpTag";
 
-        public override string CmdUsage => "<index>";
+        public override string CmdUsage => "<uint8>";
 
-        public override string CmdDesc => "Client wants to re-spawn somewhere (index of the re-spawn location wanted)";
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] {"respawn"};
-        }
+        public override string CmdDesc => "Set the PVP tag of the player.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -27,17 +22,24 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "Please specify a parameter.";
+            {
+                handler.GetLogger().Warn("Please specify a tag.");
+                return "";
+            }
 
-            // send command
-            const string msgName = "DEATH:ASK_RESPAWN";
+            if (!byte.TryParse(args[0], out var tag))
+            {
+                handler.GetLogger().Warn("Could not parse the tag.");
+                return "";
+            }
 
-            var index = ushort.Parse(args[0]);
+            // send tag
+            const string msgName = "PVP:PVP_TAG";
             var out2 = new BitMemoryStream();
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                out2.Serial(ref index);
+                out2.Serial(ref tag);
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
@@ -46,6 +48,11 @@ namespace Client.Commands
             }
 
             return "";
+        }
+
+        public override IEnumerable<string> GetCmdAliases()
+        {
+            return new string[] { };
         }
     }
 }

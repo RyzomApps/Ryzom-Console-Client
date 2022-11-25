@@ -22,7 +22,7 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             // Check parameters
-            if (args.Length != 0) 
+            if (args.Length != 0)
                 return "Usage: " + CmdUsage;
 
             // Log entities

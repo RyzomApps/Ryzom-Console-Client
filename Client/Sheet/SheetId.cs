@@ -24,9 +24,7 @@ namespace Client.Sheet
     /// </remarks>
     public class SheetId : IComparable<SheetId>
     {
-        public static SheetId Unknown = new SheetId();
-
-        //private readonly SheetIdFactory _sheetIdFactory;
+        private readonly SheetIdFactory _sheetIdFactory;
 
         internal uint _id;
         internal uint _type;
@@ -46,7 +44,10 @@ namespace Client.Sheet
         /// <summary>
         /// Constructor
         /// </summary>
-        public SheetId() { }
+        public SheetId(SheetIdFactory sheetIdFactory)
+        {
+            _sheetIdFactory = sheetIdFactory;
+        }
 
         /// <summary>
         /// Return the **whole** sheet id (id+type)
@@ -82,6 +83,25 @@ namespace Client.Sheet
             // TODO: BuildSheetId implementation!
             _id = (uint)shortId;
             _type = (uint)type;
+
+            //_sheetIdFactory.SheetId(shortId);
+        }
+
+        /// <summary>
+        /// Return the sheet id as a string
+        /// If the sheet id is not found, then:
+        /// - if 'ifNotFoundUseNumericId==false' the returned string is "<Sheet %d not found in sheet_id.bin>" with the id in %d
+        /// - if 'ifNotFoundUseNumericId==tue'   the returned string is "#%u" with the id in %u
+        /// </summary>
+        public override string ToString()
+        {
+            return _sheetIdFactory.ToString(this, false);
+        }
+
+        /// <inheritdoc cref="ToString()"/>
+        public string ToString(bool ifNotFoundUseNumericId)
+        {
+            return _sheetIdFactory.ToString(this, ifNotFoundUseNumericId);
         }
     }
 }

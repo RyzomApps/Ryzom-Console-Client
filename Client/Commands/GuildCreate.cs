@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -16,7 +15,8 @@ namespace Client.Commands
 
         public override string CmdUsage => "<guildName>";
 
-        public override string CmdDesc => "Client wants to create a guild (name of new guild, guild icon descriptor, description of the guild)";
+        public override string CmdDesc =>
+            "Client wants to create a guild (name of new guild, guild icon descriptor, description of the guild)";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -25,13 +25,13 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            if (args.Length != 1) 
+            if (args.Length != 1)
                 return "Please specify a name.";
 
             const string msgName = "GUILD:CREATE";
             var out2 = new BitMemoryStream();
 
-            if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2)) 
+            if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
                 return $"Unknown message named '{msgName}'.";
 
             var buf = args[0];

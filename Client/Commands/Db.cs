@@ -29,32 +29,32 @@ namespace Client.Commands
             switch (size)
             {
                 case 2:
-                    {
-                        // Convert the string into an Int64.
-                        var value = long.Parse(args[1], CultureInfo.InvariantCulture);
+                {
+                    // Convert the string into an Int64.
+                    var value = long.Parse(args[1], CultureInfo.InvariantCulture);
 
-                        // Set the property.
-                        var prop = ryzomClient.GetDatabaseManager().GetDbProp(args[0]);
+                    // Set the property.
+                    var prop = ryzomClient.GetDatabaseManager().GetDbProp(args[0]);
 
-                        if (prop == null)
-                            return $"{args[0]} was not found in the database.";
+                    if (prop == null)
+                        return $"{args[0]} was not found in the database.";
 
-                        prop.SetValue64(value);
+                    prop.SetValue64(value);
 
-                        break;
-                    }
+                    break;
+                }
                 case 1:
-                    {
-                        var prop = ryzomClient.GetDatabaseManager().GetDbProp(args[0]);
+                {
+                    var prop = ryzomClient.GetDatabaseManager().GetDbProp(args[0]);
 
-                        if (prop == null)
-                            return $"{args[0]} was not found in the database.";
+                    if (prop == null)
+                        return $"{args[0]} was not found in the database.";
 
 
-                        var str = prop.GetValue64().ToString(CultureInfo.InvariantCulture);
+                    var str = prop.GetValue64().ToString(CultureInfo.InvariantCulture);
 
-                        return str;
-                    }
+                    return str;
+                }
                 default:
                     return "Usage: " + CmdUsage;
             }

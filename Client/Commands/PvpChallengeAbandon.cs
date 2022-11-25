@@ -6,25 +6,21 @@ using Client.Stream;
 
 namespace Client.Commands
 {
-    public class Where : CommandBase
+    public class PvpChallengeAbandon : CommandBase
     {
-        public override string CmdName => "where";
+        public override string CmdName => "PvpChallengeAbandon";
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Ask information on the position";
+        public override string CmdDesc => "";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
             if (!(handler is RyzomClient ryzomClient))
                 throw new Exception("Command handler is not a Ryzom client.");
 
-            // Check parameters.
-            if (HasArg(command))
-                return "Please specify no parameters.";
-
-            // Create the message and send.
-            const string msgName = "COMMAND:WHERE";
+            // Create the message for the server to execute a phrase.
+            const string msgName = "PVP_CHALLENGE:ABANDON";
             var out2 = new BitMemoryStream();
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))

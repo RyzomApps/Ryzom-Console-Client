@@ -61,6 +61,7 @@ namespace Client
         private readonly SkillManager _skillManager;
         private readonly BrickManager _brickManager;
         private readonly SheetIdFactory _sheetIdFactory;
+        private readonly ActionHandlerManager _actionHandlerManager;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -216,6 +217,7 @@ namespace Client
             _phraseManager = new PhraseManager(this);
             _interfaceManager = new InterfaceManager(this);
             _networkManager = new NetworkManager(this);
+            _actionHandlerManager = new ActionHandlerManager(this);
 
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");
@@ -274,6 +276,9 @@ namespace Client
 
             // Load commands from Commands name space
             LoadCommands();
+
+            // Load action handlers from action handler name space
+            _actionHandlerManager.LoadActionHandlers();
 
             // Load plugin manager
             Plugins.LoadPlugins(new DirectoryInfo(@"./plugins/"));
@@ -461,7 +466,7 @@ namespace Client
             // TODO: Read the LIGO primitive class file
 
             // Initialize Sheet IDs
-            _sheetIdFactory.Init(ClientConfig.UpdatePackedSheet, Constants.SheetsIdBinPath);
+            _sheetIdFactory.Init(ClientConfig.UpdatePackedSheet);
 
             // Initialize Packed Sheets
             _sheetManager.SetOutputDataPath("../../client/data");

@@ -380,7 +380,7 @@ namespace Client.Sheet
                 //    throw Exception("The packed sheet version in stream is different of the code");
                 //}
 
-                ifile.SerialCont(out container, _sheetIdFactory, this);
+                ifile.SerialCont(out container, _client);
                 ifile.Close();
             }
             catch (Exception e)

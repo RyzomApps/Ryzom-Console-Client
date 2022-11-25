@@ -22,10 +22,7 @@ namespace Client.Commands
 
             var entityName = "";
 
-            if (args.Length != 0)
-            {
-                entityName = string.Join(" ", args);
-            }
+            if (args.Length != 0) entityName = string.Join(" ", args);
 
             var entityManager = ryzomClient.GetNetworkManager().GetEntityManager();
 
@@ -34,21 +31,22 @@ namespace Client.Commands
             if (user == null)
                 return "";
 
-            var entity = entityName != string.Empty ? entityManager.GetEntityByName(entityName, false, false) : entityManager.GetEntity(user.TargetSlot());
+            var entity = entityName != string.Empty
+                ? entityManager.GetEntityByName(entityName, false, false)
+                : entityManager.GetEntity(user.TargetSlot());
 
             if (entity != null)
-            {
                 // Select the entity
                 user.Assist(entity.Slot());
-            }
             else
-            {
                 handler.GetLogger().Warn("Entity not found.");
-            }
 
             return "";
         }
 
-        public override IEnumerable<string> GetCmdAliases() { return new[] { "as" }; }
+        public override IEnumerable<string> GetCmdAliases()
+        {
+            return new[] {"as"};
+        }
     }
 }

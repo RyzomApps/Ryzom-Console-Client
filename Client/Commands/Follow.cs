@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -26,11 +25,9 @@ namespace Client.Commands
             // Create the message and send.
             const string msgName = "TARGET:FOLLOW";
             var out2 = new BitMemoryStream();
-                
+
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
-            {
                 ryzomClient.GetNetworkManager().Push(out2);
-            }
             else
                 return $"Unknown message named '{msgName}'.";
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -25,10 +24,7 @@ namespace Client.Commands
 
             if (args.Length == 1)
             {
-                if (!bool.TryParse(args[0], out s))
-                {
-                    return "One of the arguments could not be parsed.";
-                }
+                if (!bool.TryParse(args[0], out s)) return "One of the arguments could not be parsed.";
             }
             else if (args.Length > 1)
             {
@@ -45,7 +41,9 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
+            {
                 return $"Unknown message named '{msgName}'.";
+            }
 
             return "";
         }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -25,7 +24,7 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "";
+                return "Please specify a name.";
 
             var pvpSide = int.Parse(args[0]);
 
@@ -41,12 +40,14 @@ namespace Client.Commands
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 out2.Serial(ref bNeutral);
-                var sideAsInt = (byte)pvpSide;
+                var sideAsInt = (byte) pvpSide;
                 out2.Serial(ref sideAsInt);
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
+            {
                 return $"Unknown message named '{msgName}'.";
+            }
 
             return "";
         }

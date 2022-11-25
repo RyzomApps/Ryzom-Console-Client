@@ -13,9 +13,16 @@ using Client.Stream;
 
 namespace Client.Phrase
 {
+    /// <summary>
+    /// Description of a Sabrina Phrase. (I.e. set of brick, and other client side infos)
+    /// For communication Client/Server (NB: CSPhrase name already exist...)
+    /// <author>Lionel Berenguier</author>
+    /// <author>Nevrax France</author>
+    /// <date>2003</date>
+    /// </summary>
     public class PhraseCom
     {
-        private readonly uint _serialSbrickType = 0;
+        private uint _serialSbrickType;
 
         /// <summary>
         /// Name Of the Phrase. Saved on server, read on client.
@@ -30,11 +37,17 @@ namespace Client.Phrase
         /// <summary>
         /// Index into Bricks to use as icon (if out of range, then automatic icon selection)
         /// </summary>
-        public byte IconIndex;
+        public byte IconIndex = byte.MaxValue;
 
+        /// <summary>
+        /// Empty element
+        /// </summary>
         public static PhraseCom EmptyPhrase = new PhraseCom();
 
-        public static PhraseCom Serial(BitMemoryStream impulse)
+        /// <summary>
+        /// This serial is made for server->client com. NB: SheetId must be initialized.
+        /// </summary>
+        public static PhraseCom Serial(BitMemoryStream impulse, SheetIdFactory sheetIdFactory)
         {
             var ret = new PhraseCom();
 
@@ -48,11 +61,11 @@ namespace Client.Phrase
             // Get the type of .sbrick
             if (ret._serialSbrickType == 0)
             {
-                //_serialSbrickType = SheetId.TypeFromFileExtension("sbrick");
+                ret._serialSbrickType = sheetIdFactory.TypeFromFileExtension("sbrick");
             }
 
             // read
-            // workaround for impulse.SerialCont(ref _serialCompBricks);
+            #region workaround: impulse.SerialCont(ref _serialCompBricks);
 
             var len = 0;
             impulse.Serial(ref len);
@@ -67,19 +80,19 @@ namespace Client.Phrase
                 serialCompBricks.Add(value);
             }
 
-            // uncompress
-            //ContReset(Bricks);
+            #endregion workaround for: ret.Bricks.Resize(serialCompBricks.Count);
 
-            // workaround for: ret.Bricks.Resize(serialCompBricks.Count);
+            // uncompress
+            #region workaround: ContReset(Bricks); Bricks.resize(compBricks.size());
 
             ret.Bricks.Clear();
 
             for (var i = 0; i < serialCompBricks.Count; i++)
             {
-                ret.Bricks.Add(new SheetId());
+                ret.Bricks.Add(new SheetId(sheetIdFactory));
             }
 
-            // end workaround
+            #endregion end workaround
 
             for (var i = 0; i < ret.Bricks.Count; i++)
             {
@@ -89,10 +102,10 @@ namespace Client.Phrase
                 }
                 else
                 {
-                    ret.Bricks[i].BuildSheetId(serialCompBricks[i] - 1, EntitySheet.SheetType.SBRICK);
+                    ret.Bricks[i].BuildSheetId(serialCompBricks[i] - 1, (EntitySheet.SheetType)ret._serialSbrickType);
                 }
             }
-            
+
             impulse.Serial(ref ret.IconIndex);
 
             return ret;

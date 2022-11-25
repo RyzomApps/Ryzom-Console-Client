@@ -12,7 +12,8 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Try to put all items in the DB order in all the bags of the player. Does not check for space.";
+        public override string CmdDesc =>
+            "Try to put all items in the DB order in all the bags of the player. Does not check for space.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -24,20 +25,16 @@ namespace Client.Commands
             var out2 = new BitMemoryStream();
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
-            {
                 ryzomClient.GetNetworkManager().Push(out2);
-            }
             else
-            {
                 return $"Unknown message named '{msgName}'.";
-            }
 
             return "";
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "invTempAll" };
+            return new[] {"invTempAll"};
         }
     }
 }

@@ -6,27 +6,33 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Client.Commands;
 
 namespace Client.ActionHandler
 {
     /// <summary>
-    /// interface for action handlers factory
+    /// Interface for action handlers factory
     /// no release in this factory : a handler must be destroyed by the control that created it
     /// </summary>
     public class ActionHandlerManager
     {
-        private static ActionHandlerManager _globalInstance;
+        private readonly RyzomClient _client;
 
         /// map of action handler factories
-        public SortedDictionary<string, IActionHandler> FactoryMap = new SortedDictionary<string, IActionHandler>();
-        public SortedDictionary<IActionHandler, string> NameMap = new SortedDictionary<IActionHandler, string>();
-        public string EmptyName = "";
+        public SortedDictionary<string, ActionHandlerBase> FactoryMap = new SortedDictionary<string, ActionHandlerBase>();
+        public SortedDictionary<ActionHandlerBase, string> NameMap = new SortedDictionary<ActionHandlerBase, string>();
+        public static string EmptyName = "";
+        private bool _handlersLoaded;
 
-        public static ActionHandlerManager GetInstance()
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public ActionHandlerManager(RyzomClient client)
         {
-            return _globalInstance ??= new ActionHandlerManager();
+            _client = client;
         }
 
         public void GetActionHandlers(List<string> handlers)
@@ -44,7 +50,7 @@ namespace Client.ActionHandler
         /// <summary>
         /// return pointer to action handler or null if it doesn't exist
         /// </summary>
-        public IActionHandler GetActionHandler(in string name)
+        public ActionHandlerBase GetActionHandler(in string name)
         {
             if (string.IsNullOrEmpty(name))
                 return null;
@@ -60,7 +66,7 @@ namespace Client.ActionHandler
         /// <summary>
         /// Return the name of the action handler given its pointer
         /// </summary>
-        public string GetActionHandlerName(IActionHandler pAh)
+        public string GetActionHandlerName(ActionHandlerBase pAh)
         {
             return NameMap.ContainsKey(pAh) ? NameMap[pAh] : EmptyName;
         }
@@ -68,7 +74,7 @@ namespace Client.ActionHandler
         /// <summary>
         /// return the Action Handler 'name'. if name is of form 'ah:params', then params are filled (NB: else not changed)
         /// </summary>
-        public IActionHandler GetAh(in string name, ref string @params)
+        public ActionHandlerBase GetAh(in string name, ref string @params)
         {
             // Special AH form?
             var i = name.IndexOf(':');
@@ -85,7 +91,7 @@ namespace Client.ActionHandler
         /// <summary>
         /// Ah name must all be lower case
         /// </summary>
-        public static void REGISTER_ACTION_HANDLER(IActionHandler handler, string name)
+        public void RegisterActionHandler(ActionHandlerBase handler, string name)
         {
             Debug.Assert(name != null);
 
@@ -94,44 +100,40 @@ namespace Client.ActionHandler
                 Debug.Assert(char.IsLower(c) || !char.IsLetter(c));
             }
 
-            var pAhfm = GetInstance();
-            pAhfm.FactoryMap.Add(name, handler);
-            pAhfm.NameMap.Add(handler, name);
+            //var pAhfm = GetInstance();
+            /*pAhfm.*/FactoryMap.Add(name, handler);
+            /*pAhfm.*/NameMap.Add(handler, name);
         }
 
-        // TODO: Load all action handlers
-        ///// <summary>
-        ///// Load commands from the 'Commands' namespace
-        ///// </summary>
-        //public void LoadCommands()
-        //{
-        //    if (_commandsLoaded) return;
-        //
-        //    var cmdsClasses = Program.GetTypesInNamespace("Client.Commands");
-        //
-        //    foreach (var type in cmdsClasses)
-        //    {
-        //        if (!type.IsSubclassOf(typeof(CommandBase))) continue;
-        //
-        //        try
-        //        {
-        //            var cmd = (CommandBase)Activator.CreateInstance(type);
-        //
-        //            if (cmd != null)
-        //            {
-        //                _cmds[cmd.CmdName.ToLower()] = cmd;
-        //                _cmdNames.Add(cmd.CmdName.ToLower());
-        //                foreach (var alias in cmd.GetCmdAliases())
-        //                    _cmds[alias.ToLower()] = cmd;
-        //            }
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            Log.Warn(e.Message);
-        //        }
-        //    }
-        //
-        //    _commandsLoaded = true;
-        //}
+       /// <summary>
+       /// Load action handlers from the 'ActionHandler' namespace
+       /// </summary>
+       public void LoadActionHandlers()
+       {
+           if (_handlersLoaded) return;
+       
+           var cmdsClasses = Program.GetTypesInNamespace("Client.Commands");
+       
+           foreach (var type in cmdsClasses)
+           {
+               if (!type.IsSubclassOf(typeof(ActionHandlerBase))) continue;
+       
+               try
+               {
+                   var cmd = (ActionHandlerBase)Activator.CreateInstance(type);
+       
+                   if (cmd != null)
+                   {
+                       RegisterActionHandler(cmd, cmd.Name);
+                   }
+               }
+               catch (Exception e)
+               {
+                   _client.Log.Warn(e.Message);
+               }
+           }
+       
+           _handlersLoaded = true;
+       }
     }
 }

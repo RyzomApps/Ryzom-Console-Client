@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -22,10 +21,7 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            if (args.Length != 1)
-            {
-                return "Please specify a player name to add.";
-            }
+            if (args.Length != 1) return "Please specify a player name to add.";
 
             // add into server (NB: will be added by the server response later)
             const string msgName = "TEAM:CONTACT_ADD";
@@ -42,7 +38,9 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
+            {
                 return $"Unknown message named '{msgName}'.";
+            }
 
             return "";
         }

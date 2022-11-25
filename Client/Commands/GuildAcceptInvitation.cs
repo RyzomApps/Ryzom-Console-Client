@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -19,10 +18,6 @@ namespace Client.Commands
         {
             if (!(handler is RyzomClient ryzomClient))
                 throw new Exception("Command handler is not a Ryzom client.");
-
-            var args = GetArgs(command);
-
-            if (args.Length != 0) return "";
 
             const string msgName = "GUILD:ACCEPT_INVITATION";
             var out2 = new BitMemoryStream();

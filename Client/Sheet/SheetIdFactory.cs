@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using API;
 
 namespace Client.Sheet
 {
@@ -24,18 +23,22 @@ namespace Client.Sheet
 
         private bool _initialised;
 
-        bool _removeUnknownSheet = true;
-        bool _dontHaveSheetKnowledge = false;
+        private bool _removeUnknownSheet = true;
+        private bool _dontHaveSheetKnowledge = false;
 
         private string[] _fileExtensions;
         private Dictionary<uint, string> _sheetIdToName;
         private Dictionary<string, uint> _sheetNameToId;
+
+        public SheetId Unknown;
 
         /// <summary>
         /// constructor
         /// </summary>
         public SheetIdFactory(RyzomClient ryzomClient)
         {
+            Unknown ??= new SheetId(this);
+
             _client = ryzomClient;
         }
 
@@ -44,7 +47,7 @@ namespace Client.Sheet
         /// </summary>
         public SheetId SheetId(uint sheetRef)
         {
-            return new SheetId { _id = sheetRef };
+            return new SheetId(this) { _id = sheetRef };
         }
 
         /// <summary>
@@ -72,11 +75,55 @@ namespace Client.Sheet
         }
 
         /// <summary>
+        /// Convert between file extensions and numeric sheet types
+        /// note: fileExtension *not* include the '.' eg "bla" and *not* ".bla"
+        /// </summary>
+        internal uint TypeFromFileExtension(string fileExtension)
+        {
+            if (!_initialised)
+            {
+                Init(false);
+            }
+
+            uint i;
+            for (i = 0; i < _fileExtensions.Length; i++)
+            {
+                if (fileExtension.ToLower() == _fileExtensions[i])
+                {
+                    return i;
+                }
+            }
+
+            return uint.MaxValue;
+
+        }
+
+        /// <summary>
+        /// Return the sheet id as a string
+        /// If the sheet id is not found, then:
+        /// - if 'ifNotFoundUseNumericId==false' the returned string is "<Sheet %d not found in sheet_id.bin>" with the id in %d
+        /// - if 'ifNotFoundUseNumericId==tue'   the returned string is "#%u" with the id in %u
+        /// </summary>
+        internal string ToString(SheetId sheetId, bool ifNotFoundUseNumericId)
+        {
+            if (!_initialised)
+                Init(false);
+
+            if (_dontHaveSheetKnowledge)
+                throw new NotImplementedException();
+
+            if (_sheetIdToName.ContainsKey(sheetId.Id))
+                return _sheetIdToName[sheetId.Id];
+
+            return ifNotFoundUseNumericId ? $"#{sheetId.Id}" : $"<Sheet {sheetId.Id} not found in sheet_id.bin>";
+        }
+
+        /// <summary>
         /// Load the association sheet ref / sheet name
         /// </summary>
-        internal void Init(bool removeUnknownSheet, string fileName)
+        internal void Init(bool removeUnknownSheet)
         {
-            // allow multiple calls to init in case libraries depending on sheetid call this init from their own
+            // allow multiple calls to initialize in case libraries depending on SheetId call this initialization from their own
             if (_initialised)
             {
                 if (_dontHaveSheetKnowledge)
@@ -89,7 +136,7 @@ namespace Client.Sheet
 
             _removeUnknownSheet = removeUnknownSheet;
 
-            LoadSheetIds(fileName);
+            LoadSheetIds();
 
             _initialised = true;
         }
@@ -97,18 +144,16 @@ namespace Client.Sheet
         /// <summary>
         /// Load sheet_id.bin file
         /// </summary>
-        private void LoadSheetIds(string path)
+        private void LoadSheetIds()
         {
-            //H_AUTO(CSheetIdInit);
+            var path = Constants.SheetsIdBinPath;
+
             _client.GetLogger().Info($"Loading sheet IDs from {path}");
 
             // Open the sheet id to sheet file name association
-
             if (!string.IsNullOrEmpty(path) && File.Exists(path))
             {
                 var fileBytes = File.ReadAllBytes(path);
-
-                //fileBytes = fileBytes.Reverse().ToArray();
 
                 // clear entries
                 _fileExtensions = new string[0];
@@ -121,7 +166,7 @@ namespace Client.Sheet
                 // Get the map from the file
                 var tempMap = new Dictionary<uint, string>();
 
-                // workaround file.SerialCont(tempMap);
+                #region workaround file.SerialCont(tempMap);
                 var filePointer = 0;
 
                 var tmp = new byte[4];
@@ -148,103 +193,63 @@ namespace Client.Sheet
 
                     tempMap.Add(k, cont);
                 }
-                // workaround end
+                #endregion workaround end
 
                 if (_removeUnknownSheet)
                 {
-                    //    uint removednbfiles = 0;
-                    //    uint nbfiles = (uint)tempMap.Count;
-                    //
-                    //    // now we remove all files that not available
-                    //    SortedDictionary<uint, string>.Enumerator itStr2;
-                    //    for (itStr2 = tempMap.GetEnumerator(); itStr2.MoveNext();)
-                    //    {
-                    //        if (Path.exists(itStr2.Current.Value))
-                    //        {
-                    //        }
-                    //        else
-                    //        {
-                    //            SortedDictionary<uint, string>.Enumerator olditStr = itStr2;
-                    //            //_client.GetLogger().Debug ("Removing file '%s' from CSheetId because the file not exists", (*olditStr).second.c_str ());
-                    //            tempMap.Remove(olditStr);
-                    //            removednbfiles++;
-                    //        }
-                    //    }
-                    //
-                    //    _client.GetLogger().Info("SHEETID: Removed %d files on %d from CSheetId because these files don't exist", removednbfiles, nbfiles);
-                }
+                    uint removednbfiles = 0;
+                    var nbfiles = (uint)tempMap.Count;
 
-                {
-                    // Convert the map to one big string and 1 static map (id to name)
-                    // Get the number and size of all strings
-                    //var tempVec = new List<string>(); // Used to initialise the first map
-                    //var nSize = 0;
-                    //
-                    //var nNb = 0;
-                    //foreach (var it in tempMap)
-                    //{
-                    //    nSize += it.Value.Length + 1;
-                    //    nNb++;
-                    //}
+                    // now we remove all files that not available
+                    var toRemove = new List<uint>();
 
-                    // Make the big string (composed of all strings) and a vector referencing each string
-                    //tempVec.Resize(nNb);
-
-                    //_AllStrings.Ptr = new char[nSize];
-                    //it = tempMap.GetEnumerator();
-                    //nSize = 0;
-                    //nNb = 0;
-                    //while (it.MoveNext())
-                    //{
-                    //    tempVec[nNb].Ptr = _AllStrings.Ptr + nSize;
-                    //    _AllStrings.Ptr + nSize = it.Current.Value.c_str();
-                    //    toLowerAscii(_AllStrings.Ptr + nSize);
-                    //    nSize += (uint)it.Current.Value.Length + 1;
-                    //    nNb++;
-                    //}
-
-                    // Finally build the static map (id to name)
-                    //_sheetIdToName.reserve(tempVec.Count);
-
-                    var nNb = 0;
-                    foreach (var it2 in tempMap)
+                    foreach (var (key, value) in tempMap)
                     {
-                        _sheetIdToName.Add(it2.Key, it2.Value/*tempVec[nNb]*/);
-
-                        nNb++;
+                        if (!File.Exists(value))
+                            toRemove.Add(key);
                     }
 
-                    // The vector of all small string is not needed anymore we have all the info in
-                    // the static map and with the pointer AllStrings referencing the beginning.
+                    foreach (var olditStr in toRemove)
+                    {
+                        //_client.GetLogger().Debug ("Removing file '%s' from CSheetId because the file not exists", (*olditStr).second.c_str ());
+                        tempMap.Remove(olditStr);
+                        removednbfiles++;
+                    }
+
+                    _client.GetLogger().Debug($"SHEETID: Removed {removednbfiles} files on {nbfiles} from CSheetId because these files don't exist");
                 }
 
+                // Build the static map (id to name)
+                foreach (var (key, value) in tempMap)
                 {
-                    // Build the invert map (Name to Id) & file extension vector
-                    var nSize = _sheetIdToName.Count;
-                    _sheetNameToId = new Dictionary<string, uint>(nSize);
+                    _sheetIdToName.Add(key, value);
+                }
 
-                    foreach (var itStr in _sheetIdToName)
+                // Build the invert map (Name to Id) & file extension vector
+                var nSize = _sheetIdToName.Count;
+                _sheetNameToId = new Dictionary<string, uint>(nSize);
+
+                foreach (var (key, value) in _sheetIdToName)
+                {
+                    // add entry to the inverse map
+                    _sheetNameToId.Add(value, key);
+
+                    // work out the type value for this entry in the map
+                    var sheetId = SheetId(key);
+
+                    var type = sheetId.Type;
+
+                    // check whether we need to add an entry to the file extensions vector
+                    if (type < _fileExtensions.Length && _fileExtensions[type] != null)
                     {
-                        // add entry to the inverse map
-                        _sheetNameToId.Add(itStr.Value, itStr.Key);
-
-                        // work out the type value for this entry in the map
-                        //var sheetId = new SheetId(this) {Id = itStr.Key};
-
-                        //uint type = sheetId.IdInfos.Type;
-                        //
-                        //// check whether we need to add an entry to the file extensions vector
-                        //if (_fileExtensions[type].empty())
-                        //{
-                        //    // find the file extension part of the given file name
-                        //    _fileExtensions[type] = toLowerAscii(CFile.getExtension(itStr.second.Ptr));
-                        //}
+                        // find the file extension part of the given file name
+                        _fileExtensions[type] = Path.GetExtension(value)?[1..];
                     }
                 }
             }
             else
             {
-                _client.GetLogger().Error("SheetIdManager: Can't open the file sheet_id.bin");
+                _client.GetLogger().Error($"SheetIdManager: Can't open the file {path}");
             }
 
             _client.GetLogger().Debug($"Finished loading sheet_id.bin: {_sheetIdToName.Count} entries read");
@@ -255,60 +260,15 @@ namespace Client.Sheet
         /// </summary>
         internal SheetId BuildSheetId(string sheetName)
         {
-            var ret = new SheetId();
+            var ret = new SheetId(this);
 
             Debug.Assert(_initialised);
 
-            //// When no sheet_id.bin is loaded, use dynamically assigned IDs.
-            //if (_dontHaveSheetKnowledge)
-            //{
-            //    string sheetNameLc = sheetName.ToLower();
-            //
-            //    SortedDictionary<string, uint>.Enumerator it = _DevSheetNameToId.find(sheetNameLc);
-            //    if (it == _DevSheetNameToId.end())
-            //    {
-            //        // Create a new dynamic sheet ID.
-            //        // nldebug("SHEETID: Creating a dynamic sheet id for '%s'", sheetName.c_str());
-            //
-            //        string sheetType = Path.GetExtension(sheetNameLc);
-            //        sheetName = Path.GetFileNameWithoutExtension(sheetNameLc);
-            //
-            //        SortedDictionary<string, uint>.Enumerator tit = _DevTypeNameToId.find(sheetType);
-            //
-            //        uint typeId;
-            //
-            //        if (tit == _DevTypeNameToId.end())
-            //        {
-            //            _FileExtensions.push_back(sheetType);
-            //            _DevSheetIdToName.push_back(new List<string>());
-            //            typeId = (uint)_FileExtensions.size() - 1;
-            //            _DevTypeNameToId[sheetType] = typeId;
-            //            string unknownNewType = "unknown." + sheetType;
-            //            _DevSheetIdToName[typeId].push_back(unknownNewType);
-            //            _Id.IdInfos.Type = typeId;
-            //            _Id.IdInfos.Id = _DevSheetIdToName[typeId].size() - 1;
-            //            _DevSheetNameToId[unknownNewType] = _Id.Id;
-            //            if (sheetName == "unknown")
-            //            {
-            //                return ret; // Return with the unknown sheet id of this type
-            //            }
-            //        }
-            //        else
-            //        {
-            //            ret._type = tit.Value;
-            //        }
-            //
-            //        // Add a new sheet name to the type
-            //        _DevSheetIdToName[typeId].Add(sheetNameLc);
-            //        _Id.IdInfos.Id = _DevSheetIdToName[typeId].size() - 1;
-            //        // nldebug("SHEETID: Type %i, id %i, sheetid %i", _Id.IdInfos.Type, _Id.IdInfos.Id, _Id.Id);
-            //        _DevSheetNameToId[sheetNameLc] = _Id.Id;
-            //        return ret;
-            //    }
-            //
-            //    ret._id = it.Value;
-            //    return ret;
-            //}
+            // When no sheet_id.bin is loaded, use dynamically assigned IDs.
+            if (_dontHaveSheetKnowledge)
+            {
+                throw new NotImplementedException();
+            }
 
             // try looking up the sheet name in _SheetNameToId
             if (_sheetNameToId.ContainsKey(sheetName.ToLower()))
@@ -321,17 +281,16 @@ namespace Client.Sheet
                 return ret;
             }
 
-            // failed to find the sheet name in the sheetname map so see if the string is numeric
-            if (sheetName[0] == '#' && sheetName.Length > 1)
-            {
-                if (uint.TryParse(sheetName[1..], out var numericId))
-                {
-                    ret._id = numericId;
-                    return ret;
-                }
-            }
+            // failed to find the sheet name in the sheet name map so see if the string is numeric
+            if (sheetName[0] != '#' || sheetName.Length <= 1)
+                return null;
 
-            return null;
+            if (!uint.TryParse(sheetName[1..], out var numericId))
+                return null;
+
+            ret._id = numericId;
+
+            return ret;
         }
     }
 }

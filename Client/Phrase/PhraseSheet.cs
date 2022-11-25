@@ -40,12 +40,14 @@ namespace Client.Phrase
         // </summary>
         public bool ShowInApOnlyIfLearnt;
 
+        private SheetIdFactory _sheetIdFactory;
+
         /// <summary>
         /// Constructor
         /// </summary>
-        public PhraseSheet(/*SheetIdFactory sheetIdFactory*/) : base(/*sheetIdFactory*/)
+        public PhraseSheet(SheetIdFactory sheetIdFactory) : base(sheetIdFactory)
         {
-            //_sheetIdFactory = sheetIdFactory;
+            _sheetIdFactory = sheetIdFactory;
             _type = SheetType.SPHRASE;
             Castable = true;
             ShowInActionProgression = true;
@@ -65,7 +67,7 @@ namespace Client.Phrase
 
             for (var i = 0; i < len; i++)
             {
-                var value = new SheetId();
+                var value = new SheetId(_sheetIdFactory);
                 value.Serial(s);
                 Bricks[i] = value;
             }
@@ -87,7 +89,7 @@ namespace Client.Phrase
 
             for (uint i = 0; i < Bricks.Length; i++)
             {
-                if (Bricks[i] == SheetId.Unknown)
+                if (Bricks[i] == _sheetIdFactory.Unknown)
                 {
                     return false;
                 }
@@ -104,7 +106,7 @@ namespace Client.Phrase
 
             for (var i = 0; i < len; i++)
             {
-                var value = new SheetId();
+                var value = new SheetId(_sheetIdFactory);
                 value.Serial(s);
                 Bricks[i] = value;
             }

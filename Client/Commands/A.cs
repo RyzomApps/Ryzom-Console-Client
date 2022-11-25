@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -27,10 +26,7 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            if (args.Length == 0)
-            {
-                return "Please specify an admin command.";
-            }
+            if (args.Length == 0) return "Please specify an admin command.";
 
             // generate the command
             var onTarget = false;
@@ -49,11 +45,16 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
+            {
                 return $"Unknown message named '{msgName}'.";
+            }
 
             return "";
         }
 
-        public override IEnumerable<string> GetCmdAliases() { return new string[] { }; }
+        public override IEnumerable<string> GetCmdAliases()
+        {
+            return new string[] { };
+        }
     }
 }

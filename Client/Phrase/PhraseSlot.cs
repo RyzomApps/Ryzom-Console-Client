@@ -27,14 +27,13 @@ namespace Client.Phrase
         /// </summary>
         public static PhraseSlot Serial(BitMemoryStream impulse, SheetIdFactory sheetIdFactory)
         {
-            var ret = new PhraseSlot { Phrase = PhraseCom.Serial(impulse) };
-
-            impulse.Serial(ref ret.KnownSlot); // 2
+            var ret = new PhraseSlot { Phrase = PhraseCom.Serial(impulse, sheetIdFactory) };
+            impulse.Serial(ref ret.KnownSlot);
 
             uint sheetid = 0;
             impulse.Serial(ref sheetid);
 
-            ret.PhraseSheetId = sheetIdFactory.SheetId(sheetid); // 124195 - 35 4** - 0x0000022087057e1f
+            ret.PhraseSheetId = sheetIdFactory.SheetId(sheetid);
 
             return ret;
         }

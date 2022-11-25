@@ -60,5 +60,7 @@ namespace Client.Forage
             s.Serial(out Knowledge);
             s.SerialCont(out _icons);
         }
+
+        public ForageSourceSheet(SheetIdFactory sheetIdFactory) : base(sheetIdFactory) { }
     }
 }

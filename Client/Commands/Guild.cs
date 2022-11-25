@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using API;
 using API.Chat;
 using API.Commands;
-using Client.Chat;
 
 namespace Client.Commands
 {
@@ -13,11 +12,12 @@ namespace Client.Commands
 
         public override string CmdUsage => "<text>";
 
-        public override string CmdDesc => "With this command a message is sent to the guild channel, visible to all who are in the same guild as you.";
+        public override string CmdDesc =>
+            "With this command a message is sent to the guild channel, visible to all who are in the same guild as you.";
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "g", "gu" };
+            return new[] {"g", "gu"};
         }
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)

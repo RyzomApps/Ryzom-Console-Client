@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -22,14 +21,16 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            if (args.Length != 1) return "";
+            if (args.Length != 1)
+                return "Please specify a parameter.";
 
-            if (!ushort.TryParse(args[0], out var index)) return "";
+            if (!ushort.TryParse(args[0], out var index))
+                return "";
 
             const string msgName = "GUILD:TELEPORT";
             var out2 = new BitMemoryStream();
 
-            if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2)) 
+            if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
                 return $"Unknown message named '{msgName}'.";
 
             out2.Serial(ref index);

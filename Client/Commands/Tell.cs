@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -28,7 +27,7 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length < 2)
-                return "";
+                return "Please specify more parameters.";
 
             var receiver = args[0];
             var str = string.Join(" ", args[1..]);
@@ -47,7 +46,9 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(bms);
             }
             else
+            {
                 return $"Unknown message named '{msgName}'.";
+            }
 
             return "";
         }

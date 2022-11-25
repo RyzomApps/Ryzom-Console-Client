@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using API.Client;
@@ -38,7 +39,7 @@ namespace Client.Client
         private readonly Dictionary<uint, StringWaiter> _stringsWaiters = new Dictionary<uint, StringWaiter>();
 
         /// <summary>
-        /// String waiting the dyn string value from the server.
+        /// String waiting the dynamic string value from the server.
         /// </summary>
         private readonly Dictionary<uint, StringWaiter> _dynStringsWaiters = new Dictionary<uint, StringWaiter>();
 
@@ -48,9 +49,11 @@ namespace Client.Client
         private readonly Dictionary<uint, Action<uint, string>> _stringsCallbacks = new Dictionary<uint, Action<uint, string>>();
 
         /// <summary>
-        /// Callback for dyn string value from the server
+        /// Callback for dynamic string value from the server
         /// </summary>
         private readonly Dictionary<uint, StringWaitCallback> _dynStringsCallbacks = new Dictionary<uint, StringWaitCallback>();
+
+        SortedDictionary<string, SpecialWord> _SpecItem_TempMap;
 
         private readonly Dictionary<string, string> _dynStrings = new Dictionary<string, string>();
 
@@ -395,130 +398,130 @@ namespace Client.Client
             switch (dynInfo.Status)
             {
                 case StringStatus.Serialized:
-                {
-                    // try to retreive all string parameter to build the string.
-                    var temp = new StringBuilder();
-
-                    var move = 0;
-
-                    foreach (var param in dynInfo.Params)
                     {
-                        switch (param.Type)
+                        // try to retreive all string parameter to build the string.
+                        var temp = new StringBuilder();
+
+                        var move = 0;
+
+                        foreach (var param in dynInfo.Params)
                         {
-                            case ParamType.StringID:
+                            switch (param.Type)
                             {
-                                if (!GetString(param.StringId, out string str, ((RyzomClient)_client).GetNetworkManager()))
-                                    return false;
-
-                                var p1 = str.IndexOf('[');
-
-                                if (p1 != -1)
-                                {
-                                    // TODO GetLocalizedName 
-                                    //str = str.Substring(0, p1) + StringManager.GetLocalizedName(str.Substring(p1));
-                                }
-
-                                // If the string is a player name, we may have to remove the shard name (if the string looks like a player name)
-                                if (str.Length != 0 && networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length > 0)
-                                {
-                                    // fast pre-test
-                                    if (str[^1] == ')')
+                                case ParamType.StringID:
                                     {
-                                        // the player name must be at least bigger than the string with ()
-                                        if (str.Length > networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length)
+                                        if (!GetString(param.StringId, out string str, ((RyzomClient)_client).GetNetworkManager()))
+                                            return false;
+
+                                        var p1 = str.IndexOf('[');
+
+                                        if (p1 != -1)
                                         {
-                                            // If the shard name is the same as the player home shard name, remove it
-                                            var len = networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length;
-                                            var start = str.Length - len;
-
-                                            // Unicode case-insensitive compare two same-sized strings
-                                            // compare 2 ucstring s0 and s1, without regard to case. give start and size for sequence p0 // OLD
-                                            // const ucstring &s0, uint p0, uint n0, const ucstring &s1
-                                            // return -1 if s1>s0, 1 if s0>s1, or 0 if equals
-                                            if(string.Compare(str.Substring(start, len), networkManager.PlayerSelectedHomeShardNameWithParenthesis, StringComparison.OrdinalIgnoreCase) == 0)
-                                            	str = str[start..];
+                                            // TODO GetLocalizedName 
+                                            //str = str.Substring(0, p1) + StringManager.GetLocalizedName(str.Substring(p1));
                                         }
+
+                                        // If the string is a player name, we may have to remove the shard name (if the string looks like a player name)
+                                        if (str.Length != 0 && networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length > 0)
+                                        {
+                                            // fast pre-test
+                                            if (str[^1] == ')')
+                                            {
+                                                // the player name must be at least bigger than the string with ()
+                                                if (str.Length > networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length)
+                                                {
+                                                    // If the shard name is the same as the player home shard name, remove it
+                                                    var len = networkManager.PlayerSelectedHomeShardNameWithParenthesis.Length;
+                                                    var start = str.Length - len;
+
+                                                    // Unicode case-insensitive compare two same-sized strings
+                                                    // compare 2 ucstring s0 and s1, without regard to case. give start and size for sequence p0 // OLD
+                                                    // const ucstring &s0, uint p0, uint n0, const ucstring &s1
+                                                    // return -1 if s1>s0, 1 if s0>s1, or 0 if equals
+                                                    if (string.Compare(str.Substring(start, len), networkManager.PlayerSelectedHomeShardNameWithParenthesis, StringComparison.OrdinalIgnoreCase) == 0)
+                                                        str = str[start..];
+                                                }
+                                            }
+                                        }
+
+                                        // If the string contains a title, then remove it
+                                        var pos = str.IndexOf('$');
+
+                                        if (str.Length > 0 && pos != -1)
+                                        {
+                                            str = EntityHelper.RemoveTitleFromName(str);
+                                        }
+
+                                        // if the string contains a special rename of creature, remove it
+                                        if (str.Length > 2 && str[0] == '<' && str[1] == '#')
+                                        {
+                                            str = char.ToUpper(str[2]) + str[3..];
+                                        }
+
+                                        // append this string
+                                        temp.Append(dynInfo.String[move..param.ReplacementPoint]);
+                                        temp.Append(str);
+                                        move = param.ReplacementPoint + 2;
                                     }
-                                }
+                                    break;
 
-                                // If the string contains a title, then remove it
-                                var pos = str.IndexOf('$');
+                                case ParamType.Integer:
+                                    {
+                                        var str = $"{param.Integer}";
+                                        temp.Append(dynInfo.String[move..param.ReplacementPoint]);
+                                        temp.Append(str);
+                                        move = param.ReplacementPoint + 2;
+                                    }
+                                    break;
 
-                                if (str.Length > 0 && pos != -1)
-                                {
-                                    str = EntityHelper.RemoveTitleFromName(str);
-                                }
+                                case ParamType.Time:
+                                    {
+                                        var str = $"{param.Time}";
+                                        temp.Append(dynInfo.String[move..param.ReplacementPoint]);
+                                        temp.Append(str);
+                                        move = param.ReplacementPoint + 2;
+                                    }
+                                    break;
 
-                                // if the string contains a special rename of creature, remove it
-                                if (str.Length > 2 && str[0] == '<' && str[1] == '#')
-                                {
-                                    str = char.ToUpper(str[2]) + str[3..];
-                                }
+                                case ParamType.Money:
+                                    {
+                                        var str = $"{param.Money}";
+                                        temp.Append(dynInfo.String[move..param.ReplacementPoint]);
+                                        temp.Append(str);
+                                        move = param.ReplacementPoint + 2;
+                                    }
+                                    break;
 
-                                // append this string
-                                temp.Append(dynInfo.String[move..param.ReplacementPoint]);
-                                temp.Append(str);
-                                move = param.ReplacementPoint + 2;
+                                case ParamType.DynStringID:
+                                    {
+                                        if (!GetDynString(param.DynStringId, out string dynStr, networkManager))
+                                            return false;
+
+                                        var str = $"{dynStr}";
+                                        temp.Append(dynInfo.String[move..param.ReplacementPoint]);
+                                        temp.Append(str);
+                                        move = param.ReplacementPoint + 2;
+                                    }
+                                    break;
+
+                                default:
+                                    _client.GetLogger().Warn("Unknown parameter type.");
+                                    break;
                             }
-                                break;
-
-                            case ParamType.Integer:
-                            {
-                                var str = $"{param.Integer}";
-                                temp.Append(dynInfo.String[move..param.ReplacementPoint]);
-                                temp.Append(str);
-                                move = param.ReplacementPoint + 2;
-                            }
-                                break;
-
-                            case ParamType.Time:
-                            {
-                                var str = $"{param.Time}";
-                                temp.Append(dynInfo.String[move..param.ReplacementPoint]);
-                                temp.Append(str);
-                                move = param.ReplacementPoint + 2;
-                            }
-                                break;
-
-                            case ParamType.Money:
-                            {
-                                var str = $"{param.Money}";
-                                temp.Append(dynInfo.String[move..param.ReplacementPoint]);
-                                temp.Append(str);
-                                move = param.ReplacementPoint + 2;
-                            }
-                                break;
-
-                            case ParamType.DynStringID:
-                            {
-                                if (!GetDynString(param.DynStringId, out string dynStr, networkManager))
-                                    return false;
-
-                                var str = $"{dynStr}";
-                                temp.Append(dynInfo.String[move..param.ReplacementPoint]);
-                                temp.Append(str);
-                                move = param.ReplacementPoint + 2;
-                            }
-                                break;
-
-                            default:
-                                _client.GetLogger().Warn("Unknown parameter type.");
-                                break;
                         }
+
+                        // append the rest of the string
+                        temp.Append(dynInfo.String[move..]);
+
+                        // apply any 'delete' character in the string and replace double '%'
+                        temp = temp.Replace("" + (char)8, "");
+                        temp = temp.Replace("%%", "");
+
+                        dynInfo.Status = StringStatus.Complete;
+                        dynInfo.Message = null;
+                        dynInfo.String = temp.ToString();
+                        return true;
                     }
-
-                    // append the rest of the string
-                    temp.Append(dynInfo.String[move..]);
-
-                    // apply any 'delete' character in the string and replace double '%'
-                    temp = temp.Replace("" + (char)8, "");
-                    temp = temp.Replace("%%", "");
-                    
-                    dynInfo.Status = StringStatus.Complete;
-                    dynInfo.Message = null;
-                    dynInfo.String = temp.ToString();
-                    return true;
-                }
 
                 case StringStatus.Complete:
                     return true;
@@ -730,15 +733,47 @@ namespace Client.Client
             }
         }
 
+        /// <summary>
+        /// Get the Localized Name of the SPhrase.
+        /// </summary>
         public string GetSPhraseLocalizedName(SheetId id)
         {
             return GetSpecialWord(id.ToString());
         }
 
-        internal string GetItemLocalizedName(SheetId id)
+        /// <summary>
+        /// Get the Localized name
+        /// </summary>
+        public string GetLocalizedName(in string uctext)
         {
-            return GetSpecialWord(id.ToString());
+            var text = uctext;
+            var defaultText = "";
+
+            if (text[0] != '[') 
+                return uctext;
+
+            var textLocalizations = text[1..].Split('[');
+
+            if (textLocalizations.Length <= 0) 
+                return !string.IsNullOrEmpty(defaultText) ? defaultText : uctext;
+
+            for (uint i = 0; i < textLocalizations.Length; i++)
+            {
+                if (textLocalizations[i].Substring(0, 3) == CultureInfo.CurrentCulture.TwoLetterISOLanguageName + "]")
+                {
+                    defaultText = textLocalizations[i].Substring(3);
+                    return defaultText;
+                }
+
+                if (textLocalizations[i].Substring(0, 3) == "wk]")
+                {
+                    defaultText = textLocalizations[i].Substring(3);
+                }
+            }
+
+            return !string.IsNullOrEmpty(defaultText) ? defaultText : uctext;
         }
+
 
         public string GetSpecialWord(string label, bool women = false)
         {
@@ -746,11 +781,11 @@ namespace Client.Client
             {
                 return "";
             }
-            
-            //if (label[0] == '#')
-            //{
-            //    return GetLocalizedName(label[1..]);
-            //}
+
+            if (label[0] == '#')
+            {
+                return GetLocalizedName(label[1..]);
+            }
 
             // avoid case problems
             var lwrLabel = label.ToLower();

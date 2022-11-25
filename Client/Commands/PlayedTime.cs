@@ -24,7 +24,8 @@ namespace Client.Commands
 
             var msg = "You played with this character for %time.";
 
-            var secondsHumanReadable = TimeSpan.FromSeconds(ryzomClient.GetNetworkManager().CharPlayedTime).ToHumanReadableString();
+            var secondsHumanReadable = TimeSpan.FromSeconds(ryzomClient.GetNetworkManager().CharPlayedTime)
+                .ToHumanReadableString();
 
             msg = msg.Replace("%time", secondsHumanReadable);
 

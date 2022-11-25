@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using API;
 using API.Commands;
 using API.Entity;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -25,15 +24,12 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length < 1)
-                return "";
+                return "Please specify a parameter";
 
             var emotePhrase = "";
             byte behavToSend = 60; //EMOTE_BEGIN <- first emote
 
-            if (args.Length != 0)
-            {
-                emotePhrase = string.Join(" ", args);
-            }
+            if (args.Length != 0) emotePhrase = string.Join(" ", args);
 
             // Create the message and send.
             const string msgName = "COMMAND:CUSTOM_EMOTE";
@@ -41,7 +37,8 @@ namespace Client.Commands
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                var displayName = $"{EntityHelper.RemoveTitleAndShardFromName(ryzomClient.GetNetworkManager().PlayerSelectedHomeShardName)}";
+                var displayName =
+                    $"{EntityHelper.RemoveTitleAndShardFromName(ryzomClient.GetNetworkManager().PlayerSelectedHomeShardName)}";
                 emotePhrase = $"&EMT&{displayName} {emotePhrase}";
 
                 out2.Serial(ref behavToSend);
@@ -49,14 +46,16 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
+            {
                 return $"Unknown message named '{msgName}'.";
+            }
 
             return "";
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "emote" };
+            return new[] {"emote"};
         }
     }
 }

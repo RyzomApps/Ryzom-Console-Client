@@ -1,7 +1,7 @@
-﻿using API;
-using API.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using API;
+using API.Commands;
 
 namespace Client.Commands
 {
@@ -22,18 +22,12 @@ namespace Client.Commands
 
             var entityName = "";
 
-            if (args.Length != 0)
-            {
-                entityName = string.Join(" ", args);
-            }
+            if (args.Length != 0) entityName = string.Join(" ", args);
 
             // Try to get the entity with complete match first
             var entity = ryzomClient.GetNetworkManager().GetEntityManager().GetEntityByName(entityName, false, true);
 
-            if (entity == null)
-            {
-                return $"Could not find '{entityName}'.";
-            }
+            if (entity == null) return $"Could not find '{entityName}'.";
 
             ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.Selection(entity.Slot());
             ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.SetTargetSlot(entity.Slot());
@@ -43,7 +37,7 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "tar" };
+            return new[] {"tar"};
         }
     }
 }

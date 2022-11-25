@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -30,7 +29,8 @@ namespace Client.Commands
 
             var gmotd = "";
 
-            if (args.Length != 0) gmotd = args[0];
+            if (args.Length != 0)
+                gmotd = args[0];
 
             for (uint i = 1; i < args.Length; ++i)
             {

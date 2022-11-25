@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -25,10 +24,7 @@ namespace Client.Commands
 
             var customText = "";
 
-            if (args.Length != 0)
-            {
-                customText = string.Join(" ", args);
-            }
+            if (args.Length != 0) customText = string.Join(" ", args);
 
             // send afk state
             var msgName = "COMMAND:AFK";
@@ -40,7 +36,9 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
+            {
                 return $"Unknown message named '{msgName}'.";
+            }
 
             // custom afk txt
             var outTxt = new BitMemoryStream();

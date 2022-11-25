@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -23,7 +22,7 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "";
+                return "Please specify a parameter.";
 
             // send command
             const string msgName = "COMMAND:AUTOPACT";
@@ -37,11 +36,16 @@ namespace Client.Commands
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
+            {
                 return $"Unknown message named '{msgName}'.";
+            }
 
             return "";
         }
 
-        public override IEnumerable<string> GetCmdAliases() { return new string[] { }; }
+        public override IEnumerable<string> GetCmdAliases()
+        {
+            return new string[] { };
+        }
     }
 }

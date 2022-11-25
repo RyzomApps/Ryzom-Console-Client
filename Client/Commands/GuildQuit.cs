@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -22,7 +21,8 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            if (args.Length != 0) return "";
+            if (args.Length != 0)
+                return "Please specify no parameters.";
 
             const string msgName = "GUILD:QUIT";
             var out2 = new BitMemoryStream();

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -13,7 +12,8 @@ namespace Client.Commands
 
         public override string CmdUsage => "<playerName> <counter>";
 
-        public override string CmdDesc => "Client (lead, ho, of) wants to kick member specifying its index. Last parameter is the counter.";
+        public override string CmdDesc =>
+            "Client (lead, ho, of) wants to kick member specifying its index. Last parameter is the counter.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -22,9 +22,10 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            if (args.Length != 1) return "";
+            if (args.Length != 1)
+                return "Please specify a parameter.";
 
-            const string msgName = "GUILD:KICK_MEMBER"; 
+            const string msgName = "GUILD:KICK_MEMBER";
             // TODO GUKick right arguments
             var out2 = new BitMemoryStream();
 

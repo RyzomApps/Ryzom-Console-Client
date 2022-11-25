@@ -163,7 +163,7 @@ namespace Client.Stream
             }
         }
 
-        public void SerialCont(out SortedDictionary<SheetId, SheetManagerEntry> container, SheetIdFactory sheetIdFactory, SheetManager sheetManager)
+        public void SerialCont(out SortedDictionary<SheetId, SheetManagerEntry> container, RyzomClient client)
         {
             Serial(out uint len);
 
@@ -173,11 +173,11 @@ namespace Client.Stream
             {
                 Serial(out uint sheetId);
 
-                var sme = new SheetManagerEntry(sheetManager);
+                var sme = new SheetManagerEntry(client);
 
                 sme.Serial(this);
 
-                container.Add(sheetIdFactory.SheetId(sheetId), sme);
+                container.Add(client.GetSheetIdFactory().SheetId(sheetId), sme);
             }
         }
 

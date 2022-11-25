@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using API;
 using API.Chat;
 using API.Commands;
-using Client.Chat;
 
 namespace Client.Commands
 {
@@ -13,7 +12,8 @@ namespace Client.Commands
 
         public override string CmdUsage => "[text]";
 
-        public override string CmdDesc => "This command sends a message visible to all who are in the same region as you at the time.";
+        public override string CmdDesc =>
+            "This command sends a message visible to all who are in the same region as you at the time.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -36,7 +36,7 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "r", "re" };
+            return new[] {"r", "re"};
         }
     }
 }

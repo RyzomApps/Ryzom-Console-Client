@@ -12,7 +12,8 @@ namespace Client.Commands
 
         public override string CmdUsage => "[text]";
 
-        public override string CmdDesc => "Use the around channel for messages. Messages sent normally in the around channel have a 25m range.";
+        public override string CmdDesc =>
+            "Use the around channel for messages. Messages sent normally in the around channel have a 25m range.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -35,7 +36,7 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "s" };
+            return new[] {"s"};
         }
     }
 }

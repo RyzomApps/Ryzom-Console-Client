@@ -6,9 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System.Diagnostics;
 using Client.Client;
-using Client.Network;
 using Client.Sheet;
 using Client.Stream;
 
@@ -73,7 +71,7 @@ namespace Client.Messages
         internal void SetupFromCharacterSummary(CharacterSummary cs, SheetIdFactory sheetIdFactory)
         {
             Slot = 1;
-            SheetId = SheetId.Unknown;
+            SheetId = sheetIdFactory.Unknown;
             Mainland = 101; //cs.Mainland; TODO remove tests
             Name = cs.Name;
             People = 3; // Zorai //(byte)cs.People; TODO remove tests

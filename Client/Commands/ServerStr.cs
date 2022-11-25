@@ -23,10 +23,10 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            if (args.Length != 1) 
+            if (args.Length != 1)
                 return "Usage: " + CmdUsage;
 
-            var dynId = (uint)Convert.ToInt32(args[0]);
+            var dynId = (uint) Convert.ToInt32(args[0]);
 
             var networkManager = ryzomClient.GetNetworkManager();
             ryzomClient.GetStringManager().GetString(dynId, out var result, networkManager);

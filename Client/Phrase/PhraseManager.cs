@@ -97,7 +97,7 @@ namespace Client.Phrase
 
         private bool _initInGameDone;
 
-        /// <summary> The number of entries setuped to not 0</summary>
+        /// <summary>The number of entries that are not set to 0</summary>
         private uint _lastBookNumDbFill;
 
         /// <summary>For phrase compatibility with enchant weapon special power</summary>
@@ -109,10 +109,12 @@ namespace Client.Phrase
         /// <summary>map each phrase to its sheet id</summary>
         private readonly Dictionary<PhraseCom, int> _phraseToSheet = new Dictionary<PhraseCom, int>();
 
-        /// <summary>extra client data </summary>
+        /// <summary>extra client data</summary>
         private readonly List<PhraseClient> _phraseClient = new List<PhraseClient>();
 
         private readonly List<MemoryLine> _memories = new List<MemoryLine>();
+
+        //static bool _registerClassDone;
 
         /// <summary>
         /// Constructor
@@ -140,8 +142,6 @@ namespace Client.Phrase
             // TODO Reset implementation
         }
 
-        //static bool _registerClassDone;
-
         /// <summary>
         /// To call when The DB inGame is setup. Else, no write is made to it before. (NB: DB is updated here)
         /// </summary>
@@ -156,7 +156,7 @@ namespace Client.Phrase
 
             _initInGameDone = true;
 
-            // Init Database values.
+            // Initialize Database values
             uint i;
             _bookDbLeaves = new DatabaseNodeLeaf[PHRASE_MAX_BOOK_SLOT];
 
@@ -212,14 +212,14 @@ namespace Client.Phrase
                 }
             }
 
-            // init the UI Next Execute slot
+            // Initialize the UI Next Execute slot
             var node2 = _databaseManager.GetDbProp(PHRASE_DB_EXECUTE_NEXT);
             node2.SetValue32(0);
 
             node2 = _databaseManager.GetDbProp(PHRASE_DB_EXECUTE_NEXT_IS_CYCLIC);
             node2.SetValue32(0);
 
-            // Init BotChat leaves
+            // Initialize BotChat leaves
             _botChatPhraseSheetLeaves = new DatabaseNodeLeaf[PHRASE_MAX_BOTCHAT_SLOT];
             _botChatPhrasePriceLeaves = new DatabaseNodeLeaf[PHRASE_MAX_BOTCHAT_SLOT];
 
@@ -332,7 +332,7 @@ namespace Client.Phrase
         /// </summary>
         internal void UpdateBookDb()
         {
-            // If DB not inited, no-op
+            // If DB not initialized, no-op
             if (!_initInGameDone)
             {
                 return;
@@ -382,7 +382,7 @@ namespace Client.Phrase
         }
 
         /// <summary>
-        /// true if the phrase is "compatbile" with _BookSkillFitler
+        /// true if the phrase is "compatible" with _BookSkillFitler
         /// </summary>
         private static bool MatchBookSkillFilter(PhraseCom value)
         {

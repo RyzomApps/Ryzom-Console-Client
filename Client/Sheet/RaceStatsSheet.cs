@@ -105,6 +105,8 @@ namespace Client.Sheet
         {
             throw new NotImplementedException();
         }
+
+        public RaceStatsSheet(SheetIdFactory sheetIdFactory) : base(sheetIdFactory) { }
     }
 
     public class GenderInfo

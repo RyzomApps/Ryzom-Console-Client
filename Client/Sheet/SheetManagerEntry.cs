@@ -22,7 +22,7 @@ namespace Client.Sheet
     /// <date>2001</date>
     public class SheetManagerEntry
     {
-        private readonly SheetManager _sheetManager;
+        private readonly RyzomClient _client;
 
         /// <summary>
         /// The data which will be filled in readGeorges and serial
@@ -32,9 +32,9 @@ namespace Client.Sheet
         /// <summary>
         /// Constructor
         /// </summary>
-        public SheetManagerEntry(SheetManager sheetManager)
+        public SheetManagerEntry(RyzomClient client)
         {
-            _sheetManager = sheetManager;
+            _client = client;
         }
 
         /// <summary>
@@ -51,22 +51,22 @@ namespace Client.Sheet
             switch (type)
             {
                 case EntitySheet.SheetType.SBRICK:
-                    EntitySheet = new BrickSheet();
+                    EntitySheet = new BrickSheet(_client.GetSheetIdFactory());
                     InitSheet(EntitySheet, stream, type);
                     break;
 
                 case EntitySheet.SheetType.SPHRASE:
-                    EntitySheet = new PhraseSheet();
+                    EntitySheet = new PhraseSheet(_client.GetSheetIdFactory());
                     InitSheet(EntitySheet, stream, type);
                     break;
 
                 case EntitySheet.SheetType.FORAGE_SOURCE:
-                    EntitySheet = new ForageSourceSheet();
+                    EntitySheet = new ForageSourceSheet(_client.GetSheetIdFactory());
                     InitSheet(EntitySheet, stream, type);
                     break;
 
                 case EntitySheet.SheetType.RACE_STATS:
-                    EntitySheet = new RaceStatsSheet();
+                    EntitySheet = new RaceStatsSheet(_client.GetSheetIdFactory());
                     InitSheet(EntitySheet, stream, type);
                     break;
 
@@ -124,7 +124,7 @@ namespace Client.Sheet
                 sheet.Id.Serial(stream);
                 sheet.Serial(stream);
                 sheet.Type = type;
-                _sheetManager.ProcessSheet(sheet);
+                _client.GetSheetManager().ProcessSheet(sheet);
             }
         }
     }

@@ -624,7 +624,8 @@ namespace Client.Network
         private void ImpulsePhraseDownload(BitMemoryStream impulse)
         {
             // Read Known Phrases
-            // workaround for: impulse.serialCont(phrases);
+
+            #region workaround for: impulse.serialCont(phrases);
             var len = 0;
             impulse.Serial(ref len);
 
@@ -635,11 +636,11 @@ namespace Client.Network
                 var value = PhraseSlot.Serial(impulse, _sheetIdFactory);
                 phrases.Add(value);
             }
-            // end workaround
+            #endregion end workaround
 
             foreach (var phrase in phrases)
             {
-                if (phrase.PhraseSheetId != SheetId.Unknown)
+                if (phrase.PhraseSheetId != _sheetIdFactory.Unknown)
                 {
                     var phraseCom = new PhraseCom();
                     _phraseManager.BuildPhraseFromSheet(ref phraseCom, phrase.PhraseSheetId.AsInt());

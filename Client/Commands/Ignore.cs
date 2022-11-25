@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Commands
@@ -23,7 +22,8 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             // Check parameters.
-            if (args.Length < 1) return "";
+            if (args.Length != 1)
+                return "Please specify a name.";
 
             // NB: player names cannot have special characters
             var playerName = new string(args[0]);

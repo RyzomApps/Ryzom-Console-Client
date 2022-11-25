@@ -81,11 +81,11 @@ namespace Client.Sheet
         /// <summary>
         /// Constructor
         /// </summary>
-        protected EntitySheet(/*SheetIdFactory sheetIdFactory*/)
+        protected EntitySheet(SheetIdFactory sheetIdFactory)
         {
             //_sheetIdFactory = sheetIdFactory;
             _type = SheetType.UNKNOWN_SHEET_TYPE;
-            Id = new SheetId();
+            Id = new SheetId(sheetIdFactory);
         }
 
         /// <summary>

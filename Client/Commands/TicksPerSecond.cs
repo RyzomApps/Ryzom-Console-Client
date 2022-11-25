@@ -32,10 +32,7 @@ namespace Client.Commands
             var tps = handler.GetApiNetworkManager().GetTps();
             var tpsAvg = new string[tps.Length];
 
-            for (var i = 0; i < tps.Length; i++)
-            {
-                tpsAvg[i] = Format(tps[i]);
-            }
+            for (var i = 0; i < tps.Length; i++) tpsAvg[i] = Format(tps[i]);
 
             return ChatColor.GOLD + "TPS from last 1m, 5m, 15m: " + string.Join(", ", tpsAvg);
         }
@@ -44,8 +41,10 @@ namespace Client.Commands
         {
             var percentage = tps / RollingAverage.GameTps;
 
-            return (percentage > 0.9 ? ChatColor.GREEN : percentage > 0.8 ? ChatColor.YELLOW : ChatColor.RED) /*+ (percentage > 1.0 ? "*" : "")*/
-                + string.Format(CultureInfo.InvariantCulture, "{0:0.00}", /*Math.Min(*/Math.Round(tps * 100.0) / 100.0 /*, RollingAverage.GameTps)*/);
+            return (percentage > 0.9 ? ChatColor.GREEN :
+                       percentage > 0.8 ? ChatColor.YELLOW : ChatColor.RED) /*+ (percentage > 1.0 ? "*" : "")*/
+                   + string.Format(CultureInfo.InvariantCulture, "{0:0.00}", /*Math.Min(*/
+                       Math.Round(tps * 100.0) / 100.0 /*, RollingAverage.GameTps)*/);
         }
     }
 }
