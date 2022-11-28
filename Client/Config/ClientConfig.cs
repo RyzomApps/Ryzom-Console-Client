@@ -104,6 +104,10 @@ namespace Client.Config
         };
 
         // Other Settings
+
+        /// <summary>
+        /// If it is set to ' ', any input is considered a command.
+        /// </summary>
         public static char InternalCmdChar = '/';
 
         // Read : "ID", "R G B A MODE [FX]"
