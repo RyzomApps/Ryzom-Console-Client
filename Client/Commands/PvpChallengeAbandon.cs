@@ -12,7 +12,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "";
+        public override string CmdDesc => "Gcm Un_pvp_challenge";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

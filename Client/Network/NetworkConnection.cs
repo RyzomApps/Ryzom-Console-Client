@@ -1232,13 +1232,13 @@ namespace Client.Network
 
                 while (true)
                 {
-                    // Check if there is a new block to read - sizeof(TCLEntityId -> byte)
-                    if (msgin.GetPosInBit() + 8 * 8 > msgin.Length * 8)
+                    // Check if there is a new block to read - sizeof(TCLEntityId -> 1 bytes)
+                    if (msgin.GetPosInBit() + 4 * 8 > msgin.Length * 8)
                         return;
 
                     // Header
                     byte slot = 0;
-                    msgin.Serial(ref slot); // 8
+                    msgin.Serial(ref slot); // 1
 
                     uint associationBits = 0;
                     msgin.Serial(ref associationBits, 2); // 2
@@ -1259,10 +1259,13 @@ namespace Client.Network
 
                             var theChange = new PropertyChange(slot, (byte)PropertyType.RemoveOldEntity);
                             _changes.Add(theChange);
+
+                            if (slot == 1 || slot == 3 || slot == 7 || slot == 14 || slot == 29 || slot == 58 || slot == 117 || slot == 235 || slot == 255)
+                                _client.Log.Info($"Disassociating S{(ushort)slot}u (AB {associationBits}) L {loop}");
                         }
                         else
                         {
-                            _client.Log.Debug($"Cannot disassociate slot {(ushort)slot}u: sheet not received yet");
+                            _client.Log.Debug($"Cannot disassociate slot {(ushort)slot}u (AB {associationBits}): sheet not received yet");
                         }
                     }
 
@@ -1332,7 +1335,6 @@ namespace Client.Network
                         var thechange = new PropertyChange(slot, (byte)PropertyType.Position, timestamp)
                         {
                             PositionInfo = { PredictedInterval = 0, IsInterior = interior }
-
                         };
 
                         _changes.Add(thechange);

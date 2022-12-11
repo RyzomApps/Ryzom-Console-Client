@@ -204,6 +204,8 @@ namespace Client.Entity
         {
             _client.Plugins.OnEntityRemove(slot, warning);
 
+            _client.GetLogger().Debug($"EntityManager.Remove({slot}, {warning})");
+
             // TODO: Implementation
             _entities[slot] = null;
 

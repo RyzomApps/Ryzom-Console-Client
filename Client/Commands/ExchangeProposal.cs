@@ -6,21 +6,21 @@ using Client.Stream;
 
 namespace Client.Commands
 {
-    public class PvpChallengeAsk : CommandBase
+    public class ExchangeProposal : CommandBase
     {
-        public override string CmdName => "PvpChallengeAsk";
+        public override string CmdName => "ExchangeProposal";
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Gcm Pvp Challenge";
+        public override string CmdDesc => "GCM Exchange";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
             if (!(handler is RyzomClient ryzomClient))
                 throw new Exception("Command handler is not a Ryzom client.");
 
-            // Create the message for the server to execute a phrase.
-            const string msgName = "PVP_CHALLENGE:ASK";
+            // Game Specific Code
+            const string msgName = "EXCHANGE:PROPOSAL";
             var out2 = new BitMemoryStream();
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
