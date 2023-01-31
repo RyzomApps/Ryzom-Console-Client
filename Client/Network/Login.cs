@@ -118,14 +118,20 @@ namespace Client.Network
 
                     var r2PatchUrLs = parts[2].Split(' ');
 
-                    client.Cookie = currentCookie;
-                    client.FsAddr = fsAddr;
-                    client.RingMainURL = ringMainURL;
-                    client.FarTpUrlBase = farTpUrlBase;
-                    client.StartStat = startStat;
-                    client.R2ServerVersion = r2ServerVersion;
-                    client.R2BackupPatchURL = r2BackupPatchURL;
-                    client.R2PatchUrLs = r2PatchUrLs;
+                    client.SessionData = new SessionData
+                    {
+                        Cookie = currentCookie,
+                        FsAddr = fsAddr,
+                        RingMainURL = ringMainURL,
+                        FarTpUrlBase = farTpUrlBase,
+                        StartStat = startStat, // bool
+                        R2ServerVersion = r2ServerVersion,
+                        R2BackupPatchURL = r2BackupPatchURL,
+                        R2PatchUrLs = r2PatchUrLs // string[]
+                    };
+
+                    client.SessionData.Save("session_" + login + ".json");
+
                     break;
             }
         }

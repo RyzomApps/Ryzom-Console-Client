@@ -297,7 +297,10 @@ namespace Client.Entity
                 if (entity != null && entity.GetDisplayName().Contains(name, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
                 {
                     if (UserEntity == null)
+                    {
+                        _client.Log.Info($"Found entity '{name}' and user entity is null.");
                         return entity;
+                    }
 
                     // Try to get the closest
                     var distance = Vector3.Distance(entity.Pos, UserEntity.Pos);
@@ -306,6 +309,10 @@ namespace Client.Entity
                     {
                         minEntity = entity;
                         minDistance = distance;
+                    }
+                    else
+                    {
+                        _client.Log.Info($"Found entity '{name}' in a distance of {distance:0.0} m (User: {UserEntity.Pos} - Entity: {entity.Pos}).");
                     }
                 }
             }
