@@ -340,7 +340,9 @@ namespace Client.Entity
 
             for (var i = 1; i < nb; ++i)
             {
-                strTmp = _entities[i] == null ? $"// {i}\n" : $"\"{_entities[i].SheetId()}\",\t\"{_entities[i].Pos.X}\", \"{_entities[i].Pos.Y}\", \"{_entities[i].Pos.Z}\", \"{_entities[i].Front.X}\", \"{_entities[i].Front.Y}\", \"{_entities[i].Front.Z}\",\t// {i} {_entities[i].GetDisplayName()} {_entities[i].GetEntityType()}\n";
+                var sheet = _entities[i] != null ? _client.GetApiSheetIdFactory()?.SheetId(_entities[i].SheetId()) : null;
+
+                strTmp = _entities[i] == null ? $"// {i}\n" : "\"" + (sheet != null ? sheet.ToString() : _entities[i].SheetId().ToString()) + $"\",\t\"{_entities[i].Pos.X}\", \"{_entities[i].Pos.Y}\", \"{_entities[i].Pos.Z}\", \"{_entities[i].Front.X}\", \"{_entities[i].Front.Y}\", \"{_entities[i].Front.Z}\",\t// {i} {_entities[i].GetDisplayName()} {_entities[i].GetTitle()} {_entities[i].GetEntityType()}\n";
                 file.Write(strTmp);
             }
 

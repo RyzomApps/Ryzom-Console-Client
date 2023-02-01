@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics;
 using System.Numerics;
 using API.Entity;
+using Client.Client;
 using Client.Database;
 using Client.Property;
 using Client.Sheet;
@@ -22,7 +23,7 @@ namespace Client.Entity
     /// <author>Guillaume PUZIN</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    public class Entity : IEntity
+    public class Entity : StringWaitCallback, IEntity
     {
         /// <summary>
         /// Entity Id (CLFECOMMON::INVALID_CLIENT_DATASET_INDEX for an invalid one)
@@ -116,16 +117,10 @@ namespace Client.Entity
             _headPitch = Math.Min(Math.Max(_headPitch, -bound), bound);
         }
 
-        public void SetName(uint id, string value)
-        {
-            _entityName = value;
-        }
-
         private void SetGuildName(uint id, string value)
         {
             _entityGuildName = value;
         }
-
 
         /// <summary>
         /// Default constructor
@@ -172,7 +167,7 @@ namespace Client.Entity
 
             //_TargetSlotNoLag = CLFECOMMON::INVALID_SLOT;
 
-            _title = "Newbie";
+            _title = "";
 
             //_HasReservedTitle = false;
 
@@ -491,7 +486,7 @@ namespace Client.Entity
             // Store the name Id
             _nameId = nameId;
 
-            client.GetStringManager().WaitString(nameId, SetName, client.GetNetworkManager());
+            client.GetStringManager().WaitString(nameId, this, client.GetNetworkManager());
 
             // if(GetEntityName().empty())
             // 	nlwarning("CH::updateVPName:%d: name Id '%d' received but no name allocated.", _Slot, nameId);
@@ -585,6 +580,40 @@ namespace Client.Entity
         protected virtual void UpdateVisualPropertyVisualFX(uint _, long prop, RyzomClient client)
         {
             // TODO: Not implemented for base entity
+        }
+
+        public override void OnDynStringAvailable(uint stringId, string value)
+        {
+            // TODO: Not implemented for base entity
+        }
+
+        /// <summary>
+        /// Override for string reception callback
+        /// </summary>
+        public override void OnStringAvailable(uint stringId, in string value)
+        {
+            _entityName = value;
+
+            // remove the shard name if possible
+            _entityName = EntityHelper.RemoveShardFromName(_entityName);
+
+            // check if there is any replacement tag in the string
+            var p1 = _entityName.IndexOf("$", StringComparison.Ordinal);
+
+            if (p1 == -1)
+                return;
+
+            // we found a replacement point begin tag
+            var p2 = _entityName.IndexOf('$', p1 + 1);
+
+            if (p2 != -1)
+            {
+                _title = _entityName.Substring(p1 + 1, p2 - p1 - 1);
+            }
+            else
+            {
+                _entityName = RyzomClient.GetInstance().GetStringManager().GetLocalizedName(_entityName);
+            }
         }
     }
 }

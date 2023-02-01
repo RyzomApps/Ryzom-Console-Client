@@ -14,7 +14,10 @@ namespace Client.Client
     /// </summary>
     public abstract class StringWaitCallback
     {
-        /// Overide this method to receive callback for dynamic string.
-        public abstract void OnDynStringAvailable(uint stringId, string value);
-    };
+        /// <summary>Receive callback for dynamic string.</summary>
+        public abstract void OnDynStringAvailable(uint dynStringId, string value);
+
+        /// <summary>Receive callback for string.</summary>
+        public abstract void OnStringAvailable(uint stringId, in string value);
+    }
 }

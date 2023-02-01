@@ -46,7 +46,12 @@ namespace Client.Client
         /// <summary>
         /// Callback for string value from the server
         /// </summary>
-        private readonly Dictionary<uint, Action<uint, string>> _stringsCallbacks = new Dictionary<uint, Action<uint, string>>();
+        private readonly Dictionary<uint, StringWaitCallback> _stringsCallbacks = new Dictionary<uint, StringWaitCallback>();
+
+        /// <summary>
+        /// Callback for string value from the server as Actions
+        /// </summary>
+        private readonly Dictionary<uint, Action<uint, string>> _stringsActions = new Dictionary<uint, Action<uint, string>>();
 
         /// <summary>
         /// Callback for dynamic string value from the server
@@ -677,8 +682,15 @@ namespace Client.Client
             // callback the waiter
             if (_stringsCallbacks.ContainsKey(stringId))
             {
-                _stringsCallbacks[stringId](stringId, str);
+                _stringsCallbacks[stringId].OnStringAvailable(stringId, str);
                 _stringsCallbacks.Remove(stringId);
+            }
+
+            // callback the waiter
+            if (_stringsActions.ContainsKey(stringId))
+            {
+                _stringsActions[stringId](stringId, str);
+                _stringsActions.Remove(stringId);
             }
 
             // TODO: try to complete any pending dyn string
@@ -718,6 +730,29 @@ namespace Client.Client
             if (GetString(stringId, out var value, networkManager))
             {
                 pcallback(stringId, value);
+            }
+            else
+            {
+                // wait for the string
+                if (_stringsCallbacks.ContainsKey(stringId))
+                {
+                    _stringsActions[stringId] = pcallback;
+                }
+                else
+                {
+                    _stringsActions.Add(stringId, pcallback);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Wait for a string or fire the action if the string is already present
+        /// </summary>
+        public void WaitString(in uint stringId, StringWaitCallback pcallback, NetworkManager networkManager)
+        {
+            if (GetString(stringId, out var value, networkManager))
+            {
+                pcallback.OnStringAvailable(stringId, value);
             }
             else
             {

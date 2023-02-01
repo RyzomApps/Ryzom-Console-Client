@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
+using API.Entity;
 
 namespace Client.Commands
 {
@@ -20,24 +21,31 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            var entityName = "";
+            if (!(args.Length == 1 && byte.TryParse(args[0], out var slot)))
+            {
+                // Argument was not a slot id - so it has to be a name
+                var entityName = "";
 
-            if (args.Length != 0) entityName = string.Join(" ", args);
+                if (args.Length != 0) entityName = string.Join(" ", args);
 
-            // Try to get the entity with complete match first
-            var entity = ryzomClient.GetNetworkManager().GetEntityManager().GetEntityByName(entityName, false, true);
+                // Try to get the entity with complete match
+                var entity = ryzomClient.GetNetworkManager().GetEntityManager().GetEntityByName(entityName, false, true);
 
-            if (entity == null) return $"Could not find '{entityName}'.";
+                if (entity == null)
+                    return $"Could not find '{entityName}'.";
 
-            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.Selection(entity.Slot());
-            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.SetTargetSlot(entity.Slot());
+                slot = entity.Slot();
+            }
+
+            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.Selection(slot);
+            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.SetTargetSlot(slot);
 
             return "";
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] {"tar"};
+            return new[] { "tar" };
         }
     }
 }

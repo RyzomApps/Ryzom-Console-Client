@@ -130,7 +130,7 @@ namespace Client.Network
                         R2PatchUrLs = r2PatchUrLs // string[]
                     };
 
-                    client.SessionData.Save("session_" + login + ".json");
+                    //client.SessionData.Save("session_" + login + ".json");
 
                     break;
             }

@@ -37,7 +37,7 @@ namespace Client.Network
         public void Save(string fileName)
         {
             var options = new JsonSerializerOptions { WriteIndented = true };
-            string jsonString = JsonSerializer.Serialize(this, options);
+            var jsonString = JsonSerializer.Serialize(this, options);
             File.WriteAllText(fileName, jsonString);
         }
 
@@ -47,7 +47,7 @@ namespace Client.Network
         /// <param name="fileName">name of the session file</param>
         public static SessionData Load(string fileName)
         {
-            string jsonString = File.ReadAllText(fileName);
+            var jsonString = File.ReadAllText(fileName);
             return JsonSerializer.Deserialize<SessionData>(jsonString);
         }
     }
