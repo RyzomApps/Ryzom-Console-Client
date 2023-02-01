@@ -33,7 +33,7 @@ namespace Client.Phrase
             uint sheetid = 0;
             impulse.Serial(ref sheetid);
 
-            ret.PhraseSheetId = sheetIdFactory.SheetId(sheetid);
+            ret.PhraseSheetId = (SheetId)sheetIdFactory.SheetId(sheetid);
 
             return ret;
         }

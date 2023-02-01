@@ -10,10 +10,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using API.Sheet;
 
 namespace Client.Sheet
 {
-    public class SheetIdFactory
+    public class SheetIdFactory : ISheetIdFactory
     {
         private readonly RyzomClient _client;
 
@@ -45,7 +46,7 @@ namespace Client.Sheet
         /// <summary>
         /// create an SheetId from a numeric reference
         /// </summary>
-        public SheetId SheetId(uint sheetRef)
+        public ISheetId SheetId(uint sheetRef)
         {
             return new SheetId(this) { _id = sheetRef };
         }
@@ -53,7 +54,7 @@ namespace Client.Sheet
         /// <summary>
         /// Constructor
         /// </summary>
-        public SheetId SheetId(string sheetName)
+        public ISheetId SheetId(string sheetName)
         {
             var ret = BuildSheetId(sheetName);
 

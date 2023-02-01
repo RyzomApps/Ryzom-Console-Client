@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////
 
 using Client.Stream;
+using API.Sheet;
 
 namespace Client.Sheet
 {
@@ -16,62 +17,14 @@ namespace Client.Sheet
     /// <author>Guillaume PUZIN</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    public abstract class EntitySheet
+    public abstract partial class EntitySheet : IEntitySheet
     {
         //private readonly SheetIdFactory _sheetIdFactory;
-
-        public enum SheetType
-        {
-            CHAR = 0,
-            FAUNA,
-            FLORA,
-            OBJECT,
-            FX,
-            BUILDING,
-            ITEM,
-            PLANT,
-            MISSION,
-            RACE_STATS,
-            PACT,
-            LIGHT_CYCLE,
-            WEATHER_SETUP,
-            CONTINENT,
-            WORLD,
-            WEATHER_FUNCTION_PARAMS,
-            UNKNOWN,
-            BOTCHAT,
-            MISSION_ICON,
-            SBRICK,
-            SPHRASE,
-            SKILLS_TREE,
-            UNBLOCK_TITLES,
-            SUCCESS_TABLE,
-            AUTOMATON_LIST,
-            ANIMATION_SET_LIST,
-            SPELL, // obsolete
-            SPELL_LIST, // obsolete
-            CAST_FX, // obsolete
-            EMOT,
-            ANIMATION_FX,
-            ID_TO_STRING_ARRAY,
-            FORAGE_SOURCE,
-            CREATURE_ATTACK,
-            ANIMATION_FX_SET,
-            ATTACK_LIST,
-            SKY,
-            TEXT_EMOT,
-            OUTPOST,
-            OUTPOST_SQUAD,
-            OUTPOST_BUILDING,
-            FACTION,
-            TypeCount,
-            UNKNOWN_SHEET_TYPE = TypeCount
-        }
 
         /// <summary>
         /// Type of the sheet
         /// </summary>
-        protected SheetType _type;
+        protected API.Sheet.SheetType _type;
 
         /// <summary>
         /// Sheet Id
@@ -84,7 +37,7 @@ namespace Client.Sheet
         protected EntitySheet(SheetIdFactory sheetIdFactory)
         {
             //_sheetIdFactory = sheetIdFactory;
-            _type = SheetType.UNKNOWN_SHEET_TYPE;
+            _type = API.Sheet.SheetType.UNKNOWN_SHEET_TYPE;
             Id = new SheetId(sheetIdFactory);
         }
 

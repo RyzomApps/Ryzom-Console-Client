@@ -177,7 +177,7 @@ namespace Client.Stream
 
                 sme.Serial(this);
 
-                container.Add(client.GetSheetIdFactory().SheetId(sheetId), sme);
+                container.Add((SheetId)client.GetSheetIdFactory().SheetId(sheetId), sme);
             }
         }
 

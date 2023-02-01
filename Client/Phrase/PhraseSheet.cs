@@ -9,6 +9,7 @@
 using Client.Network;
 using Client.Sheet;
 using Client.Stream;
+using SheetType = API.Sheet.SheetType;
 
 namespace Client.Phrase
 {

@@ -40,6 +40,7 @@ using Client.Phrase;
 using Client.Skill;
 using Client.Stream;
 using API.Entity;
+using API.Sheet;
 
 namespace Client
 {
@@ -181,6 +182,8 @@ namespace Client
 
         public SheetManager GetSheetManager() { return _sheetManager; }
 
+        public ISheetManager GetApiSheetManager() { return _sheetManager; }
+
         public IPluginManager GetPluginManager() { return Plugins; }
 
         public PhraseManager GetPhraseManager() { return _phraseManager; }
@@ -188,6 +191,8 @@ namespace Client
         public InterfaceManager GetInterfaceManager() { return _interfaceManager; }
 
         public SheetIdFactory GetSheetIdFactory() { return _sheetIdFactory; }
+
+        public ISheetIdFactory GetApiSheetIdFactory() { return _sheetIdFactory; }
 
         public BrickManager GetBrickManager() { return _brickManager; }
 

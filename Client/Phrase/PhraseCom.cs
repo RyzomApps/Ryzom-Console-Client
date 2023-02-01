@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using API.Sheet;
 using Client.Sheet;
 using Client.Stream;
 
@@ -102,7 +103,7 @@ namespace Client.Phrase
                 }
                 else
                 {
-                    ret.Bricks[i].BuildSheetId(serialCompBricks[i] - 1, (EntitySheet.SheetType)ret._serialSbrickType);
+                    ret.Bricks[i].BuildSheetId(serialCompBricks[i] - 1, (SheetType)ret._serialSbrickType);
                 }
             }
 

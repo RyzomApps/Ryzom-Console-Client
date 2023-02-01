@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using API.Sheet;
 using Client.Brick;
 using Client.Client;
 using Client.Database;
@@ -242,7 +243,7 @@ namespace Client.Phrase
             // compute and the progression phrase, and update DB
             ComputePhraseProgression();
 
-            _enchantWeaponMainBrick = _sheetIdFactory.SheetId("bsxea10.sbrick");
+            _enchantWeaponMainBrick = (SheetId)_sheetIdFactory.SheetId("bsxea10.sbrick");
 
             // build map that gives its description for each built-in phrase
             // slow test on all sheets here ...
@@ -251,7 +252,7 @@ namespace Client.Phrase
 
             foreach (var (key, value) in sm)
             {
-                if (value.EntitySheet == null || value.EntitySheet.Type != EntitySheet.SheetType.SPHRASE)
+                if (value.EntitySheet == null || value.EntitySheet.Type != SheetType.SPHRASE)
                     continue;
 
                 BuildPhraseFromSheet(ref tmpPhrase, key.AsInt());
@@ -267,7 +268,7 @@ namespace Client.Phrase
             if (_sheetManager.Get(_sheetIdFactory.SheetId(sheetId)) is PhraseSheet phraseSheet)
             {
                 // get localized Name
-                phrase.Name = _stringManager.GetSPhraseLocalizedName(_sheetIdFactory.SheetId(sheetId));
+                phrase.Name = _stringManager.GetSPhraseLocalizedName((SheetId)_sheetIdFactory.SheetId(sheetId));
 
                 // Build bricks
                 phrase.Bricks.Clear();

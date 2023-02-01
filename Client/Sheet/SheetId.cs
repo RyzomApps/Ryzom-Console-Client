@@ -8,6 +8,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using API.Sheet;
 using Client.Stream;
 
 namespace Client.Sheet
@@ -22,7 +23,7 @@ namespace Client.Sheet
     /// This class is case insensitive. It means that you can call build() and 
     /// buildIdVector() with string with anycase, it'll work.
     /// </remarks>
-    public class SheetId : IComparable<SheetId>
+    public class SheetId : IComparable<SheetId>, ISheetId
     {
         private readonly SheetIdFactory _sheetIdFactory;
 
@@ -40,6 +41,8 @@ namespace Client.Sheet
             get => _type;
             set => _type = value;
         }
+
+        public string Name => ToString();
 
         /// <summary>
         /// Constructor
@@ -78,7 +81,7 @@ namespace Client.Sheet
             return Id.CompareTo(other.Id);
         }
 
-        public void BuildSheetId(int shortId, EntitySheet.SheetType type)
+        public void BuildSheetId(int shortId, SheetType type)
         {
             // TODO: BuildSheetId implementation!
             _id = (uint)shortId;

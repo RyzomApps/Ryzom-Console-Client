@@ -9,6 +9,7 @@
 using Client.Brick;
 using Client.Phrase;
 using System;
+using API.Sheet;
 using Client.Forage;
 using Client.Stream;
 
@@ -44,71 +45,71 @@ namespace Client.Sheet
         {
             stream.Serial(out uint intType);
 
-            var type = (EntitySheet.SheetType)intType;
+            var type = (SheetType)intType;
 
             EntitySheet = null;
 
             switch (type)
             {
-                case EntitySheet.SheetType.SBRICK:
+                case SheetType.SBRICK:
                     EntitySheet = new BrickSheet(_client.GetSheetIdFactory());
                     InitSheet(EntitySheet, stream, type);
                     break;
 
-                case EntitySheet.SheetType.SPHRASE:
+                case SheetType.SPHRASE:
                     EntitySheet = new PhraseSheet(_client.GetSheetIdFactory());
                     InitSheet(EntitySheet, stream, type);
                     break;
 
-                case EntitySheet.SheetType.FORAGE_SOURCE:
+                case SheetType.FORAGE_SOURCE:
                     EntitySheet = new ForageSourceSheet(_client.GetSheetIdFactory());
                     InitSheet(EntitySheet, stream, type);
                     break;
 
-                case EntitySheet.SheetType.RACE_STATS:
+                case SheetType.RACE_STATS:
                     EntitySheet = new RaceStatsSheet(_client.GetSheetIdFactory());
                     InitSheet(EntitySheet, stream, type);
                     break;
 
-                case EntitySheet.SheetType.CHAR:
-                case EntitySheet.SheetType.FAUNA:
-                case EntitySheet.SheetType.FLORA:
-                case EntitySheet.SheetType.OBJECT:
-                case EntitySheet.SheetType.FX:
-                case EntitySheet.SheetType.BUILDING:
-                case EntitySheet.SheetType.ITEM:
-                case EntitySheet.SheetType.PLANT:
-                case EntitySheet.SheetType.MISSION:
-                case EntitySheet.SheetType.PACT:
-                case EntitySheet.SheetType.LIGHT_CYCLE:
-                case EntitySheet.SheetType.WEATHER_SETUP:
-                case EntitySheet.SheetType.CONTINENT:
-                case EntitySheet.SheetType.WORLD:
-                case EntitySheet.SheetType.WEATHER_FUNCTION_PARAMS:
-                case EntitySheet.SheetType.UNKNOWN:
-                case EntitySheet.SheetType.BOTCHAT:
-                case EntitySheet.SheetType.MISSION_ICON:
-                case EntitySheet.SheetType.SKILLS_TREE:
-                case EntitySheet.SheetType.UNBLOCK_TITLES:
-                case EntitySheet.SheetType.SUCCESS_TABLE:
-                case EntitySheet.SheetType.AUTOMATON_LIST:
-                case EntitySheet.SheetType.ANIMATION_SET_LIST:
-                case EntitySheet.SheetType.SPELL:
-                case EntitySheet.SheetType.SPELL_LIST:
-                case EntitySheet.SheetType.CAST_FX:
-                case EntitySheet.SheetType.EMOT:
-                case EntitySheet.SheetType.ANIMATION_FX:
-                case EntitySheet.SheetType.ID_TO_STRING_ARRAY:
-                case EntitySheet.SheetType.CREATURE_ATTACK:
-                case EntitySheet.SheetType.ANIMATION_FX_SET:
-                case EntitySheet.SheetType.ATTACK_LIST:
-                case EntitySheet.SheetType.SKY:
-                case EntitySheet.SheetType.TEXT_EMOT:
-                case EntitySheet.SheetType.OUTPOST:
-                case EntitySheet.SheetType.OUTPOST_SQUAD:
-                case EntitySheet.SheetType.OUTPOST_BUILDING:
-                case EntitySheet.SheetType.FACTION:
-                case EntitySheet.SheetType.TypeCount:
+                case SheetType.CHAR:
+                case SheetType.FAUNA:
+                case SheetType.FLORA:
+                case SheetType.OBJECT:
+                case SheetType.FX:
+                case SheetType.BUILDING:
+                case SheetType.ITEM:
+                case SheetType.PLANT:
+                case SheetType.MISSION:
+                case SheetType.PACT:
+                case SheetType.LIGHT_CYCLE:
+                case SheetType.WEATHER_SETUP:
+                case SheetType.CONTINENT:
+                case SheetType.WORLD:
+                case SheetType.WEATHER_FUNCTION_PARAMS:
+                case SheetType.UNKNOWN:
+                case SheetType.BOTCHAT:
+                case SheetType.MISSION_ICON:
+                case SheetType.SKILLS_TREE:
+                case SheetType.UNBLOCK_TITLES:
+                case SheetType.SUCCESS_TABLE:
+                case SheetType.AUTOMATON_LIST:
+                case SheetType.ANIMATION_SET_LIST:
+                case SheetType.SPELL:
+                case SheetType.SPELL_LIST:
+                case SheetType.CAST_FX:
+                case SheetType.EMOT:
+                case SheetType.ANIMATION_FX:
+                case SheetType.ID_TO_STRING_ARRAY:
+                case SheetType.CREATURE_ATTACK:
+                case SheetType.ANIMATION_FX_SET:
+                case SheetType.ATTACK_LIST:
+                case SheetType.SKY:
+                case SheetType.TEXT_EMOT:
+                case SheetType.OUTPOST:
+                case SheetType.OUTPOST_SQUAD:
+                case SheetType.OUTPOST_BUILDING:
+                case SheetType.FACTION:
+                case SheetType.TypeCount:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -117,7 +118,7 @@ namespace Client.Sheet
         /// <summary>
         /// Useful for serial
         /// </summary>
-        public void InitSheet(EntitySheet sheet, BitStreamFile stream, EntitySheet.SheetType type)
+        public void InitSheet(EntitySheet sheet, BitStreamFile stream, SheetType type)
         {
             if (sheet != null)
             {

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using API.Sheet;
 using Client.Stream;
 
 namespace Client.Sheet
@@ -32,7 +33,7 @@ namespace Client.Sheet
     /// <author>Guillaume PUZIN</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    public class SheetManager : IDisposable
+    public class SheetManager : IDisposable, ISheetManager
     {
         private readonly RyzomClient _client;
 
@@ -866,9 +867,9 @@ namespace Client.Sheet
         /// </summary>
         /// <param name="num">sheet number</param>
         /// <returns>pointer on the sheet according to the param or 0 if any pb</returns>
-        public EntitySheet Get(SheetId num)
+        public IEntitySheet Get(ISheetId num)
         {
-            return _entitySheetContainer.ContainsKey(num) ? _entitySheetContainer[num].EntitySheet : null;
+            return _entitySheetContainer.ContainsKey((SheetId)num) ? _entitySheetContainer[(SheetId)num].EntitySheet : null;
         }
 
         /// <summary>

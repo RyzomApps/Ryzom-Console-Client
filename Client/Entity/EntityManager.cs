@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using API.Entity;
+using API.Sheet;
 using Client.Forage;
 using Client.Property;
 using Client.Sheet;
@@ -123,8 +124,8 @@ namespace Client.Entity
 
                 switch (entitySheet.Type)
                 {
-                    case EntitySheet.SheetType.RACE_STATS:
-                    case EntitySheet.SheetType.CHAR:
+                    case SheetType.RACE_STATS:
+                    case SheetType.CHAR:
                         if (slot != 0)
                         {
                             _entities[slot] = new Entity { _type = EntityType.Player };
@@ -136,29 +137,29 @@ namespace Client.Entity
                         }
                         break;
 
-                    case EntitySheet.SheetType.FAUNA:
+                    case SheetType.FAUNA:
                         //CharacterSheet *sheet = NLMISC::safe_cast<CCharacterSheet *>(entitySheet);
                         //if (!sheet->R2Npc) _Entities[slot] = new CCharacterCL;
                         //else _entities[slot] = new CPlayerR2CL;
                         _entities[slot] = new Entity { _type = EntityType.Fauna };
                         break;
 
-                    case EntitySheet.SheetType.FLORA:
+                    case SheetType.FLORA:
                         //_entities[slot] = new CCharacterCL;
                         _entities[slot] = new Entity();
                         break;
 
-                    case EntitySheet.SheetType.FX:
+                    case SheetType.FX:
                         //_entities[slot] = new CFxCL;
                         _entities[slot] = new Entity();
                         break;
 
-                    case EntitySheet.SheetType.ITEM:
+                    case SheetType.ITEM:
                         //_entities[slot] = new CItemCL;
                         _entities[slot] = new Entity();
                         break;
 
-                    case EntitySheet.SheetType.FORAGE_SOURCE:
+                    case SheetType.FORAGE_SOURCE:
                         _entities[slot] = new ForageSourceEntity();
                         break;
 
@@ -184,7 +185,7 @@ namespace Client.Entity
                 _entities[slot].NpcAlias(newEntityInfo.Alias);
 
                 // Build the entity from a sheet.
-                if (_entities[slot].Build(entitySheet, _client))
+                if (_entities[slot].Build((EntitySheet)entitySheet, _client))
                 {
                     // Apply properties backuped;
                     ApplyBackupedProperties(slot);
