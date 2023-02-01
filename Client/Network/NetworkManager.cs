@@ -1124,7 +1124,7 @@ namespace Client.Network
 
         private void ImpulseServerQuitAbort(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.Plugins.OnServerQuitAbort();
         }
 
         private void ImpulseServerQuitOk(BitMemoryStream impulse)

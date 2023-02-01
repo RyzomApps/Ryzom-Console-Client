@@ -867,6 +867,14 @@ namespace Client.Plugins
             DispatchListenerEvent(listener => listener.OnPhraseAckExecute(cyclic, counterValue, ok));
         }
 
+        /// <summary>
+        /// called when the server cancels the client quit process
+        /// </summary>
+        internal void OnServerQuitAbort()
+        {
+            DispatchListenerEvent(listener => listener.OnServerQuitAbort());
+        }
+
         #endregion
     }
 }
