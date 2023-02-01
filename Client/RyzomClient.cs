@@ -130,30 +130,7 @@ namespace Client
             }
         }
 
-        public string Cookie { get; set; }
-
-        public string FsAddr { get; set; }
-
-        public string RingMainURL { get; set; }
-
-        public string FarTpUrlBase { get; set; }
-
-        public bool StartStat { get; set; }
-
-        /// <summary>
-        /// domain server version for patch
-        /// </summary>
-        public string R2ServerVersion { get; set; }
-
-        /// <summary>
-        /// Backup patch server to use in case of failure of all other servers
-        /// </summary>
-        public string R2BackupPatchURL { get; set; }
-
-        /// <summary>
-        /// a list of patch server to use randomly
-        /// </summary>
-        public string[] R2PatchUrLs { get; set; }
+        public SessionData SessionData;
 
         /// <summary>
         /// Logger instance attached to the Client
@@ -382,7 +359,7 @@ namespace Client
             while (ok)
             {
                 // If the connection return false we just want to quit the game
-                if (!Connection(Cookie, FsAddr))
+                if (!Connection(SessionData.Cookie, SessionData.FsAddr))
                 {
                     break;
                 }
@@ -429,7 +406,10 @@ namespace Client
             {
                 try
                 {
+                    //SessionData = SessionData.Load("session_" + ClientConfig.Username + ".json");
+
                     Network.Login.CheckLogin(this, ClientConfig.Username, ClientConfig.Password, ClientConfig.ApplicationServer, "");
+
                     loggedIn = true;
                 }
                 catch (Exception e)
@@ -453,7 +433,7 @@ namespace Client
                 }
             }
 
-            return Cookie != null;
+            return SessionData.Cookie != null;
         }
 
         /// <summary>
