@@ -91,6 +91,11 @@ namespace Client.Entity
         private double _headPitch;
 
         /// <summary>
+        /// Flags to know what is possible to do with the entity (selectable, liftable, etc.).
+        /// </summary>
+        public EntityProperties EntityProperties { get; set; } = new EntityProperties();
+
+        /// <summary>
         /// Position Vector of the entity
         /// </summary>
         public Vector3 Pos { get; set; }
@@ -392,7 +397,7 @@ namespace Client.Entity
 
                 // Property to update the contextual menu, and some important status
                 case PropertyType.Contextual:
-                    //UpdateVisualPropertyContextual(gameCycle, nodeProp.GetValue64());
+                    UpdateVisualPropertyContextual(gameCycle, nodeProp.GetValue64());
                     break;
 
                 case PropertyType.Bars:
@@ -432,6 +437,24 @@ namespace Client.Entity
                     break;
             }
         }
+
+
+        /// <summary>
+        /// updateVisualPropertyContextual
+        /// </summary>
+        public void UpdateVisualPropertyContextual(uint gameCycle, long prop)
+        {
+            EntityProperties = new EntityProperties((ushort)prop);
+
+            //Properties.selectable(global::Client.Entity.Properties((ushort)prop).selectable());
+            //Properties.talkableTo(global::Client.Entity.Properties((ushort)prop).talkableTo());
+            //Properties.attackable(global::Client.Entity.Properties((ushort)prop).attackable());
+            //Properties.mountable(global::Client.Entity.Properties((ushort)prop).mountable());
+            //Properties.lootable(global::Client.Entity.Properties((ushort)prop).lootable());
+            //Properties.harvestable(global::Client.Entity.Properties((ushort)prop).harvestable());
+            //Properties.afk(global::Client.Entity.Properties((ushort)prop).afk());
+        }
+
 
         /// <summary>
         /// Update Entity Bars
