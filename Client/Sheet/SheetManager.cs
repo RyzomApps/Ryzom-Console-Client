@@ -311,7 +311,7 @@ namespace Client.Sheet
                 packedFilenamePath = packedFilename;
             }
 
-            // make sure the SheetId singleton has been properly initialised
+            // make sure the SheetId singleton has been properly initialized
             //_sheetIdFactory.Init(updatePackedSheet);
 
             // load the packed sheet if exists
@@ -327,7 +327,7 @@ namespace Client.Sheet
 
                 //// an exception will be launch if the file is not the good version or if the file is not found
 
-                ////nlinfo ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
+                ////_client.GetLogger().info ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
 
                 // read the header
                 const uint packedSheetHeader = 1347113800;
@@ -411,7 +411,7 @@ namespace Client.Sheet
             // if we don't want to update packed sheet, we have nothing more to do
             if (!updatePackedSheet)
             {
-                //nlinfo ("Don't update the packed sheet with real sheet");
+                //_client.GetLogger().info ("Don't update the packed sheet with real sheet");
                 return;
             }
 
@@ -682,7 +682,6 @@ namespace Client.Sheet
             //filenames.Clear();
         }
 
-
         /// <summary>
         /// compute Visual Slots for this sheet.
         /// </summary>
@@ -692,10 +691,119 @@ namespace Client.Sheet
             //callBack.pushCropedValues(0, 0.5f);
 
             //  load all forms
-            //global::loadFormNoPackedSheet(extensions, _EntitySheetContainer, wildcardFilter);
+            loadFormNoPackedSheet(extensions, _entitySheetContainer, wildcardFilter);
 
             //callBack.popCropedValues();
         }
+
+        /// <summary>
+        /// This function is used to load values from georges sheet in a quick way.
+        /// NB: no packedsheet is given for load/write
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sheetFilters">a vector of string to filter the sheet (by extension) in the case you need more than one filter</param>
+        /// <param name="container">the map that will be filled by this function</param>
+        /// <param name="wildcardFilter">an additional by sheet filter (must include the extension)</param>
+        private static void loadFormNoPackedSheet<T>(in List<string> sheetFilters, SortedDictionary<SheetId, T> container, in string wildcardFilter)
+        {
+	        //// make sure the CSheetId singleton has been properly initialised
+	        //SheetId.Init(false);
+            //
+	        //// build a vector of the sheetFilters sheet ids (ie: "item")
+	        //List<SheetId> sheetIds = new List<SheetId>();
+	        //List<string> filenames = new List<string>();
+	        //for (uint i = 0; i < sheetFilters.Count; i++)
+	        //{
+		    //    SheetId.BuildIdVector(sheetIds, filenames, sheetFilters[i]);
+	        //}
+            //
+	        //// if there's no file, nothing to do
+	        //if (sheetIds.Count == 0)
+	        //{
+		    //    return;
+	        //}
+            //
+            //
+	        //// compute sheets that needs to be recomputed
+	        //List<uint> NeededToRecompute = new List<uint>();
+	        //for (uint k = 0; k < filenames.Count; k++)
+	        //{
+		    //    string p = NLMISC.CPath.lookup(filenames[k], false, false);
+            //
+		    //    if (string.IsNullOrEmpty(p))
+		    //    {
+			//        continue;
+		    //    }
+		    //    // check if wildcardok
+		    //    if (!string.IsNullOrEmpty(wildcardFilter) && !NLMISC.testWildCard(p,wildcardFilter))
+		    //    {
+			//        continue;
+		    //    }
+            //
+		    //    NeededToRecompute.Add(k);
+	        //}
+	        //_client.GetLogger().Info("%d sheets checked, %d need to be recomputed", filenames.Count, NeededToRecompute.Count);
+            //
+            //
+	        //NLMISC.TTime last = NLMISC.CTime.getLocalTime();
+	        //NLMISC.TTime start = NLMISC.CTime.getLocalTime();
+	        //NLGEORGES.UFormLoader formLoader = null;
+	        //NLMISC.CSmartPtr<NLGEORGES.UForm> form = new NLMISC.CSmartPtr<NLGEORGES.UForm>();
+	        //List<NLMISC.CSmartPtr<NLGEORGES.UForm>> cacheFormList = new List<NLMISC.CSmartPtr<NLGEORGES.UForm>>();
+            //
+	        //// For all sheets need to recompute
+	        //for (uint j = 0; j < NeededToRecompute.Count; j++)
+	        //{
+		    //    if (NLMISC.CTime.getLocalTime() > last + 5000)
+		    //    {
+			//        last = NLMISC.CTime.getLocalTime();
+			//        if (j > 0)
+			//        {
+			//	        _client.GetLogger().Info("%.0f%% completed (%d/%d), %d seconds remaining", (float)j * 100.0 / NeededToRecompute.Count,j,NeededToRecompute.Count, (NeededToRecompute.Count - j) * (last - start) / j / 1000);
+			//        }
+		    //    }
+            //
+		    //    // create the georges loader if necessary
+		    //    if (formLoader == null)
+		    //    {
+			//        NLMISC.WarningLog.addNegativeFilter("CFormLoader: Can't open the form file");
+			//        formLoader = NLGEORGES.UFormLoader.createLoader();
+		    //    }
+            //
+		    //    //	cache used to retain information (to optimize time).
+		    //    if (form != null)
+		    //    {
+			//        cacheFormList.Add(form);
+		    //    }
+            //
+		    //    // Load the form with given sheet id
+		    //    form = formLoader.loadForm(sheetIds[NeededToRecompute[j]].toString().c_str());
+		    //    if (form != null)
+		    //    {
+			//        // add the new creature, it could be already loaded by the packed sheets but will be overwritten with the new one
+			//        Tuple<typename SortedDictionary<SheetId, T>.Enumerator, bool> res = container.Add(sheetIds[NeededToRecompute[j]],default(T));
+            //
+			//        res.Item1.second.readGeorges(form, sheetIds[NeededToRecompute[j]]);
+		    //    }
+	        //}
+            //
+	        //if (NeededToRecompute.Count > 0)
+	        //{
+		    //    _client.GetLogger().Info("%d seconds to recompute %d sheets", (uint)(NLMISC.CTime.getLocalTime() - start) / 1000, NeededToRecompute.Count);
+	        //}
+            //
+	        //// free the georges loader if necessary
+	        //if (formLoader != null)
+	        //{
+		    //    NLGEORGES.UFormLoader.releaseLoader(formLoader);
+		    //    NLMISC.WarningLog.removeFilter("CFormLoader: Can't open the form file");
+	        //}
+            //
+	        //// housekeeping
+	        //sheetIds.Clear();
+	        //filenames.Clear();
+        }
+
 
         /// <summary>
         /// Compute Visual Slots for this sheet
@@ -996,7 +1104,7 @@ namespace Client.Sheet
             //        {
             //            if (iv[l])
             //            {
-            //                nlinfo("Slot %d, item %d = %s", (int)k, (int)l, iv[l].Id.toString().c_str());
+            //                _client.GetLogger().Info("Slot %d, item %d = %s", (int)k, (int)l, iv[l].Id.toString().c_str());
             //            }
             //        }
             //    }

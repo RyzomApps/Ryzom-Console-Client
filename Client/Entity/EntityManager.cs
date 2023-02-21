@@ -88,16 +88,16 @@ namespace Client.Entity
                     // Store the dataSetId received
                     _entities[0].DataSetId(newEntityInfo.DataSetIndex);
                 }
+
                 // Store the alias (although there should not be one for the slot 0!)
                 _entities[0].NpcAlias(newEntityInfo.Alias);
 
-                //_client.Plugins.OnEntityCreate(slot, form, newEntityInfo); TODO onplayerentitycreate
-
-                return _entities[0];
+                return null;
             }
 
             // Remove the old one (except the user).
-            if (slot != 0) _entities[slot] = null;
+            if (slot != 0)
+                _entities[slot] = null;
 
             // Check parameter: form
             var sheetId = _client.GetSheetIdFactory().SheetId(form);
@@ -126,27 +126,28 @@ namespace Client.Entity
                 {
                     case SheetType.RACE_STATS:
                     case SheetType.CHAR:
-                        if (slot != 0)
-                        {
-                            _entities[slot] = new Entity { _type = EntityType.Player };
-                        }
-                        else
+                        if (slot == 0)
                         {
                             UserEntity = new UserEntity(_client) { Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
                             _entities[slot] = UserEntity;
                         }
+                        else
+                        {
+                            _entities[slot] = new PlayerEntity() { _type = EntityType.Player };
+                        }
+
                         break;
 
                     case SheetType.FAUNA:
-                        //CharacterSheet *sheet = NLMISC::safe_cast<CCharacterSheet *>(entitySheet);
-                        //if (!sheet->R2Npc) _Entities[slot] = new CCharacterCL;
-                        //else _entities[slot] = new CPlayerR2CL;
-                        _entities[slot] = new Entity { _type = EntityType.Fauna };
+                        if (entitySheet is CharacterSheet charSheet && !charSheet.R2Npc)
+                            _entities[slot] = new CharacterEntity { _type = EntityType.Fauna };
+                        else
+                            // CPlayerR2CL
+                            _entities[slot] = new PlayerEntity { _type = EntityType.Player };
                         break;
 
                     case SheetType.FLORA:
-                        //_entities[slot] = new CCharacterCL;
-                        _entities[slot] = new Entity();
+                        _entities[slot] = new CharacterEntity();
                         break;
 
                     case SheetType.FX:
@@ -187,12 +188,12 @@ namespace Client.Entity
                 // Build the entity from a sheet.
                 if (_entities[slot].Build((EntitySheet)entitySheet, _client))
                 {
-                    // Apply properties backuped;
+                    // Apply properties from backup
                     ApplyBackupedProperties(slot);
                 }
             }
 
-            _client.Plugins.OnEntityCreate(slot, form, newEntityInfo);
+            _client.Plugins.OnEntityCreate(slot);
 
             return _entities[slot];
         }
@@ -217,10 +218,10 @@ namespace Client.Entity
         /// Method to update the visual property 'prop' for the entity in 'slot'.
         /// </summary>
         /// <param name="gameCycle">timestamp</param>
-        /// <param name="slot">uint : slot of the entity to update.</param> 
-        /// <param name="prop">uint : the property to udapte.</param>
+        /// <param name="slot">slot of the entity to update.</param> 
+        /// <param name="prop">the property to udapte.</param>
         /// <param name="predictedInterval">prediction</param> 
-        public void UpdateVisualProperty(in uint gameCycle, in byte slot, in byte prop, in uint predictedInterval)
+        public void UpdateVisualProperty(uint gameCycle, byte slot, uint prop, uint predictedInterval)
         {
             // Check parameter : slot.
             if (slot >= _nbMaxEntity)
@@ -265,11 +266,9 @@ namespace Client.Entity
             {
                 // Call the method from the entity to update the visual property.
                 _entities[slot].UpdateVisualProperty(gameCycle, prop, predictedInterval, _client);
+
+                _client.Plugins.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval);
             }
-
-            _client.Plugins.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval);
-
-            // TODO: Implementation
         }
 
         /// <summary>
@@ -282,6 +281,8 @@ namespace Client.Entity
             foreach (var (key, property) in _backupedChanges[slot])
             {
                 _entities[slot].UpdateVisualProperty(property.GameCycle, key, 0, _client);
+
+                _client.Plugins.OnEntityUpdateVisualProperty(property.GameCycle, (byte)slot, key, 0);
             }
 
             _backupedChanges.Remove(slot);

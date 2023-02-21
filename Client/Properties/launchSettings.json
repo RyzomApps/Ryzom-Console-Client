@@ -2,7 +2,7 @@
   "profiles": {
     "Client": {
       "commandName": "Project",
-      "commandLineArgs": "client.cfg"
+      "commandLineArgs": "client_biishoo.cfg"
     }
   }
 }

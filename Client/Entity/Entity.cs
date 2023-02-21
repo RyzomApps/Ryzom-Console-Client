@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using API.Entity;
 using Client.Client;
@@ -111,6 +110,16 @@ namespace Client.Entity
         public Vector3 Dir { get; set; }
 
         /// <summary>
+        /// Current mode
+        /// </summary>
+        protected EntityMode _Mode;
+
+        /// <summary>
+        /// Theoretical Current Mode (could be different from the current mode).
+        /// </summary>
+        protected EntityMode _TheoreticalMode;
+
+        /// <summary>
         /// Local DB Branch for this entity
         /// </summary>
         protected DatabaseNodeBranch _DBEntry;
@@ -118,7 +127,8 @@ namespace Client.Entity
         public void SetHeadPitch(double hp)
         {
             _headPitch = hp;
-            const double bound = Math.PI / 2 - 0.01; //  epsilon to avoid gimbal lock
+            // epsilon to avoid gimbaled lock
+            const double bound = Math.PI / 2 - 0.01; 
             _headPitch = Math.Min(Math.Max(_headPitch, -bound), bound);
         }
 
@@ -153,14 +163,14 @@ namespace Client.Entity
             //// No entry for the moment.
             //_DBEntry = 0;
 
-            //// Entity is not flyer at the beginning.
+            //// Entity is not flying at the beginning.
             //_Flyer = false;
 
             //// Initialize the mode.
-            //_Mode = MBEHAV::UNKNOWN_MODE;
-            //_TheoreticalMode = MBEHAV::UNKNOWN_MODE;
-
-            // No DataSetId initiliazed
+            _Mode = EntityMode.UnknownMode;
+            _TheoreticalMode = EntityMode.UnknownMode;
+            
+            // No DataSetId initialized
             _dataSetId = 0xFFFFF;
             //_NPCAlias = 0;
 

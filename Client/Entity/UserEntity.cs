@@ -7,17 +7,21 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using API;
 using API.Entity;
 using Client.Messages;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Entity
 {
-    public class UserEntity : Entity, IUserEntity
+    /// <summary>
+    /// Class to manage an user entity.
+    /// </summary>
+    /// <author>Guillaume PUZIN</author>
+    /// <author>Nevrax France</author>
+    /// <date>2001</date>
+    public class UserEntity : PlayerEntity, IUserEntity
     {
         private byte _selection;
 
@@ -26,6 +30,10 @@ namespace Client.Entity
         /// </summary>
         private IClient _client;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="client">Ryzom Client</param>
         public UserEntity(IClient client)
         {
             _client = client;
@@ -35,8 +43,8 @@ namespace Client.Entity
         /// <inheritdoc />
         public void Selection(byte slot)
         {
-            //allows reselection in Ring client: even if the selected slots is equal to the selection,
-            //the client must send the messages.
+            // allows re-selection in Ring client: even if the selected slots is equal to the selection,
+            // the client must send the messages.
             if (_selection == slot)
             {
                 return;
@@ -287,14 +295,18 @@ namespace Client.Entity
             //if (wellPosition != wellP)
             //{
             //    wellPosition = wellP;
-            //
-            //    // Send state to server.
-            //    if (genericMessageHeaderManager.PushNameToStream("COMBAT:VALIDATE_MELEE", out2))
-            //    {
-            //        byte flag = (byte)(wellP ? 1 : 0);
-            //        out2.Serial(ref flag);
-            //        return true;
-            //    }
+
+            // Send state to server.
+            if (genericMessageHeaderManager.PushNameToStream("COMBAT:VALIDATE_MELEE", out2))
+            {
+                //var flag = (byte)(wellP ? 1 : 0);
+
+                // TODO: We are always well placed to fight ;)
+                var flag = (byte)1;
+                out2.Serial(ref flag);
+                return true;
+            }
+
             //    else
             //    {
             //        throw new Exception("UE:msgForCombatPos: unknown message named 'COMBAT:TOGGLE_COMBAT_FLOAT_MODE'.");
