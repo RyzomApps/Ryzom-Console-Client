@@ -740,7 +740,8 @@ namespace Client.Client
                 }
                 else
                 {
-                    _stringsActions.Add(stringId, pcallback);
+                    if(!_stringsActions.ContainsKey(stringId))
+                        _stringsActions.Add(stringId, pcallback);
                 }
             }
         }
