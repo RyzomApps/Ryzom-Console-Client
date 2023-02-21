@@ -17,7 +17,7 @@ namespace Client.Sheet
     /// <author>Guillaume PUZIN</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    public abstract partial class EntitySheet : IEntitySheet
+    public abstract class EntitySheet : IEntitySheet
     {
         //private readonly SheetIdFactory _sheetIdFactory;
 

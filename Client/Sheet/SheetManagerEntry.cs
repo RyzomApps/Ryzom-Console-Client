@@ -51,6 +51,16 @@ namespace Client.Sheet
 
             switch (type)
             {
+                case SheetType.FAUNA:
+                    EntitySheet = new CharacterSheet(_client.GetSheetIdFactory());
+                    InitSheet(EntitySheet, stream, type);
+                    break;
+
+                case SheetType.CHAR:
+                    EntitySheet = new PlayerSheet(_client.GetSheetIdFactory());
+                    InitSheet(EntitySheet, stream, type);
+                    break;
+
                 case SheetType.SBRICK:
                     EntitySheet = new BrickSheet(_client.GetSheetIdFactory());
                     InitSheet(EntitySheet, stream, type);
@@ -71,8 +81,6 @@ namespace Client.Sheet
                     InitSheet(EntitySheet, stream, type);
                     break;
 
-                case SheetType.CHAR:
-                case SheetType.FAUNA:
                 case SheetType.FLORA:
                 case SheetType.OBJECT:
                 case SheetType.FX:

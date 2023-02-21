@@ -27,7 +27,6 @@ using Client.Stream;
 
 namespace Client.Network
 {
-
     /// <summary>
     /// used to control the connection and implements the impulse callbacks from the connection
     /// </summary>
@@ -152,6 +151,14 @@ namespace Client.Network
         public void Push(BitMemoryStream msg)
         {
             _networkConnection.Push(msg);
+        }
+
+        /// <summary>
+        /// Buffers a pick-up action
+        /// </summary>
+        public void PushPickup(byte slot, TargettingType lootOrHarvest)
+        {
+            _networkConnection.PushTarget(slot, lootOrHarvest);
         }
 
         /// <summary>

@@ -9,12 +9,13 @@
 namespace Client.Network.Action
 {
     /// <summary>
-    /// LHSTATE
+    /// Action Nature
     /// </summary>
     public enum TargettingType
     {
-        None,
-        Lootable,
-        Harvestable
+        None = 0,
+        Lootable = 1,
+        Harvestable = 2,
+        LootableHarvestable = 3
     }
 }

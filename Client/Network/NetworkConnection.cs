@@ -1745,7 +1745,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// Send last information without changes (only acknowedges frontend)
+        /// Send last information without changes (only acknowledges frontend)
         /// </summary>
         public void Send(in uint cycle)
         {
@@ -1755,7 +1755,7 @@ namespace Client.Network
 
                 LastSentCycle = cycle;
 
-                // if no actions were sent at this cyle, create a new block
+                // if no actions were sent at this cycle, create a new block
                 if (_actions.Count != 0 && _actions[^1].Cycle == 0)
                 {
                     var block = _actions[^1];
@@ -1782,7 +1782,7 @@ namespace Client.Network
                         _client.GetLogger().Debug($"Postponing {block.Actions.Count - i} actions exceeding max size in block {cycle} (block size is {bitSize} bits long)");
 
                         // allocate a new block
-                        ActionBlock newBlock = new ActionBlock();
+                        var newBlock = new ActionBlock();
                         _actions.Add(newBlock);
 
                         // reset block stamp
@@ -2253,27 +2253,37 @@ namespace Client.Network
             ActionFactory.Remove(ac);
         }
 
-        public void PushTarget(in byte slot, TargettingType targetOrPickup)
+        /// <summary>
+        ///  Buffers a target action (set targetOrPickup to true for target, false for pick-up)
+        /// </summary>
+        public void PushTarget(byte slot, TargettingType targetOrPickup)
         {
-            ActionTargetSlot ats = (ActionTargetSlot)ActionFactory.Create(Constants.InvalidSlot, ActionCode.ActionTargetSlotCode);
+            var ats = (ActionTargetSlot)ActionFactory.Create(Constants.InvalidSlot, ActionCode.ActionTargetSlotCode);
+
             Debug.Assert(ats != null);
             ats.Slot = slot;
 
-            // ensure the value is good for the FE
-            switch (targetOrPickup)
-            {
-                case TargettingType.None:
-                    ats.TargetOrPickup = 0;
-                    break;
-                case TargettingType.Lootable:
-                    ats.TargetOrPickup = 1;
-                    break;
-                case TargettingType.Harvestable:
-                    ats.TargetOrPickup = 2;
-                    break;
-            }
+            //// ensure the value is good for the FE
+            //switch (targetOrPickup)
+            //{
+            //    case TargettingType.None:
+            //        ats.TargetOrPickup = 0;
+            //        break;
+            //
+            //    case TargettingType.Lootable:
+            //        ats.TargetOrPickup = 1;
+            //        break;
+            //
+            //    case TargettingType.Harvestable:
+            //        ats.TargetOrPickup = 2;
+            //        break;
+            //
+            //    default:
+            //        return;
+            //}
 
             ats.TargetOrPickup = (uint)targetOrPickup;
+
             Push(ats);
         }
     }

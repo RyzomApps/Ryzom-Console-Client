@@ -837,10 +837,9 @@ namespace Client.Plugins
         /// <summary>
         /// called when an entity is created
         /// </summary>
-        public void OnEntityCreate(byte slot, uint form, PropertyChange.TNewEntityInfo newEntityInfo)
+        public void OnEntityCreate(byte slot)
         {
-            // TODO: OnEntityCreate
-            //DispatchAutomatonEvent(automaton => automaton.OnEntityCreate(slot, form, newEntityInfo));
+            DispatchListenerEvent(listener => listener.OnEntityCreate(slot));
         }
 
         /// <summary>
@@ -854,7 +853,7 @@ namespace Client.Plugins
         /// <summary>
         /// called when visual property is updated
         /// </summary>
-        public void OnEntityUpdateVisualProperty(uint gameCycle, byte slot, byte prop, uint predictedInterval)
+        public void OnEntityUpdateVisualProperty(uint gameCycle, byte slot, uint prop, uint predictedInterval)
         {
             DispatchListenerEvent(listener => listener.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval));
         }
