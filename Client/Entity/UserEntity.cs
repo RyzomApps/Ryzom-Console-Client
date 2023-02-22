@@ -23,6 +23,7 @@ namespace Client.Entity
     /// <date>2001</date>
     public class UserEntity : PlayerEntity, IUserEntity
     {
+
         private byte _selection;
 
         /// <summary>
@@ -41,7 +42,13 @@ namespace Client.Entity
         }
 
         /// <inheritdoc />
-        public void Selection(byte slot)
+        public byte GetSelection()
+        {
+            return _selection;
+        }
+
+        /// <inheritdoc />
+        public void SetSelection(byte slot)
         {
             // allows re-selection in Ring client: even if the selected slots is equal to the selection,
             // the client must send the messages.
@@ -58,14 +65,14 @@ namespace Client.Entity
             _client.GetApiNetworkManager().PushTarget(slot);
 
             // Target the slot on client, don't wait NetWork response
-            //targetSlot(slot);
+            SetTargetSlot(slot);
+
             //_TargetSlotNoLag = slot;
             //
             //if (ClientCfg.R2EDEnabled)
             //{
             //	R2.getEditor().inGameSelection(slot);
             //}
-
 
             // Change the current selection so un color the current selection.
             //CEntityCL sel = EntitiesMngr.entity(_Selection);
@@ -276,7 +283,7 @@ namespace Client.Entity
             }
 
             // Select the new target.
-            Selection(newSlot);
+            SetSelection(newSlot);
         }
 
         //private static bool wellPosition = false;

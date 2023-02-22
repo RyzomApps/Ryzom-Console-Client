@@ -6,13 +6,13 @@ using Client.Network.Action;
 
 namespace Client.Commands
 {
-    public class Quarter : CommandBase
+    public class Loot : CommandBase
     {
-        public override string CmdName => "quarter";
+        public override string CmdName => "loot";
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Quartering Action";
+        public override string CmdDesc => "Loot Action";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -24,14 +24,14 @@ namespace Client.Commands
             if (!target.HasValue || target.Value == Constants.InvalidSlot)
                 return "Nothing selected.";
 
-            ryzomClient.GetNetworkManager().PushPickup(target.Value, TargettingType.Harvestable);
+            ryzomClient.GetNetworkManager().PushPickup(target.Value, TargettingType.Lootable);
 
             return "";
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "harvest" };
+            return new[] { "" };
         }
     }
 }

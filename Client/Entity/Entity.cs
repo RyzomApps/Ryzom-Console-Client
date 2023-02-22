@@ -128,7 +128,7 @@ namespace Client.Entity
         {
             _headPitch = hp;
             // epsilon to avoid gimbaled lock
-            const double bound = Math.PI / 2 - 0.01; 
+            const double bound = Math.PI / 2 - 0.01;
             _headPitch = Math.Min(Math.Max(_headPitch, -bound), bound);
         }
 
@@ -169,7 +169,7 @@ namespace Client.Entity
             //// Initialize the mode.
             _Mode = EntityMode.UnknownMode;
             _TheoreticalMode = EntityMode.UnknownMode;
-            
+
             // No DataSetId initialized
             _dataSetId = 0xFFFFF;
             //_NPCAlias = 0;

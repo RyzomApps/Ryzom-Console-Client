@@ -166,7 +166,7 @@ namespace Client.Entity
 
                     default:
                         _client.GetLogger().Warn($"Unknown Form Type '{entitySheet.Type}' -> entity not created.");
-                        return new Entity();
+                        return null;
                 }
             }
 
