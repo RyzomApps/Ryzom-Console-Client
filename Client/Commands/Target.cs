@@ -37,7 +37,7 @@ namespace Client.Commands
                 slot = entity.Slot();
             }
 
-            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.Selection(slot);
+            ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.SetSelection(slot);
             ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.SetTargetSlot(slot);
 
             return "";
