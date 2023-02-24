@@ -734,7 +734,7 @@ namespace Client.Client
             else
             {
                 // wait for the string
-                if (_stringsCallbacks.ContainsKey(stringId))
+                if (_stringsActions.ContainsKey(stringId))
                 {
                     _stringsActions[stringId] = pcallback;
                 }
