@@ -115,6 +115,11 @@ namespace Client.Entity
         protected EntityMode _Mode;
 
         /// <summary>
+        /// Return true if the character is currently dead.
+        /// </summary>
+        public bool IsDead() { return _Mode == EntityMode.Death; }
+
+        /// <summary>
         /// Theoretical Current Mode (could be different from the current mode).
         /// </summary>
         protected EntityMode _TheoreticalMode;
@@ -374,7 +379,7 @@ namespace Client.Entity
                     break;
 
                 case PropertyType.Mode:
-                    //UpdateVisualPropertyMode(gameCycle, nodeProp.GetValue64());
+                    UpdateVisualPropertyMode(gameCycle, nodeProp.GetValue64(), client);
                     break;
 
                 case PropertyType.Vpa:
@@ -448,6 +453,195 @@ namespace Client.Entity
             }
         }
 
+        const int	PROPERTY_POSX				= 0;
+        const int	PROPERTY_POSY				= 1;
+        const int	PROPERTY_POSZ				= 2;
+        const int	PROPERTY_ORIENTATION		= 3; // Theta
+        const int	PROPERTY_MODE				= 8;
+
+        /// <summary>
+        /// New mode received.
+        /// </summary>
+        /// <remarks>For the first mode, we must have received the position and orientation (but this should be the case).<br/>
+        /// Read the position or orientation from the database when reading the mode (no more updated in updateVisualPropertyPos and updateVisualPropertyOrient).</remarks>
+        private void UpdateVisualPropertyMode(in uint gameCycle, long prop, RyzomClient client)
+        {
+            //if (verboseVP(this))
+            //{
+            //		client.GetLogger().Info("(%05d,%03d) CH:updtVPMode:%d: '%s(%d)' received.", sint32(T1 % 100000), NetMngr.getCurrentServerTick(), _Slot, modeToString((EntityMode)prop).c_str(), (EntityMode)prop);
+            //}
+
+            // New Mode Received : Set the Theoretical Current Mode if different.
+            if (_TheoreticalMode != (EntityMode)(prop & 0xffff))
+            {
+                _TheoreticalMode = (EntityMode)(prop & 0xffff);
+            }
+            else
+            {
+                client.GetLogger().Warn($"CH:updtVPMode:{_slot}: The mode '{_TheoreticalMode}({(int)_TheoreticalMode})' sent is the same as the current one.");
+                return;
+            }
+
+            // If it is the first mode, set the mode.
+            if (_Mode == EntityMode.UnknownMode)
+            {
+                // SET THE FIRST POSITION
+                //-----------------------
+                // Check the DB entry (the warning is already done in the build method).
+                if (_DBEntry == null)
+                {
+                    return;
+                }
+
+                // Get The property 'PROPERTY_POSX'.
+                if (!(_DBEntry.GetNode(PROPERTY_POSX) is DatabaseNodeLeaf nodeX))
+                {
+                    client.GetLogger().Warn("CH::updtVPMode:%d: Cannot find the property 'PROPERTY_POSX(%d)'.", _slot, PROPERTY_POSX);
+                    return;
+                }
+
+                // Get The property 'PROPERTY_POSY'.
+                if (!(_DBEntry.GetNode(PROPERTY_POSY) is DatabaseNodeLeaf nodeY))
+                {
+                    client.GetLogger().Warn("CH::updtVPMode:%d: Cannot find the property 'PROPERTY_POSY(%d)'.", _slot, PROPERTY_POSY);
+                    return;
+                }
+
+                // Get The property 'PROPERTY_POSZ'.
+                if (!(_DBEntry.GetNode(PROPERTY_POSZ) is DatabaseNodeLeaf nodeZ))
+                {
+                    client.GetLogger().Warn("CH::updtVPMode:%d: Cannot find the property 'PROPERTY_POSZ(%d)'.", _slot, PROPERTY_POSZ);
+                    return;
+                }
+
+                //// Next position will no longer be the first one.
+                //_First_Pos = false;
+                //
+                //// Insert the primitive into the world.
+                //if (_Primitive)
+                //{
+                //    _Primitive.insertInWorldImage(dynamicWI);
+                //}
+
+                // float makes a few cm error
+                var x = (float)(nodeX.GetValue64() / 1000d);
+                var y = (float)(nodeY.GetValue64() / 1000d);
+                var z = (float)(nodeZ.GetValue64() / 1000d);
+
+                // Set the primitive position.
+                //pacsPos(CVectorD(x, y, z));
+                Pos = new Vector3(x, y, z);
+
+                // SET THE FIRST ORIENTATION
+                //--------------------------
+                // Get The property 'PROPERTY_ORIENTATION'.
+                if (!(_DBEntry.GetNode(PROPERTY_ORIENTATION) is DatabaseNodeLeaf nodeOri))
+                {
+                    client.GetLogger().Warn("CH::updtVPMode:%d: Cannot find the property 'PROPERTY_ORIENTATION(%d)'.", _slot, PROPERTY_ORIENTATION);
+                    return;
+                }
+
+                //C64BitsParts parts = new C64BitsParts();
+                //parts.i64[0] = nodeOri.GetValue64();
+                //float angleZ = parts.f[0];
+                //
+                //// server forces the entity orientation even if it cannot turn
+                //front(CVector((float)Math.Cos(angleZ), (float)Math.Sin(angleZ), 0.0f), true, true, true);
+                //dir(front(), false, false);
+                //_TargetAngle = angleZ;
+                //
+                //if (_Primitive)
+                //{
+                //    _Primitive.setOrientation(angleZ, dynamicWI);
+                //}
+
+                // SET THE FIRST MODE
+                //-------------------
+                // Set the mode Now
+                _Mode = _TheoreticalMode;
+                //_ModeWanted = _TheoreticalMode;
+                //
+                //if ((_Mode == MBEHAV.MOUNT_NORMAL) && (_Rider == CLFECOMMON.INVALID_SLOT))
+                //{
+                //    _Mode = MBEHAV.NORMAL;
+                //    _ModeWanted = MBEHAV.MOUNT_NORMAL;
+                //
+                //    // See also updateVisualPropertyRiderEntity() for the case when _Rider is received after the mode
+                //    computeAutomaton();
+                //    computeAnimSet();
+                //    setAnim(CAnimationStateSheet.Idle);
+                //
+                //    // Add the mode to the stage.
+                //    _Stages.addStage(gameCycle, PROPERTY_MODE, prop);
+                //}
+                //
+                //computeAutomaton();
+                //computeAnimSet();
+                //setAnim(CAnimationStateSheet.Idle);
+            }
+            // Not the first mode -> Add to a stage.
+            else
+            {
+                // Add the mode to the stage.
+                //_Stages.addStage(gameCycle, PROPERTY_MODE, prop);
+
+                // TODO: workaround - set the mode instantly
+                _Mode = _TheoreticalMode;
+
+                // Float mode push the orientation
+                if (_TheoreticalMode == EntityMode.CombatFloat)
+                {
+                    // Get The property 'PROPERTY_ORIENTATION'.
+
+                    if (!(_DBEntry.GetNode(PROPERTY_ORIENTATION) is DatabaseNodeLeaf nodeOri))
+                    {
+                        client.GetLogger().Warn($"CH::updtVPMode:{_slot}: Cannot find the property 'PROPERTY_ORIENTATION({PROPERTY_ORIENTATION})'.");
+                        return;
+                    }
+
+                    //_Stages.addStage(gameCycle, PROPERTY_ORIENTATION, nodeOri.GetValue64());
+                }
+                // Any other mode push the position
+                else
+                {
+                    if (_TheoreticalMode != EntityMode.MountNormal)
+                    {
+                        // Check the DB entry (the warning is already done in the build method).
+                        if (_DBEntry == null)
+                        {
+                            return;
+                        }
+
+                        // Get The property 'PROPERTY_POSX'.
+                        if (!(_DBEntry.GetNode(PROPERTY_POSX) is DatabaseNodeLeaf nodeX))
+                        {
+                            client.GetLogger().Warn("CH::updtVPMode:%d: Cannot find the property 'PROPERTY_POSX(%d)'.", _slot, PROPERTY_POSX);
+                            return;
+                        }
+
+                        // Get The property 'PROPERTY_POSY'.
+                        if (!(_DBEntry.GetNode(PROPERTY_POSY) is DatabaseNodeLeaf nodeY))
+                        {
+                            client.GetLogger().Warn("CH::updtVPMode:%d: Cannot find the property 'PROPERTY_POSY(%d)'.", _slot, PROPERTY_POSY);
+                            return;
+                        }
+
+                        // Get The property 'PROPERTY_POSZ'.
+                        if (!(_DBEntry.GetNode(PROPERTY_POSZ) is DatabaseNodeLeaf nodeZ))
+                        {
+                            client.GetLogger().Warn("CH::updtVPMode:%d: Cannot find the property 'PROPERTY_POSZ(%d)'.", _slot, PROPERTY_POSZ);
+                            return;
+                        }
+
+                        // Add Stage.
+                        //_Stages.addStage(gameCycle, CLFECOMMON.PROPERTY_POSX, nodeX.getValue64());
+                        //_Stages.addStage(gameCycle, CLFECOMMON.PROPERTY_POSY, nodeY.getValue64());
+                        //_Stages.addStage(gameCycle, CLFECOMMON.PROPERTY_POSZ, nodeZ.getValue64());
+                    }
+                }
+            }
+
+        }
 
         /// <summary>
         /// updateVisualPropertyContextual
@@ -455,14 +649,6 @@ namespace Client.Entity
         public void UpdateVisualPropertyContextual(uint gameCycle, long prop)
         {
             EntityProperties = new EntityProperties((ushort)prop);
-
-            //Properties.selectable(global::Client.Entity.Properties((ushort)prop).selectable());
-            //Properties.talkableTo(global::Client.Entity.Properties((ushort)prop).talkableTo());
-            //Properties.attackable(global::Client.Entity.Properties((ushort)prop).attackable());
-            //Properties.mountable(global::Client.Entity.Properties((ushort)prop).mountable());
-            //Properties.lootable(global::Client.Entity.Properties((ushort)prop).lootable());
-            //Properties.harvestable(global::Client.Entity.Properties((ushort)prop).harvestable());
-            //Properties.afk(global::Client.Entity.Properties((ushort)prop).afk());
         }
 
 
@@ -522,9 +708,9 @@ namespace Client.Entity
             client.GetStringManager().WaitString(nameId, this, client.GetNetworkManager());
 
             // if(GetEntityName().empty())
-            // 	nlwarning("CH::updateVPName:%d: name Id '%d' received but no name allocated.", _Slot, nameId);
+            // 	client.GetLogger().Warn("CH::updateVPName:%d: name Id '%d' received but no name allocated.", _Slot, nameId);
             // else if(verboseVP(this))
-            // 	nlinfo("(%05d,%03d) CH::updateVPName:%d: name '%s(%d)' received.", sint32(T1%100000), NetMngr.getCurrentServerTick(), _Slot, getEntityName().toString().c_str(), nameId);
+            // 	client.GetLogger().Info("(%05d,%03d) CH::updateVPName:%d: name '%s(%d)' received.", sint32(T1%100000), NetMngr.getCurrentServerTick(), _Slot, getEntityName().toString().c_str(), nameId);
 
             // TODO: updateMissionTarget();
         }
