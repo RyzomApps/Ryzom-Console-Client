@@ -38,7 +38,7 @@ namespace Client.Entity
         public UserEntity(IClient client)
         {
             _client = client;
-            _type = EntityType.User;
+            Type = EntityType.User;
         }
 
         /// <inheritdoc />

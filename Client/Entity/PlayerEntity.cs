@@ -63,7 +63,7 @@ namespace Client.Entity
         /// Ask if the entity is AFK (a character is never AFK but players can be)
         public virtual bool isAFK()
         {
-            return (_Mode == EntityMode.Rest || EntityProperties.IsAfk);
+            return (Mode == EntityMode.Rest || Properties.IsAfk);
         }
 
         /// Pointer on the Sheet with basic parameters.

@@ -133,17 +133,17 @@ namespace Client.Entity
                         }
                         else
                         {
-                            _entities[slot] = new PlayerEntity() { _type = EntityType.Player };
+                            _entities[slot] = new PlayerEntity() { Type = EntityType.Player };
                         }
 
                         break;
 
                     case SheetType.FAUNA:
                         if (entitySheet is CharacterSheet charSheet && !charSheet.R2Npc)
-                            _entities[slot] = new CharacterEntity { _type = EntityType.Fauna };
+                            _entities[slot] = new CharacterEntity { Type = EntityType.Fauna };
                         else
                             // CPlayerR2CL
-                            _entities[slot] = new PlayerEntity { _type = EntityType.Player };
+                            _entities[slot] = new PlayerEntity { Type = EntityType.Player };
                         break;
 
                     case SheetType.FLORA:

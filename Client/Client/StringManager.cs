@@ -868,5 +868,11 @@ namespace Client.Client
             var badString = "<NotExist:" + lwrLabel + ">";
             return badString;
         }
+
+        public string GetCreatureLocalizedName(SheetId sheetId)
+        {
+            // TODO: Implementation of localized creature name
+            return $"CreatureName({sheetId})";
+        }
     }
 }

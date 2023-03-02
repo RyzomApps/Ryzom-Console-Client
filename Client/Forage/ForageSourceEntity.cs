@@ -134,7 +134,7 @@ namespace Client.Forage
             //// Base class init
             //Initialize();
 
-            _type = EntityType.ForageSource;
+            Type = EntityType.ForageSource;
 
             if (client.GetDatabaseManager() != null)
             {
@@ -142,9 +142,9 @@ namespace Client.Forage
 
                 if (nodeRoot != null)
                 {
-                    _DBEntry = (DatabaseNodeBranch)nodeRoot.GetNode(_slot);
+                    DbEntry = (DatabaseNodeBranch)nodeRoot.GetNode(_slot);
 
-                    if (_DBEntry == null)
+                    if (DbEntry == null)
                     {
                         client.GetLogger().Warn("Cannot get a pointer on the DB entry.");
                     }
