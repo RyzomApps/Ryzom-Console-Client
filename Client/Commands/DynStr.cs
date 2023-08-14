@@ -14,7 +14,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "<string_id>";
 
-        public override string CmdDesc => "Display a dyn string value";
+        public override string CmdDesc => "Display the value of a dynamic string";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
