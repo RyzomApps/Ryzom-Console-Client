@@ -130,7 +130,7 @@ namespace Client.Entity
         /// <summary>
         /// Return true if the character is currently dead.
         /// </summary>
-        protected bool IsDead()
+        protected new bool IsDead()
         {
             return Mode == EntityMode.Death || Mode == EntityMode.SwimDeath;
         }
