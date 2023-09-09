@@ -488,7 +488,7 @@ namespace Client.Stream
         /// <summary>
         /// stream version - serializes the current steam version info (which seems to be always 0)
         /// </summary>
-        public uint SerialVersion(uint obj)
+        public uint SerialVersion(uint currentVersion)
         {
             byte b = 0;
             uint v = 0;
@@ -515,7 +515,7 @@ namespace Client.Stream
             }
             else
             {
-                v = streamVersion = obj;
+                v = streamVersion = currentVersion;
 
                 if (v >= 0xFF)
                 {
