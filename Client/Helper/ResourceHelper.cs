@@ -13,14 +13,19 @@ namespace Client.Helper
         {
             var obj = Resources.ResourceManager.GetObject(resourceName);
 
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            FileInfo fileInfo = new FileInfo(assembly.Location);
+
             switch (obj)
             {
                 case byte[] bytes:
                     File.WriteAllBytes(fileName, bytes);
+                    File.SetCreationTimeUtc(fileName, fileInfo.LastWriteTime);
                     break;
 
                 case string text:
                     File.WriteAllText(fileName, text);
+                    File.SetCreationTimeUtc(fileName, fileInfo.LastWriteTime);
                     break;
 
                 default:

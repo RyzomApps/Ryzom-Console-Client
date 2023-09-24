@@ -466,40 +466,8 @@ namespace Client.Network
             {
                 if (proxied)
                 {
-                    // Download and open the proxies file to read from.
-                    var proxies = DownloadProxyList();
-
-                    var rnd = new Random(DateTime.Now.Millisecond);
-                    var working = false;
-                    var retryCounter = 1;
-
-                    // try connections to the proxies until one is working
-                    while (!working)
-                    {
-                        var index = rnd.Next(proxies.Length);
-                        var proxy = proxies[index];
-
-                        if (proxy.Trim().Length == 0 || proxy.Trim().StartsWith("#") || !IPAddress.TryParse(proxy.Split(':')[0], out _))
-                            continue;
-
-                        UdpSocket.ParseHostString(proxy, out var name, out _);
-
-                        _client.GetLogger().Info($"[{retryCounter}] Trying to use SOCKS5 proxy server '{proxy}'.");
-
-                        try
-                        {
-                            _connection = new UdpSocketProxied(proxy);
-                            _connection.Connect(_frontendAddress);
-                            ProxyCountry = IpInfoIo.GetUserCountryByIp(name);
-                            working = true;
-                        }
-                        catch (Exception innerE)
-                        {
-                            _client.GetLogger().Warn(innerE.Message);
-                        }
-
-                        retryCounter++;
-                    }
+                    _connection = ProxyManager.GetSocks5Proxy(_client.GetLogger(), _frontendAddress);
+                    ProxyCountry = IpInfoIo.GetUserCountryByIp(((UdpSocketProxied)_connection).HostName);
                 }
                 else
                 {
@@ -523,70 +491,6 @@ namespace Client.Network
             Tps1.Reset();
             Tps5.Reset();
             Tps15.Reset();
-        }
-
-        /// <summary>
-        /// Downloads all proxy lists, saves them into a file and returns the list.
-        /// </summary>
-        /// <returns>string array of proxy server addresses</returns>
-        private string[] DownloadProxyList()
-        {
-            var ret = new List<string>();
-
-            if (!File.Exists("./data/proxies.txt") || (DateTime.Now - File.GetLastWriteTime("./data/proxies.txt")).TotalSeconds > ClientConfig.OnlineProxyListExpiration)
-                foreach (var proxyUrl in ClientConfig.OnlineProxyList)
-                {
-                    try
-                    {
-                        var proxies = new WebClient().DownloadString(proxyUrl).Split('\r', '\n');
-
-                        foreach (var tmpProxy in proxies)
-                        {
-                            // local copy
-                            var proxy = tmpProxy;
-
-                            if (proxy.Contains(" "))
-                            {
-                                // list with other parameters - assume first row is proxy address
-                                proxy = proxy.Split(" ")[0];
-                            }
-
-                            // filter invalid list entries
-                            if (proxy.Trim().Length == 0 ||
-                                proxy.Trim().StartsWith("#") ||
-                                !proxy.Contains(":") ||
-                                !IPAddress.TryParse(proxy.Split(':')[0], out _))
-                                continue;
-
-                            // exclude ephemeral port range (short-lived sessions)
-                            if (!int.TryParse(proxy.Split(':')[1], out var port) ||
-                                //port >= 1024 && port <= 5000 ||
-                                port >= 32768 && port <= 65535)
-                                continue;
-
-                            if (!ret.Contains(proxy))
-                                ret.Add(proxy);
-                        }
-                    }
-                    catch
-                    {
-                        _client.GetLogger().Warn($"Error while processing proxy list from '{proxyUrl}'.");
-                    }
-                }
-
-            if (ret.Count > 0)
-            {
-                _client.GetLogger().Info($"Download of proxy server list successful. {ret.Count} proxies total.");
-                ret.Sort();
-                File.WriteAllLines("./data/proxies.txt", ret, Encoding.UTF8);
-            }
-            else
-            {
-                _client.GetLogger().Info("Local proxy server list has not yet expired or download of the list failed. Using local list.");
-                ret = File.ReadAllLines("./data/proxies.txt", Encoding.UTF8).ToList();
-            }
-
-            return ret.ToArray();
         }
 
         /// <summary>
@@ -1503,8 +1407,8 @@ namespace Client.Network
             // won't send a disconnection msg because state is already Disconnect
             Disconnect();
 
-            _client.GetLogger().Warn("Socket caused an exception. This error could mean, that the front-end, the proxy or the connection is down.");
-            return false;
+            throw new EndOfStreamException("Socket caused an exception. This error could mean, that the front-end, the proxy or the connection is down.");
+            //return false;
         }
 
         /// <summary>

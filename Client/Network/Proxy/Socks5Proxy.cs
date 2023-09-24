@@ -36,8 +36,8 @@ namespace Client.Network.Proxy
             "Unknown error."                       // 0x09
         };
 
-        private const int ConnectionTimeout = 500;   // 0.5 s for connection phase
-        private const int NegotiationTimeout = 5000; //   5 s for negotiation phase
+        private const int ConnectionTimeout = 2000;   // 2 s for connection phase
+        private const int NegotiationTimeout = 5000; //  5 s for negotiation phase
         public const int OperationTimeout = 30000;  //  30 s for normal connection
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Client.Network.Proxy
                 // none
                 case 0x00:
                     break;
-                    
+
                 // user name / password
                 case 0x02:
                     request = new byte[256];
@@ -260,6 +260,10 @@ namespace Client.Network.Proxy
                     socket.Close();
                     throw new ConnectionException($"Proxy server is using an address format (0x{atyp[0]:X2}) that is not supported by the client.");
             }
+
+            //if (udpAdress == "0.0.0.0" || udpAdress == "::0")
+                //throw new ConnectionException(udpAdress);
+                //udpAdress = proxyAddress;
 
             // server bound port in network octet order
             var port = new byte[2];
