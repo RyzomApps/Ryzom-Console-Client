@@ -1,11 +1,43 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.Json;
 
 namespace Client.Network
 {
     public class SessionData
     {
-        public string Cookie { get; set; }
+        private string _cookie;
+
+        public string Cookie
+        {
+            get => _cookie;
+            set
+            {
+                _cookie = value;
+
+                try
+                {
+                    var parts = _cookie.Split('|');
+
+                    CookieUserAddr = Convert.ToInt32("0x" + parts[0], 16);
+                    CookieUserKey = Convert.ToInt32("0x" + parts[1], 16);
+                    CookieUserId = Convert.ToInt32("0x" + parts[2], 16);
+                    CookieValid = !(CookieUserAddr == 0 && CookieUserKey == 0 && CookieUserId == 0);
+                }
+                catch (Exception)
+                {
+                    CookieUserAddr = 0;
+                    CookieUserKey = 0;
+                    CookieUserId = 0;
+                    CookieValid = false;
+                }
+            }
+        }
+
+        public bool CookieValid { get; internal set; }
+        public int CookieUserAddr { get; internal set; }
+        public int CookieUserKey { get; internal set; }
+        public int CookieUserId { get; internal set; }
 
         public string FsAddr { get; set; }
 

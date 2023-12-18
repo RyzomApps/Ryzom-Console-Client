@@ -980,10 +980,10 @@ namespace Client.Network
         {
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            uint textID = uint.MinValue;
-            impulse.Serial(ref textID);
+            var textId = uint.MinValue;
+            impulse.Serial(ref textId);
 
-            _client.Plugins.OnTeamInvitation(textID);
+            _client.Plugins.OnTeamInvitation(textId);
         }
 
         private void ImpulseBeginCast(BitMemoryStream impulse)
@@ -1007,7 +1007,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// Message from the server to correct the user position because he is not at the same position on the server..
+        /// Message from the server to correct the user position because (s)he is not at the same position on the server.
         /// </summary>
         private void ImpulseCorrectPos(BitMemoryStream impulse)
         {
@@ -1069,7 +1069,7 @@ namespace Client.Network
         {
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            int type = 0;
+            var type = 0;
             impulse.Serial(ref type);
             _chatManager.ProcessChatStringWithNoSender(impulse, (ChatGroupType)type, _client);
         }

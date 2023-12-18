@@ -10,6 +10,7 @@ using System;
 using System.Xml;
 using Client.Brick;
 using Client.Database;
+using Client.Network.WebIG;
 using Client.Phrase;
 using Client.Skill;
 
@@ -55,6 +56,9 @@ namespace Client.Client
 
             // SPhrase Manager DB Init (BEFORE loading). Must be init AFTER skill and brick init
             _phraseManager.InitInGame();
+
+            // Start the WebIG Thread
+            WebigNotificationThread.StartWebIgNotificationThread(_client);
         }
 
         public void CreateLocalBranch(string fileName)

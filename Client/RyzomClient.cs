@@ -103,6 +103,7 @@ namespace Client
         // Network Walls
         public bool UserCharPosReceived = false;
         public bool SabrinaPhraseBookLoaded = false;
+        public uint CharacterHomeSessionId = 0;
 
         public ILogger Log;
 
@@ -661,7 +662,11 @@ namespace Client
             // Initialize the current Player Name
             var playerName = _networkManager.CharacterSummaries[_networkManager.PlayerSelectedSlot].Name;
             _networkManager.PlayerSelectedHomeShardName = playerName;
-            _networkManager.PlayerSelectedHomeShardNameWithParenthesis = '(' + playerName + ')';
+
+            // Init the current Player Home shard Id and name
+            CharacterHomeSessionId = _networkManager.CharacterSummaries[_networkManager.PlayerSelectedSlot].Mainland;
+            //PlayerSelectedMainland = _networkManager.CharacterSummaries[_networkManager.PlayerSelectedSlot].Mainland;
+            _networkManager.PlayerSelectedHomeShardNameWithParenthesis = $"({playerName})";
 
             return InterfaceState.GoInTheGame;
         }

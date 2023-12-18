@@ -158,6 +158,10 @@ namespace Client.Config
             {"R2_INVITE", "0 255 0 255 around"} // Ring invitation
         };
 
+        public static string WebIgMainDomain = "http://app.ryzom.com";
+        public static int WebIgNotifInterval = 10; // time in minutes
+        public static List<string> WebIgTrustedDomains = new List<string> { "app.ryzom.com" };
+
         //private static string configPattern = "^(?<parameter>\\w*)[ ]*=[ ]*({(?<value1>\\w*[^={}]*)}|['\"](?<value2>\\w*[^=]*)['\"]|(?<value3>\\w*[^=\"'\\n]*)).*(;|#|\\/\\/)+.*$";
 
         /// <summary>

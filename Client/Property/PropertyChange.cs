@@ -77,7 +77,7 @@ namespace Client.Property
         {
             internal void Reset()
             {
-                DataSetIndex = 2 ^ 20 - 1;
+                DataSetIndex = 0xFFFFF;
                 Alias = 0;
             }
 
