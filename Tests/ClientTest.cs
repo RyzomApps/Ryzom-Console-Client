@@ -4,6 +4,7 @@ using Client;
 using Client.Plugins;
 using System.IO;
 using Xunit;
+using Client.Network.WebIG;
 
 namespace Tests
 {
@@ -31,6 +32,16 @@ namespace Tests
             var plugins = loader.LoadPlugins(new DirectoryInfo(@"../plugins/"));
 
             Assert.True(plugins.Length > 0);
+        }
+
+        [Fact]
+        public void BrowserTest()
+        {
+            var client = new RyzomClient(false);
+
+            var webigThread = new WebigNotificationThread(client);
+            webigThread.Init();
+            webigThread.Get("http://www.google.de");
         }
     }
 }

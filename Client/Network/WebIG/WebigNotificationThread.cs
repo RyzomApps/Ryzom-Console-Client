@@ -68,12 +68,14 @@ namespace Client.Network.WebIG
 
             var handler = new HttpClientHandler()
             {
-                // curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, 1);
                 AllowAutoRedirect = true,
-                // curl_easy_setopt(_curl, CURLOPT_COOKIEFILE, "");
                 CookieContainer = new CookieContainer(),
+                UseCookies = true,
+
                 // TODO: Add Proxy here
             };
+
+            handler.CookieContainer.Add(new Uri(ClientConfig.WebIgMainDomain), new Cookie("ryzomId", _client?.SessionData?.Cookie ?? ""));
 
             _curl = new HttpClient(handler);
 
@@ -82,17 +84,21 @@ namespace Client.Network.WebIG
                 return;
             }
 
-            //curl_easy_setopt(_curl, CURLOPT_USERAGENT, getUserAgent().c_str());
-            _curl.DefaultRequestHeaders.TryAddWithoutValidation("user-agent", UserAgent.GetUserAgent());
-
-            _curl.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/lua");
-            _curl.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "text/lua");
+            _curl.DefaultRequestHeaders.TryAddWithoutValidation("user-agent", "Ryzom/Omega / v23.12.346 #adddfe118-windows-x64" /*UserAgent.GetUserAgent()*/);
 
             _curl.DefaultRequestHeaders.Accept.Clear();
-            _curl.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/lua"));
+            _curl.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
 
-            //curl_easy_setopt(_curl, CURLOPT_NOPROGRESS, 1);
-            //curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, writeDataFromCurl);
+            //_curl.DefaultRequestHeaders.TE.Clear();
+            //_curl.DefaultRequestHeaders.TE.Add(new TransferCodingWithQualityHeaderValue("trailers"));
+
+            _curl.DefaultRequestHeaders.AcceptLanguage.Clear();
+            _curl.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en"));
+
+            _curl.DefaultRequestHeaders.AcceptCharset.Clear();
+            _curl.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
+
+            //_curl.DefaultRequestHeaders.Referrer = new Uri(ClientConfig.WebIgMainDomain);
 
             //NLWEB.CCurlCertificates.useCertificates(_curl);
         }
@@ -135,6 +141,8 @@ namespace Client.Network.WebIG
 
             var contentType = "";
 
+            File.WriteAllText("webresponse.html", _curlresult);
+
             //res = curl_easy_getinfo(_curl, CURLINFO_CONTENT_TYPE, ch);
             try
             {
@@ -148,8 +156,6 @@ namespace Client.Network.WebIG
                 _logger.Info(e.Message);
                 return;
             }
-
-            File.WriteAllText("webresponse.html", _curlresult);
 
             // "text/lua; charset=utf8"
             if (contentType.IndexOf("text/lua", StringComparison.Ordinal) == 0)
@@ -202,6 +208,7 @@ namespace Client.Network.WebIG
 
             while (_running)
             {
+                //var url = "http://bierdosenhalter.de/_ryzom/title.php";
                 var url = domain + "/index.php?app=notif&format=lua&rnd=" + RandomString();
                 url = AddWebIgParams(url, true);
                 Get(url);
@@ -249,7 +256,6 @@ namespace Client.Network.WebIG
             {
                 _thread.Join();
                 _thread = null;
-                _thread = null;
 
                 _logger.Warn("WebIgNotification thread stopped");
             }
@@ -282,11 +288,13 @@ namespace Client.Network.WebIG
                    $"&datasetid={userEntity.DataSetId()}" +
                    "&ig=1";
 
-            if (!trustedDomain) 
+            if (!trustedDomain)
                 return url;
 
             var cid = _client.SessionData.CookieUserId * 16 + _client.GetNetworkManager().PlayerSelectedSlot;
             url += $"&cid={cid}&authkey={GetWebAuthKey(_client)}";
+
+            url += $"&ryzomId={ _client.SessionData.Cookie}";
 
             //    if (url.IndexOf('$') != -1)
             //    {
@@ -372,7 +380,7 @@ namespace Client.Network.WebIG
                          cid +
                          _client.SessionData.Cookie;
 
-            var key = GetMd5(rawKey);
+            var key = GetMd5(rawKey).ToLower();
 
             //nlinfo("rawkey = '%s'", rawKey.c_str());
             //nlinfo("authkey = %s", key.c_str());
