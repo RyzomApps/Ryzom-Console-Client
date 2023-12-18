@@ -8,7 +8,7 @@
 
 namespace Client.Network
 {
-    internal interface IUdpSocket
+    public interface IUdpSocket
     {
         /// <summary>
         /// Closes the UDP connection

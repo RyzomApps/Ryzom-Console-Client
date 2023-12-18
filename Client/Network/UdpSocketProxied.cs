@@ -16,7 +16,7 @@ namespace Client.Network
     /// <summary>
     /// wrapper for the udp client class to have a synchron connection the server
     /// </summary>
-    internal class UdpSocketProxied : IUdpSocket
+    public class UdpSocketProxied : IUdpSocket
     {
         private UdpClient _udpMain;
         private Socket _socks5Socket;
@@ -76,7 +76,7 @@ namespace Client.Network
             {
                 _socksUdpHeader = new byte[10];
 
-                // Type of IP V4 address
+                // Type of IP V4 address - TODO: allow usage of IPV6
                 _socksUdpHeader[3] = 1;
 
                 // IP

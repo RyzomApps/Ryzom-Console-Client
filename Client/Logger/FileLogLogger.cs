@@ -14,7 +14,7 @@ using API.Helper;
 namespace Client.Logger
 {
     /// <summary>
-    /// Logger for logfiles
+    /// Logger for log files
     /// </summary>
     public class FileLogLogger : FilteredLogger
     {
@@ -42,7 +42,7 @@ namespace Client.Logger
         }
 
         /// <summary>
-        /// Saves the message to the logfile
+        /// Saves the message to the log file
         /// </summary>
         private void Save(string msg)
         {

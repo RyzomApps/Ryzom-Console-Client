@@ -60,16 +60,19 @@ namespace Client.Logger
 
         public override void Info(string msg)
         {
-            if (InfoEnabled)
-                lock (_loggerLock)
-                {
-                    ConsoleIO.WriteLogLine(msg);
-                }
+            if (!InfoEnabled) 
+                return;
+
+            lock (_loggerLock)
+            {
+                ConsoleIO.WriteLogLine(msg);
+            }
         }
 
         public override void Warn(string msg)
         {
-            if (!WarnEnabled) return;
+            if (!WarnEnabled) 
+                return;
 
             lock (_loggerLock)
             {
@@ -79,7 +82,8 @@ namespace Client.Logger
 
         public override void Error(string msg)
         {
-            if (!ErrorEnabled) return;
+            if (!ErrorEnabled) 
+                return;
 
             lock (_loggerLock)
             {
@@ -89,7 +93,8 @@ namespace Client.Logger
 
         public override void Chat(string msg)
         {
-            if (!ChatEnabled) return;
+            if (!ChatEnabled) 
+                return;
 
             if (ShouldDisplay(FilterChannel.Chat, msg))
             {

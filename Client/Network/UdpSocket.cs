@@ -15,7 +15,7 @@ namespace Client.Network
     /// <summary>
     /// wrapper for the udpclient class to have a synch connection the the server
     /// </summary>
-    internal class UdpSocket : IUdpSocket
+    public class UdpSocket : IUdpSocket
     {
         private UdpClient _udpMain;
 
@@ -43,7 +43,7 @@ namespace Client.Network
         /// <summary>
         /// Splits an address into host and port
         /// </summary>
-        public static void ParseHostString(string hostString, out string hostName, out int port)
+        internal static void ParseHostString(string hostString, out string hostName, out int port)
         {
             hostName = hostString;
             port = -1;

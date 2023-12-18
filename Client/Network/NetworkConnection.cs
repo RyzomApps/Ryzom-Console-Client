@@ -17,6 +17,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading;
 using API.Helper;
+using API.Logger;
 using Client.Config;
 using Client.Database;
 using Client.Helper;
@@ -467,7 +468,7 @@ namespace Client.Network
                 if (proxied)
                 {
                     // Download and open the proxies file to read from.
-                    var proxies = DownloadProxyList();
+                    var proxies = DownloadProxyList(_client.GetLogger());
 
                     var rnd = new Random(DateTime.Now.Millisecond);
                     var working = false;
@@ -529,7 +530,7 @@ namespace Client.Network
         /// Downloads all proxy lists, saves them into a file and returns the list.
         /// </summary>
         /// <returns>string array of proxy server addresses</returns>
-        private string[] DownloadProxyList()
+        public static string[] DownloadProxyList(ILogger logger)
         {
             var ret = new List<string>();
 
@@ -570,20 +571,20 @@ namespace Client.Network
                     }
                     catch
                     {
-                        _client.GetLogger().Warn($"Error while processing proxy list from '{proxyUrl}'.");
+                        logger.Warn($"Error while processing proxy list from '{proxyUrl}'.");
                     }
                 }
 
             if (ret.Count > 0)
             {
-                _client.GetLogger().Info($"Download of proxy server list successful. {ret.Count} proxies total.");
                 ret.Sort();
                 File.WriteAllLines("./data/proxies.txt", ret, Encoding.UTF8);
+                logger.Info($"Download of proxy server list successful. {ret.Count} proxies total.");
             }
             else
             {
-                _client.GetLogger().Info("Local proxy server list has not yet expired or download of the list failed. Using local list.");
                 ret = File.ReadAllLines("./data/proxies.txt", Encoding.UTF8).ToList();
+                logger.Info($"Local proxy server list has not yet expired or download of the list failed. Using local list. {ret.Count} proxies total.");
             }
 
             return ret.ToArray();

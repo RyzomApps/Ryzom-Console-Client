@@ -38,7 +38,7 @@ namespace Client.Network.Proxy
 
         private const int ConnectionTimeout = 500;   // 0.5 s for connection phase
         private const int NegotiationTimeout = 5000; //   5 s for negotiation phase
-        public const int OperationTimeout = 30000;  //  30 s for normal connection
+        public const int OperationTimeout = 30000;  //   30 s for normal connection
 
         /// <summary>
         /// Open a TCP connection to the appropriate SOCKS5 port on the SOCKS5 server system using the UDP associate command

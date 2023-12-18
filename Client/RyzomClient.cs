@@ -232,7 +232,7 @@ namespace Client
             }
             else
             {
-                Log = new FilteredLogger();
+                Log = new DebugLogger();
             }
         }
 
