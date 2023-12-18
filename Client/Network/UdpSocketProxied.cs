@@ -29,6 +29,19 @@ namespace Client.Network
         private DateTime _lastDataReceived = DateTime.MinValue;
 
         /// <summary>
+        /// Host address without portnumber
+        /// </summary>
+        public string HostName
+        {
+            get
+            {
+                UdpSocket.ParseHostString(_proxyAddress, out string hostName, out _);
+                return hostName;
+            }
+        }
+
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public UdpSocketProxied(string proxyAddress)

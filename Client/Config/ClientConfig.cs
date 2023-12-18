@@ -89,18 +89,21 @@ namespace Client.Config
         public static long OnlineProxyListExpiration = 10 * 60; // [s]
 
         public static string[] OnlineProxyList = {
-            "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=1000&country=all&ssl=all&anonymity=all",
+            "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=2000&country=all&ssl=all&anonymity=all",
             "https://raw.githubusercontent.com/hanwayTech/free-proxy-list/main/socks5.txt",
             "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt",
-            "https://raw.githubusercontent.com/HyperBeats/proxy-list/main/socks5.txt",
+            // "https://raw.githubusercontent.com/HyperBeats/proxy-list/main/socks5.txt",
             "https://raw.githubusercontent.com/manuGMG/proxy-365/main/SOCKS5.txt",
-            "https://raw.githubusercontent.com/saschazesiger/Free-Proxies/master/proxies/socks5.txt",
+            // "https://raw.githubusercontent.com/saschazesiger/Free-Proxies/master/proxies/socks5.txt",
             "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks5.txt",
-            "https://raw.githubusercontent.com/UptimerBot/proxy-list/main/proxies/socks5.txt",
+            // "https://raw.githubusercontent.com/UptimerBot/proxy-list/main/proxies/socks5.txt",
             "https://raw.githubusercontent.com/Zaeem20/FREE_PROXIES_LIST/master/socks5.txt",
             // "https://www.proxy-list.download/api/v1/get?type=socks5",
             // "https://openproxylist.xyz/socks5.txt",
             // "https://proxyspace.pro/socks5.txt",
+            // "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt",
+            "https://raw.githubusercontent.com/sunny9577/proxy-scraper/master/generated/socks5_proxies.txt",
+            "https://raw.githubusercontent.com/Anonym0usWork1221/Free-Proxies/main/proxy_files/socks5_proxies.txt",
         };
 
         // Other Settings

@@ -10,6 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
+using API.Chat;
 using API.Sheet;
 
 namespace Client.Sheet
@@ -292,6 +295,34 @@ namespace Client.Sheet
             ret._id = numericId;
 
             return ret;
+        }
+
+        /// <summary>
+        /// Return all entities which names match the pattern with their corresponding id
+        /// </summary>
+        public string FindSheet(string pattern)
+        {
+            var regex = new Regex(pattern);
+
+            var sheetList = new StringBuilder();
+            var found = 0;
+
+            foreach (var (key, value) in _sheetIdToName)
+            {
+                if (found >= 128)
+                    break;
+
+                if (!regex.Match(value).Success)
+                    continue;
+
+                if (sheetList.Length > 0)
+                    sheetList.Append("\r\n");
+
+                sheetList.Append(key + "\t" + value);
+                found++;
+            }
+
+            return $"{found}{(found == 128 ? "+" : "")} sheets found:\r\n{sheetList}";
         }
     }
 }

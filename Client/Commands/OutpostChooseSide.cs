@@ -10,7 +10,7 @@ namespace Client.Commands
     {
         public override string CmdName => "outpostChooseSide";
 
-        public override string CmdUsage => "<0=D|1=A|2=N>";
+        public override string CmdUsage => "<0:Defend|1:Attack|2:Neutral>";
 
         public override string CmdDesc => "Lets the client chose a side in an outpost war";
 
@@ -24,7 +24,7 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "Please specify a name.";
+                return GetCmdDescTranslated();
 
             var pvpSide = int.Parse(args[0]);
 

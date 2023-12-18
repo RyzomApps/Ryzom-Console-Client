@@ -27,7 +27,7 @@ namespace Tests
             var client = new RyzomClient(false);
 
             // Download and open the proxies file to read from.
-            var proxies = NetworkConnection.DownloadProxyList(client.GetLogger());
+            var proxies = ProxyManager.DownloadProxyList(client.GetLogger());
 
             var rnd = new Random(DateTime.Now.Millisecond);
             var working = false;

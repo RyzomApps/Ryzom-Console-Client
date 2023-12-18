@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Timers;
 using API.Client;
 using API.Entity;
 using API.Network;
@@ -72,6 +73,8 @@ namespace Client.Client
 
         private readonly RyzomClient _client;
 
+        private static readonly Timer _flushTimer = new Timer();
+
         /// <summary>
         /// constructor
         /// </summary>
@@ -79,7 +82,24 @@ namespace Client.Client
         public StringManager(RyzomClient client)
         {
             _client = client;
+
+            _flushTimer.Interval = 60000;
+            _flushTimer.Elapsed += _flushTimer_Elapsed;
+            _flushTimer.Start();
         }
+
+        /// <summary>
+        /// Raised when the flush timer elapsed and the cache should be saved
+        /// </summary>
+        private void _flushTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if (!_cacheInited || _cacheFilename == null) return;
+
+            _client.GetLogger().Debug($"Saving string cache to {Path.GetFullPath(_cacheFilename)}");
+
+            FlushStringCache();
+        }
+
         /// <summary>
         /// Prepare the string manager to use a persistent string cache.
         /// There is one cache file for each language and for each encountered shard.
@@ -136,7 +156,7 @@ namespace Client.Client
                     }
                     else
                     {
-                        _client.GetLogger().Debug("SM : string cache in sync. cool");
+                        _client.GetLogger().Debug("SM: string cache in sync. cool");
                     }
                 }
                 else
@@ -188,7 +208,7 @@ namespace Client.Client
                     var id = BitConverter.ToUInt32(idBytes);
                     var str = Encoding.UTF8.GetString(strBytes).Replace("\0", "");
 
-                    _client.GetLogger().Debug($"SM : loading string [{id}] as [{str}] in cache");
+                    _client.GetLogger().Debug($"SM: loading string [{id}] as [{str}] in cache");
 
                     if (!_receivedStrings.ContainsKey(id))
                         _receivedStrings.Add(id, str);
@@ -196,7 +216,7 @@ namespace Client.Client
             }
             catch (Exception e)
             {
-                _client.GetLogger().Warn($"SM : loadCache failed, cache deactivated, exception : {e.GetType().Name} {e.Message}");
+                _client.GetLogger().Warn($"SM: loadCache failed, cache deactivated, exception : {e.GetType().Name} {e.Message}");
 
                 // deactivated cache.
                 _cacheFilename = "";
@@ -740,7 +760,7 @@ namespace Client.Client
                 }
                 else
                 {
-                    if(!_stringsActions.ContainsKey(stringId))
+                    if (!_stringsActions.ContainsKey(stringId))
                         _stringsActions.Add(stringId, pcallback);
                 }
             }
@@ -785,12 +805,12 @@ namespace Client.Client
             var text = uctext;
             var defaultText = "";
 
-            if (text[0] != '[') 
+            if (text[0] != '[')
                 return uctext;
 
             var textLocalizations = text[1..].Split('[');
 
-            if (textLocalizations.Length <= 0) 
+            if (textLocalizations.Length <= 0)
                 return !string.IsNullOrEmpty(defaultText) ? defaultText : uctext;
 
             for (uint i = 0; i < textLocalizations.Length; i++)
