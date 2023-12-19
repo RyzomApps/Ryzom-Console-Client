@@ -271,9 +271,6 @@ namespace Client
             _timeoutdetector = new Thread(TimeoutDetector) { Name = "RCC Connection timeout detector" };
             _timeoutdetector.Start();
 
-            _cmdprompt = new Thread(CommandPrompt) { Name = "RCC CommandBase prompt" };
-            _cmdprompt.Start();
-
             StartRyzomClient();
         }
 
@@ -289,8 +286,7 @@ namespace Client
             return _instance;
         }
 
-        public void DisplayChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode,
-            uint dynChatId, string senderName, uint bubbleTimer = 0)
+        public void DisplayChat(uint compressedSenderIndex, string ucstr, string rawMessage, ChatGroupType mode, uint dynChatId, string senderName, uint bubbleTimer = 0)
         {
             var color = ChatColor.GetMinecraftColorForChatGroupType(mode);
 
@@ -299,18 +295,15 @@ namespace Client
             // Override color if the string contains the color
             if (stringCategory.Length > 0 && stringCategory != "SYS")
             {
-                if (ClientConfig.SystemInfoColors.ContainsKey(stringCategory))
+                if (ClientConfig.SystemInfoColors.TryGetValue(stringCategory, out var infoColor))
                 {
-                    var paramString = ClientConfig.SystemInfoColors[stringCategory];
+                    while (infoColor.Contains("  ")) infoColor = infoColor.Replace("  ", " ");
 
-                    while (paramString.Contains("  ")) paramString = paramString.Replace("  ", " ");
-
-                    var paramStringSplit = paramString.Split(" ");
+                    var paramStringSplit = infoColor.Split(" ");
 
                     if (paramStringSplit.Length >= 3)
                     {
-                        var col = Color.FromArgb(int.Parse(paramStringSplit[0]), int.Parse(paramStringSplit[1]),
-                            int.Parse(paramStringSplit[2]));
+                        var col = Color.FromArgb(int.Parse(paramStringSplit[0]), int.Parse(paramStringSplit[1]), int.Parse(paramStringSplit[2]));
 
                         color = "";
                         Console.ForegroundColor = ChatColor.FromColor(col);
@@ -318,8 +311,24 @@ namespace Client
                 }
             }
 
-            Log.Chat(
-                $"[{mode}]{(stringCategory.Length > 0 ? $"[{stringCategory.ToUpper()}]" : "")}{color} {finalString}");
+            // translation
+            var startTr = finalString.IndexOf("{:", StringComparison.Ordinal);
+            var endOfOriginal = finalString.IndexOf("}@{", StringComparison.Ordinal);
+
+            if (startTr != -1 && endOfOriginal != -1)
+            {
+                if (ClientConfig.NoTranslation)
+                {
+                    finalString = finalString[..startTr] + finalString[(startTr + 5)..(endOfOriginal - startTr - 5)];
+                }
+                else
+                {
+                    finalString = finalString[..startTr] + finalString[endOfOriginal..];
+                }
+            }
+
+
+            Log.Chat($"[{mode}]{(stringCategory.Length > 0 ? $"[{stringCategory.ToUpper()}]" : "")}{color} {finalString}");
 
             Plugins.OnChat(compressedSenderIndex, ucstr, rawMessage, mode, dynChatId, senderName, bubbleTimer);
         }
@@ -612,13 +621,23 @@ namespace Client
                     {
                         var charSelect = ClientConfig.SelectCharacter;
 
+                        if (charSelect == -1)
+                        {
+                            ConsoleIO.WriteLineFormatted("§dPlease enter your character slot [0-4]:");
+                            var test = Console.ReadLine();
+
+                            charSelect = int.Parse(test ?? throw new Exception("Invalid slot."));
+                        }
+
+                        if (charSelect < 0 || charSelect > 4) throw new Exception("Invalid slot.");
+
                         _networkManager.WaitServerAnswer = false;
 
                         // check that the preselected character is available
-                        if (_networkManager.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown || charSelect > 4)
+                        if (_networkManager.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown)
                         {
                             // BAD ! preselected char does not exist
-                            throw new InvalidOperationException("preselected char does not exist");
+                            throw new InvalidOperationException("Selected character does not exist.");
 
                             // TODO: Create char if non existent
 
@@ -725,6 +744,11 @@ namespace Client
 
             // Parse the interface InGame
             _interfaceManager.InitInGame(); // must be called after waitForUserCharReceived() because Ring information is used by initInGame()
+
+            // Start the command promt
+            _cmdprompt = new Thread(CommandPrompt) { Name = "RCC CommandBase prompt" };
+            _cmdprompt.Start();
+
             _networkManager.GetChatManager().InitInGame();
 
             // Update Network till current tick increase.

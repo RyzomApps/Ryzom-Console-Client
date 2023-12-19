@@ -83,7 +83,7 @@ namespace Client.Helper
         /// </summary>
         public static string ReadPassword()
         {
-            StringBuilder password = new StringBuilder();
+            var password = new StringBuilder();
 
             ConsoleKeyInfo k;
             while ((k = Console.ReadKey(true)).Key != ConsoleKey.Enter)
@@ -347,12 +347,25 @@ namespace Client.Helper
         /// <summary>
         /// Output the custom prefix to the console
         /// </summary>
-        private static void WritePrefix()
+        public static void WritePrefix()
         {
-            const string sepStart = "<";
-            const string sepEnd = "> ";
+            string sepStart;
+            string sepEnd;
+            string prefix;
 
-            var prefix = RyzomClient.GetInstance().Channel.ToString();
+            if (RyzomClient.GetInstance().Channel != ChatGroupType.Undefined)
+            {
+                sepStart = "<";
+                sepEnd = "> ";
+                prefix = RyzomClient.GetInstance().Channel.ToString();
+            }
+            else
+            {
+                sepStart = "";
+                sepEnd = "";
+                prefix = "> ";
+            }
+
             _prefixLength = sepStart.Length + prefix.Length + sepEnd.Length;
 
             var color = Console.ForegroundColor;
@@ -383,8 +396,6 @@ namespace Client.Helper
             // reset the color
             if (!BasicIoNoColor)
                 Console.ForegroundColor = color;
-
-
         }
 
         /// <summary>

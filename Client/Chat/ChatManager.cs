@@ -6,6 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using API.Chat;
@@ -131,8 +132,8 @@ namespace Client.Chat
             // display
             ChatManagerHelper.BuildChatSentence(senderStr, chatMsg.Content, type, out var ucstr);
 
-            chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, chatMsg.DynChatChanID,
-                senderStr);
+            // Send to the displayers
+            chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, chatMsg.DynChatChanID, senderStr);
         }
 
         /// <summary>

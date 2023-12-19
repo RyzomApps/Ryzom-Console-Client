@@ -8,8 +8,10 @@
 
 using System;
 using System.Xml;
+using API.Chat;
 using Client.Brick;
 using Client.Database;
+using Client.Helper;
 using Client.Network.WebIG;
 using Client.Phrase;
 using Client.Skill;
@@ -58,7 +60,7 @@ namespace Client.Client
             _phraseManager.InitInGame();
 
             // Start the WebIG Thread
-            WebigNotificationThread.StartWebIgNotificationThread(_client);
+            // TODO: WebigNotificationThread.StartWebIgNotificationThread(_client);
         }
 
         public void CreateLocalBranch(string fileName)

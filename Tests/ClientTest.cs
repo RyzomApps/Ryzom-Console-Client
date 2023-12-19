@@ -43,5 +43,17 @@ namespace Tests
             webigThread.Init();
             webigThread.Get("http://www.google.de");
         }
+
+        [Fact]
+        public void ProxyTest()
+        {
+            var client = new RyzomClient(false);
+
+            var webigThread = new WebigNotificationThread(client);
+            webigThread.Init();
+
+            var proxyThread = new HttpProxyServerThread(client, webigThread);
+            proxyThread.Init();
+        }
     }
 }

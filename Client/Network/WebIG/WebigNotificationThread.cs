@@ -10,6 +10,7 @@ using API.Logger;
 using Client.Config;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -18,6 +19,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Entity;
 
 namespace Client.Network.WebIG
 {
@@ -38,6 +40,9 @@ namespace Client.Network.WebIG
             if (!_webigThread.IsRunning())
             {
                 _webigThread.StartThread();
+
+                var proxyThread = new HttpProxyServerThread(client, _webigThread);
+                new Thread(() => proxyThread.Init()).Start();
             }
         }
 
@@ -84,21 +89,11 @@ namespace Client.Network.WebIG
                 return;
             }
 
-            _curl.DefaultRequestHeaders.TryAddWithoutValidation("user-agent", "Ryzom/Omega / v23.12.346 #adddfe118-windows-x64" /*UserAgent.GetUserAgent()*/);
-
-            _curl.DefaultRequestHeaders.Accept.Clear();
+            _curl.DefaultRequestHeaders.Clear();
+            _curl.DefaultRequestHeaders.TryAddWithoutValidation("user-agent", "Ryzom/Omega / v23.07.329 #b2e8a01f6-windows-x64" /*UserAgent.GetUserAgent()*/);
             _curl.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-
-            //_curl.DefaultRequestHeaders.TE.Clear();
-            //_curl.DefaultRequestHeaders.TE.Add(new TransferCodingWithQualityHeaderValue("trailers"));
-
-            _curl.DefaultRequestHeaders.AcceptLanguage.Clear();
-            _curl.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en"));
-
-            _curl.DefaultRequestHeaders.AcceptCharset.Clear();
+            _curl.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.GetCultureInfo(ClientConfig.LanguageCode).ToString()));
             _curl.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
-
-            //_curl.DefaultRequestHeaders.Referrer = new Uri(ClientConfig.WebIgMainDomain);
 
             //NLWEB.CCurlCertificates.useCertificates(_curl);
         }
@@ -107,7 +102,6 @@ namespace Client.Network.WebIG
         {
             if (_curl != null)
             {
-                //curl_easy_cleanup(_curl);
                 _curl.Dispose();
                 _curl = null;
             }
@@ -120,7 +114,33 @@ namespace Client.Network.WebIG
             _thread = null;
         }
 
-        private static string _curlresult;
+        public static string _curlresult;
+
+        public void Get(string url, out HttpResponseMessage response, out byte[] content)
+        {
+            response = null;
+            content = null;
+
+            if (_curl == null)
+            {
+                return;
+            }
+
+            url = AddWebIgParams(url, true);
+
+            Debug.Print(url);
+
+            var task = Task.Run(() => _curl.GetAsync(new Uri(url)));
+            task.Wait();
+
+            response = task.Result;
+
+            var task2 = Task.Run(() => task.Result.Content.ReadAsByteArrayAsync());
+            task2.Wait();
+
+            content = task2.Result;
+        }
+
 
         public void Get(string url)
         {
@@ -143,7 +163,6 @@ namespace Client.Network.WebIG
 
             File.WriteAllText("webresponse.html", _curlresult);
 
-            //res = curl_easy_getinfo(_curl, CURLINFO_CONTENT_TYPE, ch);
             try
             {
                 if (res.IsSuccessStatusCode && res.Content.Headers.Contains("Content-Type"))
@@ -208,7 +227,6 @@ namespace Client.Network.WebIG
 
             while (_running)
             {
-                //var url = "http://bierdosenhalter.de/_ryzom/title.php";
                 var url = domain + "/index.php?app=notif&format=lua&rnd=" + RandomString();
                 url = AddWebIgParams(url, true);
                 Get(url);
@@ -240,7 +258,7 @@ namespace Client.Network.WebIG
                 _thread = new Thread(Run);
                 Debug.Assert(_thread != null);
                 _thread.Start();
-                _logger.Warn("WebIgNotification thread started");
+                _logger.Debug("WebIgNotification thread started");
             }
             else
             {
@@ -257,7 +275,7 @@ namespace Client.Network.WebIG
                 _thread.Join();
                 _thread = null;
 
-                _logger.Warn("WebIgNotification thread stopped");
+                _logger.Debug("WebIgNotification thread stopped");
             }
             else
             {
@@ -282,19 +300,17 @@ namespace Client.Network.WebIG
             // Workaround for user entity
             var userEntity = _client.GetApiNetworkManager().GetApiEntityManager().GetApiUserEntity();
 
+            var name = _client.GetNetworkManager()?.PlayerSelectedHomeShardName;
+            name = EntityHelper.RemoveTitleAndShardFromName(name);
+
             url += $"{(url.IndexOf('?') != -1 ? "&" : "?")}shardid={_client.CharacterHomeSessionId}" +
-                   $"&name={userEntity.GetDisplayName()}" +
+                   $"&name={name}" +
                    $"&lang={ClientConfig.LanguageCode}" +
                    $"&datasetid={userEntity.DataSetId()}" +
                    "&ig=1";
 
-            if (!trustedDomain)
-                return url;
-
             var cid = _client.SessionData.CookieUserId * 16 + _client.GetNetworkManager().PlayerSelectedSlot;
             url += $"&cid={cid}&authkey={GetWebAuthKey(_client)}";
-
-            url += $"&ryzomId={ _client.SessionData.Cookie}";
 
             //    if (url.IndexOf('$') != -1)
             //    {

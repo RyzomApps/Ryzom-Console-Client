@@ -1225,7 +1225,7 @@ namespace Client.Network
         private void ImpulseUserChars(BitMemoryStream impulse)
         {
             // received USER_CHARS
-            _client.GetLogger().Info("Received user characters from the server:");
+            _client.GetLogger().Info("Received the following characters from the server:");
 
             impulse.Serial(ref ServerPeopleActive);
             impulse.Serial(ref ServerCareerActive);
@@ -1242,7 +1242,7 @@ namespace Client.Network
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
                 if ((PeopleType)cs.People != PeopleType.Unknown)
-                    _client.GetLogger().Info($"Character {cs.Name} from shard {cs.Mainland} in slot {i}");
+                    _client.GetLogger().Info($"§d[{i}] {EntityHelper.RemoveShardFromName(cs.Name)}§r from shard {cs.Mainland} of type {((PeopleType)cs.People).ToString()}.");
                 CharacterSummaries.Add(cs);
             }
             #endregion

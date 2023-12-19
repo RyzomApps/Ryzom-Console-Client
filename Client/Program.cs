@@ -136,6 +136,7 @@ namespace Client
                 RequestPassword();
             }
 
+            /*
             if (ClientConfig.SelectCharacter == -1)
             {
                 ConsoleIO.WriteLineFormatted("§dPlease enter your character slot [0-4]:");
@@ -143,6 +144,7 @@ namespace Client
             }
 
             if (ClientConfig.SelectCharacter < 0 || ClientConfig.SelectCharacter > 4) throw new Exception("Invalid slot.");
+            */
 
             // Setup exit cleaning code
             ExitCleanUp.Add(delegate
