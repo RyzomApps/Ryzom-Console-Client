@@ -30,20 +30,22 @@ namespace Client.Network.WebIG
         private Thread _thread;
         private readonly ILogger _logger;
         private readonly RyzomClient _client;
+        private readonly CookieContainer _cookies;
 
+        private static readonly Random Random = new Random();
         private static WebigNotificationThread _webigThread;
 
         internal static void StartWebIgNotificationThread(RyzomClient client)
         {
             _webigThread ??= new WebigNotificationThread(client);
 
-            if (!_webigThread.IsRunning())
-            {
-                _webigThread.StartThread();
+            if (_webigThread.IsRunning())
+                return;
 
-                var proxyThread = new HttpProxyServerThread(client, _webigThread);
-                new Thread(() => proxyThread.Init()).Start();
-            }
+            _webigThread.StartThread();
+
+            var proxyThread = new HttpProxyServerThread(client, _webigThread);
+            new Thread(() => proxyThread.Init()).Start();
         }
 
         internal static void StopWebIgNotificationThread()
@@ -60,6 +62,8 @@ namespace Client.Network.WebIG
             _logger = _client.GetLogger();
             _running = false;
             _thread = null;
+            _cookies = new CookieContainer();
+            _cookies.Add(new Uri(ClientConfig.WebIgMainDomain), new Cookie("ryzomId", _client?.SessionData?.Cookie ?? ""));
 
             _curl = null;
         }
@@ -74,14 +78,13 @@ namespace Client.Network.WebIG
             var handler = new HttpClientHandler()
             {
                 AllowAutoRedirect = true,
-                CookieContainer = new CookieContainer(),
+                CookieContainer = _cookies,
                 UseCookies = true,
 
                 // TODO: Add Proxy here
             };
 
-            handler.CookieContainer.Add(new Uri(ClientConfig.WebIgMainDomain), new Cookie("ryzomId", _client?.SessionData?.Cookie ?? ""));
-
+            
             _curl = new HttpClient(handler);
 
             if (_curl == null)
@@ -141,6 +144,11 @@ namespace Client.Network.WebIG
             content = task2.Result;
         }
 
+        public string Get3(string url)
+        {
+            url = AddWebIgParams(url, true);
+            return Webclient.GetHtmlSource(url, true, _cookies);
+        }
 
         public void Get(string url)
         {
@@ -189,8 +197,6 @@ namespace Client.Network.WebIG
                 _logger.Warn($"Invalid content-type '{contentType}', expected 'text/lua'");
             }
         }
-
-        private static readonly Random Random = new Random();
 
         public string RandomString()
         {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ namespace Client.Network.WebIG
 {
     public class HttpProxyServerThread
     {
-        public static string url = "http://localhost:8000/";
+        public static string Url = "http://localhost:8000/";
 
         private static HttpListener _curl;
         private readonly ILogger _logger;
@@ -32,10 +31,10 @@ namespace Client.Network.WebIG
         {
             // Create a Http server and start listening for incoming connections
             _curl = new HttpListener();
-            _curl.Prefixes.Add(url);
+            _curl.Prefixes.Add(Url);
             _curl.Start();
 
-            _logger.Info($"Listening for connections on {url}");
+            _logger.Info($"Listening for connections on {Url}");
 
             // Handle requests
             var listenTask = HandleIncomingConnections();
@@ -94,40 +93,46 @@ namespace Client.Network.WebIG
                         realPath = "";
                     }
 
-                    _webigNotificationThread.Get(realDomain + realPath + req.Url.Query, out var response, out var content);
-                    string contentType;
+                    //_webigNotificationThread.Get(realDomain + realPath + req.Url.Query, out var response, out var content);
 
-                    if (response.IsSuccessStatusCode && response.Content.Headers.Contains("Content-Type"))
+                    string htmlData = _webigNotificationThread.Get3(realDomain + realPath + req.Url.Query);
+
+                    if (htmlData == null)
                     {
-                        contentType = string.Join(' ', response.Content.Headers.GetValues("Content-Type"));
-
-                        if (contentType.IndexOf("text/html", StringComparison.Ordinal) == 0)
-                        {
-                            var htmlData = Encoding.UTF8.GetString(content);
-
-                            htmlData = htmlData.Replace("http://", "/");
-                            htmlData = htmlData.Replace("https://", "/");
-
-                            //var pattern = "#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})";
-                            //var replacement = "#$1$2$3";
-
-                            var pattern = "bgcolor=\"#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})\"";
-                            var replacement = "style=\"background-color:#$1$2$3$4\"";
-
-                            htmlData = Regex.Replace(htmlData, pattern, replacement);
-
-                            htmlData = htmlData.Replace("<lua>", "<!--lua>");
-                            htmlData = htmlData.Replace("</lua>", "</lua--!>");
-
-                            content = Encoding.UTF8.GetBytes(htmlData);
-                        }
-                    }
-                    else
-                    {
-                        contentType = "";
+                        resp.Close();
+                        continue;
                     }
 
-                    resp.ContentType = contentType;
+                    //string contentType;
+
+                    //if (response.IsSuccessStatusCode && response.Content.Headers.Contains("Content-Type"))
+                    //{
+                    //    contentType = string.Join(' ', response.Content.Headers.GetValues("Content-Type"));
+                    //
+                    //    if (contentType.IndexOf("text/html", StringComparison.Ordinal) == 0)
+                    //    {
+                    //var htmlData = Encoding.UTF8.GetString(content);
+
+                    htmlData = htmlData.Replace("http://", "/");
+                    htmlData = htmlData.Replace("https://", "/");
+
+                    const string pattern = "bgcolor=\"#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})\"";
+                    const string replacement = "style=\"background-color:#$1$2$3$4\"";
+
+                    htmlData = Regex.Replace(htmlData, pattern, replacement);
+
+                    htmlData = htmlData.Replace("<lua>", "<!--lua>");
+                    htmlData = htmlData.Replace("</lua>", "</lua--!>");
+
+                    var content = Encoding.UTF8.GetBytes(htmlData);
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    contentType = "";
+                    //}
+
+                    //resp.ContentType = contentType;
                     resp.ContentEncoding = Encoding.UTF8;
                     resp.ContentLength64 = content.LongLength;
 

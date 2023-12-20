@@ -349,22 +349,9 @@ namespace Client.Helper
         /// </summary>
         public static void WritePrefix()
         {
-            string sepStart;
-            string sepEnd;
-            string prefix;
-
-            if (RyzomClient.GetInstance().Channel != ChatGroupType.Undefined)
-            {
-                sepStart = "<";
-                sepEnd = "> ";
-                prefix = RyzomClient.GetInstance().Channel.ToString();
-            }
-            else
-            {
-                sepStart = "";
-                sepEnd = "";
-                prefix = "> ";
-            }
+            const string sepStart = "<";
+            const string sepEnd = "> ";
+            var prefix = RyzomClient.GetInstance().Channel.ToString();
 
             _prefixLength = sepStart.Length + prefix.Length + sepEnd.Length;
 
