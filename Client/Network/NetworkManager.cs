@@ -1006,6 +1006,8 @@ namespace Client.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        Random random = new Random();
+
         /// <summary>
         /// Message from the server to correct the user position because (s)he is not at the same position on the server.
         /// </summary>
@@ -1032,9 +1034,13 @@ namespace Client.Network
             else
             {
                 // Compute the destination.
-                var dest = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
+                var dest = new Vector3(x / 1000.0f , y / 1000.0f, z / 1000.0f);
 
-                _client.GetLogger().Warn($"impulseCorrectPos: new user position {dest}");
+                _client.GetLogger().Warn($"Position error: Server relocated the user entity to {dest}.");
+
+                // Add some Noise to get unstuck ;)
+                var noise = Vector3.Normalize(new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, 0));
+                dest += noise;
 
                 // Update the position for the vision.
                 _client.GetNetworkManager().SetReferencePosition(dest);

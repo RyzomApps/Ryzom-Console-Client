@@ -64,7 +64,7 @@ namespace Client.Config
         public static bool DumpVsIndex;
 
         /// <summary>True, if the original and NOT the translated chat messages should be displayed</summary>
-        public static bool NoTranslation;
+        public static bool NoTranslation = true;
 
         // === NON RYZOM STUFF
 

@@ -319,14 +319,13 @@ namespace Client
             {
                 if (ClientConfig.NoTranslation)
                 {
-                    finalString = finalString[..startTr] + finalString[(startTr + 5)..(endOfOriginal - startTr - 5)];
+                    finalString = finalString[..startTr] + finalString[(startTr + 5)..endOfOriginal];
                 }
                 else
                 {
-                    finalString = finalString[..startTr] + finalString[endOfOriginal..];
+                    finalString = finalString[..startTr] + finalString[(endOfOriginal + 4)..];
                 }
             }
-
 
             Log.Chat($"[{mode}]{(stringCategory.Length > 0 ? $"[{stringCategory.ToUpper()}]" : "")}{color} {finalString}");
 
