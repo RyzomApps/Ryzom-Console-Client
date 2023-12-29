@@ -6,8 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using API;
 using API.Entity;
+using Client.Database;
 using Client.Sheet;
+using System;
 
 namespace Client.Entity
 {
@@ -19,25 +22,10 @@ namespace Client.Entity
     /// <date>2001</date> 
     public class PlayerEntity : CharacterEntity
     {
-        /// Constructor
-        //	CPlayerCL();
-
-        /// Destructor
-        //	public void Dispose();
-
-        /// Build the entity from a sheet.
-        //	virtual bool build(CEntitySheet sheet);
-
-        /// Method to return the attack radius of an entity
-        //	virtual double attackRadius();
-
-        /** Return the position the attacker should have to combat according to the attack angle.
-         * \param ang : 0 = the front, >0 and <Pi = left side, <0 and >-Pi = right side.
-         */
-        //	virtual NLMISC::CVectorD getAttackerPos(double ang, double dist);
-
-        /// Return the People for the entity.
-        //	virtual EGSPD::CPeople::TPeople people();
+        /// <summary>
+        /// 'true' while the entity is not ready to be displayed.
+        /// </summary> 
+        bool _WaitForAppearance;
 
         /// Return a pointer on the sheet used to create this player.
         public RaceStatsSheet PlayerSheet()
@@ -71,7 +59,7 @@ namespace Client.Entity
         protected readonly EntitySheet _Sheet;
 
         /// Pointer on the Sheet with basic parameters.
-        protected readonly RaceStatsSheet _PlayerSheet;
+        protected RaceStatsSheet _PlayerSheet;
 
         ///// Player Face
         //protected SInstanceCL _Face = new SInstanceCL();
@@ -97,5 +85,114 @@ namespace Client.Entity
 
         /// Update the Visual Property PVP Mode (need special imp for player because of PVP consider)
         //	virtual void updateVisualPropertyPvpMode(in NLMISC::TGameCycle gameCycle, in sint64 prop);
+
+        /// <summary>
+        /// Constructor
+        /// </summary> 
+        public PlayerEntity(RyzomClient client) : base(client)
+        {
+            Type = EntityType.Player;
+
+            // Resize _Instances to the number of visual slots.
+            //_Instances.resize(VisualSlot.NbSlot);
+
+            // No sheet pointed.
+            _Sheet = null;
+            _PlayerSheet = null;
+
+            // Some default colors.
+            _HairColor = 0;
+            _EyesColor = 0;
+
+            // Not enough information to display the player.
+            _WaitForAppearance = true;
+
+            //_PlayerCLAsyncTextureLoading = false;
+
+            // Light Off and not allocated
+            //_LightOn = false;
+        }
+
+        /// Destructor
+        //	public void Dispose();
+
+        /// <summary>
+        /// Build the entity from a sheet.
+        /// </summary>
+        public bool Build(EntitySheet sheet)
+        {
+            // Cast the sheet in the right type.
+            _PlayerSheet = (RaceStatsSheet)sheet;
+
+            if (_PlayerSheet == null)
+            {
+                _client.GetLogger().Error($"Player '{_slot}' sheet is not a '.race_stats' -> BIG PROBLEM.");
+                return false;
+            }
+            else
+            {
+                _client.GetLogger().Debug(string.Format("Player '{0}' sheet is valid.", _slot));
+            }
+
+            // Get the DB Entry
+            if (_client.GetDatabaseManager().GetNodePtr() != null)
+            {
+                if (_client.GetDatabaseManager().GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
+                {
+                    DbEntry = nodeRoot.GetNode(_slot) as DatabaseNodeBranch;
+
+                    if (DbEntry == null)
+                    {
+                        _client.GetLogger().Error("Cannot get a pointer on the DB entry.");
+                    }
+                }
+            }
+
+            // Compute the first automaton.
+            //_CurrentAutomaton = automatonType() + "_normal.automaton";
+
+            // Initialize the player look.
+            //init3d();
+            // Compute the primitive
+            //initPrimitive(0.5f, 2.0f, 0.0f, 0.0f, UMovePrimitive.DoNothing, UMovePrimitive.NotATrigger, MaskColPlayer, MaskColNone);
+            // Create the collision entity (used to snap the entity to the ground).
+            //computeCollisionEntity();
+
+            // Initialize properties of the client.
+            InitProperties();
+
+            // Entity Created.
+            return true;
+        }
+
+        /// <summary>
+        /// Initialize properties of the entity (according to the class).
+        /// </summary>
+        new void InitProperties()
+        {
+            Properties.IsSelectable = true;
+            Properties.IsAttackable = false;
+            Properties.IsGivable = true;
+            Properties.IsInvitable = true;
+            Properties.CanExchangeItem = true;
+        }
+
+        //private void pushInfoStr(string v)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+
+
+        /// Method to return the attack radius of an entity
+        //	virtual double attackRadius();
+
+        /** Return the position the attacker should have to combat according to the attack angle.
+         * \param ang : 0 = the front, >0 and <Pi = left side, <0 and >-Pi = right side.
+         */
+        //	virtual NLMISC::CVectorD getAttackerPos(double ang, double dist);
+
+        /// Return the People for the entity.
+        //	virtual EGSPD::CPeople::TPeople people();
     }
 }

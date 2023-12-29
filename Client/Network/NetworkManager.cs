@@ -71,6 +71,11 @@ namespace Client.Network
         public bool ServerSeasonReceived;
 
         /// <summary>
+        /// season
+        /// </summary>
+        byte ServerSeasonValue = 0;
+
+        /// <summary>
         /// manages entities and shapes instances
         /// </summary>
         private readonly EntityManager _entitiesManager;
@@ -1034,13 +1039,13 @@ namespace Client.Network
             else
             {
                 // Compute the destination.
-                var dest = new Vector3(x / 1000.0f , y / 1000.0f, z / 1000.0f);
+                var dest = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
 
                 _client.GetLogger().Warn($"Position error: Server relocated the user entity to {dest}.");
 
                 // Add some Noise to get unstuck ;)
                 var noise = Vector3.Normalize(new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, 0));
-                dest += noise;
+                dest += noise * 1;
 
                 // Update the position for the vision.
                 _client.GetNetworkManager().SetReferencePosition(dest);
@@ -1058,12 +1063,72 @@ namespace Client.Network
 
         private void ImpulseTpWithSeason(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            ImpulseTp(impulse, true);
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseTp(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            ImpulseTp(impulse, false);
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+        }
+
+        /// <summary>
+        /// Message from the server to teleport the user.
+        /// </summary>
+        internal void ImpulseTp(BitMemoryStream impulse, bool hasSeason)
+        {
+            var userEntity = _client.GetNetworkManager().GetEntityManager().GetApiUserEntity();
+
+            int x = new int();
+            int y = new int();
+            int z = new int();
+            bool useHeading = new bool();
+
+            impulse.Serial(ref x);
+            impulse.Serial(ref y);
+            impulse.Serial(ref z);
+            impulse.Serial(ref useHeading);
+
+            // Is there an orientation too ?
+            if (useHeading)
+            {
+                float angle = new float();
+                impulse.Serial(ref angle);
+
+                _client.GetLogger().Debug($"impulseTP: to {x} {y} {z} {angle}");
+
+                Vector3 ori = new Vector3((float)Math.Cos(angle), (float)Math.Sin(angle), 0f);
+                Vector3.Normalize(ori);
+
+                userEntity.Dir = ori;
+                userEntity.Front = ori;
+                //userEntity.SetHeadPitch(0);
+            }
+            else
+            {
+                _client.GetLogger().Debug($"impulseTP: to {x} {y} {z}");
+            }
+
+            if (hasSeason)
+            {
+                impulse.Serial(ref ServerSeasonValue);
+                ServerSeasonReceived = true;
+            }
+
+            // Compute the destination.
+            Vector3 dest = new Vector3((float)x / 1000f, (float)y / 1000f, (float)z / 1000f);
+
+            // Update the position for the vision.
+            _client.GetNetworkManager().SetReferencePosition(dest);
+
+            // Change the position of the entity and in Pacs.
+            userEntity.Pos = dest;
+
+            // TODO: add tp reason
+            // impulse.serial(tpInfos);
+
+            _client.Plugins.OnTeleport(hasSeason);
         }
 
         private void ImpulseTell2(BitMemoryStream impulse)
@@ -1191,12 +1256,13 @@ namespace Client.Network
         /// </summary>
         private void ImpulseUserChar(BitMemoryStream impulse)
         {
-            // received USER_CHAR
+            // Received USER_CHAR
             _client.GetLogger().Debug("ImpulseCallBack : Received CONNECTION:USER_CHAR");
 
-            UserCharMsg.Read(impulse, out var x, out var y, out var z, out var heading, out var season, out var userRole, out var isInRingSession, out var highestMainlandSessionId, out var firstConnectedTime, out CharPlayedTime);
+            UserCharMsg.Read(impulse, out var x, out var y, out var z, out var heading, out ServerSeasonValue, out var userRole, out var isInRingSession, out var highestMainlandSessionId, out var firstConnectedTime, out CharPlayedTime);
 
-            ServerSeasonReceived = true; // set the season that will be used when selecting the continent from the position
+            // Set the season that will be used when selecting the continent from the position
+            ServerSeasonReceived = true; 
 
             if (_entitiesManager.UserEntity != null)
             {
@@ -1210,7 +1276,7 @@ namespace Client.Network
                 // Update the position for the vision.
                 _networkConnection.SetReferencePosition(_entitiesManager.UserEntity.Pos);
 
-                _client.Plugins.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, _entitiesManager.UserEntity.Pos, _entitiesManager.UserEntity.Front, season, userRole, isInRingSession);
+                _client.Plugins.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, _entitiesManager.UserEntity.Pos, _entitiesManager.UserEntity.Front, ServerSeasonValue, userRole, isInRingSession);
             }
             else
             {
@@ -1222,7 +1288,7 @@ namespace Client.Network
                 // Update the position for the vision.
                 _networkConnection.SetReferencePosition(userEntityInitPos);
 
-                _client.Plugins.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, userEntityInitPos, userEntityInitFront, season, userRole, isInRingSession);
+                _client.Plugins.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, userEntityInitPos, userEntityInitFront, ServerSeasonValue, userRole, isInRingSession);
             }
 
             _client.UserCharPosReceived = true;

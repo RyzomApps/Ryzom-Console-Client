@@ -662,7 +662,6 @@ namespace Client.Network
                 }
             }
 
-
             // send ack sync if received sync or last sync timed out
             if (_updateTime - _latestLoginTime > 300)
             {
@@ -1165,8 +1164,8 @@ namespace Client.Network
                             var theChange = new PropertyChange(slot, (byte)PropertyType.RemoveOldEntity);
                             _changes.Add(theChange);
 
-                            if (slot == 1 || slot == 3 || slot == 7 || slot == 14 || slot == 29 || slot == 58 || slot == 117 || slot == 235 || slot == 255)
-                                _client.Log.Info($"Disassociating S{(ushort)slot}u (AB {associationBits}) L {loop}");
+                            //if (slot == 1 || slot == 3 || slot == 7 || slot == 14 || slot == 29 || slot == 58 || slot == 117 || slot == 235 || slot == 255)
+                            //    _client.Log.Info($"Disassociating S{(ushort)slot}u (AB {associationBits}) L {loop}");
                         }
                         else
                         {

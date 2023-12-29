@@ -23,7 +23,7 @@ namespace Client.Messages
         /// <summary>
         /// Decode the message
         /// </summary>
-        internal static void Read(BitMemoryStream impulse, out int x, out int y, out int z, out float heading, out short season, out int userRole, out bool isInRingSession, out int highestMainlandSessionId, out int firstConnectedTime, out int playedTime)
+        internal static void Read(BitMemoryStream impulse, out int x, out int y, out int z, out float heading, out byte season, out int userRole, out bool isInRingSession, out int highestMainlandSessionId, out int firstConnectedTime, out int playedTime)
         {
             x = 0;
             y = 0;
@@ -43,7 +43,7 @@ namespace Client.Messages
 
             short v = 0;
             s.Serial(ref v, 3);
-            season = v;
+            season = (byte)v;
             v = 0;
             s.Serial(ref v, 3);
             userRole = v & 0x3;

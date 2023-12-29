@@ -1278,6 +1278,17 @@ namespace Client
                         ret.Add(ClientConfig.InternalCmdChar + HelpCommand);
                     }
                 }
+                else
+                {
+                    // player names in commands
+                    foreach (var entity in GetNetworkManager().GetEntityManager().GetApiEntities())
+                    {
+                        if (entity == null || (entity.GetEntityType() != EntityType.Player && entity.GetEntityType() != EntityType.User) || !entity.GetDisplayName().ToLower().StartsWith(args.Last().ToLower()))
+                            continue;
+
+                        ret.Add(entity.GetDisplayName());
+                    }
+                }
             }
 
             return ret;
@@ -1304,7 +1315,6 @@ namespace Client
             try
             {
                 _timeoutdetector.Abort();
-                _timeoutdetector = null;
             }
             catch
             {

@@ -85,7 +85,7 @@ namespace Client.Forage
         /// <summary>
         /// Constructor
         /// </summary>
-        public ForageSourceEntity()
+        public ForageSourceEntity(RyzomClient client) : base(client)
         {
             _isExtractionInProgress = false;
             _safeSource = false;

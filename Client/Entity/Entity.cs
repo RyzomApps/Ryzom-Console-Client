@@ -48,7 +48,7 @@ namespace Client.Entity
         /// <summary>
         /// Current Name for the entity
         /// </summary>
-        protected internal string _entityName;
+        protected internal string _entityName = "";
 
         /// <summary>
         /// Current guild name of the entity
@@ -58,7 +58,7 @@ namespace Client.Entity
         /// <summary>
         /// The title of the entity
         /// </summary>
-        private string _title;
+        private string _title = "";
 
         /// <summary>
         /// Slot of the entity
@@ -69,11 +69,6 @@ namespace Client.Entity
         /// Slot of the target or CLFECOMMON::INVALID_SLOT if there is no target.
         /// </summary>
         private byte _targetSlot;
-
-        /// <summary>
-        /// Database branch entry for the entity
-        /// </summary>
-        private DatabaseNodeBranch _dbEntry;
 
         /// <summary>
         /// Current Name for the entity as String ID
@@ -135,30 +130,24 @@ namespace Client.Entity
         /// </summary>
         protected bool _firstPos;
 
-        public void SetHeadPitch(double hp)
-        {
-            _headPitch = hp;
-            // epsilon to avoid gimbaled lock
-            const double bound = Math.PI / 2 - 0.01;
-            _headPitch = Math.Min(Math.Max(_headPitch, -bound), bound);
-        }
-
-        private void SetGuildName(uint id, string value)
-        {
-            _entityGuildName = value;
-        }
+        /// <summary>
+        /// Ryzom Client
+        /// </summary>
+        protected RyzomClient _client;
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        public Entity()
+        public Entity(RyzomClient client)
         {
+            _client = client;
+
             // Initialize the object.
+            Init();
+
             Type = EntityType.Entity;
 
-            _dataSetId = Constants.InvalidClientDatasetIndex;
-
-            Init();
+            //_GMTitle = _InvalidGMTitleCode;
         }
 
         /// <summary>
@@ -172,7 +161,7 @@ namespace Client.Entity
             //_Parent = CLFECOMMON::INVALID_SLOT;
 
             //// No entry for the moment.
-            //_DBEntry = 0;
+            //_DBEntry = null;
 
             //// Entity is not flying at the beginning.
             //_Flyer = false;
@@ -193,16 +182,25 @@ namespace Client.Entity
 
             //_TargetSlotNoLag = CLFECOMMON::INVALID_SLOT;
 
-            _title = "";
-
             //_HasReservedTitle = false;
-
-            _entityName = "";
 
             _nameId = 0;
 
             //_HasMoved = false;
             //_IsInTeam = false;
+        }
+
+        public void SetHeadPitch(double hp)
+        {
+            _headPitch = hp;
+            // epsilon to avoid gimbaled lock
+            const double bound = Math.PI / 2 - 0.01;
+            _headPitch = Math.Min(Math.Max(_headPitch, -bound), bound);
+        }
+
+        private void SetGuildName(uint id, string value)
+        {
+            _entityGuildName = value;
         }
 
         /// <summary>
@@ -267,17 +265,17 @@ namespace Client.Entity
             _slot = slot;
 
             // Get the DB Entry - from CCharacterCL::build
-            if (databaseManager?.GetNodePtr() == null) 
+            if (databaseManager?.GetNodePtr() == null)
                 return;
 
             var nodeRoot = (DatabaseNodeBranch)(databaseManager.GetNodePtr().GetNode(0));
 
-            if (nodeRoot == null) 
+            if (nodeRoot == null)
                 return;
 
-            _dbEntry = (DatabaseNodeBranch)(nodeRoot.GetNode(_slot));
+            DbEntry = (DatabaseNodeBranch)(nodeRoot.GetNode(_slot));
 
-            if (_dbEntry == null)
+            if (DbEntry == null)
                 throw new Exception("Cannot get a pointer on the DB entry.");
         }
 
@@ -544,20 +542,20 @@ namespace Client.Entity
         private void UpdateVisualPropertyPos(uint gameCycle, long prop, uint predictedInterval, RyzomClient client)
         {
             // Check the DB entry (the warning is already done in the build method).
-            if (_dbEntry == null)
+            if (DbEntry == null)
             {
                 return;
             }
 
             // Get The property 'Y'.
-            if (!(_dbEntry.GetNode((byte)PropertyType.PositionY) is DatabaseNodeLeaf nodeY))
+            if (!(DbEntry.GetNode((byte)PropertyType.PositionY) is DatabaseNodeLeaf nodeY))
             {
                 client.Log.Debug($"CH::updtVPPos:{_slot}: Cannot find the property 'PROPERTY_POSY({PropertyType.PositionY})'.");
                 return;
             }
 
             // Get The property 'Z'.
-            if (!(_dbEntry.GetNode((byte)PropertyType.PositionZ) is DatabaseNodeLeaf nodeZ))
+            if (!(DbEntry.GetNode((byte)PropertyType.PositionZ) is DatabaseNodeLeaf nodeZ))
             {
                 client.Log.Debug($"CH::updtVPPos:{_slot}: Cannot find the property 'PROPERTY_POSZ({PropertyType.PositionZ})'.");
                 return;

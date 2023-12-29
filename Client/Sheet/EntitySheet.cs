@@ -24,7 +24,7 @@ namespace Client.Sheet
         /// <summary>
         /// Type of the sheet
         /// </summary>
-        protected API.Sheet.SheetType _type;
+        protected SheetType _type;
 
         /// <summary>
         /// Sheet Id
@@ -37,7 +37,7 @@ namespace Client.Sheet
         protected EntitySheet(SheetIdFactory sheetIdFactory)
         {
             //_sheetIdFactory = sheetIdFactory;
-            _type = API.Sheet.SheetType.UNKNOWN_SHEET_TYPE;
+            _type = SheetType.UNKNOWN_SHEET_TYPE;
             Id = new SheetId(sheetIdFactory);
         }
 

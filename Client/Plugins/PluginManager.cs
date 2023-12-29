@@ -780,7 +780,7 @@ namespace Client.Plugins
         /// <summary>
         /// called when the server sends information about the user char after the login
         /// </summary>
-        public void OnUserChar(int highestMainlandSessionId, int firstConnectedTime, int playedTime, Vector3 initPos, Vector3 initFront, short season, int role, bool isInRingSession)
+        public void OnUserChar(int highestMainlandSessionId, int firstConnectedTime, int playedTime, Vector3 initPos, Vector3 initFront, byte season, int role, bool isInRingSession)
         {
             DispatchListenerEvent(listener => listener.OnUserChar(highestMainlandSessionId, firstConnectedTime, playedTime, initPos, initFront, season, role, isInRingSession));
         }
@@ -872,6 +872,14 @@ namespace Client.Plugins
         internal void OnServerQuitAbort()
         {
             DispatchListenerEvent(listener => listener.OnServerQuitAbort());
+        }
+
+        /// <summary>
+        // called when the server wants to teleport the user
+        /// </summary>
+        internal void OnTeleport(bool hasSeason)
+        {
+            DispatchListenerEvent(listener => listener.OnTeleport(hasSeason));
         }
 
         #endregion

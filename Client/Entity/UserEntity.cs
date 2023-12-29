@@ -23,21 +23,15 @@ namespace Client.Entity
     /// <date>2001</date>
     public class UserEntity : PlayerEntity, IUserEntity
     {
-
         private byte _selection;
-
-        /// <summary>
-        /// Ryzom Client
-        /// </summary>
-        private IClient _client;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="client">Ryzom Client</param>
-        public UserEntity(IClient client)
+        public UserEntity(RyzomClient client) : base(client)
         {
-            _client = client;
+
             Type = EntityType.User;
         }
 

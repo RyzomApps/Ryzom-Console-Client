@@ -54,6 +54,12 @@ namespace Client.Entity
         /// </summary> 
         private bool _selectableBySpace;
 
+        private const int PropertyPosX = 0;
+        private const int PropertyPosY = 1;
+        private const int PropertyPosZ = 2;
+        private const int PropertyOrientation = 3; // Theta
+
+        #region Getter and Setter
         /// <summary>
         /// 0 -> male
         /// 1 -> female
@@ -203,7 +209,170 @@ namespace Client.Entity
         {
             return Mode == EntityMode.Sit;
         }
+        #endregion
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public CharacterEntity(RyzomClient client) : base(client)
+        {
+            Type = EntityType.NPC;
+
+            //_firstPos = INVALID_POS; // Initialize the first with a bad position.
+            //_firstTime = INVALID_TIME; // Initialize the time for the first position with a bad one.
+            //dist2FirstPos(INVALID_DIST); // Initialize the distance to the first position with a bad value.
+            //_runStartTimeNoPop = INVALID_TIME;
+            //
+            //_DestPos = INVALID_POS;
+            //_DestTime = INVALID_TIME;
+            //dist2Dest(INVALID_DIST);
+            //
+            //_OldPos = INVALID_POS;
+            //_OldPosTime = INVALID_TIME;
+            //
+            //
+            //// Initialize the time for the last loop with the current time when entity created.
+            //_LastFrameTime = 0.0;
+            //// The animation should be played from the begin to the end.
+            //_AnimReversed.resize(animTypeCount, false);
+            //// Id among all the animations for each slot
+            //_AnimId.resize(animTypeCount, NL3D.UPlayList.empty);
+            //// Index in the state of the current animation for each slot.
+            //_AnimIndex.resize(animTypeCount, CAnimation.UnknownAnim);
+            //// ID of the current sound animation for each slot.
+            //_SoundId.resize(animTypeCount, -1);
+            //// ID of the current animation state for each slot.
+            //_AnimState.resize(animTypeCount, CAnimationStateSheet.Idle);
+            //// Time offest in the current animation for each slot.
+            //_AnimOffset.resize(animTypeCount, 0.0);
+            //// Subsidiary Key for the Animation State (emote).
+            //_SubStateKey = CAnimationStateSheet.UnknownState;
+            //// The character does not accept special "job animation" by default
+            //_AnimJobSpecialisation = 0;
+            //
+            //// Reset Lod.
+            //_LodCharacterAnimEnabled = false;
+            //_LodCharacterMasterAnimSlot = MOVE;
+            //
+            //// default POS scale to 1.
+            //_CharacterScalePos = 1.0f;
+            //
+            //// No sheet pointed.
+            //_Sheet = 0;
+            //
+            //// Unknown gender at the entity creation.
+            //_Gender = GSGENDER.unknown;
+            //
+            //// The bone for the name is not known for the time
+            //_NameBoneId = -1;
+            //// No UTransform for the name needed if there is no name so not allocated for the time.
+            //_NameTransform = 0;
+            //// default Clod apparition => force compute the bone
+            //_NameCLodDeltaZ = NameCLodDeltaZNotComputed;
+            //
+            //// There is no anim set for the time.
+            //_CurrentAnimSet.resize(animTypeCount, 0);
+            //
+            //// Same as the animation at the beginning.
+            //_RotationFactor = 1.0f;
+            //
+            //_CurrentState = 0;
+            //
+            //
+            //_RightFXActivated = false;
+            //_LeftFXActivated = false;
+            //
+            //
+            //dirEndAnim(CVector(0.0f, 1.0f, 0.0f));
+            //
+            //// No item associated at the beginning but there is a room for them.
+            //_Items.resize(SLOTTYPE.NB_SLOT);
+            //_HeadIdx = CEntityCL.BadIndex;
+            //_FaceIdx = CEntityCL.BadIndex;
+            //
+            //// No frame remaining forthe blend at the beginning.
+            //_BlendRemaining = 0;
+            //
+            //// Scale for the skeleton according to the gabarit. Default : 1
+            //_CustomScalePos = 1.0f;
+            //
+            //// Start with "unknown mode wanted by the server"
+            //_ModeWanted = MBEHAV.UNKNOWN_MODE; //MBEHAV::NORMAL;
+            //
+            //_Mount = CLFECOMMON.INVALID_SLOT;
+            //_Rider = CLFECOMMON.INVALID_SLOT;
+            //_TheoreticalMount = CLFECOMMON.INVALID_SLOT;
+            //_TheoreticalRider = CLFECOMMON.INVALID_SLOT;
+            //_OwnerPeople = MOUNT_PEOPLE.Unknown;
+            //
+            //// Default is : entity has no bone for the head and Neck.
+            //_HeadBoneId = -1;
+            //
+            //_IsThereAMode = false;
+            //_ImportantStepTime = 0.0;
+            //_StartDecreaseLCTImpact = 0;
+            //
+            //// Entity has no look and so is not displayable for the time.
+            //_LookRdy = false;
+            //
+            //// Index of the instance in the right hand (0xFFFFFFFF = no index).
+            //_RHandInstIdx = CEntityCL.BadIndex;
+            //// Index of the instance in the left hand (0xFFFFFFFF = no index).
+            //_LHandInstIdx = CEntityCL.BadIndex;
+            //
+            //_HairColor = 0;
+            //_EyesColor = 0;
+            //// No Hair Index at the beginning.
+            //_HairIndex = _BadHairIndex;
+            //_ClothesSheet = 0;
+            //
+            //_NbLoopAnim = 0;
+            //_MaxLoop = false;
+            //
+            //setAlive();
+            //
+            //_InSceneUserInterface = null;
+            //_CurrentBubble = null;
+            //
+            //// Initialize the head offset with a Null Vector.
+            //_HeadOffset = CVector.Null;
+            //_HeadOffsetComputed = false;
+            //// Initialize the Run Factor
+            //runFactor(0.0);
+            //// Initialize the Speed
+            //speed(0.0);
+            //
+            //
+            //
+            //_CurrentAttack = null;
+            //_CurrentAttackID.Type = CAttackIDSheet.Unknown;
+            //
+            ////_PelvisBoneId = -1;
+            //
+            //_ChestBoneId = -1;
+            //
+            //
+            //_HideSkin = false;
+            //
+            //
+            //_GuildNameId = 0;
+            //_GuildSymbol = 0;
+            //
+            //_EventFactionId = 0;
+            //_PvpMode = PVP_MODE.None;
+            //
+            //_LeagueId = 0;
+            //_OutpostId = 0;
+            //_OutpostSide = OUTPOSTENUMS.UnknownPVPSide;
+            //
+            //_SelectableBySpace = true;
+            //
+            //_LastSelectBoxComputeTime = 0;
+            //
+            //
+            //
+            //_CustomScale = 1.0f;
+        }
 
         /// <summary>
         /// Build the entity from a sheet.
@@ -293,11 +462,6 @@ namespace Client.Entity
             //        break;
             //}
         }
-
-        private const int PropertyPosX = 0;
-        private const int PropertyPosY = 1;
-        private const int PropertyPosZ = 2;
-        private const int PropertyOrientation = 3; // Theta
 
         /// <summary>
         /// New mode received.

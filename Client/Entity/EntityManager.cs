@@ -109,7 +109,7 @@ namespace Client.Entity
 
                 if (slot != 0)
                 {
-                    _entities[slot] = new Entity();
+                    _entities[slot] = new Entity(_client);
                 }
                 else
                 {
@@ -133,35 +133,35 @@ namespace Client.Entity
                         }
                         else
                         {
-                            _entities[slot] = new PlayerEntity() { Type = EntityType.Player };
+                            _entities[slot] = new PlayerEntity(_client) { Type = EntityType.Player };
                         }
 
                         break;
 
                     case SheetType.FAUNA:
                         if (entitySheet is CharacterSheet charSheet && !charSheet.R2Npc)
-                            _entities[slot] = new CharacterEntity { Type = EntityType.Fauna };
+                            _entities[slot] = new CharacterEntity(_client) { Type = EntityType.Fauna };
                         else
                             // CPlayerR2CL
-                            _entities[slot] = new PlayerEntity { Type = EntityType.Player };
+                            _entities[slot] = new PlayerEntity(_client) { Type = EntityType.Player };
                         break;
 
                     case SheetType.FLORA:
-                        _entities[slot] = new CharacterEntity();
+                        _entities[slot] = new CharacterEntity(_client);
                         break;
 
                     case SheetType.FX:
                         //_entities[slot] = new CFxCL;
-                        _entities[slot] = new Entity();
+                        _entities[slot] = new Entity(_client);
                         break;
 
                     case SheetType.ITEM:
                         //_entities[slot] = new CItemCL;
-                        _entities[slot] = new Entity();
+                        _entities[slot] = new Entity(_client);
                         break;
 
                     case SheetType.FORAGE_SOURCE:
-                        _entities[slot] = new ForageSourceEntity();
+                        _entities[slot] = new ForageSourceEntity(_client);
                         break;
 
                     default:
