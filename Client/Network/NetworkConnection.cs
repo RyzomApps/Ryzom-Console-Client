@@ -290,10 +290,10 @@ namespace Client.Network
                 _tickSectionTime = curTime;
             }
 
-            if (_currentServerTick > _tickSectionTick + RollingAverage.GameTps /*_currentServerTick % RollingAverage.GameTps == 0*/)
+            if (_currentServerTick > _tickSectionTick + RollingAverage.GameTps)
             {
                 var diff = curTime - _tickSectionTime;
-                var currentTps = (double)RollingAverage.SecInNano / diff * (_currentServerTick - _tickSectionTick) /*RollingAverage.GameTps*/;
+                var currentTps = RollingAverage.SecInNano / diff * (_currentServerTick - _tickSectionTick);
 
                 Tps1.Add(currentTps, diff);
                 Tps5.Add(currentTps, diff);
@@ -467,8 +467,12 @@ namespace Client.Network
             {
                 if (proxied)
                 {
-                    _connection = ProxyManager.GetSocks5Proxy(_client.GetLogger(), _frontendAddress);
+                    _client.GetLogger().Info($"Trying to find a working UDP proxy. This could take a moment...");
+
+                    _connection = ProxyManager.GetSocks5ProxyUdp(null, _frontendAddress);
                     ProxyCountry = IpInfoIo.GetUserCountryByIp(((UdpSocketProxied)_connection).HostName);
+
+                    _client.GetLogger().Info($"Using proxy server '{((UdpSocketProxied)_connection).HostName}' for the game data.");
                 }
                 else
                 {
@@ -1726,8 +1730,10 @@ namespace Client.Network
             message.Serial(ref _lastReceivedNumber);
             message.Serial(ref _ackBitMask);
 
-            foreach (var block in _actions)
+            for (int itblock = 0; itblock < _actions.Count; itblock++)
             {
+                ActionBlock block = _actions[itblock];
+
                 // if block contains action that are not already stamped, don't send it now
                 if (block.Cycle == 0)
                     break;
@@ -1736,6 +1742,10 @@ namespace Client.Network
                     block.FirstPacket = _currentSendNumber;
 
                 block.Serial(message);
+
+                // for slow incoming streams instantly remove the action
+                _actions.RemoveAt(itblock);
+                itblock--;
 
                 // Prevent to send a message too big - MTU 480? - easy version
                 if (message.GetPosInBit() > 480 * 8)

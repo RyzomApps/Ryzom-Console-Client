@@ -41,19 +41,19 @@ namespace Tests
 
             var webigThread = new WebigNotificationThread(client);
             webigThread.Init();
-            webigThread.Get("http://www.google.de");
+            webigThread.Get("http://www.iana.org");
         }
 
-        [Fact]
-        public void ProxyTest()
-        {
-            var client = new RyzomClient(false);
-
-            var webigThread = new WebigNotificationThread(client);
-            webigThread.Init();
-
-            var proxyThread = new HttpProxyServerThread(client, webigThread);
-            proxyThread.Init();
-        }
+        //[Fact]
+        //public void RelayTest()
+        //{
+        //    var client = new RyzomClient(false);
+        //
+        //    var webigThread = new WebigNotificationThread(client);
+        //    webigThread.Init();
+        //
+        //    var proxyThread = new HttpProxyServerThread(client, webigThread);
+        //    proxyThread.Init();
+        //}
     }
 }

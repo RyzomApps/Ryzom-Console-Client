@@ -166,7 +166,7 @@ namespace Client.Network
         /// <summary>
         /// Function to combine two byte arrays
         /// </summary>
-        public static byte[] Combine(byte[] first, byte[] second)
+        private static byte[] Combine(byte[] first, byte[] second)
         {
             var bytes = new byte[first.Length + second.Length];
             Buffer.BlockCopy(first, 0, bytes, 0, first.Length);

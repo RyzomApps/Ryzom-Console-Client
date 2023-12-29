@@ -442,7 +442,7 @@ namespace Client
                 }
             }
 
-            return SessionData.Cookie != null;
+            return SessionData?.Cookie != null;
         }
 
         /// <summary>

@@ -106,6 +106,8 @@ namespace Client.Network
         /// <inheritdoc />
         public double[] GetTps() => _networkConnection.GetTps();
 
+        readonly Random random = new Random();
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -1011,8 +1013,6 @@ namespace Client.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        Random random = new Random();
-
         /// <summary>
         /// Message from the server to correct the user position because (s)he is not at the same position on the server.
         /// </summary>
@@ -1043,9 +1043,12 @@ namespace Client.Network
 
                 _client.GetLogger().Warn($"Position error: Server relocated the user entity to {dest}.");
 
-                // Add some Noise to get unstuck ;)
-                var noise = Vector3.Normalize(new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, 0));
-                dest += noise * 1;
+                if (!GetEntityManager().GetApiUserEntity().IsDead())
+                {
+                    // Add some Noise to get unstuck ;)
+                    var noise = Vector3.Normalize(new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, 0));
+                    dest += noise * 1;
+                }
 
                 // Update the position for the vision.
                 _client.GetNetworkManager().SetReferencePosition(dest);
@@ -1262,7 +1265,7 @@ namespace Client.Network
             UserCharMsg.Read(impulse, out var x, out var y, out var z, out var heading, out ServerSeasonValue, out var userRole, out var isInRingSession, out var highestMainlandSessionId, out var firstConnectedTime, out CharPlayedTime);
 
             // Set the season that will be used when selecting the continent from the position
-            ServerSeasonReceived = true; 
+            ServerSeasonReceived = true;
 
             if (_entitiesManager.UserEntity != null)
             {
@@ -1314,7 +1317,7 @@ namespace Client.Network
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
                 if ((PeopleType)cs.People != PeopleType.Unknown)
-                    _client.GetLogger().Info($"§d[{i}] {EntityHelper.RemoveShardFromName(cs.Name)}§r from shard {cs.Mainland} of type {((PeopleType)cs.People).ToString()}.");
+                    _client.GetLogger().Info($"§d[{i}] {EntityHelper.RemoveShardFromName(cs.Name)}§r from shard {cs.Mainland} of type {(PeopleType)cs.People}.");
                 CharacterSummaries.Add(cs);
             }
             #endregion

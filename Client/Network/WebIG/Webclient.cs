@@ -40,7 +40,6 @@ namespace Client.Network.WebIG
 
             Debug.Print(httpWebRequest.RequestUri.OriginalString);
 
-
             if (gets != null)
             {
                 try
@@ -74,23 +73,14 @@ namespace Client.Network.WebIG
             {
                 using (var webResponse = (HttpWebResponse)httpWebRequest.GetResponse())
                 {
-                    System.IO.Stream stream;
                     var enc = webResponse.ContentEncoding ?? "";
-
-                    switch (enc.ToUpperInvariant())
+                    
+                    System.IO.Stream stream = enc.ToUpperInvariant() switch
                     {
-                        case "GZIP":
-                            stream = new GZipStream(webResponse.GetResponseStream(), CompressionMode.Decompress);
-                            break;
-
-                        case "DEFLATE":
-                            stream = new DeflateStream(webResponse.GetResponseStream(), CompressionMode.Decompress);
-                            break;
-
-                        default:
-                            stream = webResponse.GetResponseStream();
-                            break;
-                    }
+                        "GZIP" => new GZipStream(webResponse.GetResponseStream(), CompressionMode.Decompress),
+                        "DEFLATE" => new DeflateStream(webResponse.GetResponseStream(), CompressionMode.Decompress),
+                        _ => webResponse.GetResponseStream(),
+                    };
 
                     if (stream != null)
                     {

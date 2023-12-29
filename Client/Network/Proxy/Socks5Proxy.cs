@@ -36,15 +36,15 @@ namespace Client.Network.Proxy
             "Unknown error."                       // 0x09
         };
 
-        private const int ConnectionTimeout = 2000;   // 2 s for connection phase
+        private const int ConnectionTimeout = 2000;  //  2 s for connection phase
         private const int NegotiationTimeout = 5000; //  5 s for negotiation phase
-        public const int OperationTimeout = 30000;  //  30 s for normal connection
+        public const int OperationTimeout = 30000;   // 30 s for normal connection
 
         /// <summary>
         /// Open a TCP connection to the appropriate SOCKS5 port on the SOCKS5 server system using the UDP associate command
         /// </summary>
         /// <returns>TCP socket</returns>
-        public static Socket EstablishConnection(string proxyAddress, ushort proxyPort, string destAddress, ushort destPort, string userName, string password, out string udpAdress, out ushort udpPort)
+        public static Socket EstablishConnection(string proxyAddress, ushort proxyPort, string destAddress, ushort destPort, string userName, string password, out string connectionAdress, out ushort connectionPort, ConnectionRequestCommandType command = ConnectionRequestCommandType.UdpAssociate)
         {
             var destIP = IPAddress.Parse(destAddress);
             var proxyIP = IPAddress.Parse(proxyAddress);
@@ -162,7 +162,7 @@ namespace Client.Network.Proxy
 
                     break;
 
-                // no authentication method was accepted close the socket.
+                // no authentication method was accepted - close the socket
                 case 0xFF:
                     socket.Close();
                     throw new ConnectionException("The requested authentication method was not accepted by the proxy server.");
@@ -180,11 +180,11 @@ namespace Client.Network.Proxy
             nIndex = 0;
             request = new byte[256];
 
-            // version 5.
+            // version 5
             request[nIndex++] = 0x05;
 
-            // UDP associate command
-            request[nIndex++] = 0x03;
+            // command
+            request[nIndex++] = (byte)command;
 
             // reserved
             request[nIndex++] = 0x00;
@@ -207,9 +207,16 @@ namespace Client.Network.Proxy
             socket.Send(request, nIndex, SocketFlags.None);
 
             // get server response
-            // protocol version: X'05'
+            // protocol version: 0x05
             var ver = new byte[1];
             socket.Receive(ver, 0, 1, SocketFlags.None);
+
+            // check version again
+            if (ver[0] != 0x05)
+            {
+                socket.Close();
+                throw new ConnectionException($"The proxy server response contains an incorrect version (0x{ver[0]:X2}).");
+            }
 
             // reply status
             var rep = new byte[1];
@@ -218,7 +225,7 @@ namespace Client.Network.Proxy
             if (rep[0] != 0x00)
             {
                 socket.Close();
-                throw new ConnectionException($"Proxy server UDP association failed: {ErrorMsgs[rep[0]]}");
+                throw new ConnectionException($"Proxy server connection failed: {ErrorMsgs[rep[0]]}");
             }
 
             // reserved
@@ -233,10 +240,10 @@ namespace Client.Network.Proxy
             switch (atyp[0])
             {
                 case 1:
-                    // IP V4 address
+                    // IPV4 address
                     var ip = new byte[4];
                     socket.Receive(ip, 0, 4, SocketFlags.None);
-                    udpAdress = new IPAddress(ip).ToString();
+                    connectionAdress = new IPAddress(ip).ToString();
                     break;
 
                 case 3:
@@ -246,14 +253,14 @@ namespace Client.Network.Proxy
 
                     var domain = new byte[len[0]];
                     socket.Receive(domain, 0, len[0], SocketFlags.None);
-                    udpAdress = Encoding.UTF8.GetString(domain);
+                    connectionAdress = Encoding.UTF8.GetString(domain);
                     break;
 
                 case 4:
-                    // IP V6 address
+                    // IPV6 address
                     var ip6 = new byte[16];
                     socket.Receive(ip6, 0, 16, SocketFlags.None);
-                    udpAdress = new IPAddress(ip6).ToString();
+                    connectionAdress = new IPAddress(ip6).ToString();
                     break;
 
                 default:
@@ -261,15 +268,11 @@ namespace Client.Network.Proxy
                     throw new ConnectionException($"Proxy server is using an address format (0x{atyp[0]:X2}) that is not supported by the client.");
             }
 
-            //if (udpAdress == "0.0.0.0" || udpAdress == "::0")
-                //throw new ConnectionException(udpAdress);
-                //udpAdress = proxyAddress;
-
             // server bound port in network octet order
             var port = new byte[2];
             socket.Receive(port, 0, 2, SocketFlags.None);
-
-            udpPort = BitConverter.ToUInt16(new[] { port[1], port[0] });
+            Array.Reverse(port);
+            connectionPort = BitConverter.ToUInt16(port);
 
             // set timeouts higher for the normal connection
             socket.ReceiveTimeout = OperationTimeout;
@@ -277,6 +280,27 @@ namespace Client.Network.Proxy
 
             // return the socket after the successful connection
             return socket;
+        }
+
+        /// <summary>
+        /// Connection request command
+        /// </summary>
+        public enum ConnectionRequestCommandType : byte
+        {
+            /// <summary>
+            /// Establish a TCP connection
+            /// </summary>
+            Connect = 0X01,
+
+            /// <summary>
+            /// Accept a TCP connection, i.e. open a server
+            /// </summary>
+            Bind = 0x02,
+
+            /// <summary>
+            /// Set up a UDP forwarding
+            /// </summary>
+            UdpAssociate = 0x03,
         }
     }
 }

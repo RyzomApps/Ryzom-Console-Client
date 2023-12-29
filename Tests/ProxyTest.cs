@@ -4,61 +4,86 @@ using Client;
 using Client.Network;
 using Xunit;
 using Client.Network.Proxy;
+using System.Net.Sockets;
+using System.Text;
 
 namespace Tests
 {
     public class ProxyTest
     {
         //[Fact]
-        //public void Socks5Test()
+        //public void TestUdpProxy()
         //{
-        //    Socks5Proxy.EstablishConnection("79.143.187.168", 7497, "164.132.202.87", 53, "", "", out var udpAdress, out var udpPort);
+        //    var client = new RyzomClient(false);
         //
-        //    Assert.NotNull(udpAdress);
+        //    // Download and open the proxies file to read from.
+        //    var proxies = ProxyManager.DownloadProxyList(client.GetLogger());
         //
-        //    Assert.Equal("\0", udpAdress);
+        //    var rnd = new Random(DateTime.Now.Millisecond);
+        //    var working = false;
+        //    var retryCounter = 1;
         //
-        //    Assert.Equal(7497, udpPort);
+        //    // try connections to the proxies until one is working
+        //    while (!working && retryCounter < 100)
+        //    {
+        //        var index = rnd.Next(proxies.Length);
+        //        var proxy = proxies[index];
+        //
+        //        if (proxy.Trim().Length == 0 || proxy.Trim().StartsWith("#") || !IPAddress.TryParse(proxy.Split(':')[0], out _))
+        //            continue;
+        //
+        //        client.GetLogger().Info($"[{retryCounter}] Trying to use SOCKS5 proxy server '{proxy}'.");
+        //
+        //        try
+        //        {
+        //            var connection = new UdpSocketProxied(proxy);
+        //            connection.Connect("arma.ryzom.com:47851");
+        //            working = true;
+        //        }
+        //        catch (Exception innerE)
+        //        {
+        //            client.GetLogger().Warn(innerE.Message);
+        //        }
+        //
+        //        retryCounter++;
+        //    }
+        //
+        //    Assert.True(working);
         //}
 
         [Fact]
-        public void DownloadAndTestProxies()
+        public void TestTcpProxy()
         {
             var client = new RyzomClient(false);
 
-            // Download and open the proxies file to read from.
-            var proxies = ProxyManager.DownloadProxyList(client.GetLogger());
+            var _socks5Socket = ProxyManager.GetSocks5ProxyTcp(client.GetLogger(), "arma.ryzom.com:80");
 
-            var rnd = new Random(DateTime.Now.Millisecond);
-            var working = false;
-            var retryCounter = 1;
+            var requestStr = "GET https://arma.ryzom.com HTTP/1.1\r\n" +
+            "Host: arma.ryzom.com\r\n" +
+            "User-Agent: Ryzom/Omega / v23.12.346 #adddfe118-windows-x64\r\n" +
+            "Accept: */*\r\n" +
+            "Accept-Language: en\r\n" +
+            "Accept-Charset: utf-8\r\n" +
+            //"Accept-Encoding: gzip, deflate\r\n" +
+            //"Connection: close\r\n" +
+            "\r\n";
 
-            // try connections to the proxies until one is working
-            while (!working && retryCounter < 1000)
+            byte[] remoteRequest = Encoding.UTF8.GetBytes(requestStr);
+            _socks5Socket.Send(remoteRequest);
+
+            int count;
+            string remoteStr = "";
+            byte[] remoteBuffer = new byte[1024];
+
+            while ((count = _socks5Socket.Receive(remoteBuffer)) != 0)
             {
-                var index = rnd.Next(proxies.Length);
-                var proxy = proxies[index];
-
-                if (proxy.Trim().Length == 0 || proxy.Trim().StartsWith("#") || !IPAddress.TryParse(proxy.Split(':')[0], out _))
-                    continue;
-
-                client.GetLogger().Info($"[{retryCounter}] Trying to use SOCKS5 proxy server '{proxy}'.");
-
-                try
-                {
-                    var connection = new UdpSocketProxied(proxy);
-                    connection.Connect("arma.ryzom.com:47851");
-                    working = true;
-                }
-                catch (Exception innerE)
-                {
-                    client.GetLogger().Warn(innerE.Message);
-                }
-
-                retryCounter++;
+                string receivedData = Encoding.UTF8.GetString(remoteBuffer, 0, count);
+                remoteStr += receivedData;
             }
 
-            Assert.True(working);
+            client.GetLogger().Info(remoteStr);
+
+            Assert.Contains("301 Moved Permanently", remoteStr);
         }
     }
 }

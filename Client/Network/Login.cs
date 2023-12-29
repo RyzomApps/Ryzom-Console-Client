@@ -7,11 +7,13 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
 using Client.Config;
 using Client.Helper.Crypter;
+using Client.Network.Proxy;
 
 namespace Client.Network
 {
@@ -40,16 +42,66 @@ namespace Client.Network
 
             var urlLogin = $"{url}?cmd=login&login={login}&password={cryptedPassword}&clientApplication={clientApp}&cp=2&lg={ClientConfig.LanguageCode}{customParameters}";
 
-            var request = WebRequest.CreateHttp(urlLogin);
-            request.Method = "GET";
+            var responseString = "";
 
-            using var response = (HttpWebResponse)request.GetResponse();
+            if (ClientConfig.UseProxy)
+            {
+                do
+                {
+                    try
+                    {
+                        client.GetLogger().Info($"Trying to find a working TCP proxy. This could take a moment...");
 
-            using var reader = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException("Can't send (error code 2)"), Encoding.UTF8);
+                        var socket = ProxyManager.GetSocks5ProxyTcp(null, ClientConfig.StartupHost);
 
-            // Read stream content as string
-            var responseString = reader.ReadToEnd();
+                        client.GetLogger().Info($"Using proxy server '{socket.RemoteEndPoint}' to login.");
 
+                        var requestStr = $"GET {urlLogin} HTTP/1.1\r\n" +
+                        $"Host: {ClientConfig.StartupHost}\r\n" +
+                        "User-Agent: Ryzom/Omega / v23.12.346 #adddfe118-windows-x64\r\n" +
+                        "Accept: */*\r\n" +
+                        "Accept-Language: en\r\n" +
+                        "Accept-Charset: utf-8\r\n" +
+                        "\r\n";
+
+                        // send
+                        byte[] remoteRequest = Encoding.UTF8.GetBytes(requestStr);
+                        socket.Send(remoteRequest);
+
+                        // receive
+                        int count;
+                        byte[] remoteBuffer = new byte[1024];
+                        responseString = "";
+
+                        while ((count = socket.Receive(remoteBuffer)) != 0)
+                        {
+                            string receivedData = Encoding.UTF8.GetString(remoteBuffer, 0, count);
+                            responseString += receivedData;
+                        }
+
+                        socket.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        client.GetLogger().Error($"Exception: {e.Message}");
+                        responseString = "";
+                    }
+                } while (!responseString.Contains("200 OK"));
+            }
+            else
+            {
+                var request = WebRequest.CreateHttp(urlLogin);
+                request.Method = "GET";
+
+                using var response = (HttpWebResponse)request.GetResponse();
+
+                using var reader = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException("Can't send (error code 2)"), Encoding.UTF8);
+
+                // Read stream content as string
+                responseString = reader.ReadToEnd();
+            }
+
+            // remove the response header if there is any
             var first = responseString.IndexOf("\n\n", StringComparison.Ordinal);
 
             if (first == -1)
@@ -130,7 +182,8 @@ namespace Client.Network
                         R2PatchUrLs = r2PatchUrLs // string[]
                     };
 
-                    //client.SessionData.Save("session_" + login + ".json");
+                    if (ClientConfig.SaveSessionData)
+                        client.SessionData.Save("session_" + login + ".json");
 
                     break;
             }

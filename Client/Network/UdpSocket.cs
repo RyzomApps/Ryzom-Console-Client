@@ -43,7 +43,7 @@ namespace Client.Network
         /// <summary>
         /// Splits an address into host and port
         /// </summary>
-        internal static void ParseHostString(string hostString, out string hostName, out int port)
+        public static void ParseHostString(string hostString, out string hostName, out int port)
         {
             hostName = hostString;
             port = -1;
