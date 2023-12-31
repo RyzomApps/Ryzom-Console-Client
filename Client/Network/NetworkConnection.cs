@@ -1743,9 +1743,9 @@ namespace Client.Network
 
                 block.Serial(message);
 
-                // for slow incoming streams instantly remove the action
-                _actions.RemoveAt(itblock);
-                itblock--;
+                //// for slow incoming streams instantly remove the action
+                //_actions.RemoveAt(itblock);
+                //itblock--;
 
                 // Prevent to send a message too big - MTU 480? - easy version
                 if (message.GetPosInBit() > 480 * 8)
