@@ -8,6 +8,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using API.Chat;
@@ -23,6 +25,9 @@ namespace Client.Helper
     /// </summary>
     public static class ConsoleIO
     {
+        private const string HistFile = "./.console_history";
+        private const int HistSize = 500;
+
         private static IAutoComplete _autocompleteEngine;
         private static readonly LinkedList<string> AutocompleteWords = new LinkedList<string>();
         private static readonly LinkedList<string> Previous = new LinkedList<string>();
@@ -53,6 +58,24 @@ namespace Client.Helper
         /// Specify a generic log line prefix for WriteLogLine()
         /// </summary>
         public static string LogPrefix = "§8[Log] ";
+
+        /// <summary>
+        /// Initialization - Loads the command line history
+        /// </summary>
+        static ConsoleIO()
+        {
+            if (!File.Exists(HistFile)) return;
+            var lines = File.ReadAllLines(HistFile);
+            Previous = new LinkedList<string>(lines.Skip(Math.Max(0, lines.Length - HistSize)));
+        }
+
+        /// <summary>
+        /// Saves the command line history
+        /// </summary>
+        private static void SaveHistory()
+        {
+            new Thread(() => { try { File.WriteAllLines(HistFile, Previous.ToArray().Skip(Math.Max(0, Previous.Count - HistSize))); } catch { /* ignored */ } }).Start();
+        }
 
         /// <summary>
         /// Reset the IO mechanism and clear all buffers
@@ -150,7 +173,7 @@ namespace Client.Helper
                 k = Console.ReadKey(true);
                 lock (IoLock)
                 {
-                    if (k.Key == ConsoleKey.V && k.Modifiers == ConsoleModifiers.Control)
+                    if (k is { Key: ConsoleKey.V, Modifiers: ConsoleModifiers.Control })
                     {
                         var clip = ReadClipboard();
                         foreach (var c in clip)
@@ -204,6 +227,7 @@ namespace Client.Helper
                                     _buffer = Previous.First?.Value;
                                     Previous.AddLast(_buffer);
                                     Previous.RemoveFirst();
+                                    SaveHistory();
                                     Console.Write(_buffer);
                                 }
 
@@ -215,6 +239,7 @@ namespace Client.Helper
                                     _buffer = Previous.Last?.Value;
                                     Previous.AddFirst(_buffer);
                                     Previous.RemoveLast();
+                                    SaveHistory();
                                     Console.Write(_buffer);
                                 }
 
@@ -261,6 +286,7 @@ namespace Client.Helper
             {
                 _reading = false;
                 Previous.AddLast(_buffer + _buffer2);
+                SaveHistory();
                 return _buffer + _buffer2;
             }
         }
@@ -406,26 +432,26 @@ namespace Client.Helper
         /// See Ryzom.gamepedia.com/Classic_server_protocol#Color_Codes for more info
         /// </summary>
         /// <param name="str">String to write</param>
-        /// <param name="acceptnewlines">If false, space are printed instead of newlines</param>
-        /// <param name="displayTimestamp">
+        /// <param name="acceptNewLines">If false, space are printed instead of newlines</param>
+        /// <param name="displayTimeStamp">
         /// If false, no timestamp is prepended.
         /// If true, "hh-mm-ss" timestamp will be prepended.
         /// If unspecified, value is retrieved from EnableTimestamps.
         /// </param>
-        public static void WriteLineFormatted(string str, bool acceptnewlines = true, bool? displayTimestamp = null)
+        public static void WriteLineFormatted(string str, bool acceptNewLines = true, bool? displayTimeStamp = null)
         {
             var noColorRet = "";
 
             if (!string.IsNullOrEmpty(str))
             {
-                if (!acceptnewlines)
+                if (!acceptNewLines)
                 {
                     str = str.Replace('\n', ' ');
                 }
 
-                displayTimestamp ??= EnableTimestamps;
+                displayTimeStamp ??= EnableTimestamps;
 
-                if (displayTimestamp.Value)
+                if (displayTimeStamp.Value)
                 {
                     Write($"[{DateTime.Now:HH:mm:ss}] ");
                 }
@@ -468,10 +494,10 @@ namespace Client.Helper
         /// Write a prefixed log line. Prefix is set in LogPrefix.
         /// </summary>
         /// <param name="text">Text of the log line</param>
-        /// <param name="acceptnewlines">Allow line breaks</param>
-        public static void WriteLogLine(string text, bool acceptnewlines = true)
+        /// <param name="acceptNewLines">Allow line breaks</param>
+        public static void WriteLogLine(string text, bool acceptNewLines = true)
         {
-            if (!acceptnewlines)
+            if (!acceptNewLines)
                 text = text.Replace('\n', ' ');
 
             WriteLineFormatted(LogPrefix + text);
@@ -523,31 +549,32 @@ namespace Client.Helper
         /// </summary>
         private static void RemoveOneChar()
         {
-            if (_buffer.Length > 0)
+            if (_buffer.Length <= 0) 
+                return;
+
+            try
             {
-                try
-                {
-                    GoBack();
-                    Console.Write(' ');
-                    GoBack();
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    /* Console was resized!? */
-                }
+                GoBack();
+                Console.Write(' ');
+                GoBack();
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                /* Console was resized!? */
+            }
 
-                _buffer = _buffer[..^1];
+            _buffer = _buffer[..^1];
 
-                if (_buffer2.Length > 0)
-                {
-                    Console.Write(_buffer2);
-                    Console.Write(' ');
-                    GoBack();
-                    for (int i = 0; i < _buffer2.Length; i++)
-                    {
-                        GoBack();
-                    }
-                }
+            if (_buffer2.Length <= 0)
+                return;
+
+            Console.Write(_buffer2);
+            Console.Write(' ');
+            GoBack();
+
+            for (var i = 0; i < _buffer2.Length; i++)
+            {
+                GoBack();
             }
         }
 
@@ -609,6 +636,7 @@ namespace Client.Helper
             Console.Write(c);
             _buffer += c;
             Console.Write(_buffer2);
+
             for (var i = 0; i < _buffer2.Length; i++)
             {
                 GoBack();
