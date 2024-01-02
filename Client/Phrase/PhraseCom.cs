@@ -48,68 +48,113 @@ namespace Client.Phrase
         /// <summary>
         /// This serial is made for server->client com. NB: SheetId must be initialized.
         /// </summary>
-        public static PhraseCom Serial(BitMemoryStream impulse, SheetIdFactory sheetIdFactory)
+        public static void Serial(ref PhraseCom phrase, BitMemoryStream stream, SheetIdFactory sheetIdFactory)
         {
-            var ret = new PhraseCom();
+            if (stream.IsReading())
+                phrase = new PhraseCom();
 
-            if (!impulse.IsReading())
-            {
-                throw new NotImplementedException();
-            }
-
-            impulse.Serial(ref ret.Name, false);
+            stream.Serial(ref phrase.Name, false);
 
             // Get the type of .sbrick
-            if (ret._serialSbrickType == 0)
+            if (phrase._serialSbrickType == 0)
             {
-                ret._serialSbrickType = sheetIdFactory.TypeFromFileExtension("sbrick");
+                phrase._serialSbrickType = sheetIdFactory.TypeFromFileExtension("sbrick");
             }
 
-            // read
-            #region workaround: impulse.SerialCont(ref _serialCompBricks);
-
-            var len = 0;
-            impulse.Serial(ref len);
-
-            // 16 bits compression of the Bricks
-            var serialCompBricks = new List<ushort>(len);
-
-            for (var i = 0; i < len; i++)
+            if (stream.IsReading())
             {
-                ushort value = 0;
-                impulse.Serial(ref value);
-                serialCompBricks.Add(value);
-            }
+                // read
+                #region workaround: impulse.SerialCont(ref _serialCompBricks);
 
-            #endregion workaround for: ret.Bricks.Resize(serialCompBricks.Count);
+                var len = 0;
+                stream.Serial(ref len);
 
-            // uncompress
-            #region workaround: ContReset(Bricks); Bricks.resize(compBricks.size());
+                // 16 bits compression of the Bricks
+                var serialCompBricks = new List<ushort>(len);
 
-            ret.Bricks.Clear();
-
-            for (var i = 0; i < serialCompBricks.Count; i++)
-            {
-                ret.Bricks.Add(new SheetId(sheetIdFactory));
-            }
-
-            #endregion end workaround
-
-            for (var i = 0; i < ret.Bricks.Count; i++)
-            {
-                if (serialCompBricks[i] == 0)
+                for (var i = 0; i < len; i++)
                 {
-                    ret.Bricks[i] = null;
+                    ushort value = 0;
+                    stream.Serial(ref value);
+                    serialCompBricks.Add(value);
                 }
-                else
+
+                #endregion workaround for: ret.Bricks.Resize(serialCompBricks.Count);
+
+                // uncompress
+                #region workaround: ContReset(Bricks); Bricks.resize(compBricks.size());
+
+                phrase.Bricks.Clear();
+
+                for (var i = 0; i < serialCompBricks.Count; i++)
                 {
-                    ret.Bricks[i].BuildSheetId(serialCompBricks[i] - 1, (SheetType)ret._serialSbrickType);
+                    phrase.Bricks.Add(new SheetId(sheetIdFactory));
+                }
+
+                #endregion end workaround
+
+                for (var i = 0; i < phrase.Bricks.Count; i++)
+                {
+                    if (serialCompBricks[i] == 0)
+                    {
+                        phrase.Bricks[i] = null;
+                    }
+                    else
+                    {
+                        phrase.Bricks[i].BuildSheetId(serialCompBricks[i] - 1, (SheetType)phrase._serialSbrickType);
+                    }
                 }
             }
+            else
+            {
+                // write
+                var serialCompBricks = new List<ushort>();
 
-            impulse.Serial(ref ret.IconIndex);
+                // fill default with 0.
+                serialCompBricks.Clear();
+                #region Workaround compBricks.resize(Bricks.size());
+                for (var i = 0; i < phrase.Bricks.Count; i++)
+                {
+                    serialCompBricks.Add(0);
+                }
+                #endregion
 
-            return ret;
+                // compress
+                for (var i = 0; i < phrase.Bricks.Count; i++)
+                {
+                    // if not empty SheetId
+                    if (phrase.Bricks[i].AsInt() == 0)
+                        continue;
+
+                    // TODO: short id from tsheetid union (24 bit)
+                    var compId = phrase.Bricks[i].Id;
+
+                    // the sbrick SheetId must be <65535, else error!
+                    if (compId >= 65535)
+                    {
+                        Console.WriteLine($"ERROR: found a .sbrick SheetId with SubId>=65535: {phrase.Bricks[i]}");
+                        // and leave 0.
+                    }
+                    else
+                    {
+                        serialCompBricks[i] = (ushort)(compId + 1);
+                    }
+                }
+
+                // write
+                #region Workaround impulse.serialCont(compBricks);
+                var len = serialCompBricks.Count;
+                stream.Serial(ref len);
+
+                for (var i = 0; i < len; i++)
+                {
+                    var value = serialCompBricks[i];
+                    stream.Serial(ref value);
+                }
+                #endregion
+            }
+
+            stream.Serial(ref phrase.IconIndex);
         }
     }
 }

@@ -16,6 +16,7 @@ using Client.Brick;
 using Client.Client;
 using Client.Database;
 using Client.Sheet;
+using Client.Stream;
 
 namespace Client.Phrase
 {
@@ -115,6 +116,8 @@ namespace Client.Phrase
 
         private readonly List<MemoryLine> _memories = new List<MemoryLine>();
 
+        private readonly RyzomClient _client;
+
         //static bool _registerClassDone;
 
         /// <summary>
@@ -122,10 +125,11 @@ namespace Client.Phrase
         /// </summary>
         public PhraseManager(RyzomClient client)
         {
+            _client = client;
             _sheetManager = client.GetSheetManager();
-            _stringManager =  client.GetStringManager();
-            _databaseManager =  client.GetDatabaseManager();
-            _sheetIdFactory =  client.GetSheetIdFactory();
+            _stringManager = client.GetStringManager();
+            _databaseManager = client.GetDatabaseManager();
+            _sheetIdFactory = client.GetSheetIdFactory();
 
             Reset();
 
@@ -252,7 +256,7 @@ namespace Client.Phrase
 
             foreach (var (key, value) in sm)
             {
-                if (value.EntitySheet == null || value.EntitySheet.Type != SheetType.SPHRASE)
+                if (!(value.EntitySheet is { Type: SheetType.SPHRASE }))
                     continue;
 
                 BuildPhraseFromSheet(ref tmpPhrase, key.AsInt());
@@ -488,6 +492,9 @@ namespace Client.Phrase
             // TODO: Implementation
         }
 
+        /// <summary>
+        /// Dump all phrases to a file.
+        /// </summary>
         public void Write(string fileName)
         {
             if (_memories != null)
@@ -512,7 +519,7 @@ namespace Client.Phrase
 
                                 foreach (var brick in phrase?.Bricks)
                                 {
-                                    var bs = (BrickSheet) _sheetManager.Get(brick);
+                                    var bs = (BrickSheet)_sheetManager.Get(brick);
 
                                     f.WriteLine($"\t{brick.AsInt()}\t{brick.Type}\t{bs.IdIcon}");
                                 }
@@ -529,6 +536,73 @@ namespace Client.Phrase
             else
             {
                 RyzomClient.GetInstance().GetLogger().Warn($"<CCDBSynchronised::write> can't write {fileName} : the database has not been initialized");
+            }
+        }
+
+        /// <summary>
+        /// Get a phrase for a slot. Empty Phrase returned if don't exist.
+        /// </summary>
+        public PhraseCom GetPhrase(uint slot)
+        {
+            return !_phraseMap.ContainsKey((int)slot) ? PhraseCom.EmptyPhrase : _phraseMap[(int)slot];
+        }
+
+        /// <summary>
+        /// Common Method to send the Memorize msg to server
+        /// </summary>
+        public void SendMemorizeToServer(uint memoryLine, uint memorySlot, uint phraseId)
+        {
+            var @out = new BitMemoryStream();
+            const string sMsg = "PHRASE:MEMORIZE";
+
+            if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(sMsg, @out))
+            {
+                var phrase = GetPhrase(phraseId);
+
+                // free Band; don't send name
+                phrase.Name = "";
+
+                var memoryId = (byte)memoryLine;
+                var slotId = (byte)memorySlot;
+                var pid = (ushort)phraseId;
+
+                @out.Serial(ref memoryId);
+                @out.Serial(ref slotId);
+                @out.Serial(ref pid);
+                PhraseCom.Serial(ref phrase, @out, _sheetIdFactory);
+
+                _client.GetNetworkManager().Push(@out);
+                _client.GetLogger().Info($"impulseCallBack : {sMsg} {memoryId} {slotId} {pid} (phrase) sent");
+            }
+            else
+            {
+                _client.GetLogger().Warn($"impulseCallBack : unknown message name : '{sMsg}'.");
+            }
+        }
+
+        /// <summary>
+        /// Common Method to send the Forget msg to server
+        /// </summary>
+        public void SendForgetToServer(uint memoryLine, uint memoryIndex)
+        {
+            var @out = new BitMemoryStream();
+            const string sMsg = "PHRASE:FORGET";
+
+            if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(sMsg, @out))
+            {
+                //serial the sentence memorized index
+                var memoryId = (byte)memoryLine;
+                var slotId = (byte)memoryIndex;
+
+                @out.Serial(ref memoryId);
+                @out.Serial(ref slotId);
+
+                _client.GetNetworkManager().Push(@out);
+                _client.GetLogger().Info($"impulseCallBack : {sMsg} {memoryId} {slotId} sent");
+            }
+            else
+            {
+                _client.GetLogger().Warn($"impulseCallBack : unknown message name : '{sMsg}'.");
             }
         }
     }

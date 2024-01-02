@@ -370,7 +370,7 @@ namespace Client.Stream
         {
             if (IsReading())
             {
-                int len = 0;
+                var len = 0;
                 Serial(ref len);
 
                 if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * (isUtf16 ? 2 : 1) * 8, BitMemoryStreamSerialInfo.SerialType.String, new StackTrace(true)));
