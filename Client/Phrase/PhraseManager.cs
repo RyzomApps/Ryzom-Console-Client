@@ -452,7 +452,6 @@ namespace Client.Phrase
             //}
         }
 
-
         internal void UpdateMemoryBar()
         {
             if (!_initInGameDone)
@@ -521,7 +520,7 @@ namespace Client.Phrase
                                 {
                                     var bs = (BrickSheet)_sheetManager.Get(brick);
 
-                                    f.WriteLine($"\t{brick.AsInt()}\t{brick.Type}\t{bs.IdIcon}");
+                                    f.WriteLine($"\t{brick.AsInt()}\t{brick.GetShortId()}\t{brick.Type}\t{bs.IdIcon}");
                                 }
                         }
 
@@ -562,9 +561,9 @@ namespace Client.Phrase
                 // free Band; don't send name
                 phrase.Name = "";
 
-                var memoryId = (byte)memoryLine;
-                var slotId = (byte)memorySlot;
-                var pid = (ushort)phraseId;
+                var memoryId = (byte)memoryLine; // action group
+                var slotId = (byte)memorySlot; // action slot
+                var pid = (ushort)phraseId; // phrase
 
                 @out.Serial(ref memoryId);
                 @out.Serial(ref slotId);

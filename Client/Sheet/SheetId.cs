@@ -8,6 +8,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using API.Sheet;
 using Client.Stream;
 
@@ -59,6 +60,18 @@ namespace Client.Sheet
         {
             return _id;
         }
+
+        /// <summary>
+        /// Return the sheet sub id (sub part of the sheetid)
+        /// </summary>
+        public uint GetShortId()
+        {
+            // Use 24 bits id and 8 bits file types
+            var tmp = BitConverter.GetBytes(_id);
+            tmp = tmp.Skip(1).Concat(new byte[] { 0 }).ToArray();
+            return BitConverter.ToUInt32(tmp);
+        }
+
 
         /// <summary>
         /// Serial

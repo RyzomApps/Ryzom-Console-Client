@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using API.Sheet;
 using Client.Sheet;
 using Client.Stream;
@@ -126,8 +127,7 @@ namespace Client.Phrase
                     if (phrase.Bricks[i].AsInt() == 0)
                         continue;
 
-                    // TODO: short id from tsheetid union (24 bit)
-                    var compId = phrase.Bricks[i].Id;
+                    var compId = phrase.Bricks[i].GetShortId();
 
                     // the sbrick SheetId must be <65535, else error!
                     if (compId >= 65535)
