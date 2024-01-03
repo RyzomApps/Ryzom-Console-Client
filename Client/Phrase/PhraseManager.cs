@@ -146,7 +146,7 @@ namespace Client.Phrase
         /// </summary>
         private void Reset()
         {
-            _initInGameDone= false;
+            _initInGameDone = false;
             _selectedMemoryDB = -1;
         }
 
@@ -287,6 +287,31 @@ namespace Client.Phrase
                 BuildPhraseFromSheet(ref tmpPhrase, key.AsInt());
                 _phraseToSheet[tmpPhrase] = (int)key.AsInt();
             }
+        }
+
+        /// <summary>
+        /// return getMemorizedPhrase(memoryLine, memoryIndex), only if this phrase is only used in this memory slot
+     	/// else return allocatePhraseSlot()
+        /// </summary>
+        public uint AllocatePhraseSlot()
+        {
+            //if (_freeSlots.empty())
+            //{
+            // if too big, fail.
+            if (_maxSlotSet >= PHRASE_MAX_ID)
+            {
+                return 0;
+            }
+
+            // get a free slot
+            return (uint)(_maxSlotSet + 1);
+            //}
+            //else
+            //{
+            //    uint val = _FreeSlots.back();
+            //    _freeSlots.pop_back();
+            //    return val;
+            //}
         }
 
         /// <summary>
@@ -465,10 +490,10 @@ namespace Client.Phrase
             {
                 // update the DB
                 UpdateMemoryDbSlot((uint)memorySlot);
-            
+
                 // update the ctrl state
                 //UpdateMemoryCtrlState(memorySlot);
-            
+
                 // If there is an execution running with this action, maybe re-display it
                 //if (_CurrentExecutePhraseIdNext == slot || _CurrentExecutePhraseIdCycle == slot)
                 //{
@@ -509,14 +534,14 @@ namespace Client.Phrase
 
             if (_selectedMemoryDB == -1 || _selectedMemoryDB >= _memories.Count)
             {
-                for (uint i = 0;i < PHRASE_MAX_MEMORY_SLOT;i++)
+                for (uint i = 0; i < PHRASE_MAX_MEMORY_SLOT; i++)
                 {
                     _memoryDbLeaves[i].SetValue32(0);
                 }
             }
             else
             {
-                for (uint i = 0;i < PHRASE_MAX_MEMORY_SLOT;i++)
+                for (uint i = 0; i < PHRASE_MAX_MEMORY_SLOT; i++)
                 {
                     var slot = _memories[_selectedMemoryDB].Slot[i];
 
@@ -545,7 +570,7 @@ namespace Client.Phrase
                 return;
 
             var slot = _memories[_selectedMemoryDB].Slot[memorySlot];
-    
+
             if (!slot.IsPhrase())
             {
                 _memoryDbLeaves[memorySlot].SetValue32(0);
@@ -555,7 +580,7 @@ namespace Client.Phrase
                 _memoryDbLeaves[memorySlot].SetValue32((int)slot.Id);
             }
         }
-        
+
         internal void UpdateEquipInvalidation(uint v)
         {
             // TODO: Implementation
@@ -587,16 +612,16 @@ namespace Client.Phrase
 
                         //if (phrase != PhraseCom.EmptyPhrase)
                         //{
-                            f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase.Name}\t{phrase.Bricks?.Count}");
+                        f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase.Name}\t{phrase.Bricks?.Count}");
 
-                            if (phrase.Bricks != null)
+                        if (phrase.Bricks != null)
 
-                                foreach (var brick in phrase?.Bricks)
-                                {
-                                    var bs = (BrickSheet)_sheetManager.Get(brick);
+                            foreach (var brick in phrase?.Bricks)
+                            {
+                                var bs = (BrickSheet)_sheetManager.Get(brick);
 
-                                    f.WriteLine($"\t{brick.AsInt()}\t{brick.GetShortId()}\t{brick.GetSheetType()}\t{bs?.IdIcon}");
-                                }
+                                f.WriteLine($"\t{brick.AsInt()}\t{brick.GetShortId()}\t{brick.GetSheetType()}\t{bs?.IdIcon}");
+                            }
                         //}
 
                         s++;

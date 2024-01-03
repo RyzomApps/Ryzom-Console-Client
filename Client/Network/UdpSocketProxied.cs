@@ -67,7 +67,7 @@ namespace Client.Network
             _socks5Socket = Socks5Proxy.EstablishConnection(proxyIp.ToString(), (ushort)proxyPort, _ip.ToString(), _port, "anonymous", "", out var udpAddress, out var udpPort);
 
             // use the proxy host if no other address is given
-            if (udpAddress == "\0")
+            if (udpAddress == "\0" || udpAddress == "0.0.0.0")
                 udpAddress = proxyHost;
 
             // connect the udp client to the proxy
