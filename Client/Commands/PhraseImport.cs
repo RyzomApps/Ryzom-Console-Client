@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using API;
 using API.Commands;
 using Client.Phrase;
-using Client.Stream;
 
 namespace Client.Commands
 {
@@ -23,16 +22,21 @@ namespace Client.Commands
             // TODO: this is just a stub
 
             // forget 10 1
-            ryzomClient.GetPhraseManager().SendForgetToServer(9, 0);
+            //ryzomClient.GetPhraseManager().SendForgetToServer(9, 0);
 
             // learn 10 1
             for (uint i = 0; i < 100; i++)
             {
-                if (ryzomClient.GetPhraseManager().GetPhrase(i) != PhraseCom.EmptyPhrase)
+                if (ryzomClient.GetPhraseManager().GetPhrase(i) == PhraseCom.EmptyPhrase)
+                    continue;
+
+                for (uint j = 0; j < 20; j++)
                 {
-                    ryzomClient.GetPhraseManager().SendMemorizeToServer(9, 0, i);
-                    break;
+                    ryzomClient.GetPhraseManager().SendLearnToServer(i);
+                    ryzomClient.GetPhraseManager().SendMemorizeToServer(9, j, i);
                 }
+
+                break;
             }
 
             return "";

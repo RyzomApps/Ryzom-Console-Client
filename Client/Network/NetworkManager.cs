@@ -654,7 +654,7 @@ namespace Client.Network
 
             foreach (var phrase in phrases)
             {
-                if (phrase.PhraseSheetId != _sheetIdFactory.Unknown)
+                if (phrase.PhraseSheetId.AsInt() != 0)
                 {
                     var phraseCom = new PhraseCom();
                     _phraseManager.BuildPhraseFromSheet(ref phraseCom, phrase.PhraseSheetId.AsInt());
@@ -726,10 +726,10 @@ namespace Client.Network
         {
             _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            bool bUnblock = false;
+            var bUnblock = false;
             impulse.Serial(ref bUnblock);
 
-            int len = 0;
+            var len = 0;
             impulse.Serial(ref len);
 
             var vTitles = new List<ushort>(len);

@@ -28,7 +28,7 @@ namespace Client.Commands
 
             var id = ryzomClient.GetApiSheetIdFactory().SheetId(args[0]);
 
-            return id.Id.ToString();
+            return id.AsInt().ToString();
         }
 
         public override IEnumerable<string> GetCmdAliases()

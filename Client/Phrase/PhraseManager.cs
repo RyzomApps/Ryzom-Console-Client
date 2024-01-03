@@ -84,7 +84,7 @@ namespace Client.Phrase
         // Shortcut To Phrases Leaves
         private DatabaseNodeLeaf[] _bookDbLeaves;
         private DatabaseNodeLeaf[] _memoryDbLeaves;
-        private DatabaseNodeLeaf[] _memoryAltDbLeaves;
+        //private DatabaseNodeLeaf[] _memoryAltDbLeaves; not using second memory bar in rcc
 
         // Shortcut To PhraseSheets Leaves in BotChat
         private DatabaseNodeLeaf[] _botChatPhraseSheetLeaves;
@@ -118,6 +118,8 @@ namespace Client.Phrase
 
         private readonly RyzomClient _client;
 
+        int _selectedMemoryDB = -1;
+
         //static bool _registerClassDone;
 
         /// <summary>
@@ -144,7 +146,30 @@ namespace Client.Phrase
         /// </summary>
         private void Reset()
         {
-            // TODO Reset implementation
+            _initInGameDone= false;
+            _selectedMemoryDB = -1;
+        }
+
+        /// <remarks>
+        /// Only one memory line is displayed in the Memory DB. if -1, erased.
+        /// </remarks>
+        internal void SelectMemoryLineDb(int memoryLine)
+        {
+            if (memoryLine < 0)
+                memoryLine = -1;
+
+            if (_selectedMemoryDB == memoryLine)
+                return;
+
+            _selectedMemoryDB = memoryLine;
+
+            // since memory selection changes then must update all the DB and the Ctrl states
+            UpdateMemoryDbAll();
+            UpdateAllMemoryCtrlState();
+            // TODO: UpdateAllMemoryCtrlRegenTickRange();
+
+            // must update also the execution views
+            // TODO: UpdateExecutionDisplay();
         }
 
         /// <summary>
@@ -173,7 +198,7 @@ namespace Client.Phrase
             }
 
             _memoryDbLeaves = new DatabaseNodeLeaf[PHRASE_MAX_MEMORY_SLOT];
-            _memoryAltDbLeaves = new DatabaseNodeLeaf[PHRASE_MAX_MEMORY_SLOT];
+            //_memoryAltDbLeaves = new DatabaseNodeLeaf[PHRASE_MAX_MEMORY_SLOT];
 
             for (i = 0; i < PHRASE_MAX_MEMORY_SLOT; i++)
             {
@@ -181,9 +206,9 @@ namespace Client.Phrase
                 node.SetValue32(0);
                 _memoryDbLeaves[i] = node;
 
-                var nodeAlt = _databaseManager.GetDbProp(PHRASE_DB_MEMORY_ALT + ":" + i + ":PHRASE");
-                nodeAlt.SetValue32(0);
-                _memoryAltDbLeaves[i] = nodeAlt;
+                //var nodeAlt = _databaseManager.GetDbProp(PHRASE_DB_MEMORY_ALT + ":" + i + ":PHRASE");
+                //nodeAlt.SetValue32(0);
+                //_memoryAltDbLeaves[i] = nodeAlt;
             }
 
             // Progression Db leaves
@@ -416,7 +441,7 @@ namespace Client.Phrase
             }
 
             // first force forget old mem slot
-            // TODO: forgetPhrase(memoryLine, memorySlot);
+            // TODO: ForgetPhrase(memoryLine, memorySlot);
 
             // then memorize new one.
             if (!_phraseMap.ContainsKey(slot))
@@ -435,21 +460,21 @@ namespace Client.Phrase
             _memories[memoryLine].Slot[memorySlot].IsMacro = false;
             _memories[memoryLine].Slot[memorySlot].Id = (uint)slot;
 
-            //// must update DB?
-            //if (memoryLine == _selectedMemoryDb || memoryLine == _selectedMemoryDBalt)
-            //{
-            //    // update the DB
-            //    UpdateMemoryDbSlot(memorySlot);
-            //
-            //    // update the ctrl state
-            //    UpdateMemoryCtrlState(memorySlot);
-            //
-            //    // If there is an execution running with this action, maybe re-display it
-            //    if (_CurrentExecutePhraseIdNext == slot || _CurrentExecutePhraseIdCycle == slot)
-            //    {
-            //        UpdateExecutionDisplay();
-            //    }
-            //}
+            // must update DB?
+            if (memoryLine == _selectedMemoryDB /*||  memoryLine == _selectedMemoryDBalt*/)
+            {
+                // update the DB
+                UpdateMemoryDbSlot((uint)memorySlot);
+            
+                // update the ctrl state
+                //UpdateMemoryCtrlState(memorySlot);
+            
+                // If there is an execution running with this action, maybe re-display it
+                //if (_CurrentExecutePhraseIdNext == slot || _CurrentExecutePhraseIdCycle == slot)
+                //{
+                //    UpdateExecutionDisplay();
+                //}
+            }
         }
 
         internal void UpdateMemoryBar()
@@ -478,9 +503,59 @@ namespace Client.Phrase
 
         private void UpdateMemoryDbAll()
         {
-            // TODO: Implementation
+            // If DB not inited, no-op
+            if (!_initInGameDone)
+                return;
+
+            if (_selectedMemoryDB == -1 || _selectedMemoryDB >= _memories.Count)
+            {
+                for (uint i = 0;i < PHRASE_MAX_MEMORY_SLOT;i++)
+                {
+                    _memoryDbLeaves[i].SetValue32(0);
+                }
+            }
+            else
+            {
+                for (uint i = 0;i < PHRASE_MAX_MEMORY_SLOT;i++)
+                {
+                    var slot = _memories[_selectedMemoryDB].Slot[i];
+
+                    if (!slot.IsPhrase())
+                    {
+                        _memoryDbLeaves[i].SetValue32(0);
+                    }
+                    else
+                    {
+                        _memoryDbLeaves[i].SetValue32((int)slot.Id);
+                    }
+                }
+            }
         }
 
+        public void UpdateMemoryDbSlot(uint memorySlot)
+        {
+            // If DB not inited, no-op
+            if (!_initInGameDone)
+                return;
+
+            if (memorySlot >= PHRASE_MAX_MEMORY_SLOT)
+                return;
+
+            if (_selectedMemoryDB == -1 || _selectedMemoryDB >= _memories.Count)
+                return;
+
+            var slot = _memories[_selectedMemoryDB].Slot[memorySlot];
+    
+            if (!slot.IsPhrase())
+            {
+                _memoryDbLeaves[memorySlot].SetValue32(0);
+            }
+            else
+            {
+                _memoryDbLeaves[memorySlot].SetValue32((int)slot.Id);
+            }
+        }
+        
         internal void UpdateEquipInvalidation(uint v)
         {
             // TODO: Implementation
@@ -508,21 +583,21 @@ namespace Client.Phrase
 
                     foreach (var slot in memory.Slot)
                     {
-                        if (_phraseMap.ContainsKey((int)slot.Id))
-                        {
-                            var phrase = _phraseMap[(int)slot.Id];
+                        var phrase = GetPhrase(slot.Id);
 
-                            f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase?.Name}\t{phrase?.Bricks?.Count}:");
+                        //if (phrase != PhraseCom.EmptyPhrase)
+                        //{
+                            f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase.Name}\t{phrase.Bricks?.Count}");
 
-                            if (phrase?.Bricks != null)
+                            if (phrase.Bricks != null)
 
                                 foreach (var brick in phrase?.Bricks)
                                 {
                                     var bs = (BrickSheet)_sheetManager.Get(brick);
 
-                                    f.WriteLine($"\t{brick.AsInt()}\t{brick.GetShortId()}\t{brick.Type}\t{bs.IdIcon}");
+                                    f.WriteLine($"\t{brick.AsInt()}\t{brick.GetShortId()}\t{brick.GetSheetType()}\t{bs?.IdIcon}");
                                 }
-                        }
+                        //}
 
                         s++;
                     }
@@ -602,6 +677,31 @@ namespace Client.Phrase
             else
             {
                 _client.GetLogger().Warn($"impulseCallBack : unknown message name : '{sMsg}'.");
+            }
+        }
+
+        /// <summary>
+        /// Send the PHRASE:LEARN message to the server
+        /// </summary>
+        internal void SendLearnToServer(uint phraseId)
+        {
+            var phrase = GetPhrase(phraseId);
+
+            if (phrase == PhraseCom.EmptyPhrase)
+                return;
+
+            var @out = new BitMemoryStream();
+            if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream("PHRASE:LEARN", @out))
+            {
+                var slotId = (ushort)phraseId;
+                @out.Serial(ref slotId);
+                PhraseCom.Serial(ref phrase, @out, _sheetIdFactory);
+                _client.GetNetworkManager().Push(@out);
+                _client.GetLogger().Info($"impulseCallBack : PHRASE:LEARN {slotId} (phrase) sent");
+            }
+            else
+            {
+                _client.GetLogger().Warn(" unknown message name 'PHRASE:LEARN");
             }
         }
     }

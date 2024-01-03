@@ -41,7 +41,7 @@ namespace Client.Sheet
         /// </summary>
         public SheetIdFactory(RyzomClient ryzomClient)
         {
-            Unknown ??= new SheetId(this);
+            Unknown = new SheetId(this);
 
             _client = ryzomClient;
         }
@@ -51,7 +51,7 @@ namespace Client.Sheet
         /// </summary>
         public ISheetId SheetId(uint sheetRef)
         {
-            return new SheetId(this) { _id = sheetRef };
+            return new SheetId(this, sheetRef);
         }
 
         /// <summary>
@@ -116,10 +116,10 @@ namespace Client.Sheet
             if (_dontHaveSheetKnowledge)
                 throw new NotImplementedException();
 
-            if (_sheetIdToName.ContainsKey(sheetId.Id))
-                return _sheetIdToName[sheetId.Id];
+            if (_sheetIdToName.ContainsKey(sheetId.AsInt()))
+                return _sheetIdToName[sheetId.AsInt()];
 
-            return ifNotFoundUseNumericId ? $"#{sheetId.Id}" : $"<Sheet {sheetId.Id} not found in sheet_id.bin>";
+            return ifNotFoundUseNumericId ? $"#{sheetId.AsInt()}" : $"<Sheet {sheetId.AsInt()} not found in sheet_id.bin>";
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Client.Sheet
                 var fileBytes = File.ReadAllBytes(path);
 
                 // clear entries
-                _fileExtensions = new string[0];
+                _fileExtensions = Array.Empty<string>();
                 _sheetIdToName = new Dictionary<uint, string>();
                 _sheetNameToId = new Dictionary<string, uint>();
 
@@ -235,13 +235,16 @@ namespace Client.Sheet
 
                 foreach (var (key, value) in _sheetIdToName)
                 {
+                    if (_sheetNameToId.ContainsKey(value))
+                        continue;
+
                     // add entry to the inverse map
                     _sheetNameToId.Add(value, key);
 
                     // work out the type value for this entry in the map
                     var sheetId = SheetId(key);
 
-                    var type = sheetId.Type;
+                    var type = sheetId.GetSheetType();
 
                     // check whether we need to add an entry to the file extensions vector
                     if (type < _fileExtensions.Length && _fileExtensions[type] != null)
@@ -264,7 +267,7 @@ namespace Client.Sheet
         /// </summary>
         internal SheetId BuildSheetId(string sheetName)
         {
-            var ret = new SheetId(this);
+            SheetId ret;
 
             Debug.Assert(_initialised);
 
@@ -277,7 +280,7 @@ namespace Client.Sheet
             // try looking up the sheet name in _SheetNameToId
             if (_sheetNameToId.ContainsKey(sheetName.ToLower()))
             {
-                ret._id = _sheetNameToId[sheetName];
+                ret = new SheetId(this, _sheetNameToId[sheetName]);
 
                 // store debug info
                 //_DebugSheetName = sheetName;
@@ -292,7 +295,7 @@ namespace Client.Sheet
             if (!uint.TryParse(sheetName[1..], out var numericId))
                 return null;
 
-            ret._id = numericId;
+            ret = new SheetId(this, numericId);
 
             return ret;
         }

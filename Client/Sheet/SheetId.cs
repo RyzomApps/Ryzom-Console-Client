@@ -8,7 +8,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using API.Sheet;
 using Client.Stream;
 
@@ -28,20 +27,7 @@ namespace Client.Sheet
     {
         private readonly SheetIdFactory _sheetIdFactory;
 
-        internal uint _id;
-        internal uint _type;
-
-        public uint Id
-        {
-            get => _id;
-            set => _id = value;
-        }
-
-        public uint Type
-        {
-            get => _type;
-            set => _type = value;
-        }
+        private readonly IdInfos _id = new IdInfos();
 
         public string Name => ToString();
 
@@ -54,11 +40,28 @@ namespace Client.Sheet
         }
 
         /// <summary>
+        /// Constructor
+        /// </summary>
+        public SheetId(SheetIdFactory sheetIdFactory, uint id)
+        {
+            _sheetIdFactory = sheetIdFactory;
+            _id.Id = id;
+        }
+
+        /// <summary>
+        /// Return the sheet type (sub part of the sheetid)
+        /// </summary>
+        public uint GetSheetType()
+        {
+            return _id.Type;
+        }
+
+        /// <summary>
         /// Return the **whole** sheet id (id+type)
         /// </summary>
         public uint AsInt()
         {
-            return _id;
+            return _id.Id;
         }
 
         /// <summary>
@@ -66,19 +69,23 @@ namespace Client.Sheet
         /// </summary>
         public uint GetShortId()
         {
-            // Use 24 bits id and 8 bits file types
-            var tmp = BitConverter.GetBytes(_id);
-            tmp = tmp.Skip(1).Concat(new byte[] { 0 }).ToArray();
-            return BitConverter.ToUInt32(tmp);
+            return _id.ShortId;
         }
-
 
         /// <summary>
         /// Serial
         /// </summary>
         public void Serial(BitMemoryStream f)
         {
-            f.Serial(ref _id);
+            uint idId = 0;
+
+            if (!f.IsReading())
+                idId = _id.Id;
+
+            f.Serial(ref idId);
+
+            if (f.IsReading())
+                _id.Id = idId;
         }
 
         /// <summary>
@@ -86,19 +93,20 @@ namespace Client.Sheet
         /// </summary>
         internal void Serial(BitStreamFile s)
         {
-            s.Serial(out _id);
+            s.Serial(out uint idId);
+            _id.Id = idId;
         }
 
         public int CompareTo([AllowNull] SheetId other)
         {
-            return Id.CompareTo(other.Id);
+            return other != null ? AsInt().CompareTo(other.AsInt()) : 0;
         }
 
         public void BuildSheetId(int shortId, SheetType type)
         {
             // TODO: BuildSheetId implementation!
-            _id = (uint)shortId;
-            _type = (uint)type;
+            _id.ShortId = (uint)shortId;
+            _id.Type = (uint)type;
 
             //_sheetIdFactory.SheetId(shortId);
         }

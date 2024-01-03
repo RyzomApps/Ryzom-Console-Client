@@ -96,7 +96,7 @@ namespace Client.Stream
         public void BuildSystemHeader(ref int currentSendNumber)
         {
             Serial(ref currentSendNumber);
-            bool systemmode = true;
+            var systemmode = true;
             Serial(ref systemmode); // systemmode
             ++currentSendNumber;
         }
