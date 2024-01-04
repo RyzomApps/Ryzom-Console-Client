@@ -40,56 +40,78 @@ namespace Client.Commands
 
             foreach (var line in lines)
             {
-                string[] splits = line.Split("\t");
+                var splits = line.Split("\t");
 
                 if (line.StartsWith("\t"))
                 {
-                    if (phrase != null)
-                    {
-                        uint id = uint.Parse(splits[1]);
+                    if (phrase == null)
+                        continue;
 
-                        ISheetId sheet = ryzomClient.GetSheetIdFactory().SheetId(id);
-                        //var bs = ryzomClient.GetSheetManager().Get(sheet);
-                        phrase.Bricks.Add((SheetId)sheet);
-                    }
+                    var id = uint.Parse(splits[1]);
+
+                    var sheet = ryzomClient.GetSheetIdFactory().SheetId(id);
+                    phrase.Bricks.Add((SheetId)sheet);
                 }
                 else
                 {
-                    if (phrase != null)
-                    {
-                        ryzomClient.GetLogger().Info($"Importing phrase {phraseId} to memory line {memoryLine} slot {memoryIndex}.");
+                    SendPhraseToServer(ryzomClient, ref phrase, ref memoryLine, ref memoryIndex, ref phraseId);
 
-                        // forget
-                        ryzomClient.GetPhraseManager().SendForgetToServer(memoryLine, memoryIndex);
+                    if (splits.Length <= 5)
+                        continue;
 
-                        // learn
-                        ryzomClient.GetPhraseManager().SendLearnToServer(phraseId);
+                    phraseId = ryzomClient.GetPhraseManager().AllocatePhraseSlot();
 
-                        // commit
-                        ryzomClient.GetPhraseManager().SendMemorizeToServer(memoryLine, memoryIndex, phraseId);
-                    }
+                    phrase = new PhraseCom();
+                    ryzomClient.GetPhraseManager().SetPhraseNoUpdateDb((ushort)phraseId, phrase);
 
-                    if (splits.Length > 5)
-                    {
-                        phraseId = ryzomClient.GetPhraseManager().AllocatePhraseSlot();
+                    var memory = splits[0].Split(":");
+                    memoryLine = uint.Parse(memory[0]);
+                    memoryIndex = uint.Parse(memory[1]);
 
-                        phrase = new PhraseCom();
-                        ryzomClient.GetPhraseManager().SetPhraseNoUpdateDb((ushort)phraseId, phrase);
-
-                        var MemSlot = splits[0].Split(":");
-                        memoryLine = uint.Parse(MemSlot[0]);
-                        memoryIndex = uint.Parse(MemSlot[1]);
+                    if (!splits[4].StartsWith("<"))
                         phrase.Name = splits[4];
-                    }
                 }
             }
+
+            SendPhraseToServer(ryzomClient, ref phrase, ref memoryLine, ref memoryIndex, ref phraseId);
 
             return "";
         }
 
+        /// <summary>
+        /// forget memory<br/>
+        /// learn phrase<br/>
+        /// memorize phrase
+        /// </summary>
+        private static void SendPhraseToServer(RyzomClient ryzomClient, ref PhraseCom phrase, ref uint memoryLine, ref uint memoryIndex, ref uint phraseId)
+        {
+            if (phrase == null)
+                return;
+
+            // server forget
+            ryzomClient.GetPhraseManager().SendForgetToServer(memoryLine, memoryIndex);
+
+            if (phrase.Bricks.Count > 0)
+            {
+                // add the new phrase
+                ryzomClient.GetLogger().Info($"Importing phrase {(phrase.Name.Length > 0 ? phrase.Name : $"{phraseId}")} to memory line {memoryLine} slot {memoryIndex}.");
+
+                // server - learn
+                ryzomClient.GetPhraseManager().SendLearnToServer(phraseId);
+
+                // server - add to action bar
+                ryzomClient.GetPhraseManager().SendMemorizeToServer(memoryLine, memoryIndex, phraseId);
+            }
+
+            phrase = null;
+            phraseId = 0;
+            memoryLine = 0;
+            memoryIndex = 0;
+        }
+
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new string[] { };
+            return new string[] { "ImportPhrase" };
         }
     }
 }

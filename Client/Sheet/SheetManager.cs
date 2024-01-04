@@ -315,8 +315,8 @@ namespace Client.Sheet
             //_sheetIdFactory.Init(updatePackedSheet);
 
             // load the packed sheet if exists
-            try
-            {
+            //try
+            //{
                 var ifile = new BitStreamFile();
                 //ifile.SetCacheFileOnOpen(true);
 
@@ -325,9 +325,9 @@ namespace Client.Sheet
                     throw new IOException($"Can't open PackedSheet '{packedFilenamePath}'.");
                 }
 
-                //// an exception will be launch if the file is not the good version or if the file is not found
+                // an exception will be launch if the file is not the good version or if the file is not found
 
-                ////_client.GetLogger().info ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
+                //_client.GetLogger().info ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
 
                 // read the header
                 const uint packedSheetHeader = 1347113800;
@@ -383,30 +383,30 @@ namespace Client.Sheet
 
                 ifile.SerialCont(out container, _client);
                 ifile.Close();
-            }
-            catch (Exception e)
-            {
-                // clear the container because it can contains partially loaded sheet so we must clean it before continue
-                container.Clear();
-
-                //if (!updatePackedSheet)
-                //{
-                if (errorIfPackedSheetNotGood)
-                {
-                    _client.GetLogger().Error($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
-                }
-                else
-                {
-                    _client.GetLogger().Info($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message})");
-                }
-
-                return;
-                //}
-                //else
-                //{
-                //    _client.GetLogger().Info($"loadForm(): Exception during reading the packed file, I'll reconstruct it ({e.Message})");
-                //}
-            }
+            //}
+            //catch (Exception e)
+            //{
+            //    // clear the container because it can contains partially loaded sheet so we must clean it before continue
+            //    container.Clear();
+            //
+            //    //if (!updatePackedSheet)
+            //    //{
+            //    if (errorIfPackedSheetNotGood)
+            //    {
+            //        _client.GetLogger().Error($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message}) {packedFilename}");
+            //    }
+            //    else
+            //    {
+            //        _client.GetLogger().Info($"loadForm(): Exception during reading the packed file and can't reconstruct them ({e.Message}) {packedFilename}");
+            //    }
+            //
+            //    return;
+            //    //}
+            //    //else
+            //    //{
+            //    //    _client.GetLogger().Info($"loadForm(): Exception during reading the packed file, I'll reconstruct it ({e.Message})");
+            //    //}
+            //}
 
             // if we don't want to update packed sheet, we have nothing more to do
             if (!updatePackedSheet)

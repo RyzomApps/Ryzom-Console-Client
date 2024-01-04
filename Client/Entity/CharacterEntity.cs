@@ -384,7 +384,7 @@ namespace Client.Entity
 
             if (_sheet == null)
             {
-                client.GetLogger().Warn("This is not a character sheet -> entity not initialized.");
+                client.GetLogger().Warn($"{sheet.Id} ({sheet.Type}) is not a character sheet -> entity not initialized.");
                 return false;
             }
 

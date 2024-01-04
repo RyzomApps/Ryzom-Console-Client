@@ -6,6 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using Client.Client;
 using Client.Entity;
@@ -17,30 +18,30 @@ namespace Client.Sheet
     {
         private readonly SheetIdFactory _sheetIdFactory;
 
-        // Character Gender.
+        /// <summary>Character Gender.</summary>
         public byte Gender;
-        // Character Race
+        /// <summary>Character Race</summary>
         public PeopleType Race = PeopleType.Undefined;
-        // Character's skeleton.
+        /// <summary>Character's skeleton.</summary>
         public uint IdSkelFilename = new uint();
-        // Base Name of the animation set.
+        /// <summary>Base Name of the animation set.</summary>
         public uint IdAnimSetBaseName = new uint();
-        // Automaton Type
+        /// <summary>Automaton Type</summary>
         public uint IdAutomaton = new uint();
         public float Scale;
-        // The sound family (used for sound context var 2)
+        /// <summary>The sound family (used for sound context var 2)</summary>
         public uint SoundFamily;
-        // The sound variation (used for sound context var 3)
+        /// <summary>The sound variation (used for sound context var 3)</summary>
         public uint SoundVariation;
-        // Lod Character.
+        /// <summary>Lod Character.</summary>
         public uint IdLodCharacterName = new uint();
         public float LodCharacterDistance;
-        // value to scale the "pos" channel of the animation of the creature.
+        /// <summary>value to scale the "pos" channel of the animation of the creature.</summary>
         public float CharacterScalePos;
-        // The name of the faction the creature belongs to
+        /// <summary>The name of the faction the creature belongs to</summary>
         public uint IdFame = new uint();
 
-        // Possible(impossible) Actions.
+        /// <summary>Possible(impossible) Actions.</summary>
         public bool Selectable;
         public bool Talkable;
         public bool Attackable;
@@ -49,7 +50,7 @@ namespace Client.Sheet
         public bool Turn;
         public bool SelectableBySpace;
 
-        // Equipment worm or creature body.
+        /// <summary>Equipment worm or creature body.</summary>
         public Equipment Body = new Equipment();
         public Equipment Legs = new Equipment();
         public Equipment Arms = new Equipment();
@@ -66,8 +67,8 @@ namespace Client.Sheet
         public byte Skin = new byte();
         public byte EyesColor = new byte();
 
-        //	NLMISC::TSStringId			IdFirstName;
-        //	NLMISC::TSStringId			IdLastName;
+        /// NLMISC::TSStringId			IdFirstName;
+        /// NLMISC::TSStringId			IdLastName;
 
         public float DistToFront;
         public float DistToBack;
@@ -83,37 +84,47 @@ namespace Client.Sheet
 
         public float MaxSpeed;
         public bool DisplayOSD;
-        // New flags created for bot objects
-        public bool DisplayInRadar; // display the entity in the radar
-        public bool DisplayOSDName; // name is displayed if (DisplayOSD && DisplayName)
-        public bool DisplayOSDBars; // bars are displayed if (DisplayOSD && DisplayBars)
-        public bool DisplayOSDForceOver; // even if ClientCfg.ShowNameUnderCursor==false, force OSD to display when under cursor (DisplayOSD must be true)
-        public bool Traversable; // the client can traverse this entity after some force time
 
-        // Name positions on Z axis
+        // New flags created for bot objects
+
+        /// <summary>display the entity in the radar</summary>
+        public bool DisplayInRadar;
+        /// <summary>name is displayed if (DisplayOSD && DisplayName)</summary>
+        public bool DisplayOSDName;
+        /// <summary>bars are displayed if (DisplayOSD && DisplayBars)</summary>
+        public bool DisplayOSDBars;
+        /// <summary>even if ClientCfg.ShowNameUnderCursor==false, force OSD to display when under cursor (DisplayOSD must be true)</summary>
+        public bool DisplayOSDForceOver;
+        /// <summary>the client can traverse this entity after some force time</summary>
+        public bool Traversable;
+
+        /// <summary>Name positions on Z axis</summary>
         public float NamePosZLow;
         public float NamePosZNormal;
         public float NamePosZHigh;
 
-        // Alternative Look
+        /// <summary>Alternative Look</summary>
         public List<uint> IdAlternativeClothes = new List<uint>();
 
-        // Hair Item List
+        /// <summary>Hair Item List</summary>
         public List<Equipment> HairItemList = new List<Equipment>();
 
-        // name of static FX played on entity (empty if none)
+        /// <summary>name of static FX played on entity (empty if none)</summary>
         public uint IdStaticFX = new uint();
 
-        // spell casting prefix. This prefix is used to see which sheet contains dates about spell casting
+        /// <summary>spell casting prefix. This prefix is used to see which sheet contains dates about spell casting</summary>
         public uint SpellCastingPrefix = new uint();
 
-        // attack lists filenames
+        /// <summary>attack lists filenames</summary>
         public List<uint> AttackLists = new List<uint>();
 
         // consider
-        public byte RegionForce = new byte(); // Force depending on the region the creature belongs
-        public byte ForceLevel = new byte(); // Level of creature inside the same region
-        public ushort Level; // Precise level of the creature
+        /// <summary>Force depending on the region the creature belongs</summary>
+        public byte RegionForce = new byte();
+        /// <summary>Level of creature inside the same region</summary>
+        public byte ForceLevel = new byte();
+        /// <summary>Precise level of the creature</summary>
+        public ushort Level;
 
         public bool R2Npc;
 
@@ -123,6 +134,66 @@ namespace Client.Sheet
         public CharacterSheet(SheetIdFactory sheetIdFactory) : base(sheetIdFactory)
         {
             _sheetIdFactory = sheetIdFactory;
+
+            CharacterScalePos = 1;
+            Scale = 1.0f;
+            SoundFamily = 0;
+            SoundVariation = 0;
+            //Type				= CEntitySheet::FAUNA;
+            Gender = 0;
+            //Race				= EGSPD::CPeople::EndPeople;
+            IdSkelFilename = 0;
+            IdAnimSetBaseName = 0;
+            IdAutomaton = 0;
+            IdLodCharacterName = 0;
+            LodCharacterDistance = 0.0f;
+            IdFame = 0;
+            DisplayOSD = true;
+            DisplayInRadar = true;
+            DisplayOSDName = true;
+            DisplayOSDBars = true;
+            DisplayOSDForceOver = false;
+            Traversable = true;
+            ClipRadius = 0.0f;
+            ClipHeight = 0.0f;
+            R2Npc = false;
+
+            Selectable = false;
+            Talkable = false;
+            Attackable = false;
+            Givable = false;
+            Mountable = false;
+            Turn = false;
+            SelectableBySpace = false;
+
+            //HLState				= LHSTATE::NONE;
+
+            HairColor = 0;
+            Skin = 0;
+            EyesColor = 0;
+
+            DistToFront = 0.0f;
+            DistToBack = 0.0f;
+            DistToSide = 0.0f;
+
+            ColRadius = 0.0f;
+            ColHeight = 0.0f;
+            ColLength = 0.0f;
+            ColWidth = 0.0f;
+
+            MaxSpeed = 0.0f;
+
+            NamePosZLow = 0.0f;
+            NamePosZNormal = 0.0f;
+            NamePosZHigh = 0.0f;
+
+            IdStaticFX = 0;
+
+            SpellCastingPrefix = 0;
+
+            RegionForce = 0;
+            ForceLevel = 0;
+            Level = 0;
         }
 
         //public string getSkelFilename()
@@ -165,105 +236,120 @@ namespace Client.Sheet
         /// </summary>
         public override void Serial(BitMemoryStream f)
         {
-            //// Serialize class components.
-            ////	ClientSheetsStrings.serial(f, IdFirstName);
-            ////	ClientSheetsStrings.serial(f, IdLastName);
-            //f.serial(Gender);
-            //f.serialEnum(Race);
-            //ClientSheetsStrings.serial(f, IdSkelFilename);
-            //ClientSheetsStrings.serial(f, IdAnimSetBaseName);
-            //ClientSheetsStrings.serial(f, IdAutomaton);
-            //f.serial(Scale);
-            //f.serial(SoundFamily);
-            //f.serial(SoundVariation);
-            //ClientSheetsStrings.serial(f, IdLodCharacterName);
+            // TODO: Merge both serial methods
+        }
+
+        public override void Serial(BitStreamFile f)
+        {
+            // Serialize class components.
+            //	ClientSheetsStrings.Serial(f, IdFirstName);
+            //	ClientSheetsStrings.Serial(f, IdLastName);
+            f.Serial(out Gender);
+            f.Serial(out uint race);
+            Race = (PeopleType)race;
+            ClientSheetsStringsSerial(f, out IdSkelFilename);
+            ClientSheetsStringsSerial(f, out IdAnimSetBaseName);
+            ClientSheetsStringsSerial(f, out IdAutomaton);
+
+            throw new NotImplementedException();
+            //f.Serial(out Scale);
+            //f.Serial(out SoundFamily);
+            //f.Serial(out SoundVariation);
+            //ClientSheetsStringsSerial(f, out IdLodCharacterName);
             //
-            //f.serial(LodCharacterDistance);
-            //f.serial(Selectable);
-            //f.serial(Talkable);
-            //f.serial(Attackable);
-            //f.serial(Givable);
-            //f.serial(Mountable);
-            //f.serial(Turn);
-            //f.serial(SelectableBySpace);
-            //f.serialEnum(HLState);
-            //f.serial(CharacterScalePos);
-            //f.serial(NamePosZLow);
-            //f.serial(NamePosZNormal);
-            //f.serial(NamePosZHigh);
-            //ClientSheetsStrings.serial(f, IdFame);
+            //f.Serial(out LodCharacterDistance);
+            //f.Serial(out Selectable);
+            //f.Serial(out Talkable);
+            //f.Serial(out Attackable);
+            //f.Serial(out Givable);
+            //f.Serial(out Mountable);
+            //f.Serial(out Turn);
+            //f.Serial(out SelectableBySpace);
             //
-            //f.serial(Body);
-            //f.serial(Legs);
-            //f.serial(Arms);
-            //f.serial(Hands);
-            //f.serial(Feet);
-            //f.serial(Head);
-            //f.serial(Face);
-            //f.serial(ObjectInRightHand);
-            //f.serial(ObjectInLeftHand);
+            //f.Serial(out uint HLState);
             //
-            //f.serial(HairColor);
-            //f.serial(Skin);
-            //f.serial(EyesColor);
+            //f.Serial(out CharacterScalePos);
+            //f.Serial(out NamePosZLow);
+            //f.Serial(out NamePosZNormal);
+            //f.Serial(out NamePosZHigh);
+            //ClientSheetsStringsSerial(f, out IdFame);
             //
-            //f.serial(DistToFront);
-            //f.serial(DistToBack);
-            //f.serial(DistToSide);
+            //f.Serial(out Body);
+            //f.Serial(out Legs);
+            //f.Serial(out Arms);
+            //f.Serial(out Hands);
+            //f.Serial(out Feet);
+            //f.Serial(out Head);
+            //f.Serial(out Face);
+            //f.Serial(out ObjectInRightHand);
+            //f.Serial(out ObjectInLeftHand);
+            //
+            //f.Serial(out HairColor);
+            //f.Serial(out Skin);
+            //f.Serial(out EyesColor);
+            //
+            //f.Serial(out DistToFront);
+            //f.Serial(out DistToBack);
+            //f.Serial(out DistToSide);
             //
             //// Collisions
-            //f.serial(ColRadius);
-            //f.serial(ColHeight);
-            //f.serial(ColLength);
-            //f.serial(ColWidth);
-            //f.serial(MaxSpeed);
+            //f.Serial(out ColRadius);
+            //f.Serial(out ColHeight);
+            //f.Serial(out ColLength);
+            //f.Serial(out ColWidth);
+            //f.Serial(out MaxSpeed);
             //
             //// Clip
-            //f.serial(ClipRadius);
-            //f.serial(ClipHeight);
+            //f.Serial(out ClipRadius);
+            //f.Serial(out ClipHeight);
             //
             //// Alternative Look
-            //ClientSheetsStrings.serial(f, IdAlternativeClothes);
+            //ClientSheetsStringsSerial(f, out IdAlternativeClothes);
             //
             //// Hair Item List
-            //f.serialCont(HairItemList);
+            //f.SerialCont(HairItemList);
             //// Ground fxs
-            //f.serialCont(GroundFX);
+            //f.SerialCont(out List<ushort> GroundFX);
             //// Display OSD
-            //f.serial(DisplayOSD);
+            //f.Serial(out DisplayOSD);
             //// static FX
-            //ClientSheetsStrings.serial(f, IdStaticFX);
+            //ClientSheetsStringsSerial(f, out IdStaticFX);
             //// body to bone
-            //f.serial(BodyToBone);
+            //f.Serial(out BodyToBone);
             //// attack list
-            //uint size = (uint)AttackLists.size();
-            //f.serial(size);
-            //AttackLists.resize(size);
-            ////
-            //for (uint k = 0; k < size; ++k)
+            //f.Serial(out uint size);
+            //AttackLists = new List<uint>((int)size);
+            //
+            //for (int k = 0; k < size; ++k)
             //{
-            //    ClientSheetsStrings.serial(f, AttackLists[k]);
+            //    ClientSheetsStringsSerial(f, out string lst);
+            //    AttackLists[k] = uint.Parse(lst);
             //}
             //
             //// bot object flags
-            //f.serial(DisplayInRadar);
-            //f.serial(DisplayOSDName);
-            //f.serial(DisplayOSDBars);
-            //f.serial(DisplayOSDForceOver);
-            //f.serial(Traversable);
+            //f.Serial(out DisplayInRadar);
+            //f.Serial(out DisplayOSDName);
+            //f.Serial(out DisplayOSDBars);
+            //f.Serial(out DisplayOSDForceOver);
+            //f.Serial(out Traversable);
             //
-            //f.serial(RegionForce);
-            //f.serial(ForceLevel);
-            //f.serial(Level);
+            //f.Serial(out RegionForce);
+            //f.Serial(out ForceLevel);
+            //f.Serial(out Level);
             //
-            //f.serialCont(ProjectileCastRay);
+            //f.SerialCont(out List<ushort> ProjectileCastRay);
             //
-            //f.serial(R2Npc);
+            //f.Serial(out R2Npc);
         }
 
-        public override void Serial(BitStreamFile s)
+        public void ClientSheetsStringsSerial(BitStreamFile f, out uint strId)
         {
-            throw new System.NotImplementedException();
+            string tmp = "";
+            f.Serial(out tmp);
+
+            // TODO: Use the mapper here
+
+            strId = 0;
         }
     }
 }

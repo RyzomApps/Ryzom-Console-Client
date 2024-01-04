@@ -53,11 +53,6 @@
         public static string SheetsIdBinPath = "./data/sheet_id.bin";
 
         /// <summary>
-        /// User sheet constants
-        /// </summary>
-        public const uint UserSheetId = 0;
-
-        /// <summary>
         /// Timeout for the connection if not uninitialized or connected in ticks
         /// </summary>
         public static int ConnectionTimeout = 5 * 60; // [s] 5 minutes

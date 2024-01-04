@@ -74,6 +74,11 @@ namespace Client.Entity
         /// <returns>CEntityCL : pointer on the new entity</returns> 
         public Entity Create(in byte slot, uint form, PropertyChange.TNewEntityInfo newEntityInfo)
         {
+            var sheetId = _client.GetSheetIdFactory().SheetId(form);
+
+            // DEBUG
+            _client.GetLogger().Debug($"(_,{_client.GetNetworkManager().GetCurrentServerTick()}) EM:create: slot '{slot}': {sheetId}");
+
             if (slot >= _nbMaxEntity)
             {
                 _client.GetLogger().Warn($"EM:create: Cannot create the entity, the slot '{slot}' is invalid.");
@@ -100,74 +105,73 @@ namespace Client.Entity
                 _entities[slot] = null;
 
             // Check parameter: form
-            var sheetId = _client.GetSheetIdFactory().SheetId(form);
             var entitySheet = _client.GetSheetManager().Get(sheetId);
 
             if (entitySheet == null)
             {
-                _client.GetLogger().Debug($"EM:create: Attempt on create an entity with a bad form number {form} ({sheetId}) for the slot '{slot}' trying to compute the default one.");
+                _client.GetLogger().Warn($"EM:create: Attempt on create an entity with a bad form number {form} ({sheetId}) for the slot '{slot}' trying to compute the default one.");
 
                 if (slot != 0)
                 {
                     _entities[slot] = new Entity(_client);
+                    return null;
                 }
                 else
                 {
                     UserEntity = new UserEntity(_client) { Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
                     _entities[slot] = UserEntity;
+                    return null;
                 }
             }
-            else
+
+            // Create the entity according to the type.
+            // TODO: Create the right classes here
+
+            switch (entitySheet.Type)
             {
-                // Create the entity according to the type.
-                // TODO: Create the right classes here
+                case SheetType.RACE_STATS:
+                case SheetType.CHAR:
+                    if (slot == 0)
+                    {
+                        UserEntity = new UserEntity(_client) { Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
+                        _entities[slot] = UserEntity;
+                    }
+                    else
+                    {
+                        _entities[slot] = new PlayerEntity(_client) { Type = EntityType.Player };
+                    }
 
-                switch (entitySheet.Type)
-                {
-                    case SheetType.RACE_STATS:
-                    case SheetType.CHAR:
-                        if (slot == 0)
-                        {
-                            UserEntity = new UserEntity(_client) { Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
-                            _entities[slot] = UserEntity;
-                        }
-                        else
-                        {
-                            _entities[slot] = new PlayerEntity(_client) { Type = EntityType.Player };
-                        }
+                    break;
 
-                        break;
+                case SheetType.FAUNA:
+                    if (entitySheet is CharacterSheet charSheet && !charSheet.R2Npc)
+                        _entities[slot] = new CharacterEntity(_client) { Type = EntityType.Fauna };
+                    else
+                        // CPlayerR2CL
+                        _entities[slot] = new PlayerEntity(_client) { Type = EntityType.Player };
+                    break;
 
-                    case SheetType.FAUNA:
-                        if (entitySheet is CharacterSheet charSheet && !charSheet.R2Npc)
-                            _entities[slot] = new CharacterEntity(_client) { Type = EntityType.Fauna };
-                        else
-                            // CPlayerR2CL
-                            _entities[slot] = new PlayerEntity(_client) { Type = EntityType.Player };
-                        break;
+                case SheetType.FLORA:
+                    _entities[slot] = new CharacterEntity(_client);
+                    break;
 
-                    case SheetType.FLORA:
-                        _entities[slot] = new CharacterEntity(_client);
-                        break;
+                case SheetType.FX:
+                    //_entities[slot] = new CFxCL;
+                    _entities[slot] = new Entity(_client);
+                    break;
 
-                    case SheetType.FX:
-                        //_entities[slot] = new CFxCL;
-                        _entities[slot] = new Entity(_client);
-                        break;
+                case SheetType.ITEM:
+                    //_entities[slot] = new CItemCL;
+                    _entities[slot] = new Entity(_client);
+                    break;
 
-                    case SheetType.ITEM:
-                        //_entities[slot] = new CItemCL;
-                        _entities[slot] = new Entity(_client);
-                        break;
+                case SheetType.FORAGE_SOURCE:
+                    _entities[slot] = new ForageSourceEntity(_client);
+                    break;
 
-                    case SheetType.FORAGE_SOURCE:
-                        _entities[slot] = new ForageSourceEntity(_client);
-                        break;
-
-                    default:
-                        _client.GetLogger().Warn($"Unknown Form Type '{entitySheet.Type}' -> entity not created.");
-                        return null;
-                }
+                default:
+                    _client.GetLogger().Warn($"Unknown Form Type '{entitySheet.Type}' -> entity not created.");
+                    return null;
             }
 
             // If the entity has been right created.
@@ -186,6 +190,7 @@ namespace Client.Entity
                 _entities[slot].NpcAlias(newEntityInfo.Alias);
 
                 // Build the entity from a sheet.
+                // TODO: what?!
                 if (_entities[slot].Build((EntitySheet)entitySheet, _client))
                 {
                     // Apply properties from backup

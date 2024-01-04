@@ -43,7 +43,8 @@ namespace Client.Config
         public static string Password = "";
         public static int SelectCharacter = -1;
 
-        public static string UserSheet;
+        /// <summary>Default sheet used.</summary>
+        public static string UserSheet = "fyros.race_stats";
 
         public static bool UseDatabase;
         public static bool DecodeVisualProperties;

@@ -29,7 +29,7 @@ namespace Client.Phrase
         /// <summary>
         /// Name Of the Phrase. Saved on server, read on client.
         /// </summary>
-        public string Name;
+        public string Name = string.Empty;
 
         /// <summary>
         /// List Of SBricks composing the phrase.

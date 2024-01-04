@@ -763,12 +763,11 @@ namespace Client
             // Get the sheet for the user from the CFG.
             // Initialize the user and add him into the entity manager.
             // DO IT AFTER: Database, Collision Manager, PACS, scene, animations loaded.
-
-            //CSheetId userSheet = new CSheetId(ClientCfg.UserSheet);
+            var userSheet = uint.TryParse(ClientConfig.UserSheet, out var userSheetId) ? GetSheetIdFactory().SheetId(userSheetId) : GetSheetIdFactory().SheetId(ClientConfig.UserSheet);
             var emptyEntityInfo = new PropertyChange.TNewEntityInfo();
             emptyEntityInfo.Reset();
-            _networkManager.GetEntityManager().Create(0, Constants.UserSheetId, emptyEntityInfo);
-            Log.Info("Created user entity with sheet id " + Constants.UserSheetId);
+            _networkManager.GetEntityManager().Create(0, userSheet.AsInt(), emptyEntityInfo);
+            Log.Info("Created user entity with the sheet " + userSheet);
 
             // Create the message for the server that the client is ready
             var out2 = new BitMemoryStream();
