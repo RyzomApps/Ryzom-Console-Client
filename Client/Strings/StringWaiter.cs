@@ -6,11 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace Client.Client
+namespace Client.Strings
 {
-    public class CachedString
+    public class StringWaiter
     {
-        public string String;
-        public uint StringId;
+        /// <summary>Pointer to the ucstring to fill</summary>
+        public string Result;
     }
 }

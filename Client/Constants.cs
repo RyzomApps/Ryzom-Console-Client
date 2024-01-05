@@ -57,6 +57,8 @@
         /// </summary>
         public static int ConnectionTimeout = 5 * 60; // [s] 5 minutes
 
+        public static int ReceiveBuffer = 64000;
+
         /// <summary>
         /// Debugging for the memory stream
         /// </summary>

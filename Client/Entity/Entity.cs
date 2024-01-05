@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using API;
 using API.Entity;
@@ -14,6 +15,7 @@ using Client.Client;
 using Client.Database;
 using Client.Property;
 using Client.Sheet;
+using Client.Strings;
 
 namespace Client.Entity
 {
@@ -73,7 +75,7 @@ namespace Client.Entity
         /// <summary>
         /// Current Name for the entity as String ID
         /// </summary>
-        private uint _nameId;
+        internal uint _nameId;
 
         /// <summary>
         /// Current guild name of the entity as String ID
@@ -516,25 +518,9 @@ namespace Client.Entity
         }
 
         /// <summary>
-        /// Received the name Id.
+        /// Update Entity Name.
         /// </summary>
-        protected virtual void UpdateVisualPropertyName(uint _, long prop, RyzomClient client)
-        {
-            // Update the entity name (do not need to be managed with LCT).
-            var nameId = (uint)prop;
-
-            // Store the name Id
-            _nameId = nameId;
-
-            client.GetStringManager().WaitString(nameId, this, client.GetNetworkManager());
-
-            // if(GetEntityName().empty())
-            // 	client.GetLogger().Warn("CH::updateVPName:%d: name Id '%d' received but no name allocated.", _Slot, nameId);
-            // else if(verboseVP(this))
-            // 	client.GetLogger().Info("(%05d,%03d) CH::updateVPName:%d: name '%s(%d)' received.", sint32(T1%100000), NetMngr.getCurrentServerTick(), _Slot, getEntityName().toString().c_str(), nameId);
-
-            // TODO: updateMissionTarget();
-        }
+        protected virtual void UpdateVisualPropertyName(uint _, long prop, RyzomClient client) { }
 
 
         /// <summary>Received a new position for the entity.</summary>
@@ -633,6 +619,8 @@ namespace Client.Entity
         /// </summary>
         public override void OnStringAvailable(uint stringId, in string value)
         {
+            Debug.Print("OnStringAvailable " + stringId + " " + value);
+
             _entityName = value;
 
             // remove the shard name if possible

@@ -41,6 +41,7 @@ using Client.Skill;
 using Client.Stream;
 using API.Entity;
 using API.Sheet;
+using Client.Strings;
 
 namespace Client
 {

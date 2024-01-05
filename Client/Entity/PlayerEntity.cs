@@ -6,11 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using API;
 using API.Entity;
 using Client.Database;
 using Client.Sheet;
-using System;
 
 namespace Client.Entity
 {
@@ -119,7 +117,7 @@ namespace Client.Entity
         /// <summary>
         /// Build the entity from a sheet.
         /// </summary>
-        public bool Build(EntitySheet sheet)
+        public override bool Build(EntitySheet sheet, RyzomClient client)
         {
             // Cast the sheet in the right type.
             _PlayerSheet = (RaceStatsSheet)sheet;
@@ -131,7 +129,7 @@ namespace Client.Entity
             }
             else
             {
-                _client.GetLogger().Debug(string.Format("Player '{0}' sheet is valid.", _slot));
+                _client.GetLogger().Debug($"Player '{_slot}' sheet is valid.");
             }
 
             // Get the DB Entry
@@ -168,7 +166,7 @@ namespace Client.Entity
         /// <summary>
         /// Initialize properties of the entity (according to the class).
         /// </summary>
-        new void InitProperties()
+        private new void InitProperties()
         {
             Properties.IsSelectable = true;
             Properties.IsAttackable = false;
@@ -181,8 +179,6 @@ namespace Client.Entity
         //{
         //    throw new NotImplementedException();
         //}
-
-
 
         /// Method to return the attack radius of an entity
         //	virtual double attackRadius();

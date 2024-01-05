@@ -138,17 +138,17 @@ namespace Client.Entity
                     }
                     else
                     {
-                        _entities[slot] = new PlayerEntity(_client) { Type = EntityType.Player };
+                        _entities[slot] = new PlayerEntity(_client);
                     }
 
                     break;
 
                 case SheetType.FAUNA:
-                    if (entitySheet is CharacterSheet charSheet && !charSheet.R2Npc)
-                        _entities[slot] = new CharacterEntity(_client) { Type = EntityType.Fauna };
-                    else
-                        // CPlayerR2CL
-                        _entities[slot] = new PlayerEntity(_client) { Type = EntityType.Player };
+                    //if (entitySheet is CharacterSheet { R2Npc: false })
+                    _entities[slot] = new CharacterEntity(_client);
+                    //else
+                    // CPlayerR2CL
+                    //_entities[slot] = new PlayerEntity(_client) { Type = EntityType.NPC };
                     break;
 
                 case SheetType.FLORA:
@@ -156,12 +156,12 @@ namespace Client.Entity
                     break;
 
                 case SheetType.FX:
-                    //_entities[slot] = new CFxCL;
+                    // TODO: _entities[slot] = new CFxCL;
                     _entities[slot] = new Entity(_client);
                     break;
 
                 case SheetType.ITEM:
-                    //_entities[slot] = new CItemCL;
+                    // TODO: _entities[slot] = new CItemCL;
                     _entities[slot] = new Entity(_client);
                     break;
 
@@ -190,11 +190,10 @@ namespace Client.Entity
                 _entities[slot].NpcAlias(newEntityInfo.Alias);
 
                 // Build the entity from a sheet.
-                // TODO: what?!
                 if (_entities[slot].Build((EntitySheet)entitySheet, _client))
                 {
                     // Apply properties from backup
-                    ApplyBackupedProperties(slot);
+                    ApplyBackupProperties(slot);
                 }
             }
 
@@ -211,7 +210,7 @@ namespace Client.Entity
         {
             _client.Plugins.OnEntityRemove(slot, warning);
 
-            _client.GetLogger().Debug($"EntityManager.Remove({slot}, {warning})");
+            //_client.GetLogger().Info($"EntityManager.Remove({slot}, {warning})");
 
             // TODO: Implementation
             _entities[slot] = null;
@@ -243,7 +242,7 @@ namespace Client.Entity
 
                 propty.Value = _client.GetDatabaseManager().GetProp(propName);
 
-                _client.GetLogger().Debug($"EM:updateVP: backup the property {prop} as long as the entity {slot} is not allocated.");
+                _client.GetLogger().Debug($"EM:updateVP: backup the property {(PropertyType)prop} as long as the entity {slot} is not allocated.");
 
                 // Entity does not have any changes backuped for the time.
                 if (!_backupedChanges.ContainsKey(slot))
@@ -279,9 +278,10 @@ namespace Client.Entity
         /// <summary>
         /// Writes the properties that were already received before the entity was created to the entity
         /// </summary>
-        public void ApplyBackupedProperties(uint slot)
+        public void ApplyBackupProperties(uint slot)
         {
-            if (!_backupedChanges.ContainsKey(slot)) return;
+            if (!_backupedChanges.ContainsKey(slot))
+                return;
 
             foreach (var (key, property) in _backupedChanges[slot])
             {

@@ -15,12 +15,13 @@ using System.Timers;
 using API.Client;
 using API.Entity;
 using API.Network;
+using Client.Client;
 using Client.Network;
 using Client.Sheet;
 using Client.Stream;
 using static Client.Client.DynamicStringInfo;
 
-namespace Client.Client
+namespace Client.Strings
 {
     /// <summary>
     /// Management for dynamically generated text from servers
@@ -210,8 +211,7 @@ namespace Client.Client
 
                     _client.GetLogger().Debug($"SM: loading string [{id}] as [{str}] in cache");
 
-                    if (!_receivedStrings.ContainsKey(id))
-                        _receivedStrings.Add(id, str);
+                    _receivedStrings.TryAdd(id, str);
                 }
             }
             catch (Exception e)
@@ -275,10 +275,7 @@ namespace Client.Client
             {
                 _client.GetLogger()?.Debug($"DynString {dynId} available : [{dynInfo.String}]");
 
-                if (_receivedDynStrings.ContainsKey(dynId))
-                    _receivedDynStrings[dynId] = dynInfo;
-                else
-                    _receivedDynStrings.Add(dynId, dynInfo);
+                _receivedDynStrings[dynId] = dynInfo;
 
                 // security, if dynstring Message received twice, it is possible that the dynstring is still in waiting list
                 _waitingDynStrings.Remove(dynId);
@@ -298,7 +295,7 @@ namespace Client.Client
                 }
             }
             else
-                if (!_waitingDynStrings.ContainsKey(dynId)) _waitingDynStrings.Add(dynId, dynInfo);
+                _waitingDynStrings.TryAdd(dynId, dynInfo);
 
             // Fire an Event
             _client.Plugins.OnPhraseSend(dynInfo);
@@ -384,7 +381,7 @@ namespace Client.Client
                             try
                             {
                                 param.Money = 0;
-                                byte[] moneyArr = new byte[64];
+                                var moneyArr = new byte[64];
                                 dynInfo.Message.Serial(ref moneyArr);
                                 param.Money = BitConverter.ToUInt64(moneyArr);
                             }
@@ -435,7 +432,7 @@ namespace Client.Client
                             {
                                 case ParamType.StringID:
                                     {
-                                        if (!GetString(param.StringId, out string str, ((RyzomClient)_client).GetNetworkManager()))
+                                        if (!GetString(param.StringId, out var str, ((RyzomClient)_client).GetNetworkManager()))
                                             return false;
 
                                         var p1 = str.IndexOf('[');
@@ -519,7 +516,7 @@ namespace Client.Client
 
                                 case ParamType.DynStringID:
                                     {
-                                        if (!GetDynString(param.DynStringId, out string dynStr, networkManager))
+                                        if (!GetDynString(param.DynStringId, out var dynStr, networkManager))
                                             return false;
 
                                         var str = $"{dynStr}";
@@ -564,13 +561,14 @@ namespace Client.Client
             if (dynStringId == 0)
                 return true;
 
-            if (_receivedDynStrings.ContainsKey(dynStringId))
+            if (_receivedDynStrings.TryGetValue(dynStringId, out var s))
             {
                 // ok, we have the string with all the parts.
-                result = _receivedDynStrings[dynStringId].String;
+                result = s.String;
 
                 // security/antiloop checking
-                if (!_waitingDynStrings.ContainsKey(dynStringId)) return true;
+                if (!_waitingDynStrings.ContainsKey(dynStringId))
+                    return true;
 
                 _client.GetLogger()?.Warn(
                     $"CStringManager::getDynString : the string {dynStringId} is received but still in _WaintingDynStrings !");
@@ -713,55 +711,62 @@ namespace Client.Client
                 _stringsActions.Remove(stringId);
             }
 
-            // TODO: try to complete any pending dyn string
-            var restartLoop = false;
+            // try to complete any pending dyn string
+            bool restartLoop;
 
-            while (restartLoop)
+            do
             {
-                foreach (var dynString in _waitingDynStrings)
+                restartLoop = false;
+
+                foreach (var (dynStringId, _) in _waitingDynStrings)
                 {
-                    /// Warning: if getDynString() return true, 'first' is erased => don't use it after in this loop
-                    if (GetDynString(dynString.Key, out string value, networkManager))
+                    // Warning: if getDynString() return true, 'first' is erased => don't use it after in this loop
+                    if (!GetDynString(dynStringId, out var value, networkManager))
+                        continue;
+
+                    _client.GetLogger().Info($"DynString {dynStringId} available : [{value}]");
+
+                    // this dyn string is now complete !
+                    // update the waiting dyn strings
+                    // update the waiting strings
+                    if (_dynStringsWaiters.ContainsKey(dynStringId))
                     {
-                        var number = dynString.Key;
-
-                        _client.GetLogger().Info($"DynString {number} available : [{value}]");
-
-                        // this dyn string is now complete !
-                        // update the waiting dyn strings
-                        _dynStringsWaiters[number].Result = str; // is that correct?
-                        _dynStringsWaiters.Remove(number);
-
-                        // callback the waiting dyn strings
-                        _dynStringsCallbacks[number].OnDynStringAvailable(number, value);
-                        _dynStringsCallbacks.Remove(number);
-
-                        restartLoop = true;
+                        _dynStringsWaiters[dynStringId].Result = str;
+                        _dynStringsWaiters.Remove(dynStringId);
                     }
+
+                    // callback the waiting dyn strings
+                    if (_dynStringsCallbacks.ContainsKey(dynStringId))
+                    {
+                        _dynStringsCallbacks[dynStringId].OnDynStringAvailable(dynStringId, value);
+                        _dynStringsCallbacks.Remove(dynStringId);
+                    }
+
+                    restartLoop = true;
+                    break;
                 }
-            }
+            } while (restartLoop);
         }
 
         /// <summary>
         /// Wait for a string or fire the action if the string is already present
         /// </summary>
-        public void WaitString(in uint stringId, Action<uint, string> pcallback, NetworkManager networkManager)
+        public void WaitString(in uint stringId, Action<uint, string> callback, NetworkManager networkManager)
         {
             if (GetString(stringId, out var value, networkManager))
             {
-                pcallback(stringId, value);
+                callback(stringId, value);
             }
             else
             {
                 // wait for the string
                 if (_stringsActions.ContainsKey(stringId))
                 {
-                    _stringsActions[stringId] = pcallback;
+                    _stringsActions[stringId] = callback;
                 }
                 else
                 {
-                    if (!_stringsActions.ContainsKey(stringId))
-                        _stringsActions.Add(stringId, pcallback);
+                    _stringsActions.TryAdd(stringId, callback);
                 }
             }
         }
@@ -769,23 +774,16 @@ namespace Client.Client
         /// <summary>
         /// Wait for a string or fire the action if the string is already present
         /// </summary>
-        public void WaitString(in uint stringId, StringWaitCallback pcallback, NetworkManager networkManager)
+        public void WaitString(in uint stringId, StringWaitCallback callback, NetworkManager networkManager)
         {
             if (GetString(stringId, out var value, networkManager))
             {
-                pcallback.OnStringAvailable(stringId, value);
+                callback.OnStringAvailable(stringId, value);
             }
             else
             {
                 // wait for the string
-                if (_stringsCallbacks.ContainsKey(stringId))
-                {
-                    _stringsCallbacks[stringId] = pcallback;
-                }
-                else
-                {
-                    _stringsCallbacks.Add(stringId, pcallback);
-                }
+                _stringsCallbacks[stringId] = callback;
             }
         }
 
@@ -815,21 +813,20 @@ namespace Client.Client
 
             for (uint i = 0; i < textLocalizations.Length; i++)
             {
-                if (textLocalizations[i].Substring(0, 3) == CultureInfo.CurrentCulture.TwoLetterISOLanguageName + "]")
+                if (textLocalizations[i][..3] == CultureInfo.CurrentCulture.TwoLetterISOLanguageName + "]")
                 {
-                    defaultText = textLocalizations[i].Substring(3);
+                    defaultText = textLocalizations[i][3..];
                     return defaultText;
                 }
 
-                if (textLocalizations[i].Substring(0, 3) == "wk]")
+                if (textLocalizations[i][..3] == "wk]")
                 {
-                    defaultText = textLocalizations[i].Substring(3);
+                    defaultText = textLocalizations[i][3..];
                 }
             }
 
             return !string.IsNullOrEmpty(defaultText) ? defaultText : uctext;
         }
-
 
         public string GetSpecialWord(string label, bool women = false)
         {

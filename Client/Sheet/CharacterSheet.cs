@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Client.Client;
 using Client.Entity;
 using Client.Stream;
@@ -251,105 +252,187 @@ namespace Client.Sheet
             ClientSheetsStringsSerial(f, out IdAnimSetBaseName);
             ClientSheetsStringsSerial(f, out IdAutomaton);
 
-            throw new NotImplementedException();
-            //f.Serial(out Scale);
-            //f.Serial(out SoundFamily);
-            //f.Serial(out SoundVariation);
-            //ClientSheetsStringsSerial(f, out IdLodCharacterName);
-            //
-            //f.Serial(out LodCharacterDistance);
-            //f.Serial(out Selectable);
-            //f.Serial(out Talkable);
-            //f.Serial(out Attackable);
-            //f.Serial(out Givable);
-            //f.Serial(out Mountable);
-            //f.Serial(out Turn);
-            //f.Serial(out SelectableBySpace);
-            //
-            //f.Serial(out uint HLState);
-            //
-            //f.Serial(out CharacterScalePos);
-            //f.Serial(out NamePosZLow);
-            //f.Serial(out NamePosZNormal);
-            //f.Serial(out NamePosZHigh);
-            //ClientSheetsStringsSerial(f, out IdFame);
-            //
-            //f.Serial(out Body);
-            //f.Serial(out Legs);
-            //f.Serial(out Arms);
-            //f.Serial(out Hands);
-            //f.Serial(out Feet);
-            //f.Serial(out Head);
-            //f.Serial(out Face);
-            //f.Serial(out ObjectInRightHand);
-            //f.Serial(out ObjectInLeftHand);
-            //
-            //f.Serial(out HairColor);
-            //f.Serial(out Skin);
-            //f.Serial(out EyesColor);
-            //
-            //f.Serial(out DistToFront);
-            //f.Serial(out DistToBack);
-            //f.Serial(out DistToSide);
-            //
-            //// Collisions
-            //f.Serial(out ColRadius);
-            //f.Serial(out ColHeight);
-            //f.Serial(out ColLength);
-            //f.Serial(out ColWidth);
-            //f.Serial(out MaxSpeed);
-            //
-            //// Clip
-            //f.Serial(out ClipRadius);
-            //f.Serial(out ClipHeight);
-            //
-            //// Alternative Look
-            //ClientSheetsStringsSerial(f, out IdAlternativeClothes);
-            //
-            //// Hair Item List
-            //f.SerialCont(HairItemList);
-            //// Ground fxs
-            //f.SerialCont(out List<ushort> GroundFX);
-            //// Display OSD
-            //f.Serial(out DisplayOSD);
-            //// static FX
-            //ClientSheetsStringsSerial(f, out IdStaticFX);
-            //// body to bone
-            //f.Serial(out BodyToBone);
-            //// attack list
-            //f.Serial(out uint size);
-            //AttackLists = new List<uint>((int)size);
-            //
-            //for (int k = 0; k < size; ++k)
-            //{
-            //    ClientSheetsStringsSerial(f, out string lst);
-            //    AttackLists[k] = uint.Parse(lst);
-            //}
-            //
-            //// bot object flags
-            //f.Serial(out DisplayInRadar);
-            //f.Serial(out DisplayOSDName);
-            //f.Serial(out DisplayOSDBars);
-            //f.Serial(out DisplayOSDForceOver);
-            //f.Serial(out Traversable);
-            //
-            //f.Serial(out RegionForce);
-            //f.Serial(out ForceLevel);
-            //f.Serial(out Level);
-            //
-            //f.SerialCont(out List<ushort> ProjectileCastRay);
-            //
-            //f.Serial(out R2Npc);
+            f.Serial(out Scale);
+            f.Serial(out SoundFamily);
+            f.Serial(out SoundVariation);
+            ClientSheetsStringsSerial(f, out IdLodCharacterName);
+
+            f.Serial(out LodCharacterDistance);
+            f.Serial(out Selectable);
+            f.Serial(out Talkable);
+            f.Serial(out Attackable);
+            f.Serial(out Givable);
+            f.Serial(out Mountable);
+            f.Serial(out Turn);
+            f.Serial(out SelectableBySpace);
+
+            // HLState
+            f.Serial(out uint _);
+
+            f.Serial(out CharacterScalePos);
+            f.Serial(out NamePosZLow);
+            f.Serial(out NamePosZNormal);
+            f.Serial(out NamePosZHigh);
+            ClientSheetsStringsSerial(f, out IdFame);
+
+            Body.Serial(f);
+            Legs.Serial(f);
+            Arms.Serial(f);
+            Hands.Serial(f);
+            Feet.Serial(f);
+            Head.Serial(f);
+            Face.Serial(f);
+            ObjectInRightHand.Serial(f);
+            ObjectInLeftHand.Serial(f);
+
+            f.Serial(out HairColor);
+            f.Serial(out Skin);
+            f.Serial(out EyesColor);
+
+            f.Serial(out DistToFront);
+            f.Serial(out DistToBack);
+            f.Serial(out DistToSide);
+
+            // Collisions
+            f.Serial(out ColRadius);
+            f.Serial(out ColHeight);
+            f.Serial(out ColLength);
+            f.Serial(out ColWidth);
+            f.Serial(out MaxSpeed);
+
+            // Clip
+            f.Serial(out ClipRadius);
+            f.Serial(out ClipHeight);
+
+            // Alternative Look
+            ClientSheetsStringsSerial(f, out IdAlternativeClothes);
+
+            // Hair Item List
+            EquipmentSerialCont(f, out HairItemList);
+
+            // Ground fxs
+            GroundFxSheetSerial(f);
+
+            // Display OSD
+            f.Serial(out DisplayOSD);
+
+            // static FX
+            ClientSheetsStringsSerial(f, out IdStaticFX);
+
+            // body to bone
+            BodyToBoneSheetSerial(f);
+
+            // attack list
+            f.Serial(out uint size);
+            AttackLists = new List<uint>((int)size);
+
+            for (var k = 0; k < size; ++k)
+            {
+                ClientSheetsStringsSerial(f, out uint lst);
+                AttackLists.Add(lst);
+            }
+
+            // bot object flags
+            f.Serial(out DisplayInRadar);
+            f.Serial(out DisplayOSDName);
+            f.Serial(out DisplayOSDBars);
+            f.Serial(out DisplayOSDForceOver);
+            f.Serial(out Traversable);
+
+            f.Serial(out RegionForce);
+            f.Serial(out ForceLevel);
+            f.Serial(out Level);
+
+            // ProjectileCastRay
+            ProjectileCastRaySerial(f);
+
+            f.Serial(out R2Npc);
         }
 
+        private void ProjectileCastRaySerial(BitStreamFile f)
+        {
+            f.Serial(out uint len);
+
+            for (var i = 0; i < len; i++)
+            {
+                // Origin
+                f.Serial(out float _);
+                f.Serial(out float _);
+                f.Serial(out float _);
+                // Pos    
+                f.Serial(out float _);
+                f.Serial(out float _);
+                f.Serial(out float _);
+            }
+        }
+
+        /// <summary>
+        /// HACK
+        /// </summary>
+        private void GroundFxSheetSerial(BitStreamFile f)
+        {
+            f.Serial(out uint len);
+
+            for (var i = 0; i < len; i++)
+            {
+                f.Serial(out uint _);
+                ClientSheetsStringsSerial(f, out uint _);
+            }
+        }
+
+        /// <summary>
+        /// HACK
+        /// </summary>
+        private static void EquipmentSerialCont(BitStreamFile f, out List<Equipment> hairItemList)
+        {
+            hairItemList = new List<Equipment>();
+
+            f.Serial(out uint len);
+
+            for (var i = 0; i < len; i++)
+            {
+                var value = new Equipment();
+                value.Serial(f);
+
+                hairItemList.Add(value);
+            }
+        }
+
+        /// <summary>
+        /// HACK
+        /// </summary>
         public void ClientSheetsStringsSerial(BitStreamFile f, out uint strId)
         {
-            string tmp = "";
-            f.Serial(out tmp);
-
-            // TODO: Use the mapper here
-
+            f.Serial(out string tmp);
+            //Debug.Print(tmp);
             strId = 0;
         }
+
+        /// <summary>
+        /// HACK
+        /// </summary>
+        public void ClientSheetsStringsSerial(BitStreamFile f, out List<uint> strIdVector)
+        {
+            f.SerialCont(out List<string> _);
+            strIdVector = null;
+        }
+
+        /// <summary>
+        /// HACK
+        /// </summary>
+        public void BodyToBoneSheetSerial(BitStreamFile f)
+        {
+            ClientSheetsStringsSerial(f, out uint _ /*Head      */ );
+            ClientSheetsStringsSerial(f, out uint _ /*Chest     */ );
+            ClientSheetsStringsSerial(f, out uint _ /*LeftArm   */ );
+            ClientSheetsStringsSerial(f, out uint _ /*RightArm  */ );
+            ClientSheetsStringsSerial(f, out uint _ /*LeftHand  */ );
+            ClientSheetsStringsSerial(f, out uint _ /*RightHand */ );
+            ClientSheetsStringsSerial(f, out uint _ /*LeftLeg   */ );
+            ClientSheetsStringsSerial(f, out uint _ /*RightLeg  */ );
+            ClientSheetsStringsSerial(f, out uint _ /*LeftFoot  */ );
+            ClientSheetsStringsSerial(f, out uint _ /*RightFoot */ );
+        }
+
     }
 }

@@ -24,6 +24,7 @@ using System.Reflection;
 using System.Threading;
 using Client.Sheet;
 using Client.Stream;
+using Client.Strings;
 
 namespace Client.Network
 {

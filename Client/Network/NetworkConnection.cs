@@ -12,12 +12,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Numerics;
-using System.Text;
 using System.Threading;
 using API.Helper;
-using API.Logger;
 using Client.Config;
 using Client.Database;
 using Client.Helper;
@@ -1140,8 +1137,12 @@ namespace Client.Network
 
                 while (true)
                 {
-                    // Check if there is a new block to read - sizeof(TCLEntityId -> 1 bytes)
-                    if (msgin.GetPosInBit() + 4 * 8 > msgin.Length * 8)
+                    // Check if there is a new block to read - sizeof(TCLEntityId) => sizeof(uint8) = 1 byte
+                    // 8 bit slot
+                    // 2 bit assoc
+                    // 16 bit unit timestamp
+                    // 2 x payload bit
+                    if (msgin.GetPosInBit() + 2 * 8 > msgin.Length * 8)
                         return;
 
                     // Header
@@ -1151,7 +1152,7 @@ namespace Client.Network
                     uint associationBits = 0;
                     msgin.Serial(ref associationBits, 2); // 2
 
-                    if (AssociationBitsHaveChanged(slot, associationBits))
+                    if (AssociationBitsHaveChanged(slot, associationBits) /*&& slot == 0*/)
                     {
                         //displayBitStream( msgin, beginbitpos, msgin.getPosInBit() );
                         _client.Log.Debug($"Disassociating S{(ushort)slot}u (AB {associationBits}) L {loop}");
@@ -1197,6 +1198,7 @@ namespace Client.Network
                     //_client.Log.Info($"slot {slot} AB: {associationBits} timestamp: {timestamp}");
 
                     // Tree
+
                     var currentNode = _visualPropertyTreeRoot;
 
                     msgin.Serial(ref currentNode.A().BranchHasPayload); // 1
@@ -1242,7 +1244,7 @@ namespace Client.Network
                         // Add into the changes vector
                         var thechange = new PropertyChange(slot, (byte)PropertyType.Position, timestamp)
                         {
-                            PositionInfo = { PredictedInterval = 0, IsInterior = interior }
+                            PositionInfo = { PredictedInterval = 2, IsInterior = interior }
                         };
 
                         _changes.Add(thechange);
@@ -1283,7 +1285,7 @@ namespace Client.Network
                         VisualPropertyNodeClient.SlotContext.Timestamp = timestamp;
 
                         // Discreet properties
-                        currentNode.B().DecodeDiscreetProperties(msgin);
+                        currentNode.B().DecodeDiscreteProperties(msgin);
                     }
 
                     loop++;
@@ -1394,7 +1396,7 @@ namespace Client.Network
         /// </summary>
         private bool BuildStream(BitMemoryStream msgin)
         {
-            var receiveBuffer = new byte[0];
+            var receiveBuffer = Array.Empty<byte>();
 
             if (_connection.Receive(ref receiveBuffer, false))
             {
@@ -1595,7 +1597,7 @@ namespace Client.Network
         /// <summary>
         /// sends system quit acknowledgement
         /// </summary>
-        void SendSystemQuit()
+        private void SendSystemQuit()
         {
             var message = new BitMemoryStream();
 
@@ -1937,8 +1939,11 @@ namespace Client.Network
             _propertyDecoder.SetReferencePosition(position);
         }
 
-        public void DecodeDiscreetProperty(BitMemoryStream msgin, byte propIndex)
+        public void DecodeDiscreteProperty(BitMemoryStream msgin, byte propIndex)
         {
+            //if (propIndex == 6)
+            //_client.GetLogger().Info($"Reading discrete property {propIndex} ({(PropertyType)propIndex}) at bitpos {msgin.GetPosInBit()} remaining {msgin.Length * 8 - msgin.GetPosInBit()}");
+
             PropertyChange propertyChange;
             var slot = VisualPropertyNodeClient.SlotContext.Slot;
 

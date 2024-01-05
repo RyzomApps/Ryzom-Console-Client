@@ -22,7 +22,7 @@ namespace Client.Property
 
         internal VisualPropertyNodeClient Parent() { return (VisualPropertyNodeClient)VpParent; }
 
-        internal void DecodeDiscreetProperties(BitMemoryStream msgin)
+        internal void DecodeDiscreteProperties(BitMemoryStream msgin)
         {
             msgin.Serial(ref BranchHasPayload);
 
@@ -30,12 +30,12 @@ namespace Client.Property
 
             if (IsLeaf())
             {
-                SlotContext.NetworkConnection.DecodeDiscreetProperty(msgin, PropIndex);
+                SlotContext.NetworkConnection.DecodeDiscreteProperty(msgin, PropIndex);
             }
             else
             {
-                if (A() != null) A().DecodeDiscreetProperties(msgin);
-                if (B() != null) B().DecodeDiscreetProperties(msgin);
+                if (A() != null) A().DecodeDiscreteProperties(msgin);
+                if (B() != null) B().DecodeDiscreteProperties(msgin);
             }
         }
 

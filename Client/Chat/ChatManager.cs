@@ -15,6 +15,7 @@ using Client.Database;
 using Client.Messages;
 using Client.Network;
 using Client.Stream;
+using Client.Strings;
 
 namespace Client.Chat
 {

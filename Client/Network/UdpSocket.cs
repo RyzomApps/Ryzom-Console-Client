@@ -24,7 +24,7 @@ namespace Client.Network
         {
             ParseHostString(frontendAddress, out var host, out var port);
 
-            _udpMain = new UdpClient {Client = {ReceiveTimeout = 30000, SendTimeout = 30000}};
+            _udpMain = new UdpClient { Client = { ReceiveTimeout = 30000, SendTimeout = 30000, ReceiveBufferSize = Constants.ReceiveBuffer } };
             _udpMain.Connect(host, port);
         }
 

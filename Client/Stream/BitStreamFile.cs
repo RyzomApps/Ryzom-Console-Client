@@ -106,6 +106,14 @@ namespace Client.Stream
             value = tmp[0];
         }
 
+        public void Serial(out float value)
+        {
+            var tmp = new byte[4];
+            Array.Copy(_fileBytes, _filePointer, tmp, 0, tmp.Length);
+            _filePointer += (uint)tmp.Length;
+            value = tmp[0];
+        }
+
         public void SerialBuffer(out byte[] b, in uint dependBlockSize)
         {
             b = new byte[dependBlockSize];

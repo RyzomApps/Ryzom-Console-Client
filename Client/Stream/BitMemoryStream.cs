@@ -130,7 +130,7 @@ namespace Client.Stream
             if (IsReading())
             {
                 var newBits = ReadFromArray(32);
-                byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                var reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToInt32(reversed);
             }
             else
@@ -166,7 +166,7 @@ namespace Client.Stream
             if (IsReading())
             {
                 var newBits = ReadFromArray(32);
-                byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                var reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToUInt32(reversed);
             }
             else
@@ -186,7 +186,7 @@ namespace Client.Stream
             if (IsReading())
             {
                 var newBits = ReadFromArray(16);
-                byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                var reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
                 obj = BitConverter.ToUInt16(reversed);
             }
             else

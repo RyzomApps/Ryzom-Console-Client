@@ -17,6 +17,7 @@ using Client.Client;
 using Client.Database;
 using Client.Sheet;
 using Client.Stream;
+using Client.Strings;
 
 namespace Client.Phrase
 {

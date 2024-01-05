@@ -16,9 +16,11 @@ namespace Client.Entity
         public uint IdBindPoint;
         public byte Texture;
         public byte Color;
+        //private readonly RyzomClient _client;
 
-        public Equipment()
+        public Equipment(/*RyzomClient client*/)
         {
+            //_client = client;
             IdItem = 0;
             IdBindPoint = 0;
             Texture = 0;
@@ -29,7 +31,7 @@ namespace Client.Entity
         //{
         //    return ClientSheetsStrings.get(IdItem);
         //}
-        //
+        
         //public string getBindPoint()
         //{
         //    return ClientSheetsStrings.get(IdBindPoint);
@@ -38,12 +40,14 @@ namespace Client.Entity
         /// <summary>
         /// Serialize character sheet into binary data file.
         /// </summary>
-        public virtual void Serial(BitMemoryStream f)
+        public virtual void Serial(BitStreamFile f)
         {
-            //ClientSheetsStrings.serial(f, IdItem);
-            //f.serial(Texture);
-            //f.serial(Color);
-            //ClientSheetsStrings.serial(f, IdBindPoint);
+            // workaround = ClientSheetsStrings.serial(f, IdItem);
+            f.Serial(out string a);
+            f.Serial(out Texture);
+            f.Serial(out Color);
+            // workaround ClientSheetsStrings.serial(f, IdBindPoint);
+            f.Serial(out string b);
         }
     }
 

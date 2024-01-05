@@ -22,7 +22,7 @@ namespace Client.Network
         private Socket _socks5Socket;
         private IPAddress _ip;
         private ushort _port;
-        private byte[] _socksUdpHeader = new byte[0];
+        private byte[] _socksUdpHeader = Array.Empty<byte>();
         private readonly string _proxyAddress;
 
         private const int Timeout = 30000;
@@ -71,7 +71,7 @@ namespace Client.Network
                 udpAddress = proxyHost;
 
             // connect the udp client to the proxy
-            _udpMain = new UdpClient { Client = { ReceiveTimeout = Timeout, SendTimeout = Timeout } };
+            _udpMain = new UdpClient { Client = { ReceiveTimeout = Timeout, SendTimeout = Timeout, ReceiveBufferSize = Constants.ReceiveBuffer } };
 
             _udpMain.Connect(udpAddress, udpPort);
         }

@@ -6,6 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using System.Diagnostics;
 using System.Numerics;
 using API;
 using API.Entity;
@@ -461,6 +462,29 @@ namespace Client.Entity
             //        EntityProperties.IsHarvestable(false); // You cannot harvest the creature
             //        break;
             //}
+        }
+
+        /// <summary>
+        /// Received the name Id.
+        /// </summary>
+        protected override void UpdateVisualPropertyName(uint _, long prop, RyzomClient client)
+        {
+            // Update the entity name (do not need to be managed with LCT).
+            var nameId = (uint)prop;
+
+            // Store the name Id
+            _nameId = nameId;
+
+            _client.GetLogger().Debug("UpdateVisualPropertyName " + nameId + " " + Slot());
+
+            client.GetStringManager().WaitString(nameId, this, client.GetNetworkManager());
+
+            // if(GetEntityName().empty())
+            // 	client.GetLogger().Warn("CH::updateVPName:%d: name Id '%d' received but no name allocated.", _Slot, nameId);
+            // else if(verboseVP(this))
+            // 	client.GetLogger().Info("(%05d,%03d) CH::updateVPName:%d: name '%s(%d)' received.", sint32(T1%100000), NetMngr.getCurrentServerTick(), _Slot, getEntityName().toString().c_str(), nameId);
+
+            // TODO: updateMissionTarget();
         }
 
         /// <summary>

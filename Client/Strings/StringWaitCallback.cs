@@ -6,7 +6,7 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-namespace Client.Client
+namespace Client.Strings
 {
     /// <summary>
     /// Implement this class if you want to wait for

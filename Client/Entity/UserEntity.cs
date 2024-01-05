@@ -210,6 +210,26 @@ namespace Client.Entity
             //pIM.incLocalSyncActionCounter();
         }
 
+
+        /// <summary>
+        /// New mode received -&gt; immediately change the mode for the user.
+        /// </summary>
+        /// <remarks>Warning: Read the position or orientation from the database when reading the mode (no more updated in updateVisualPropertyPos and updateVisualPropertyOrient).</remarks>
+        protected override void UpdateVisualPropertyMode(uint gameCycle, long prop, IClient client)
+        {
+            // Combat Float Check
+            if ((EntityMode)prop == EntityMode.CombatFloat)
+            {
+                client.GetLogger().Warn("UE:updateVPMode: the user should never have the COMBAT_FLOAT mode.");
+                return;
+            }
+            // New Mode Received.
+            TheoreticalMode = (EntityMode)prop;
+
+            // TODO: Change the user mode.
+            //mode(_TheoreticalMode);
+        }
+
         public void Attack()
         {
             throw new NotImplementedException();

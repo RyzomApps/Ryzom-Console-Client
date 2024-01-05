@@ -118,8 +118,6 @@ namespace Client.Brick
             s.Serial(out uint MinFameValue);
 
             s.Serial(out uint MagicResistType);
-
-            Debug.Print("");
         }
     }
 }

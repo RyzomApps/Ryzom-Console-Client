@@ -23,7 +23,7 @@ namespace Client.Property
     internal class PropertyDecoder
     {
         /// <summary>The entity entries</summary>
-        private EntityEntry[] _entities = new EntityEntry[0];
+        private EntityEntry[] _entities = Array.Empty<EntityEntry>();
 
         private ushort _refBitsX;
         private ushort _refBitsY;
@@ -39,7 +39,7 @@ namespace Client.Property
 
         private void Clear()
         {
-            for (int i = 0; i < _entities.Length; i++)
+            for (var i = 0; i < _entities.Length; i++)
             {
                 _entities[i] = new EntityEntry();
             }
@@ -85,11 +85,11 @@ namespace Client.Property
             Debug.Assert(entity < _entities.Length, "entity=" + (ushort)entity + "u size=" + _entities.Length);
 
             //Workaround: assert converted to test when failure in vision from the server
-            if (_entities[entity].EntryUsed)
-            {
-                _entities[entity].EntryUsed = false;
-                _entities[entity].Sheet = 0xffff;
-            }
+            if (!_entities[entity].EntryUsed)
+                return true;
+
+            _entities[entity].EntryUsed = false;
+            _entities[entity].Sheet = 0xffff;
 
             return true;
         }

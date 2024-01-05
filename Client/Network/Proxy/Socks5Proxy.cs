@@ -58,7 +58,7 @@ namespace Client.Network.Proxy
             {
                 // short timeouts to filter proxies with bad pings
                 ReceiveTimeout = ConnectionTimeout,
-                SendTimeout = ConnectionTimeout,
+                SendTimeout = ConnectionTimeout
             };
 
             var result = socket.BeginConnect(proxyEndPoint, null, null);

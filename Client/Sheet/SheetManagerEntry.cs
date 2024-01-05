@@ -128,13 +128,13 @@ namespace Client.Sheet
         /// </summary>
         public void InitSheet(EntitySheet sheet, BitStreamFile stream, SheetType type)
         {
-            if (sheet != null)
-            {
-                sheet.Id.Serial(stream);
-                sheet.Serial(stream);
-                sheet.Type = type;
-                _client.GetSheetManager().ProcessSheet(sheet);
-            }
+            if (sheet == null)
+                return;
+
+            sheet.Id.Serial(stream);
+            sheet.Serial(stream);
+            sheet.Type = type;
+            _client.GetSheetManager().ProcessSheet(sheet);
         }
     }
 }

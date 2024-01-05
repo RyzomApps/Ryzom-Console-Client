@@ -9,7 +9,7 @@
 using System.Diagnostics;
 using Client.Stream;
 
-namespace Client.Client
+namespace Client.Strings
 {
     /// <summary>
     /// SpecialItems
