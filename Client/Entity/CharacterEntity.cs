@@ -503,7 +503,7 @@ namespace Client.Entity
             }
             else
             {
-                client.GetLogger().Warn($"CH:updtVPMode:{_slot}: The mode '{TheoreticalMode}({(int)TheoreticalMode})' sent is the same as the current one.");
+                client.GetLogger().Debug($"CH:updtVPMode:{_slot}: The mode '{TheoreticalMode}({(int)TheoreticalMode})' sent is the same as the current one.");
                 return;
             }
 

@@ -313,20 +313,7 @@ namespace Client
             }
 
             // translation
-            var startTr = finalString.IndexOf("{:", StringComparison.Ordinal);
-            var endOfOriginal = finalString.IndexOf("}@{", StringComparison.Ordinal);
-
-            if (startTr != -1 && endOfOriginal != -1)
-            {
-                if (ClientConfig.NoTranslation)
-                {
-                    finalString = finalString[..startTr] + finalString[(startTr + 5)..endOfOriginal];
-                }
-                else
-                {
-                    finalString = finalString[..startTr] + finalString[(endOfOriginal + 4)..];
-                }
-            }
+            finalString = ChatManagerHelper.GetVerbatim(finalString, ClientConfig.TranslateChat);
 
             Log.Chat($"[{mode}]{(stringCategory.Length > 0 ? $"[{stringCategory.ToUpper()}]" : "")}{color} {finalString}");
 
@@ -494,6 +481,8 @@ namespace Client
             // Start the finite state machine
             var interfaceState = InterfaceState.AutoLogin;
 
+            var loginRetries = 0;
+
             while (interfaceState != InterfaceState.GoInTheGame &&
                    interfaceState != InterfaceState.QuitTheGame)
             {
@@ -511,14 +500,20 @@ namespace Client
                 catch (NetworkLoginException e)
                 {
                     GetLogger().Error(e.Message);
+                    loginRetries++;
 
                     // login exception
-                    if (ClientConfig.UseProxy)
+                    if (loginRetries < 3 && ClientConfig.UseProxy)
+                    {
                         // udp proxy may be bad - try another one
+                        GetLogger().Warn("Login retry #" + loginRetries + "...");
                         interfaceState = InterfaceState.AutoLogin;
+                    }
                     else
+                    {
                         // connection may be bad - quit
                         interfaceState = InterfaceState.QuitTheGame;
+                    }
                 }
             }
 

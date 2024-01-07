@@ -49,7 +49,7 @@ namespace Client.Logger
             try
             {
                 msg = ChatColor.GetVerbatim(msg);
-                msg = ChatManagerHelper.GetVerbatim(msg);
+                msg = ChatManagerHelper.GetVerbatim(msg, true);
 
                 if (_prependTimestamp)
                     msg = $"{Misc.GetTimestamp()} {msg}";

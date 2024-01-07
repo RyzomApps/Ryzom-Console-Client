@@ -724,7 +724,7 @@ namespace Client.Strings
                     if (!GetDynString(dynStringId, out var value, networkManager))
                         continue;
 
-                    _client.GetLogger().Info($"DynString {dynStringId} available : [{value}]");
+                    _client.GetLogger().Debug($"DynString {dynStringId} available : [{value}]");
 
                     // this dyn string is now complete !
                     // update the waiting dyn strings

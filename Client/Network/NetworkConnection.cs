@@ -1138,11 +1138,9 @@ namespace Client.Network
                 while (true)
                 {
                     // Check if there is a new block to read - sizeof(TCLEntityId) => sizeof(uint8) = 1 byte
-                    // 8 bit slot
-                    // 2 bit assoc
-                    // 16 bit unit timestamp
-                    // 2 x payload bit
-                    if (msgin.GetPosInBit() + 2 * 8 > msgin.Length * 8)
+                    // 8 bit slot, 2 bit assoc, 1 timestamp, 16 bit unit timestamp, 2x payload bit
+                    // 12 bit since the msgin stream is a byte and not a bit stream
+                    if (msgin.GetPosInBit() + 12 > msgin.Length * 8)
                         return;
 
                     // Header
@@ -1413,8 +1411,8 @@ namespace Client.Network
             // won't send a disconnection msg because state is already Disconnect
             Disconnect();
 
-            throw new EndOfStreamException("Socket caused an exception. This error could mean, that the front-end, the proxy or the connection is down.");
-            //return false;
+            _client.GetLogger().Error("Socket caused an exception. This error could mean, that the front-end, the proxy or the connection is down.");
+            return false;
         }
 
         /// <summary>
@@ -1494,7 +1492,8 @@ namespace Client.Network
                 ConnectionState == ConnectionState.Authenticate ||
                 ConnectionState == ConnectionState.Disconnect)
             {
-                _client.GetLogger().Warn("Unable to disconnect(): not connected yet, or already disconnected.");
+                _client.GetLogger().Warn("Unable to disconnect: Not connected yet or already disconnected.");
+                ConnectionState = ConnectionState.Disconnect;
                 return;
             }
 
@@ -2133,7 +2132,7 @@ namespace Client.Network
                             else
                             {
                                 // TODO: fix Received mode with null pos
-                                RyzomClient.GetInstance().GetLogger().Warn($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos"); // TEMP
+                                RyzomClient.GetInstance().GetLogger().Debug($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos"); // TEMP
                             }
                         }
                     }

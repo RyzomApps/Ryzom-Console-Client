@@ -109,7 +109,7 @@ namespace Client.Entity
 
             if (entitySheet == null)
             {
-                _client.GetLogger().Warn($"EM:create: Attempt on create an entity with a bad form number {form} ({sheetId}) for the slot '{slot}' trying to compute the default one.");
+                _client.GetLogger().Debug($"EM:create: Attempt on create an entity with a bad form number {form} ({sheetId}) for the slot '{slot}' trying to compute the default one.");
 
                 if (slot != 0)
                 {
