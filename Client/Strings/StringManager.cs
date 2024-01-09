@@ -58,7 +58,7 @@ namespace Client.Strings
         /// <summary>
         /// Callback for dynamic string value from the server
         /// </summary>
-        private readonly Dictionary<uint, StringWaitCallback> _dynStringsCallbacks = new Dictionary<uint, StringWaitCallback>();
+        private readonly Dictionary<uint, Action<uint, string>> _dynStringsCallbacks = new Dictionary<uint, Action<uint, string>>();
 
         SortedDictionary<string, SpecialWord> _SpecItem_TempMap;
 
@@ -290,7 +290,7 @@ namespace Client.Strings
                 // callback the waiting dyn strings
                 if (_dynStringsCallbacks.ContainsKey(dynId))
                 {
-                    _dynStringsCallbacks[dynId].OnDynStringAvailable(dynId, dynInfo.String);
+                    _dynStringsCallbacks[dynId](dynId, dynInfo.String);
                     _dynStringsCallbacks.Remove(dynId);
                 }
             }
@@ -738,7 +738,7 @@ namespace Client.Strings
                     // callback the waiting dyn strings
                     if (_dynStringsCallbacks.ContainsKey(dynStringId))
                     {
-                        _dynStringsCallbacks[dynStringId].OnDynStringAvailable(dynStringId, value);
+                        _dynStringsCallbacks[dynStringId](dynStringId, value);
                         _dynStringsCallbacks.Remove(dynStringId);
                     }
 
@@ -784,6 +784,18 @@ namespace Client.Strings
             {
                 // wait for the string
                 _stringsCallbacks[stringId] = callback;
+            }
+        }
+
+        public void WaitDynString(uint stringId, Action<uint, string> callback, NetworkManager networkManager)
+        {
+            if (GetDynString(stringId, out var value, networkManager))
+            {
+                callback(stringId, value);
+            }
+            else
+            {
+                _dynStringsCallbacks[stringId] = callback;
             }
         }
 

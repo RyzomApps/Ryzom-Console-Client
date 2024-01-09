@@ -477,7 +477,27 @@ namespace Client.Network
 
         private void ImpulseUserPopup(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            uint titleTextId = 0;
+            uint docTextId = 0;
+            impulse.Serial(ref titleTextId);
+            impulse.Serial(ref docTextId);
+
+            // setup TEMP DB for title
+            //var pIM = _client.GetInterfaceManager();
+            var node = _client.GetDatabaseManager().GetDbProp("UI:TEMP:SERVER_POPUP:TITLE");
+
+            if (node != null)
+            {
+                node.SetValue32((int)titleTextId);
+            }
+
+            _client.GetStringManager().WaitDynString(titleTextId, (a, b) => { _client.GetLogger().Info($"{a} {b}"); }, this);
+            _client.GetStringManager().WaitDynString(docTextId, (a, b) => { _client.GetLogger().Info($"{a} {b}"); }, this);
+
+            //_client.GetLogger().Info($"titleTextId {titleTextId} docTextId {docTextId}");
+
+            // Open the Popup only when the 2 dyn strings are available
+            //ServerMessageBoxOnReceiveTextId.startWaitTexts(titleTextId, docTextId);
         }
 
         /// <summary>

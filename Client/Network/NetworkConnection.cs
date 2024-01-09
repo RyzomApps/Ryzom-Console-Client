@@ -1412,8 +1412,7 @@ namespace Client.Network
             // won't send a disconnection msg because state is already Disconnect
             Disconnect();
 
-            _client.GetLogger().Error("Socket caused an exception. This error could mean, that the front-end, the proxy or the connection is down.");
-            return false;
+            throw new NetworkLoginException("Socket caused an exception. This error could mean, that the front-end, the proxy or the connection is down.");
         }
 
         /// <summary>

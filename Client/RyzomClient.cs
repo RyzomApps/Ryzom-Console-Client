@@ -517,7 +517,7 @@ namespace Client
                     loginRetries++;
 
                     // login exception
-                    if (loginRetries < 3 && ClientConfig.UseProxy)
+                    if (loginRetries < 5 && ClientConfig.UseProxy)
                     {
                         // udp proxy may be bad - try another one
                         GetLogger().Warn("Login retry #" + loginRetries + "...");

@@ -294,7 +294,7 @@ namespace Client.Stream
             else
             {
                 var bytes = BitConverter.GetBytes(obj);
-                bytes = bytes.Reverse().ToArray();
+                //bytes = bytes.Reverse().ToArray();
                 AddToArray(bytes);
             }
         }
