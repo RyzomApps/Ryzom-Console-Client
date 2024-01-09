@@ -30,7 +30,7 @@ namespace Client.Stream
         /// </summary>
         public BitMemoryStream(byte[] input)
         {
-            _contentBits = new bool[0];
+            _contentBits = Array.Empty<bool>();
             _inputStream = true;
             MemCpy(input);
         }
@@ -38,10 +38,10 @@ namespace Client.Stream
         /// <summary>
         /// Constructor differentiating between input and output stream and specifying the size of the stream
         /// </summary>
-        public BitMemoryStream(bool inputStream = false, int defaultcapacity = 32)
+        public BitMemoryStream(bool inputStream = false, int defaultCapacity = 32)
         {
             _inputStream = inputStream;
-            _contentBits = new bool[defaultcapacity * 8];
+            _contentBits = new bool[defaultCapacity * 8];
         }
 
         /// <summary>
@@ -293,7 +293,9 @@ namespace Client.Stream
             }
             else
             {
-                throw new NotImplementedException();
+                var bytes = BitConverter.GetBytes(obj);
+                bytes = bytes.Reverse().ToArray();
+                AddToArray(bytes);
             }
         }
 

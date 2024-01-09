@@ -127,6 +127,9 @@ namespace Client
             get => _channel;
             set
             {
+                if (value == _channel)
+                    return;
+
                 Log?.Info($"Chat channel changed to {value}");
                 _channel = value;
             }
@@ -239,6 +242,17 @@ namespace Client
         }
 
         /// <summary>
+        /// Log system (all chat/tell)
+        /// </summary>
+        internal bool LogState
+        {
+            get => Log is FileLogLogger;
+            set => Log = value
+                ? new FileLogLogger("save/log_" + GetNetworkManager().PlayerSelectedHomeShardName + ".txt", ClientConfig.PrependTimestamp)
+                : new FilteredLogger();
+        }
+
+        /// <summary>
         /// Starts the main chat client, wich will login to the server.
         /// </summary>
         private void StartConsoleClient()
@@ -247,10 +261,10 @@ namespace Client
             {
                 Log = new DiscordLogger(ClientConfig.DiscordWebhook);
             }
-            else if (ClientConfig.LogToFile)
-            {
-                Log = new FileLogLogger(ClientConfig.LogFile, ClientConfig.PrependTimestamp);
-            }
+            //else if (ClientConfig.LogToFile)
+            //{
+            //    Log = new FileLogLogger(ClientConfig.LogFile, ClientConfig.PrependTimestamp);
+            //}
             else
             {
                 Log = new FilteredLogger();
@@ -677,6 +691,12 @@ namespace Client
             var playerName = _networkManager.CharacterSummaries[_networkManager.PlayerSelectedSlot].Name;
             _networkManager.PlayerSelectedHomeShardName = playerName;
 
+            // Initialize the file Logger if possilbe
+            if (!LogState && ClientConfig.LogToFile)
+            {
+                LogState = true;
+            }
+
             // Init the current Player Home shard Id and name
             CharacterHomeSessionId = _networkManager.CharacterSummaries[_networkManager.PlayerSelectedSlot].Mainland;
             //PlayerSelectedMainland = _networkManager.CharacterSummaries[_networkManager.PlayerSelectedSlot].Mainland;
@@ -1004,7 +1024,7 @@ namespace Client
 
                 var bms = new BitMemoryStream();
                 var msgType = "STRING:CHAT_MODE";
-                byte mode = (byte)channel;
+                var mode = (byte)channel;
                 uint dynamicChannelId = 0;
 
                 if (_networkManager.GetMessageHeaderManager().PushNameToStream(msgType, bms))
@@ -1130,7 +1150,7 @@ namespace Client
                     if (text[0] == ClientConfig.InternalCmdChar)
                     {
                         //Send the first 100/256 chars of the command
-                        text = text.Substring(0, maxLength);
+                        text = text[..maxLength];
                         _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text));
                     }
                     else

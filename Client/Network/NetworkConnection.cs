@@ -1140,7 +1140,7 @@ namespace Client.Network
                     // Check if there is a new block to read - sizeof(TCLEntityId) => sizeof(uint8) = 1 byte
                     // 8 bit slot, 2 bit assoc, 1 timestamp, 16 bit unit timestamp, 2x payload bit
                     // 12 bit since the msgin stream is a byte and not a bit stream
-                    if (msgin.GetPosInBit() + 12 > msgin.Length * 8)
+                    if (msgin.GetPosInBit() + 8 * 2 > msgin.Length * 8)
                         return;
 
                     // Header
@@ -1148,6 +1148,7 @@ namespace Client.Network
                     msgin.Serial(ref slot); // 1
 
                     uint associationBits = 0;
+
                     msgin.Serial(ref associationBits, 2); // 2
 
                     if (AssociationBitsHaveChanged(slot, associationBits) /*&& slot == 0*/)
@@ -1292,7 +1293,7 @@ namespace Client.Network
             catch (Exception e)
             {
                 // End of stream (saves useless bits)
-                _client.Log.Debug($"End of stream (saves useless bits) {e.Message}:\r\n{msgin.DebugData}");
+                _client.Log.Warn($"End of stream (saves useless bits) {e.Message}:\r\n{msgin.DebugData}");
             }
         }
 

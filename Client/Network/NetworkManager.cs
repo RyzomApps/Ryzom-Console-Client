@@ -1121,7 +1121,7 @@ namespace Client.Network
             }
 
             // Compute the destination.
-            Vector3 dest = new Vector3((float)x / 1000f, (float)y / 1000f, (float)z / 1000f);
+            var dest = new Vector3((float)x / 1000f, (float)y / 1000f, (float)z / 1000f);
 
             // Update the position for the vision.
             _client.GetNetworkManager().SetReferencePosition(dest);
@@ -1129,8 +1129,15 @@ namespace Client.Network
             // Change the position of the entity and in Pacs.
             userEntity.Pos = dest;
 
-            // TODO: add tp reason
-            // impulse.serial(tpInfos);
+            // Msg Received, send an acknowledge after the landscape has been loaded.
+            var @out = new BitMemoryStream();
+            if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream("TP:ACK", @out))
+            {
+                _client.GetNetworkManager().Push(@out);
+                _client.GetLogger().Info("Teleport acknowledge sent.");
+            }
+            else
+                _client.GetLogger().Warn("impulseTP: unknown message name : 'TP:ACK'."); ;
 
             _client.Plugins.OnTeleport(hasSeason);
         }

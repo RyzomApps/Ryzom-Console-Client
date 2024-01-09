@@ -7,9 +7,9 @@ namespace Client.Commands
 {
     public class Kill : CommandBase
     {
-        public override string CmdName => "SELFKILL";
+        public override string CmdName => "selfkill";
         public override string CmdUsage => "";
-        public override string CmdDesc => "Client asks EGS to kill itself";
+        public override string CmdDesc => "Kill the player";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

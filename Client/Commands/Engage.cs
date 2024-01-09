@@ -22,7 +22,7 @@ namespace Client.Commands
             if (!(handler is RyzomClient ryzomClient))
                 throw new Exception("Command handler is not a Ryzom client.");
 
-            // Create the message for the server to execute a phrase.
+            // Create the message for the server
             const string msgName = "COMBAT:ENGAGE";
 
             var @out = new BitMemoryStream();

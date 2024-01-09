@@ -31,7 +31,7 @@ namespace Client.Commands
 
             if (GetArgs(command).Length == 1) opt = GetArgs(command)[0];
 
-            out2.Serial(ref opt);
+            out2.Serial(ref opt, false);
             ryzomClient.GetNetworkManager().Push(out2);
 
             return "";

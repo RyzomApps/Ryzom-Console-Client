@@ -39,8 +39,8 @@ namespace Client.Commands
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 out2.Serial(ref onTarget);
-                out2.Serial(ref cmd);
-                out2.Serial(ref arg);
+                out2.Serial(ref cmd, false);
+                out2.Serial(ref arg, false);
 
                 ryzomClient.GetNetworkManager().Push(out2);
             }

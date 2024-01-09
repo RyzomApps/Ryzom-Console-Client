@@ -13,7 +13,7 @@ namespace Client.Commands
     {
         public override string CmdName => "GuildCreate";
 
-        public override string CmdUsage => "<guildName>";
+        public override string CmdUsage => "<name> <icon> <description>";
 
         public override string CmdDesc =>
             "Client wants to create a guild (name of new guild, guild icon descriptor, description of the guild)";
@@ -25,8 +25,8 @@ namespace Client.Commands
 
             var args = GetArgs(command);
 
-            if (args.Length != 1)
-                return "Please specify a name.";
+            if (args.Length != 3)
+                return "Wrong argument count in the command.";
 
             const string msgName = "GUILD:CREATE";
             var out2 = new BitMemoryStream();
@@ -34,8 +34,15 @@ namespace Client.Commands
             if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
                 return $"Unknown message named '{msgName}'.";
 
-            var buf = args[0];
-            out2.Serial(ref buf);
+            var guildName = "Guild"; //args[0];
+            //var icon = ulong.Parse(args[1]);
+            ulong icon = 110142619738865821;
+            var guildDesc = "Name"; //args[2];
+
+            out2.Serial(ref guildName, true);
+            out2.Serial(ref icon, 64 * 8);
+            out2.Serial(ref guildDesc, true);
+
             ryzomClient.GetNetworkManager().Push(out2);
 
             return "";

@@ -82,7 +82,7 @@ namespace Client.Config
 
         // Logging
         public static bool LogToFile = false;
-        public static string LogFile = "console-log.txt";
+        //public static string LogFile = "console-log.txt";
         public static bool PrependTimestamp = false;
 
         public static string DiscordWebhook = "";
@@ -322,9 +322,9 @@ namespace Client.Config
                     UseProxy = bool.Parse(argValue);
                     break;
 
-                case "logfile":
-                    LogFile = argValue;
-                    break;
+                //case "logfile":
+                //    LogFile = argValue;
+                //    break;
 
                 case "onlineproxylist":
                     argValue = argValue.Replace("{", "").Replace("}", "").Trim();

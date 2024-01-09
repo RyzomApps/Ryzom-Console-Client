@@ -11,7 +11,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "The client toggle chooses parry as its defense mode";
+        public override string CmdDesc => "Set the defense mode to parry";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
