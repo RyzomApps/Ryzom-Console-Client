@@ -160,8 +160,6 @@ namespace Client.Messages
             f.Serial(ref ArmsColor);
             f.Serial(ref HandsColor);
             f.Serial(ref FeetColor);
-
-            //Debug.Print(f.DebugData);
         }
     }
 }

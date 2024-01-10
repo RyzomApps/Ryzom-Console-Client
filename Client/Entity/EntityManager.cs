@@ -109,7 +109,7 @@ namespace Client.Entity
 
             if (entitySheet == null)
             {
-                _client.GetLogger().Debug($"EM:create: Attempt on create an entity with a bad form number {form} ({sheetId}) for the slot '{slot}' trying to compute the default one.");
+                _client.GetLogger().Warn($"EM:create: Attempt on create an entity with a bad form number {form} ({sheetId}) for the slot '{slot}' trying to compute the default one.");
 
                 if (slot != 0)
                 {
@@ -240,7 +240,8 @@ namespace Client.Entity
                 var propName = $"SERVER:Entities:E{slot}:P{prop}";
                 var propty = new Property { GameCycle = gameCycle, Value = 0 };
 
-                propty.Value = _client.GetDatabaseManager().GetProp(propName);
+                if (_client.GetDatabaseManager() != null)
+                    propty.Value = _client.GetDatabaseManager().GetProp(propName);
 
                 _client.GetLogger().Debug($"EM:updateVP: backup the property {(PropertyType)prop} as long as the entity {slot} is not allocated.");
 

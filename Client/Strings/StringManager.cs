@@ -901,7 +901,7 @@ namespace Client.Strings
         public string GetCreatureLocalizedName(SheetId sheetId)
         {
             // TODO: Implementation of localized creature name
-            return $"CreatureName({sheetId})";
+            return $"{sheetId}";
         }
     }
 }

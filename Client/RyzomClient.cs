@@ -602,7 +602,7 @@ namespace Client
                     }
                     else
                     {
-                        Thread.Sleep(30);
+                        Thread.Sleep(10);
                     }
                 }
 
@@ -1158,7 +1158,7 @@ namespace Client
                         //Split the message into several messages
                         while (text.Length > maxLength)
                         {
-                            _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text.Substring(0, maxLength)));
+                            _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text[..maxLength]));
                             text = text[maxLength..];
                         }
 
@@ -1227,9 +1227,9 @@ namespace Client
                     {
                         responseMsg = "{helpCommand} <cmdname>: show brief help about a command.";
                     }
-                    else if (_cmds.ContainsKey(arguments))
+                    else if (_cmds.TryGetValue(arguments, out var cmd))
                     {
-                        responseMsg = "§e" + ClientConfig.InternalCmdChar + _cmds[arguments].GetCmdDescTranslated();
+                        responseMsg = "§e" + ClientConfig.InternalCmdChar + cmd.GetCmdDescTranslated();
                     }
                     else responseMsg = $"Unknown command '{arguments}'. Use '{HelpCommand}' for command list.";
                 }
@@ -1238,11 +1238,11 @@ namespace Client
                     responseMsg = $"§e--- §fCommands §e---§r\r\n{string.Join(", ", _cmdNames.ToArray())}.";
                 }
             }
-            else if (_cmds.ContainsKey(commandName))
+            else if (_cmds.TryGetValue(commandName, out var cmd))
             {
                 try
                 {
-                    responseMsg = _cmds[commandName].Run(this, command, localVars);
+                    responseMsg = cmd.Run(this, command, localVars);
 
                     Plugins.OnInternalCommand(commandName, command, responseMsg);
                 }
@@ -1318,18 +1318,18 @@ namespace Client
 
             try
             {
-                _cmdprompt?.Abort();
+                _cmdprompt?.Interrupt();
+                _cmdprompt?.Join();
             }
             catch
             {
                 // ignored
             }
 
-            if (_timeoutdetector == null) return;
-
             try
             {
-                _timeoutdetector.Abort();
+                _timeoutdetector?.Interrupt();
+                _timeoutdetector?.Join();
             }
             catch
             {

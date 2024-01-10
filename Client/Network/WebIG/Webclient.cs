@@ -38,8 +38,6 @@ namespace Client.Network.WebIG
 
             if (simulateIngame) SetHeadersAndProxy(url, proxyAdress, httpWebRequest);
 
-            Debug.Print(httpWebRequest.RequestUri.OriginalString);
-
             if (gets != null)
             {
                 try

@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using API.Sheet;
 using Client.Client;
 using Client.Entity;
 using Client.Stream;
@@ -403,8 +404,9 @@ namespace Client.Sheet
         /// </summary>
         public void ClientSheetsStringsSerial(BitStreamFile f, out uint strId)
         {
-            f.Serial(out string tmp);
-            //Debug.Print(tmp);
+            f.Serial(out string _);
+            //var sheetId = sheetName.Length > 0 ? _sheetIdFactory.SheetId(sheetName) : null;
+            //strId = sheetId?.AsInt() ?? 0;
             strId = 0;
         }
 
@@ -422,17 +424,16 @@ namespace Client.Sheet
         /// </summary>
         public void BodyToBoneSheetSerial(BitStreamFile f)
         {
-            ClientSheetsStringsSerial(f, out uint _ /*Head      */ );
-            ClientSheetsStringsSerial(f, out uint _ /*Chest     */ );
-            ClientSheetsStringsSerial(f, out uint _ /*LeftArm   */ );
-            ClientSheetsStringsSerial(f, out uint _ /*RightArm  */ );
-            ClientSheetsStringsSerial(f, out uint _ /*LeftHand  */ );
-            ClientSheetsStringsSerial(f, out uint _ /*RightHand */ );
-            ClientSheetsStringsSerial(f, out uint _ /*LeftLeg   */ );
-            ClientSheetsStringsSerial(f, out uint _ /*RightLeg  */ );
-            ClientSheetsStringsSerial(f, out uint _ /*LeftFoot  */ );
-            ClientSheetsStringsSerial(f, out uint _ /*RightFoot */ );
+            ClientSheetsStringsSerial(f, out uint _ /*Head      */);
+            ClientSheetsStringsSerial(f, out uint _ /*Chest     */);
+            ClientSheetsStringsSerial(f, out uint _ /*LeftArm   */);
+            ClientSheetsStringsSerial(f, out uint _ /*RightArm  */);
+            ClientSheetsStringsSerial(f, out uint _ /*LeftHand  */);
+            ClientSheetsStringsSerial(f, out uint _ /*RightHand */);
+            ClientSheetsStringsSerial(f, out uint _ /*LeftLeg   */);
+            ClientSheetsStringsSerial(f, out uint _ /*RightLeg  */);
+            ClientSheetsStringsSerial(f, out uint _ /*LeftFoot  */);
+            ClientSheetsStringsSerial(f, out uint _ /*RightFoot */);
         }
-
     }
 }

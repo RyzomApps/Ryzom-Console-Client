@@ -68,8 +68,6 @@ namespace Client.Network.WebIG
                     var realDomain = req.Url.AbsolutePath;
                     string realPath;
 
-                    Debug.Print(req.Url.Authority);
-
                     if (req.Url.Authority.Trim() == "")
                     {
                         realDomain = ClientConfig.WebIgMainDomain + realDomain;
@@ -143,7 +141,7 @@ namespace Client.Network.WebIG
                 }
                 catch (Exception e)
                 {
-                    Debug.Print(e.Message);
+
                 }
                 finally
                 {

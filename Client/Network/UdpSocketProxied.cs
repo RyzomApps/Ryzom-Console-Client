@@ -6,8 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+// Ignore Spelling: Proxied
+
 using Client.Network.Proxy;
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 
@@ -18,6 +21,8 @@ namespace Client.Network
     /// </summary>
     public class UdpSocketProxied : IUdpSocket
     {
+        internal const int Timeout = 30000;
+
         private UdpClient _udpMain;
         private Socket _socks5Socket;
         private IPAddress _ip;
@@ -25,7 +30,6 @@ namespace Client.Network
         private byte[] _socksUdpHeader = Array.Empty<byte>();
         private readonly string _proxyAddress;
 
-        private const int Timeout = 30000;
         private DateTime _lastDataReceived = DateTime.MinValue;
 
         /// <summary>
@@ -35,7 +39,7 @@ namespace Client.Network
         {
             get
             {
-                UdpSocket.ParseHostString(_proxyAddress, out string hostName, out _);
+                UdpSocket.ParseHostString(_proxyAddress, out var hostName, out _);
                 return hostName;
             }
         }
@@ -87,6 +91,7 @@ namespace Client.Network
         {
             if (_socksUdpHeader.Length != 10)
             {
+                // init the header
                 _socksUdpHeader = new byte[10];
 
                 // Type of IP V4 address - TODO: allow usage of IPV6
@@ -112,21 +117,17 @@ namespace Client.Network
         {
             var ret = _udpMain.Client?.Available > 0;
 
-            if (_lastDataReceived != DateTime.MinValue)
-            {
-                if ((DateTime.Now - _lastDataReceived).TotalMilliseconds > Timeout)
-                {
-                    if (_udpMain.Client?.Connected == true)
-                        _udpMain.Client?.Disconnect(false);
+            if (_lastDataReceived == DateTime.MinValue || (DateTime.Now - _lastDataReceived).TotalMilliseconds <= Timeout)
+                return ret;
 
-                    if (_socks5Socket.Connected)
-                        _socks5Socket.Disconnect(false);
+            if (_udpMain.Client?.Connected == true)
+                _udpMain.Client?.Disconnect(false);
 
-                    throw new TimeoutException("SOCKS5 Proxy Connection Timeout.");
-                }
-            }
+            if (_socks5Socket.Connected)
+                _socks5Socket.Disconnect(false);
 
-            return ret;
+            throw new TimeoutException("SOCKS5 Proxy Connection Timeout.");
+
         }
 
         /// <inheritdoc />
@@ -137,6 +138,11 @@ namespace Client.Network
             try
             {
                 var bytes = _udpMain.Receive(ref remoteIpEndPoint);
+
+                // drop any datagram whose FRAG field is other than X'00'
+                if (bytes[2] != 0)
+                    throw new NotImplementedException("Fragmentation of UDP datagrams is not implemented.");
+
                 Array.Reverse(bytes, 10, bytes.Length - 10);
                 receiveBuffer = bytes;
 

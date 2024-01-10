@@ -17,6 +17,8 @@ namespace Client.Network
     /// </summary>
     public class UdpSocket : IUdpSocket
     {
+        internal const int Timeout = 30000;
+
         private UdpClient _udpMain;
 
         /// <inheritdoc />
@@ -24,7 +26,7 @@ namespace Client.Network
         {
             ParseHostString(frontendAddress, out var host, out var port);
 
-            _udpMain = new UdpClient { Client = { ReceiveTimeout = 30000, SendTimeout = 30000, ReceiveBufferSize = Constants.ReceiveBuffer } };
+            _udpMain = new UdpClient { Client = { ReceiveTimeout = Timeout, SendTimeout = Timeout, ReceiveBufferSize = Constants.ReceiveBuffer } };
             _udpMain.Connect(host, port);
         }
 

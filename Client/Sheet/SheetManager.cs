@@ -226,8 +226,6 @@ namespace Client.Sheet
 
                         var path = TypeVersion[i].Type + ".packed_sheets";
 
-                        //Debug.Print(path);
-
                         //if (forceRecompute && !string.IsNullOrEmpty(path))
                         //{
                         //    // delete previous packed sheets

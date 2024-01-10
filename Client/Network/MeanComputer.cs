@@ -13,7 +13,7 @@ namespace Client.Network
 
         public float Content;
 
-        readonly Queue<KeyValuePair<long, float>> _values = new Queue<KeyValuePair<long, float>>();
+        private readonly Queue<KeyValuePair<long, float>> _values = new Queue<KeyValuePair<long, float>>();
 
         public MeanComputer()
         {

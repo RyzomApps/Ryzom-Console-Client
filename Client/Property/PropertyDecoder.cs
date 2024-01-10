@@ -7,11 +7,8 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
-using API.Helper;
-using Client.Helper;
 using Client.Network.Action;
 
 namespace Client.Property
@@ -52,6 +49,7 @@ namespace Client.Property
 
         internal ushort GetAssociationBits(byte entity)
         {
+            //Debug.Assert(_entities[entity].EntryUsed);
             return _entities[entity].AssociationBits;
         }
 
@@ -64,6 +62,7 @@ namespace Client.Property
 
         internal uint Sheet(byte entity)
         {
+            Debug.Assert(_entities[entity].EntryUsed);
             return _entities[entity].Sheet;
         }
 
@@ -85,11 +84,13 @@ namespace Client.Property
             Debug.Assert(entity < _entities.Length, "entity=" + (ushort)entity + "u size=" + _entities.Length);
 
             //Workaround: assert converted to test when failure in vision from the server
-            if (!_entities[entity].EntryUsed)
-                return true;
+            //if (!_entities[entity].EntryUsed)
+            //    return true;
 
-            _entities[entity].EntryUsed = false;
-            _entities[entity].Sheet = 0xffff;
+            //_entities[entity].EntryUsed = false;
+            //_entities[entity].Sheet = 0xffff;
+
+            _entities[entity] = new EntityEntry();
 
             return true;
         }

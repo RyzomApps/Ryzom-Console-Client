@@ -70,7 +70,8 @@ namespace Client.Network.Proxy
             {
                 try
                 {
-                    thread.Abort();
+                    thread.Interrupt();
+                    thread.Join();
                 }
                 catch { }
             }
@@ -139,7 +140,8 @@ namespace Client.Network.Proxy
             {
                 try
                 {
-                    thread.Abort();
+                    thread.Interrupt();
+                    thread.Join();
                 }
                 catch { }
             }

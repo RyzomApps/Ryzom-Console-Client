@@ -341,6 +341,9 @@ namespace Client.Entity
             if (client == null)
                 throw new Exception("Update a visual property nees a client.");
 
+            if (_client.GetDatabaseManager() == null)
+                return;
+
             var nodePtr = client.GetDatabaseManager().GetNodePtr();
 
             if (nodePtr == null) return;
@@ -619,8 +622,6 @@ namespace Client.Entity
         /// </summary>
         public override void OnStringAvailable(uint stringId, in string value)
         {
-            Debug.Print("OnStringAvailable " + stringId + " " + value);
-
             _entityName = value;
 
             // remove the shard name if possible

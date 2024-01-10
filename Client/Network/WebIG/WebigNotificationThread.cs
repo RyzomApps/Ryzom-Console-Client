@@ -131,8 +131,6 @@ namespace Client.Network.WebIG
 
             url = AddWebIgParams(url, true);
 
-            Debug.Print(url);
-
             var task = Task.Run(() => _curl.GetAsync(new Uri(url)));
             task.Wait();
 

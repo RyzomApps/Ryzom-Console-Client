@@ -36,7 +36,7 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] {"s"};
+            return new[] { "s", "around" };
         }
     }
 }

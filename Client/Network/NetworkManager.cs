@@ -144,7 +144,7 @@ namespace Client.Network
                     Send();
 
                     // Do not take all the CPU.
-                    Thread.Sleep(100);
+                    Thread.Sleep(10);
 
                     gameCycle = _networkConnection.GetCurrentServerTick();
                 }
@@ -188,6 +188,7 @@ namespace Client.Network
                 if (change.Property < (byte)PropertyType.AddNewEntity)
                 {
                     // Update the visual property for the slot
+                    // TODO: Find out why there are property changes while being in the global menu
                     _entitiesManager.UpdateVisualProperty(change.GameCycle, change.ShortId, change.Property, change.PositionInfo.PredictedInterval);
                 }
                 // Add New Entity (and remove the old one in the slot)

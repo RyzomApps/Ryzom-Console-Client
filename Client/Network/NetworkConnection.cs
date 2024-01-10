@@ -124,7 +124,7 @@ namespace Client.Network
 
         private int _totalMessages;
 
-        VisualPropertyNodeClient _visualPropertyTreeRoot;
+        private VisualPropertyNodeClient _visualPropertyTreeRoot;
 
         /// <summary>
         /// the time currently played at this frame (in the past)
@@ -287,18 +287,18 @@ namespace Client.Network
                 _tickSectionTime = curTime;
             }
 
-            if (_currentServerTick > _tickSectionTick + RollingAverage.GameTps)
-            {
-                var diff = curTime - _tickSectionTime;
-                var currentTps = RollingAverage.SecInNano / diff * (_currentServerTick - _tickSectionTick);
+            if (_currentServerTick <= _tickSectionTick + RollingAverage.GameTps) 
+                return;
 
-                Tps1.Add(currentTps, diff);
-                Tps5.Add(currentTps, diff);
-                Tps15.Add(currentTps, diff);
+            var diff = curTime - _tickSectionTime;
+            var currentTps = RollingAverage.SecInNano / diff * (_currentServerTick - _tickSectionTick);
 
-                _tickSectionTime = curTime;
-                _tickSectionTick = _currentServerTick;
-            }
+            Tps1.Add(currentTps, diff);
+            Tps5.Add(currentTps, diff);
+            Tps15.Add(currentTps, diff);
+
+            _tickSectionTime = curTime;
+            _tickSectionTick = _currentServerTick;
         }
 
         /// <summary>
@@ -455,8 +455,7 @@ namespace Client.Network
         {
             if (ConnectionState != ConnectionState.NotConnected)
             {
-                throw new Exception(
-                    "Unable to connect(): connection not properly initialized (maybe connection not closed).");
+                throw new Exception("Unable to connect(): connection not properly initialized (maybe connection not closed).");
             }
 
             // S12: connect to the FES. Note: In UDP mode, it's the user that have to send the cookie to the front end
@@ -526,7 +525,7 @@ namespace Client.Network
                 return false;
             }
 
-            // YOYO: OnUpdate the Smooth ServerTick.
+            // YOYO: Update the Smooth ServerTick.
             UpdateSmoothServerTick();
 
             if (!_connection.IsConnected())
@@ -855,8 +854,7 @@ namespace Client.Network
             }
 
             // update the current time;
-            while (_currentClientTime < _updateTime - _msPerTick - _lct &&
-                   _currentClientTick < _currentServerTick)
+            while (_currentClientTime < _updateTime - _msPerTick - _lct && _currentClientTick < _currentServerTick)
             {
                 _currentClientTime += _msPerTick;
 
@@ -1160,7 +1158,7 @@ namespace Client.Network
                         {
                             var sheet = _propertyDecoder.Sheet(slot);
 
-                            if (!_idMap.ContainsKey(sheet))
+                            if (_idMap.ContainsKey(sheet))
                                 _idMap.Remove(sheet);
 
                             _propertyDecoder.RemoveEntity(slot);
@@ -1373,15 +1371,14 @@ namespace Client.Network
             if (xmlInvalid && !_alreadyWarned)
             {
                 _alreadyWarned = true;
-                _client.GetLogger().Warn("XML files invalid: msg.xml and database.xml files are invalid (server version signature is different)");
+                _client.GetLogger().Warn("XML files invalid: msg.xml and database.xml files are invalid (server version signature is different).");
 
-                _client.GetLogger().Warn($"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
-                _client.GetLogger().Warn($"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
+                _client.GetLogger().Debug($"msg.xml client:{Misc.ByteArrToString(_msgXmlMD5)} server:{Misc.ByteArrToString(checkMsgXml)}");
+                _client.GetLogger().Debug($"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
             }
 
             _msPerTick = 100;
 
-            //SetCurrentServerTick((uint)(_synchronize + _currentReceivedNumber * 2));
             _currentServerTick = (uint)(_synchronize + _currentReceivedNumber * 2);
 
             _currentClientTick = (uint)(_currentServerTick - (_lct + _msPerTick) / _msPerTick);
@@ -1458,9 +1455,7 @@ namespace Client.Network
             }
             else
             {
-                _ackBitMask = (_currentReceivedNumber - _lastReceivedNumber == 32 && _lastAckBit != 0)
-                    ? 0x80000000
-                    : 0x00000000;
+                _ackBitMask = (_currentReceivedNumber - _lastReceivedNumber == 32 && _lastAckBit != 0) ? 0x80000000 : 0x00000000;
             }
 
             _lastAckBit = ackBit;
@@ -1525,8 +1520,6 @@ namespace Client.Network
 
             message.Serial(ref _latestSync); // 32
 
-            _client.GetLogger().Debug($"sendSystemAckSync {message}");
-
             _connection.Send(message.Buffer(), message.Length);
 
             _latestSyncTime = _updateTime;
@@ -1571,7 +1564,7 @@ namespace Client.Network
 
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            byte disconnection = (byte)SystemMessageType.SystemDisconnectionCode;
+            var disconnection = (byte)SystemMessageType.SystemDisconnectionCode;
 
             message.Serial(ref disconnection);
 
@@ -1599,11 +1592,9 @@ namespace Client.Network
         private void SendSystemQuit()
         {
             var message = new BitMemoryStream();
-
             message.BuildSystemHeader(ref _currentSendNumber);
 
             var quit = (byte)SystemMessageType.SystemQuitCode;
-
             message.Serial(ref quit);
             message.Serial(ref _quitId);
 
@@ -1621,10 +1612,9 @@ namespace Client.Network
         public void SendSystemLogin()
         {
             var message = new BitMemoryStream();
-
             message.BuildSystemHeader(ref _currentSendNumber);
 
-            byte login = (byte)SystemMessageType.SystemLoginCode;
+            var login = (byte)SystemMessageType.SystemLoginCode;
             message.Serial(ref login);
 
             // Cookie
@@ -1731,9 +1721,9 @@ namespace Client.Network
             message.Serial(ref _lastReceivedNumber);
             message.Serial(ref _ackBitMask);
 
-            for (int itblock = 0; itblock < _actions.Count; itblock++)
+            for (var itblock = 0; itblock < _actions.Count; itblock++)
             {
-                ActionBlock block = _actions[itblock];
+                var block = _actions[itblock];
 
                 // if block contains action that are not already stamped, don't send it now
                 if (block.Cycle == 0)
@@ -1749,17 +1739,16 @@ namespace Client.Network
                 //itblock--;
 
                 // Prevent to send a message too big - MTU 480? - easy version
-                if (message.GetPosInBit() > 480 * 8)
-                {
-                    // TODO: i guess GetPosInBit does not return the right size - leads to disconnections
-                    _client.GetLogger().Debug($"CNET: message size={message.GetPosInBit() / 8d:0}");
+                if (message.GetPosInBit() <= 480 * 8) 
+                    continue;
 
-                    break;
-                }
+                //_client.GetLogger().Debug($"CNET: message size={message.GetPosInBit() / 8d:0}");
+
+                break;
             }
 
-            _client.GetLogger().Debug($"CNET: send normal message Packet={_currentSendNumber} Ack={_lastReceivedAck}");
-            _client.GetLogger().Debug($"{message}");
+            //_client.GetLogger().Debug($"CNET: send normal message Packet={_currentSendNumber} Ack={_lastReceivedAck}");
+            //_client.GetLogger().Debug($"{message}");
 
             _connection.Send(message.Buffer(), message.Length);
 
@@ -2088,20 +2077,17 @@ namespace Client.Network
                     }
 
                     // Set the position or orientation received along with the mode in the database
-                    byte modeEnum = (byte)(mode44 & 0xFF);
+                    var modeEnum = (byte)(mode44 & 0xFF);
                     const int combatFloat = 2;
 
                     if (modeEnum == combatFloat)
                     {
                         // Set theta
-                        if (_databaseManager != null)
+                        if (_databaseManager?.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
                         {
-                            if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
-                            {
-                                var node = nodeRoot.GetNode(slot).GetNode((byte)PropertyType.Orientation) as DatabaseNodeLeaf;
-                                Debug.Assert(node != null);
-                                node.SetValue64(mode44 >> 12);
-                            }
+                            var node = nodeRoot.GetNode(slot).GetNode((byte)PropertyType.Orientation) as DatabaseNodeLeaf;
+                            Debug.Assert(node != null);
+                            node.SetValue64(mode44 >> 12);
                         }
                     }
                     else
@@ -2132,7 +2118,7 @@ namespace Client.Network
                             else
                             {
                                 // TODO: fix Received mode with null pos
-                                RyzomClient.GetInstance().GetLogger().Debug($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos"); // TEMP
+                                RyzomClient.GetInstance().GetLogger().Warn($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos"); // TEMP
                             }
                         }
                     }
@@ -2142,10 +2128,11 @@ namespace Client.Network
                 default:
                     // special for Bars, always take _currentServerTick timestamp (delta timestamp decoded is mainly for position purpose...)
                     var timeStamp = VisualPropertyNodeClient.SlotContext.Timestamp;
-                    /* YOYO: i don't know what to do with others property that really use the gamecycle and are maybe buggued:
-                        ENTITY_MOUNTED_ID,RIDER_ENTITY_ID,BEHAVIOUR,TARGET_LIST,TARGET_ID,VISUAL_FX
-                        But bars timestamp accuracy is very important (else could take DB property with falsly newer timestamp)
-                    */
+
+                    // YOYO: i don't know what to do with others property that really use the gamecycle and are maybe buggued:
+                    // ENTITY_MOUNTED_ID,RIDER_ENTITY_ID,BEHAVIOUR,TARGET_LIST,TARGET_ID,VISUAL_FX
+                    // But bars timestamp accuracy is very important (else could take DB property with falsly newer timestamp)
+
                     if (propIndex == (byte)PropertyType.Bars)
                     {
                         timeStamp = _currentServerTick;
@@ -2155,14 +2142,11 @@ namespace Client.Network
                     propertyChange = new PropertyChange(slot, propIndex, timeStamp);
                     _changes.Add(propertyChange);
 
-                    if (_databaseManager != null)
+                    if (_databaseManager?.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot2)
                     {
-                        if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
-                        {
-                            var node = nodeRoot.GetNode(slot).GetNode(propIndex) as DatabaseNodeLeaf;
-                            Debug.Assert(node != null);
-                            node.SetValue64(ac.GetValue());
-                        }
+                        var node = nodeRoot2.GetNode(slot).GetNode(propIndex) as DatabaseNodeLeaf;
+                        Debug.Assert(node != null);
+                        node.SetValue64(ac.GetValue());
                     }
 
                     break;
@@ -2180,25 +2164,6 @@ namespace Client.Network
 
             Debug.Assert(ats != null);
             ats.Slot = slot;
-
-            //// ensure the value is good for the FE
-            //switch (targetOrPickup)
-            //{
-            //    case TargettingType.None:
-            //        ats.TargetOrPickup = 0;
-            //        break;
-            //
-            //    case TargettingType.Lootable:
-            //        ats.TargetOrPickup = 1;
-            //        break;
-            //
-            //    case TargettingType.Harvestable:
-            //        ats.TargetOrPickup = 2;
-            //        break;
-            //
-            //    default:
-            //        return;
-            //}
 
             ats.TargetOrPickup = (uint)targetOrPickup;
 
