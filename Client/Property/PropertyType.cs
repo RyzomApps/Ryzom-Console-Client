@@ -48,10 +48,10 @@ namespace Client.Property
         * DO LEAVE ENOUGH ROOM FOR FUTURE PROPERTIES !
         */
         AddNewEntity = 32,
-        RemoveOldEntity,
-        ConnectionReady,
-        LagDetected,
-        ProbeReceived,
+        RemoveOldEntity = 33,
+        ConnectionReady = 34,
+        LagDetected = 35,
+        ProbeReceived = 36,
 
         InvalidPropIndex = 0xFF,
     }

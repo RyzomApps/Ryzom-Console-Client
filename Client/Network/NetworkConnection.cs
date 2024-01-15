@@ -287,7 +287,7 @@ namespace Client.Network
                 _tickSectionTime = curTime;
             }
 
-            if (_currentServerTick <= _tickSectionTick + RollingAverage.GameTps) 
+            if (_currentServerTick <= _tickSectionTick + RollingAverage.GameTps)
                 return;
 
             var diff = curTime - _tickSectionTime;
@@ -1138,7 +1138,14 @@ namespace Client.Network
                     // Check if there is a new block to read - sizeof(TCLEntityId) => sizeof(uint8) = 1 byte
                     // 8 bit slot, 2 bit assoc, 1 timestamp, 16 bit unit timestamp, 2x payload bit
                     // 12 bit since the msgin stream is a byte and not a bit stream
-                    if (msgin.GetPosInBit() + 8 * 2 > msgin.Length * 8)
+                    // original
+                    // 152 8 152
+                    // 1664 8 1664
+                    // 384 8 352
+                    // 68 8 72
+                    // rcc
+                    // 152 8  245
+                    if (msgin.GetPosInBit() + 1 * 8 > msgin.Length * 8)
                         return;
 
                     // Header
@@ -1147,7 +1154,14 @@ namespace Client.Network
 
                     uint associationBits = 0;
 
-                    msgin.Serial(ref associationBits, 2); // 2
+                    uint one = 0;
+                    msgin.Serial(ref one, 1); // 2
+
+                    uint two = 0;
+                    msgin.Serial(ref two, 1); // 2
+
+                    associationBits |= (one << 1);
+                    associationBits |= (two << 0);
 
                     if (AssociationBitsHaveChanged(slot, associationBits) /*&& slot == 0*/)
                     {
@@ -1163,8 +1177,7 @@ namespace Client.Network
 
                             _propertyDecoder.RemoveEntity(slot);
 
-                            var theChange = new PropertyChange(slot, (byte)PropertyType.RemoveOldEntity);
-                            _changes.Add(theChange);
+                            _changes.Add(new PropertyChange(slot, (byte)PropertyType.RemoveOldEntity));
 
                             //if (slot == 1 || slot == 3 || slot == 7 || slot == 14 || slot == 29 || slot == 58 || slot == 117 || slot == 235 || slot == 255)
                             //    _client.Log.Info($"Disassociating S{(ushort)slot}u (AB {associationBits}) L {loop}");
@@ -1260,8 +1273,7 @@ namespace Client.Network
                             ac.Unpack(msgin);
 
                             // Process orientation
-                            var thechange = new PropertyChange(slot, (byte)PropertyType.Orientation, timestamp);
-                            _changes.Add(thechange);
+                            _changes.Add(new PropertyChange(slot, (byte)PropertyType.Orientation, timestamp));
 
                             var nodeRoot = (DatabaseNodeBranch)_databaseManager?.GetNodePtr().GetNode(0);
 
@@ -1739,7 +1751,7 @@ namespace Client.Network
                 //itblock--;
 
                 // Prevent to send a message too big - MTU 480? - easy version
-                if (message.GetPosInBit() <= 480 * 8) 
+                if (message.GetPosInBit() <= 480 * 8)
                     continue;
 
                 //_client.GetLogger().Debug($"CNET: message size={message.GetPosInBit() / 8d:0}");
@@ -2006,8 +2018,7 @@ namespace Client.Network
                     _client.GetLogger().Debug($"CLIENT: recvd property {(ushort)propIndex}u ({propIndex}) for slot {(ushort)slot}u, date {VisualPropertyNodeClient.SlotContext.Timestamp}");
                 }
 
-                propertyChange = new PropertyChange(slot, propIndex, VisualPropertyNodeClient.SlotContext.Timestamp);
-                _changes.Add(propertyChange);
+                _changes.Add(new PropertyChange(slot, propIndex, VisualPropertyNodeClient.SlotContext.Timestamp));
 
                 return;
             }
@@ -2049,10 +2060,10 @@ namespace Client.Network
                     }
 
                     // Set information
-                    propertyChange = new PropertyChange(slot, (byte)PropertyType.AddNewEntity);
-                    propertyChange.NewEntityInfo.DataSetIndex = (uint)((ac.GetValue() >> 32) & 0xffffffff);
-                    propertyChange.NewEntityInfo.Alias = alias;
-                    _changes.Add(propertyChange);
+                    var theChange = new PropertyChange(slot, (byte)PropertyType.AddNewEntity);
+                    theChange.NewEntityInfo.DataSetIndex = (uint)((ac.GetValue() >> 32) & 0xffffffff);
+                    theChange.NewEntityInfo.Alias = alias;
+                    _changes.Add(theChange);
 
                     break;
 
@@ -2062,8 +2073,7 @@ namespace Client.Network
                     var modeTimestamp = _currentServerTick - (uint)((mode44 >> 8) & 0xF);
 
                     // Push the mode Before the position or the orientation
-                    propertyChange = new PropertyChange(slot, (byte)PropertyType.Mode, modeTimestamp);
-                    _changes.Add(propertyChange);
+                    _changes.Add(new PropertyChange(slot, (byte)PropertyType.Mode, modeTimestamp));
 
                     // Set mode value in database
                     if (_databaseManager != null)
@@ -2139,8 +2149,7 @@ namespace Client.Network
                     }
 
                     // Process property
-                    propertyChange = new PropertyChange(slot, propIndex, timeStamp);
-                    _changes.Add(propertyChange);
+                    _changes.Add(new PropertyChange(slot, propIndex, timeStamp));
 
                     if (_databaseManager?.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot2)
                     {

@@ -6,11 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using API.Chat;
-using Client.Client;
 using Client.Database;
 using Client.Messages;
 using Client.Network;
@@ -98,7 +96,7 @@ namespace Client.Chat
         /// <summary>
         /// Extract and decode the chat string from the stream. display now if ready or delay in flushBuffer()
         /// </summary>
-        public void ProcessChatString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
+        public void ProcessChatString(BitMemoryStream bms, RyzomClient chatDisplayer)
         {
             // before displaying anything, must ensure dynamic channels are up to date
             // NB: only processChatString() have to do this. Other methods cannot be in dyn_chat mode
@@ -131,7 +129,7 @@ namespace Client.Chat
             }
 
             // display
-            ChatManagerHelper.BuildChatSentence(senderStr, chatMsg.Content, type, out var ucstr);
+            ChatManagerHelper.BuildChatSentence(chatDisplayer, senderStr, chatMsg.Content, type, out var ucstr);
 
             // Send to the displayers
             chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, chatMsg.DynChatChanID, senderStr);
@@ -143,7 +141,7 @@ namespace Client.Chat
         /// </summary>
         public void ProcessChatString2(BitMemoryStream bms, RyzomClient chatDisplayer)
         {
-            ChatMsg2 chatMsg = new ChatMsg2();
+            var chatMsg = new ChatMsg2();
             chatMsg.Serial(bms);
 
             var type = chatMsg.ChatMode;
@@ -151,14 +149,14 @@ namespace Client.Chat
             // here, the type cannot be dyn_chat (no DynChatId in the message) => discard
             if (type == ChatGroupType.DynChat)
             {
-                chatDisplayer.GetLogger().Warn("Client don't support dyn_chat with CChatMsg2 messages => '%x' aborted", chatMsg.PhraseId);
+                chatDisplayer.GetLogger().Warn($"Client does not support dynamic chat with messages of type 2: '{chatMsg.PhraseId}' aborted.");
                 return;
             }
 
             // if !complete, wait
-            bool complete = true;
-            complete &= _stringManager.GetString(chatMsg.SenderNameId, out string senderStr, _networkManager);
-            complete &= _stringManager.GetDynString(chatMsg.PhraseId, out string rawMessage, _networkManager);
+            var complete = true;
+            complete &= _stringManager.GetString(chatMsg.SenderNameId, out var senderStr, _networkManager);
+            complete &= _stringManager.GetDynString(chatMsg.PhraseId, out var rawMessage, _networkManager);
 
             if (!complete)
             {
@@ -170,13 +168,14 @@ namespace Client.Chat
             rawMessage += chatMsg.CustomTxt;
 
             // display
-            ChatManagerHelper.BuildChatSentence(/*chatMsg.CompressedIndex,*/ senderStr, rawMessage, type, out string ucstr);
+            ChatManagerHelper.BuildChatSentence(chatDisplayer, senderStr, rawMessage, type, out var ucstr);
             chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, rawMessage, type, 0xFFFFF, senderStr);
         }
 
         /// <summary>
-        /// Use info from DB SERVER:DYN_CHAT. return -1 if fails
+        /// Use info from DB SERVER:DYN_CHAT
         /// </summary>
+        /// <returns>-1 if fails</returns>
         private int GetDynamicChannelDbIndexFromId(uint channelId)
         {
             for (var i = 0; i < Constants.MaxDynChanPerPlayer; i++)
@@ -203,13 +202,13 @@ namespace Client.Chat
 
             // serial
             var chatMsg = new ChatMsg2();
-            uint phraseID = 0;
-            bms.Serial(ref phraseID);
+            uint phraseId = 0;
+            bms.Serial(ref phraseId);
 
             chatMsg.CompressedIndex = Constants.InvalidDatasetIndex;
             chatMsg.SenderNameId = 0;
             chatMsg.ChatMode = type;
-            chatMsg.PhraseId = phraseID;
+            chatMsg.PhraseId = phraseId;
 
             // if !complete, wait
             var complete = _stringManager.GetDynString(chatMsg.PhraseId, out var ucstr, _networkManager);
@@ -228,7 +227,7 @@ namespace Client.Chat
         /// <summary>
         /// Process waiting messages
         /// </summary>
-        internal void FlushBuffer(IChatDisplayer chatDisplayer)
+        internal void FlushBuffer(RyzomClient chatDisplayer)
         {
             // before displaying anything, must ensure dynamic channels are up to date
             // TODO updateDynamicChatChannels(chatDisplayer); 
@@ -274,7 +273,7 @@ namespace Client.Chat
                     if (itMsg.DisplayAsTell)
                         ChatManagerHelper.BuildTellSentence(sender, content, out ucstr);
                     else
-                        ChatManagerHelper.BuildChatSentence(sender, content, type, out ucstr);
+                        ChatManagerHelper.BuildChatSentence(chatDisplayer, sender, content, type, out ucstr);
                 }
 
                 // display
