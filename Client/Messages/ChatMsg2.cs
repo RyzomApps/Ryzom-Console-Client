@@ -7,9 +7,16 @@
 ///////////////////////////////////////////////////////////////////
 
 using API.Chat;
+using Client.Stream;
 
 namespace Client.Messages
 {
+    /// <summary>
+    /// Message to chat
+    /// </summary>
+    /// <author>Boris Boucher</author> 
+    /// <author>Nevrax France</author> 
+    /// <date>2002</date> 
     public class ChatMsg2
     {
         public ChatGroupType ChatMode;
@@ -25,6 +32,17 @@ namespace Client.Messages
             ChatMode = 0;
             PhraseId = 0;
             CustomTxt = "";
+        }
+
+        internal void Serial(BitMemoryStream f)
+        {
+            f.Serial(ref CompressedIndex);
+            f.Serial(ref SenderNameId);
+            var chatMode = new byte();
+            f.Serial(ref chatMode);
+            ChatMode = (ChatGroupType)chatMode;
+            f.Serial(ref PhraseId);
+            f.Serial(ref CustomTxt, false); // FIXME: UTF-8 (serial)
         }
     }
 }

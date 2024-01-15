@@ -96,7 +96,7 @@ namespace Client.Chat
         }
 
         /// <summary>
-        /// interprets the incoming say string
+        /// Extract and decode the chat string from the stream. display now if ready or delay in flushBuffer()
         /// </summary>
         public void ProcessChatString(BitMemoryStream bms, IChatDisplayer chatDisplayer)
         {
@@ -135,6 +135,43 @@ namespace Client.Chat
 
             // Send to the displayers
             chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, chatMsg.DynChatChanID, senderStr);
+        }
+
+        /// <summary>
+        /// Extract and decode the chat string from the stream. display now if ready or delay in flushBuffer()
+        /// Difference with processChatString() is that processChatString2() receive a DynamicString for the message
+        /// </summary>
+        public void ProcessChatString2(BitMemoryStream bms, RyzomClient chatDisplayer)
+        {
+            ChatMsg2 chatMsg = new ChatMsg2();
+            chatMsg.Serial(bms);
+
+            var type = chatMsg.ChatMode;
+
+            // here, the type cannot be dyn_chat (no DynChatId in the message) => discard
+            if (type == ChatGroupType.DynChat)
+            {
+                chatDisplayer.GetLogger().Warn("Client don't support dyn_chat with CChatMsg2 messages => '%x' aborted", chatMsg.PhraseId);
+                return;
+            }
+
+            // if !complete, wait
+            bool complete = true;
+            complete &= _stringManager.GetString(chatMsg.SenderNameId, out string senderStr, _networkManager);
+            complete &= _stringManager.GetDynString(chatMsg.PhraseId, out string rawMessage, _networkManager);
+
+            if (!complete)
+            {
+                _chatBuffer.Add(new ChatMsgNode(chatMsg, false));
+                return;
+            }
+
+            rawMessage += " ";
+            rawMessage += chatMsg.CustomTxt;
+
+            // display
+            ChatManagerHelper.BuildChatSentence(/*chatMsg.CompressedIndex,*/ senderStr, rawMessage, type, out string ucstr);
+            chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, rawMessage, type, 0xFFFFF, senderStr);
         }
 
         /// <summary>

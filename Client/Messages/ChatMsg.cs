@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////
 
 using API.Chat;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Messages

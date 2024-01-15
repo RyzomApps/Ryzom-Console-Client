@@ -1186,7 +1186,7 @@ namespace Client.Network
 
         private void ImpulseChat2(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _chatManager.ProcessChatString2(impulse, _client);
         }
 
         private void ImpulseFarTell(BitMemoryStream impulse)
