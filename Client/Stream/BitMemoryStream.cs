@@ -41,7 +41,8 @@ namespace Client.Stream
         public BitMemoryStream(bool inputStream = false, int defaultCapacity = 32)
         {
             _inputStream = inputStream;
-            _contentBits = new bool[defaultCapacity * 8];
+
+            _contentBits = new bool[/*defaultCapacity * 8*/0];
         }
 
         /// <summary>

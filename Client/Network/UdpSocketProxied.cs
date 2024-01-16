@@ -75,7 +75,7 @@ namespace Client.Network
                 udpAddress = proxyHost;
 
             // connect the udp client to the proxy
-            _udpMain = new UdpClient { Client = { ReceiveTimeout = Timeout, SendTimeout = Timeout, ReceiveBufferSize = Constants.ReceiveBuffer } };
+            _udpMain = new UdpClient { DontFragment = true, Client = { ReceiveTimeout = Timeout, SendTimeout = Timeout, ReceiveBufferSize = Constants.ReceiveBuffer, DontFragment = true } };
 
             _udpMain.Connect(udpAddress, udpPort);
         }
@@ -143,7 +143,29 @@ namespace Client.Network
                 if (bytes[2] != 0)
                     throw new NotImplementedException("Fragmentation of UDP datagrams is not implemented.");
 
-                Array.Reverse(bytes, 10, bytes.Length - 10);
+                // ATYP address type 
+                switch (bytes[3])
+                {
+                    case 0x01:
+                        // IP V4 address
+                        break;
+
+                    case 0x03:
+                        // DOMAINNAME
+                        throw new NotImplementedException("DOMAINNAME");
+
+                    case 0x04:
+                        // IP V6 address
+                        throw new NotImplementedException("IP V6 address");
+
+                    default:
+                        throw new NotImplementedException("ATYP address type " + bytes[3] + " not implemented.");
+                }
+
+                // remove the header - IP V4 only
+                bytes = bytes[10..];
+
+                Array.Reverse(bytes, 0, bytes.Length);
                 receiveBuffer = bytes;
 
                 if (receiveBuffer.Length > 0)

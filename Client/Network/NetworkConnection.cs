@@ -1303,7 +1303,7 @@ namespace Client.Network
             catch (Exception e)
             {
                 // End of stream (saves useless bits)
-                _client.Log.Warn($"End of stream (saves useless bits) {e.Message}:\r\n{msgin.DebugData}");
+                _client.Log.Debug($"End of stream (saves useless bits) {e.Message}:\r\n{msgin.DebugData}");
             }
         }
 
@@ -2127,8 +2127,8 @@ namespace Client.Network
                             }
                             else
                             {
-                                // TODO: fix Received mode with null pos
-                                RyzomClient.GetInstance().GetLogger().Warn($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos"); // TEMP
+                                // TEMP
+                                RyzomClient.GetInstance().GetLogger().Debug($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos"); 
                             }
                         }
                     }
