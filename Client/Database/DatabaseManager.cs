@@ -88,6 +88,7 @@ namespace Client.Database
             return _database ??= new DatabaseNodeBranch("ROOT");
         }
 
+
         /// <summary>
         /// Build the structure of the database from a file
         /// </summary>
@@ -254,6 +255,22 @@ namespace Client.Database
 
             var leaf = GetNodePtr().GetNode(new TextId(name), create) as DatabaseNodeLeaf;
             return leaf;
+        }
+
+        /// <summary>
+        /// Returns the specified branch node from the database.
+        /// </summary>
+        /// <param name="name">The name of the branch.</param>
+
+        internal DatabaseNodeBranch GetDbBranch(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+
+            var branch = GetNodePtr().GetNode(new TextId(name), false) as DatabaseNodeBranch;
+            return branch;
         }
     }
 }

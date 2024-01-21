@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
-using Client.Network;
+using Client.Interface;
 using Client.Stream;
 
 namespace Client.Database
@@ -22,19 +22,19 @@ namespace Client.Database
     /// <author>Stephane Coutelas</author>
     /// <author>Nevrax France</author>
     /// <date>2002</date>
-    public class DatabaseNodeBranch : DatabaseNodeBase
+    public class DatabaseNodeBranch : DatabaseNode
     {
         /// <summary>
         /// database subnodes not sorted
         /// </summary>
-        private readonly List<DatabaseNodeBase> _nodes = new List<DatabaseNodeBase>();
+        private readonly List<DatabaseNode> _nodes = new List<DatabaseNode>();
 
         /// <summary>
         /// subnodes sorted by name
         /// </summary>
-        private readonly List<DatabaseNodeBase> _nodesByName = new List<DatabaseNodeBase>();
+        private readonly List<DatabaseNode> _nodesByName = new List<DatabaseNode>();
 
-        DatabaseNodeBase _predictDatabaseNode;
+        DatabaseNode _predictDatabaseNode;
 
         /// <summary>
         /// Number of bits required to stock my children's ids
@@ -48,8 +48,8 @@ namespace Client.Database
         /// </summary>
         public DatabaseNodeBranch(string name)
         {
-            Name = name;
-            Parent = null;
+            _name = name;
+            _parent = null;
             _idBits = 0;
             _sorted = false;
         }
@@ -150,10 +150,50 @@ namespace Client.Database
             Find(""); // Sort !
         }
 
+        /// <inheritdoc/>
+        public override bool AddObserver(IPropertyObserver observer, TextId id)
+        {
+            //test if this node is the desired one, if yes, add the observer to all the children nodes
+            if (id.GetCurrentIndex() == (int)id.Size())
+            {
+                for (int i = 0; i < _nodes.Count; ++i)
+                {
+                    if (!_nodes[i].AddObserver(observer, id))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            // lookup next element from textid in my index => idx
+            string str = id.ReadNext();
+
+            DatabaseNode pNode = Find(str);
+            // Property not found.
+            if (pNode == null)
+            {
+                // TODO: nlwarning(" Property %s not found", id.toString().c_str());
+                return false;
+            }
+
+            // set property in child
+            pNode.AddObserver(observer, id);
+
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public override bool RemoveObserver(IPropertyObserver observer, TextId id)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Adds a new node to the branch
         /// </summary>
-        private static void AddNode(DatabaseNodeBase newDatabaseNode, string newName, DatabaseNodeBranch parent, List<DatabaseNodeBase> nodes, List<DatabaseNodeBase> nodesSorted, XmlElement child, string bankName, bool atomBranch, bool clientOnly, Action progressCallBack, bool mapBanks, BankHandler bankHandler = null)
+        private static void AddNode(DatabaseNode newDatabaseNode, string newName, DatabaseNodeBranch parent, List<DatabaseNode> nodes, List<DatabaseNode> nodesSorted, XmlElement child, string bankName, bool atomBranch, bool clientOnly, Action progressCallBack, bool mapBanks, BankHandler bankHandler = null)
         {
             nodesSorted.Add(newDatabaseNode);
             nodes.Add(newDatabaseNode);
@@ -180,7 +220,7 @@ namespace Client.Database
         /// </summary>
         /// <param name="id">the TextId identifying the database node</param>
         /// <param name="bCreate">true, if the node should be created</param>
-        internal override DatabaseNodeBase GetNode(TextId id, bool bCreate = true)
+        internal override DatabaseNode GetNode(TextId id, bool bCreate = true)
         {
             // lookup next element from textid in my index => idx
             var str = id.ReadNext();
@@ -198,7 +238,7 @@ namespace Client.Database
                 Debug.Assert(id.GetElement(0) != "SERVER");
                 //Debug.Assert(id.GetElement(0) != "LOCAL");
 
-                DatabaseNodeBase newNode;
+                DatabaseNode newNode;
 
                 if (id.GetCurrentIndex() == id.Size())
                 {
@@ -229,9 +269,9 @@ namespace Client.Database
         /// </summary>
         /// <param name="node">is the new subnode</param>
         /// <param name="nodeName">is the name of the database node</param>
-        internal virtual void AttachChild(DatabaseNodeBase node, string nodeName)
+        internal virtual void AttachChild(DatabaseNode node, string nodeName)
         {
-            Debug.Assert(Parent == null);
+            Debug.Assert(_parent == null);
 
             if (node == null) return;
 
@@ -248,7 +288,7 @@ namespace Client.Database
         /// Get a database node. Return null if out of bounds (no warning)
         /// </summary>
         /// <param name="idx">is the database node index</param>
-        internal override DatabaseNodeBase GetNode(ushort idx)
+        internal override DatabaseNode GetNode(ushort idx)
         {
             return idx < _nodes.Count ? _nodes[idx] : null;
         }
@@ -258,7 +298,7 @@ namespace Client.Database
         /// </summary>
         /// <param name="databaseNode">is a pointer to the database node</param>
         /// <param name="index">referenced index</param>
-        internal virtual bool GetNodeIndex(DatabaseNodeBase databaseNode, ref uint index)
+        internal virtual bool GetNodeIndex(DatabaseNode databaseNode, ref uint index)
         {
             foreach (var it in _nodes)
             {
@@ -486,7 +526,7 @@ namespace Client.Database
         /// <summary>
         /// Find a subnode at this level
         /// </summary>
-        public DatabaseNodeBase Find(string nodeName)
+        public DatabaseNode Find(string nodeName)
         {
             var predictNode = _predictDatabaseNode;
 
@@ -523,6 +563,25 @@ namespace Client.Database
             foreach (var node in _nodes)
             {
                 node.Write($"{id}:{node.GetName()}", f);
+            }
+        }
+
+        /// <summary>
+        /// mark this branch and parent branch as 'modified'. This is usually called by sub-leaves
+        /// </summary>
+        public void OnLeafChanged(string leafName)
+        {
+            //for (TObserverHandleList.iterator itr = observerHandles.begin(); itr != observerHandles.end(); ++itr)
+            //{
+            //    if (itr.observesLeaf(*leafName))
+            //    {
+            //        itr.addToFlushableList();
+            //    }
+            //}
+
+            if (_parent != null)
+            {
+                _parent.OnLeafChanged(leafName);
             }
         }
     }

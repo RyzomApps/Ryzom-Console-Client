@@ -9,12 +9,12 @@
 using System;
 using System.IO;
 using System.Xml;
-using Client.Network;
+using Client.Interface;
 using Client.Stream;
 
 namespace Client.Database
 {
-    public abstract class DatabaseNodeBase
+    public abstract class DatabaseNode
     {
         // ReSharper disable InconsistentNaming
         internal enum EPropType
@@ -33,9 +33,9 @@ namespace Client.Database
             TEXT, Nb_Prop_Type
         }
 
-        internal string Name;
+        internal string _name;
 
-        internal DatabaseNodeBranch Parent;
+        internal DatabaseNodeBranch _parent;
 
         /// <summary>
         /// is the branch an atomic group, or is the leaf a member of an atomic group
@@ -58,7 +58,7 @@ namespace Client.Database
         /// Get a database node
         /// </summary>
         /// <returns>idx is the database node index</returns>
-        internal abstract DatabaseNodeBase GetNode(ushort idx);
+        internal abstract DatabaseNode GetNode(ushort idx);
 
         /// <summary>
         /// Return the value of a property (the update flag is set to false)
@@ -70,12 +70,12 @@ namespace Client.Database
         /// <summary>
         /// get the parent of a database node
         /// </summary>
-        internal virtual DatabaseNodeBranch GetParent() { return Parent; }
+        internal virtual DatabaseNodeBranch GetParent() { return _parent; }
 
         /// <summary>
         /// get the name of this database node
         /// </summary>
-        internal virtual string GetName() { return Name; }
+        internal virtual string GetName() { return _name; }
 
         /// <summary>
         /// Find the leaf which count is specified (if found, the returned value is non-null and count is 0)
@@ -95,14 +95,14 @@ namespace Client.Database
         /// <summary>
         /// Inform a database node of its parenthood
         /// </summary>
-        internal virtual void SetParent(DatabaseNodeBranch parent) { Parent = parent; }
+        internal virtual void SetParent(DatabaseNodeBranch parent) { _parent = parent; }
 
         /// <summary>
         /// Get a database node . Create it if it does not exist yet
         /// </summary>
         /// <param name="id">the TextId identifying the database node</param>
         /// <param name="bCreate">true, if a new one should created, if missing</param>
-        internal abstract DatabaseNodeBase GetNode(TextId id, bool bCreate = true);
+        internal abstract DatabaseNode GetNode(TextId id, bool bCreate = true);
 
         /// <summary>
         /// Reset all leaf data from this point
@@ -121,5 +121,21 @@ namespace Client.Database
         /// <param name="f">is the stream</param>  
         /// 
         internal abstract void Write(string id, StreamWriter f);
+
+        /// <summary>
+        /// Add an observer to a property
+        /// </summary>
+        /// <param name="observer">pointer to an observer</param>
+        /// <param name="id">text id identifying the property</param>
+        /// <return>false if the node doesn't exist</return>
+        public abstract bool AddObserver(IPropertyObserver observer, TextId id);
+
+        /// <summary>
+        /// Remove an obsever
+        /// </summary>
+        /// <param name="observer">pointer to an observer</param>
+        /// <param name="id">text id identifying the property</param>
+        /// <return>false if the node or observer doesn't exist</return>
+        public abstract bool RemoveObserver(IPropertyObserver observer, TextId id);
     }
 }

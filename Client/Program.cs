@@ -158,10 +158,6 @@ namespace Client
 
             Startupargs = args;
             InitializeClient();
-
-#if DEBUG
-            Console.ReadKey();
-#endif
         }
 
         /// <summary>

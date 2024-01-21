@@ -10,11 +10,10 @@ using System;
 using System.Xml;
 using Client.Brick;
 using Client.Database;
-using Client.Network.WebIG;
 using Client.Phrase;
 using Client.Skill;
 
-namespace Client.Client
+namespace Client.Interface
 {
     /// <summary>
     /// class managing the interface
@@ -30,6 +29,18 @@ namespace Client.Client
         private readonly BrickManager _brickManager;
         private readonly PhraseManager _phraseManager;
 
+        ServerToLocalAutoCopy ServerToLocalAutoCopyInventory;
+        ServerToLocalAutoCopy ServerToLocalAutoCopyExchange;
+        ServerToLocalAutoCopy ServerToLocalAutoCopyDMGift;
+        ServerToLocalAutoCopy ServerToLocalAutoCopyContextMenu;
+        ServerToLocalAutoCopy ServerToLocalAutoCopySkillPoints;
+
+        /** This is the GLOBAL Action counter used to synchronize some systems (including INVENTORY) with the server.*/
+        byte _LocalSyncActionCounter;
+
+        /// This is the Mask (4bits)
+        byte _LocalSyncActionCounterMask;
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -40,6 +51,12 @@ namespace Client.Client
             _skillManager = client.GetSkillManager();
             _brickManager = client.GetBrickManager();
             _phraseManager = client.GetPhraseManager();
+
+            ServerToLocalAutoCopyInventory = new ServerToLocalAutoCopy(this, _databaseManager);
+            ServerToLocalAutoCopyExchange = new ServerToLocalAutoCopy(this, _databaseManager);
+            ServerToLocalAutoCopyDMGift = new ServerToLocalAutoCopy(this, _databaseManager);
+            ServerToLocalAutoCopyContextMenu = new ServerToLocalAutoCopy(this, _databaseManager);
+            ServerToLocalAutoCopySkillPoints = new ServerToLocalAutoCopy(this, _databaseManager);
         }
 
         /// <summary>
@@ -77,26 +94,40 @@ namespace Client.Client
                 localNode.Init(file.DocumentElement, null);
                 _databaseManager.GetDb().AttachChild(localNode, "LOCAL");
 
-                //// Create the observers for auto-copy SERVER->LOCAL of inventory
-                //ServerToLocalAutoCopyInventory.init("INVENTORY");
+                // Create the observers for auto-copy SERVER->LOCAL of inventory
+                ServerToLocalAutoCopyInventory.Init("INVENTORY");
 
-                //// Create the observers for auto-copy SERVER->LOCAL of exchange
-                //ServerToLocalAutoCopyExchange.init("EXCHANGE");
+                // Create the observers for auto-copy SERVER->LOCAL of exchange
+                ServerToLocalAutoCopyExchange.Init("EXCHANGE");
 
-                //// Create the observers for auto-copy SERVER->LOCAL of dm (animator) gift
-                //ServerToLocalAutoCopyDMGift.init("DM_GIFT");
+                // Create the observers for auto-copy SERVER->LOCAL of dm (animator) gift
+                ServerToLocalAutoCopyDMGift.Init("DM_GIFT");
 
-                //// Create the observers for auto-copy SERVER->LOCAL of context menu
-                //ServerToLocalAutoCopyContextMenu.init("TARGET:CONTEXT_MENU");
+                // Create the observers for auto-copy SERVER->LOCAL of context menu
+                ServerToLocalAutoCopyContextMenu.Init("TARGET:CONTEXT_MENU");
 
-                //// Create the observers for auto-copy SERVER->LOCAL of Skill Points
-                //ServerToLocalAutoCopySkillPoints.init("USER");
+                // Create the observers for auto-copy SERVER->LOCAL of Skill Points
+                ServerToLocalAutoCopySkillPoints.Init("USER");
             }
             catch (Exception e)
             {
                 // Output error
                 _client.GetLogger().Error($"InterfaceManager: Error while loading the form {fileName}: {e.Message}");
             }
+        }
+
+        internal bool localActionCounterSynchronizedWith(DatabaseNodeLeaf leaf)
+        {
+            if (leaf == null)
+            {
+                return false;
+            }
+
+            int srvVal = leaf.GetValue32();
+            int locVal = _LocalSyncActionCounter;
+            srvVal &= _LocalSyncActionCounterMask;
+            locVal &= _LocalSyncActionCounterMask;
+            return srvVal == locVal;
         }
     }
 }

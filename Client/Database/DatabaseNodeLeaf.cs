@@ -7,15 +7,16 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
-using Client.Network;
+using Client.Interface;
 using Client.Stream;
 
 namespace Client.Database
 {
-    public class DatabaseNodeLeaf : DatabaseNodeBase
+    public class DatabaseNodeLeaf : DatabaseNode
     {
         /// <summary>property type</summary>
         private EPropType _type;
@@ -32,13 +33,19 @@ namespace Client.Database
 
         /// <summary>true if this value has changed</summary>
         bool _changed;
+        private DatabaseNodeBranch _Parent;
+
+        /// <summary>
+        /// bservers to call when the value really change
+        /// </summary>
+        readonly List<IPropertyObserver> _Observers = new List<IPropertyObserver>();
 
         /// <summary>
         /// constructor
         /// </summary>
         public DatabaseNodeLeaf(string name)
         {
-            Name = name;
+            _name = name;
         }
 
         /// <inheritdoc />
@@ -163,6 +170,16 @@ namespace Client.Database
             }
         }
 
+        internal void SetValue8(byte uc)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void SetValue16(short quality)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Set the value of the property
         /// </summary>
@@ -172,8 +189,27 @@ namespace Client.Database
             SetValue64(newVal);
         }
 
+        /// <summary>
+        /// Set the value of the property (set '_Changed' flag with 'true').
+        /// </summary>
+        public void SetValue64(long prop)
+        {
+            if (_property == prop) return;
+
+            if (!_changed)
+            {
+                _changed = true;
+            }
+
+            _oldProperty = _property;
+            _property = prop;
+
+            // notify observer
+            NotifyObservers();
+        }
+
         /// <inheritdoc />
-        internal override DatabaseNodeBase GetNode(ushort idx)
+        internal override DatabaseNode GetNode(ushort idx)
         {
             throw new NotImplementedException();
         }
@@ -201,7 +237,7 @@ namespace Client.Database
         }
 
         /// <inheritdoc />
-        internal override DatabaseNodeBase GetNode(TextId id, bool bCreate = true)
+        internal override DatabaseNode GetNode(TextId id, bool bCreate = true)
         {
             throw new NotImplementedException();
         }
@@ -214,31 +250,12 @@ namespace Client.Database
                 _lastChangeGc = 0;
                 SetValue64(0);
             }
-            else if (gc >= _lastChangeGc)   
+            else if (gc >= _lastChangeGc)
             {
                 // apply only if happens after the DB change
                 _lastChangeGc = gc;
                 SetValue64(0);
             }
-        }
-
-        /// <summary>
-        /// Set the value of the property (set '_Changed' flag with 'true').
-        /// </summary>
-        public void SetValue64(long prop)
-        {
-            if (_property == prop) return;
-
-            if (!_changed)
-            {
-                _changed = true;
-            }
-
-            _oldProperty = _property;
-            _property = prop;
-
-            // notify observer
-            NotifyObservers();
         }
 
         /// <summary>
@@ -256,17 +273,99 @@ namespace Client.Database
         public long GetValue64() { return _property; }
 
         /// <summary>
-        /// notify all observers
+        /// Return the value of the property
         /// </summary>
-        public void NotifyObservers()
+        public int GetValue32()
         {
-            // TODO NotifyObservers
+            return (int)(_property & 0xffffffff);
+        }
+
+        /// <summary>
+        /// Return the value of the property
+        /// </summary>
+        public short GetValue16()
+        {
+            return (short)(_property & 0xffff);
+        }
+
+        /// <summary>
+        /// Return the value of the property
+        /// </summary>
+        public byte GetValue8()
+        {
+            return (byte)(_property & 0xff);
+        }
+
+        /// <summary>
+        /// Return the value of the property
+        /// </summary>
+        public bool GetValueBool()
+        {
+            return (_property != 0);
         }
 
         /// <inheritdoc />
         internal override void Write(string id, StreamWriter f)
         {
             f.WriteLine($"{_property}\t{id}");
+        }
+
+        /// <summary>
+        /// Set the value of a property, only if gc>=_LastChangeGC
+        /// </summary>
+        internal bool SetPropCheckGC(uint gc, long value)
+        {
+            // Apply only if happens after the DB change
+            if (gc >= _lastChangeGc)
+            {
+                // new recent date
+                _lastChangeGc = gc;
+
+                // Set the property value (and set "_Changed" flag with 'true');
+                SetValue64(value);
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool AddObserver(IPropertyObserver observer, TextId id)
+        {
+            _Observers.Add(observer);
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public override bool RemoveObserver(IPropertyObserver observer, TextId UnnamedParameter1)
+        {
+            if (!_Observers.Contains(observer))
+                // no observer has been removed..
+                return false;
+
+            _Observers.Remove(observer);
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public void NotifyObservers()
+        {
+            List<IPropertyObserver> obs = _Observers;
+
+            // notify observer
+            foreach (IPropertyObserver it in obs)
+            {
+                it.Update(this);
+            }
+
+            // mark parent branchs
+            if (_parent != null)
+            {
+                _parent.OnLeafChanged(_name);
+            }
         }
     }
 }

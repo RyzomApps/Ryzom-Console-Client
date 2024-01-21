@@ -42,6 +42,8 @@ using Client.Stream;
 using API.Entity;
 using API.Sheet;
 using Client.Strings;
+using Client.Inventory;
+using Client.Interface;
 
 namespace Client
 {
@@ -62,6 +64,7 @@ namespace Client
         private readonly InterfaceManager _interfaceManager;
         private readonly SheetManager _sheetManager;
         private readonly PhraseManager _phraseManager;
+        private readonly InventoryManager _inventoryManager;
         private readonly SkillManager _skillManager;
         private readonly BrickManager _brickManager;
         private readonly SheetIdFactory _sheetIdFactory;
@@ -179,6 +182,8 @@ namespace Client
         public BrickManager GetBrickManager() { return _brickManager; }
 
         public SkillManager GetSkillManager() { return _skillManager; }
+
+        public InventoryManager GetInventoryManager() { return _inventoryManager; }
         #endregion
 
         #region Console Client - Initialization
@@ -204,6 +209,7 @@ namespace Client
             _sheetIdFactory = new SheetIdFactory(this);
             _networkConnection = new NetworkConnection(this);
             _phraseManager = new PhraseManager(this);
+            _inventoryManager = new InventoryManager(this);
             _interfaceManager = new InterfaceManager(this);
             _networkManager = new NetworkManager(this);
             _actionHandlerManager = new ActionHandlerManager(this);

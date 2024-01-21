@@ -1153,15 +1153,8 @@ namespace Client.Network
                     msgin.Serial(ref slot); // 1
 
                     uint associationBits = 0;
+                    msgin.Serial(ref associationBits, 2); // 2
 
-                    uint one = 0;
-                    msgin.Serial(ref one, 1); // 2
-
-                    uint two = 0;
-                    msgin.Serial(ref two, 1); // 2
-
-                    associationBits |= (one << 1);
-                    associationBits |= (two << 0);
 
                     if (AssociationBitsHaveChanged(slot, associationBits) /*&& slot == 0*/)
                     {
@@ -1178,9 +1171,6 @@ namespace Client.Network
                             _propertyDecoder.RemoveEntity(slot);
 
                             _changes.Add(new PropertyChange(slot, (byte)PropertyType.RemoveOldEntity));
-
-                            //if (slot == 1 || slot == 3 || slot == 7 || slot == 14 || slot == 29 || slot == 58 || slot == 117 || slot == 235 || slot == 255)
-                            //    _client.Log.Info($"Disassociating S{(ushort)slot}u (AB {associationBits}) L {loop}");
                         }
                         else
                         {
@@ -1205,10 +1195,7 @@ namespace Client.Network
                         timestamp = _currentServerTick;
                     }
 
-                    //_client.Log.Info($"slot {slot} AB: {associationBits} timestamp: {timestamp}");
-
                     // Tree
-
                     var currentNode = _visualPropertyTreeRoot;
 
                     msgin.Serial(ref currentNode.A().BranchHasPayload); // 1
@@ -1941,10 +1928,6 @@ namespace Client.Network
 
         public void DecodeDiscreteProperty(BitMemoryStream msgin, byte propIndex)
         {
-            //if (propIndex == 6)
-            //_client.GetLogger().Info($"Reading discrete property {propIndex} ({(PropertyType)propIndex}) at bitpos {msgin.GetPosInBit()} remaining {msgin.Length * 8 - msgin.GetPosInBit()}");
-
-            PropertyChange propertyChange;
             var slot = VisualPropertyNodeClient.SlotContext.Slot;
 
             // todo: BEN this is temp, put it somewhere in database

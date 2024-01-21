@@ -25,6 +25,7 @@ using System.Threading;
 using Client.Sheet;
 using Client.Stream;
 using Client.Strings;
+using Client.Inventory;
 
 namespace Client.Network
 {
@@ -65,6 +66,7 @@ namespace Client.Network
         private readonly ChatManager _chatManager;
         private readonly PhraseManager _phraseManager;
         private readonly SheetIdFactory _sheetIdFactory;
+        private readonly InventoryManager _inventoryManager;
 
         /// <summary>
         /// was the initial server season received
@@ -101,6 +103,8 @@ namespace Client.Network
 
         public DatabaseManager GetDatabaseManager() => _databaseManager;
 
+        public InventoryManager GetInventoryManager() => _inventoryManager;
+
         /// <inheritdoc />
         public uint GetCurrentServerTick() => _networkConnection.GetCurrentServerTick();
 
@@ -119,6 +123,7 @@ namespace Client.Network
             _databaseManager = client.GetDatabaseManager();
             _phraseManager = client.GetPhraseManager();
             _sheetIdFactory = client.GetSheetIdFactory();
+            _inventoryManager = client.GetInventoryManager();
 
             _messageHeaderManager = new GenericMessageHeaderManager();
             _chatManager = new ChatManager(this);
@@ -1392,7 +1397,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// TODO: impulseDatabaseInitBank
+        /// impulseDatabaseInitBank
         /// </summary>
         private void ImpulseDatabaseInitBank(BitMemoryStream impulse)
         {
@@ -1452,23 +1457,172 @@ namespace Client.Network
             }
         }
 
-        /// <summary>
-        /// TODO: ImpulseInitInventory
-        /// </summary>
-        private void ImpulseInitInventory(BitMemoryStream impulse)
+        private void UpdateInventoryFromStream(BitMemoryStream impulse, InventoryCategoryTemplate templ, bool notifyItemSheetChanges)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            try
+            {
+                // get the egs tick of this change
+                uint serverTick = new uint();
+                impulse.Serial(ref serverTick);
 
-            // get the egs tick of this change
-            uint serverTick = 0;
-            impulse.Serial(ref serverTick);
+                // For All inventories
+                for (uint invId = 0; invId != templ.NbInventoryIds; ++invId)
+                {
+                    // Presence bit
+                    bool hasContent = new bool();
+                    impulse.Serial(ref hasContent);
+                    if (!hasContent)
+                    {
+                        continue;
+                    }
 
-            _client.Plugins.OnInitInventory(serverTick);
+                    // Number field
+                    uint nbChanges = new uint();
+                    impulse.Serial(ref nbChanges, (int)Inventories.LowNumberBits);
+                    if (nbChanges == Inventories.LowNumberBound)
+                    {
+                        impulse.Serial(ref nbChanges, 32);
+                    }
+
+                    string invBranchStr = templ.GetDbStr(invId);
+                    TextId textId = new TextId(invBranchStr);
+                    DatabaseNode inventoryNode = GetDatabaseManager().GetNodePtr().GetNode(textId, false);
+                    if (inventoryNode == null) throw new Exception("Inventory missing in database");
+
+                    // List of updates
+                    for (uint c = 0; c != nbChanges; ++c)
+                    {
+                        // Unpack (the bitmemstream is written from high-order to low-order)
+                        uint iuInfoVersion = new uint();
+                        impulse.Serial(ref iuInfoVersion, 1);
+                        if (iuInfoVersion == 1)
+                        {
+                            uint slotIndex = new uint();
+                            impulse.Serial(ref slotIndex, (int)templ.SlotBitSize);
+
+                            // Access the database leaf
+                            DatabaseNodeBranch slotNode = (DatabaseNodeBranch)inventoryNode.GetNode((ushort)slotIndex);
+                            DatabaseNodeLeaf leafNode = (DatabaseNodeLeaf)(slotNode.Find(Inventories.InfoVersionStr));
+
+                            if (leafNode == null)
+                            {
+                                _client.Log.Error("Inventory slot property missing in database");
+                                continue;
+                            }
+
+                            // Apply or increment Info Version in database
+                            if (templ.NeedPlainInfoVersionTransfer())
+                            {
+                                uint infoVersion = new uint();
+                                impulse.Serial(ref infoVersion, (int)Inventories.InfoVersionBitSize);
+                                leafNode.SetPropCheckGC(serverTick, infoVersion);
+                            }
+                            else
+                            {
+                                // NB: don't need to check GC on a info version upgrade, since this is always a delta of +1
+                                // the order of received of this impulse is not important
+                                leafNode.SetValue64(leafNode.GetValue64() + 1);
+                            }
+                        }
+                        else
+                        {
+                            uint iuAll = new uint();
+                            impulse.Serial(ref iuAll, 1);
+                            if (iuAll == 1)
+                            {
+                                ItemSlot itemSlot = new ItemSlot();
+                                itemSlot.SerialAll(impulse, templ);
+
+                                //nldebug( "Inv %s Update %u", CInventoryCategoryTemplate::InventoryStr[invId], itemSlot.getSlotIndex() );
+
+                                // Apply all properties to database
+                                DatabaseNodeBranch slotNode = (DatabaseNodeBranch)inventoryNode.GetNode((ushort)itemSlot.GetSlotIndex());
+                                for (uint i = 0; i != (uint)Inventories.ItemPropId.NbItemPropId; ++i)
+                                {
+                                    DatabaseNodeLeaf leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[i]));
+                                    if (leafNode == null)
+                                    {
+                                        _client.Log.Error("Inventory slot property missing in database");
+                                        continue;
+                                    }
+
+                                    leafNode.SetPropCheckGC(serverTick, itemSlot.GetItemProp((Inventories.ItemPropId)i));
+                                }
+
+                            }
+                            else
+                            {
+                                uint iuOneProp = new uint();
+                                impulse.Serial(ref iuOneProp, 1);
+                                if (iuOneProp == 1)
+                                {
+                                    ItemSlot itemSlot = new ItemSlot();
+                                    itemSlot.SerialOneProp(impulse, templ);
+                                    //nldebug( "Inv %s Prop %u %s", CInventoryCategoryTemplate::InventoryStr[invId], itemSlot.getSlotIndex(), INVENTORIES::CItemSlot::ItemPropStr[itemSlot.getOneProp().ItemPropId] );
+
+                                    // Apply property to database
+                                    DatabaseNodeBranch slotNode = (DatabaseNodeBranch)inventoryNode.GetNode((ushort)itemSlot.GetSlotIndex());
+                                    DatabaseNodeLeaf leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[(int)itemSlot.GetOneProp().ItemPropId]));
+                                    if (leafNode == null)
+                                    {
+                                        _client.Log.Error("Inventory slot property missing in database");
+                                        continue;
+                                    }
+
+                                    leafNode.SetPropCheckGC(serverTick, itemSlot.GetOneProp().ItemPropValue);
+                                }
+                                else // iuReset
+                                {
+                                    uint slotIndex = new uint();
+                                    impulse.Serial(ref slotIndex, (int)templ.SlotBitSize);
+                                    //nldebug( "Inv %s Reset %u", CInventoryCategoryTemplate::InventoryStr[invId], slotIndex );
+
+                                    // Reset all properties in database
+                                    DatabaseNodeBranch slotNode = (DatabaseNodeBranch)inventoryNode.GetNode((ushort)slotIndex);
+                                    for (uint i = 0; i != (uint)Inventories.ItemPropId.NbItemPropId; ++i)
+                                    {
+                                        // Instead of clearing all leaves (by index), we must find and clear only the
+                                        // properties in TItemPropId, because the actual database leaves may have
+                                        // less properties, and because we must not clear the leaf INFO_VERSION.
+                                        // NOTE: For example, only player BAG inventory has WORNED leaf.
+                                        DatabaseNodeLeaf leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[i]));
+                                        if (leafNode == null)
+                                        {
+                                            _client.Log.Error("Inventory slot property missing in database");
+                                            continue;
+                                        }
+                                        leafNode.SetPropCheckGC(serverTick, 0);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                GetInventoryManager().SortBag();
+            }
+            catch (Exception e)
+            {
+                _client.Log.Error($"Problem while decoding a DB_UPD_INV msg, skipped: {e.Message}");
+            }
         }
 
         private void ImpulseUpdateInventory(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            UpdateInventoryFromStream(impulse, new InventoryCategoryForCharacter(), true);
+
+            _client.Plugins.OnInitInventory(0);
+        }
+
+        /// <summary>
+        /// ImpulseInitInventory
+        /// </summary>
+        private void ImpulseInitInventory(BitMemoryStream impulse)
+        {
+            ImpulseUpdateInventory(impulse);
+            _databaseManager.SetInitPacketReceived();
+
+            GetInventoryManager().OnUpdateEquipHands();
         }
 
         /// <summary>

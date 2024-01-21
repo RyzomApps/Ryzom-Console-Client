@@ -18,6 +18,19 @@ namespace Client.Commands
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
+            //string customPhrase;
+            //if (!args.empty())
+            //{
+            //    customPhrase = args[0];
+            //}
+            //for (uint i = 1; i < args.size(); ++i)
+            //{
+            //    customPhrase += " ";
+            //    customPhrase += args[i];
+            //}
+            //CAHManager::getInstance()->runActionHandler("emote", NULL, "nb=" + toString(EmoteNb) + "|behav=" + toString(Behaviour) + "|custom_phrase=" + customPhrase);
+            //return true;
+
             if (!(handler is RyzomClient ryzomClient))
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -37,8 +50,7 @@ namespace Client.Commands
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                var displayName =
-                    $"{EntityHelper.RemoveTitleAndShardFromName(ryzomClient.GetNetworkManager().PlayerSelectedHomeShardName)}";
+                var displayName = $"{EntityHelper.RemoveTitleAndShardFromName(ryzomClient.GetNetworkManager().PlayerSelectedHomeShardName)}";
                 emotePhrase = $"&EMT&{displayName} {emotePhrase}";
 
                 out2.Serial(ref behavToSend);
