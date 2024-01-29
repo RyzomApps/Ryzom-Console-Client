@@ -133,7 +133,7 @@ namespace Client.Entity
             }
 
             // Get the DB Entry
-            if (_client.GetDatabaseManager().GetNodePtr() != null)
+            if (_client.GetDatabaseManager()?.GetNodePtr() != null)
             {
                 if (_client.GetDatabaseManager().GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
                 {

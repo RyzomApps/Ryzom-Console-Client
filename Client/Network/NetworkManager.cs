@@ -1624,7 +1624,8 @@ namespace Client.Network
         private void ImpulseInitInventory(BitMemoryStream impulse)
         {
             ImpulseUpdateInventory(impulse);
-            _databaseManager.SetInitPacketReceived();
+
+            _databaseManager?.SetInitPacketReceived();
 
             GetInventoryManager().OnUpdateEquipHands();
         }
