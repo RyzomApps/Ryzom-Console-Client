@@ -1136,15 +1136,6 @@ namespace Client.Network
                 while (true)
                 {
                     // Check if there is a new block to read - sizeof(TCLEntityId) => sizeof(uint8) = 1 byte
-                    // 8 bit slot, 2 bit assoc, 1 timestamp, 16 bit unit timestamp, 2x payload bit
-                    // 12 bit since the msgin stream is a byte and not a bit stream
-                    // original
-                    // 152 8 152
-                    // 1664 8 1664
-                    // 384 8 352
-                    // 68 8 72
-                    // rcc
-                    // 152 8  245
                     if (msgin.GetPosInBit() + 1 * 8 > msgin.Length * 8)
                         return;
 

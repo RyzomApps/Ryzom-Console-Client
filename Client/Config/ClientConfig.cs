@@ -46,23 +46,29 @@ namespace Client.Config
         /// <summary>Default sheet used.</summary>
         public static string UserSheet = "fyros.race_stats";
 
-        public static bool UseDatabase;
-        public static bool DecodeVisualProperties;
-
         /// <summary>Default Velocity for the Walk.</summary>
         public static float Walk = 1.66f;
 
         /// <summary>Default Velocity for the Run.</summary>
-        public static float Run = 6.0f;
+        public static float Run = 3.32f;
 
         /// <summary>True, if we want to Compute Visual Slots</summary>
         public static bool NeedComputeVs;
 
+        /// <summary>True, if we want to Dump Visual Slot IDs</summary>
+        public static bool DumpVsIndex;
+
         /// <summary>True, if we want the packed sheet to be updated if needed</summary>
         public static bool UpdatePackedSheet;
 
-        /// <summary>True, if we want to Dump Visual Slot IDs</summary>
-        public static bool DumpVsIndex;
+        /// <summary>Read database updates from the stream.</summary>
+        public static bool UseDatabase;
+
+        /// <summary>Decode visual properties from the stream.</summary>
+        public static bool DecodeVisualProperties;
+
+        /// <summary>Read the inventory from the stream.</summary>
+        public static bool UseInventory;
 
         /// <summary>True, if the original and NOT the translated chat messages should be displayed</summary>
         public static bool TranslateChat = true;
