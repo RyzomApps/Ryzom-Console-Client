@@ -1325,7 +1325,8 @@ namespace Client
             try
             {
                 _cmdprompt?.Interrupt();
-                _cmdprompt?.Join();
+                _cmdprompt = null;
+                //_cmdprompt?.Join();
             }
             catch
             {
@@ -1335,7 +1336,8 @@ namespace Client
             try
             {
                 _timeoutdetector?.Interrupt();
-                _timeoutdetector?.Join();
+                _timeoutdetector = null;
+                //_timeoutdetector?.Join();
             }
             catch
             {

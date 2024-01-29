@@ -71,7 +71,7 @@ namespace Client.Network.Proxy
                 try
                 {
                     thread.Interrupt();
-                    thread.Join();
+                    //thread.Join();
                 }
                 catch { }
             }

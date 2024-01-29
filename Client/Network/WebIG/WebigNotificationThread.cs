@@ -112,8 +112,9 @@ namespace Client.Network.WebIG
             if (_thread == null)
                 return;
 
-            _thread.Join();
-            _thread?.Abort();
+            _thread.Interrupt();
+            //_thread.Join();
+            //_thread?.Abort();
             _thread = null;
         }
 
@@ -276,7 +277,8 @@ namespace Client.Network.WebIG
 
             if (_thread != null)
             {
-                _thread.Join();
+                _thread.Interrupt();
+                //_thread.Join();
                 _thread = null;
 
                 _logger.Debug("WebIgNotification thread stopped");
