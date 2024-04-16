@@ -56,13 +56,13 @@ namespace Client.Client
         /// </summary>
         public CharacterSummary()
         {
-            Mainland = 101; // TODO: Get this from the server
+            Mainland = 101;
             Name = string.Empty;
             _location = 0;
             _visualPropA = 0;
             _visualPropB = 0;
             _visualPropC = 0;
-            People = (int)PeopleType.Unknown; // 142;
+            People = (int)PeopleType.Fyros; // 0 - Fyros;
             _title = 238;
             _characterSlot = 255;
             _inRingSession = false;

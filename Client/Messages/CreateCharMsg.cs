@@ -70,21 +70,21 @@ namespace Client.Messages
         // 301 Yubo         yubo
         internal void SetupFromCharacterSummary(CharacterSummary cs, SheetIdFactory sheetIdFactory)
         {
-            Slot = 1;
+            Slot = 0;
             SheetId = sheetIdFactory.Unknown;
-            Mainland = 101; //cs.Mainland; TODO remove tests
+            Mainland = cs.Mainland;
             Name = cs.Name;
-            People = 3; // Zorai //(byte)cs.People; TODO remove tests
+            People = (byte)cs.People; 
             Sex = 0; // cs.VisualPropA.PropertySubData.Sex;
 
-            HairType = 0; // cs.VisualPropA.PropertySubData.HatModel;
+            HairType = 0; // 3; // cs.VisualPropA.PropertySubData.HatModel;
             HairColor = 0; // cs.VisualPropA.PropertySubData.HatColor;
 
             GabaritHeight = 0; // cs.VisualPropC.PropertySubData.CharacterHeight;
             GabaritTorsoWidth = 0; // cs.VisualPropC.PropertySubData.TorsoWidth;
             GabaritArmsWidth = 0; // cs.VisualPropC.PropertySubData.ArmsWidth;
             GabaritLegsWidth = 0; // cs.VisualPropC.PropertySubData.LegsWidth;
-            GabaritBreastSize = 0; // cs.VisualPropC.PropertySubData.BreastSize;
+            GabaritBreastSize = 0; // 7; // cs.VisualPropC.PropertySubData.BreastSize;
 
             // color for equipement slots
             JacketColor = 0; // cs.VisualPropA.PropertySubData.JacketColor;
@@ -122,7 +122,6 @@ namespace Client.Messages
             // Serialize the user character.
             f.Serial(ref Mainland);
             f.Serial(ref Name);
-
             f.Serial(ref People);
             f.Serial(ref Sex);
 

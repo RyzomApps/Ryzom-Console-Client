@@ -1284,9 +1284,20 @@ namespace Client.Network
             _client.Plugins.OnGameJoined();
         }
 
+        /// <summary>
+        /// Received FAR_TP
+        /// </summary>
         private void ImpulseFarTp(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            uint sessionId = 0;
+            impulse.Serial(ref sessionId);
+
+            var bailOutIfSessionVanished = false;
+            impulse.Serial(ref bailOutIfSessionVanished);
+
+            //FarTP.requestFarTPToSession(sessionId, PlayerSelectedSlot, CFarTP::JoinSession, bailOutIfSessionVanished);
+
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name} - Session ID: {sessionId} - Bail out, if session vanished: {bailOutIfSessionVanished}");
         }
 
         /// <summary>

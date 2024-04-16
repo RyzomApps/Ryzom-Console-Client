@@ -639,35 +639,39 @@ namespace Client
                         if (charSelect == -1)
                         {
                             ConsoleIO.WriteLineFormatted("§dPlease enter your character slot [0-4]:");
-                            var test = Console.ReadLine();
+                            var selectedSlot = Console.ReadLine();
 
-                            charSelect = int.Parse(test ?? throw new Exception("Invalid slot."));
+                            charSelect = int.Parse(selectedSlot ?? throw new Exception("Invalid slot."));
                         }
 
                         if (charSelect < 0 || charSelect > 4) throw new Exception("Invalid slot.");
 
-                        _networkManager.WaitServerAnswer = false;
-
                         // check that the preselected character is available
                         if (_networkManager.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown)
                         {
-                            // BAD ! preselected char does not exist
-                            throw new InvalidOperationException("Selected character does not exist.");
+                            // Cache the slot, for the retries
+                            ClientConfig.SelectCharacter = charSelect;
 
-                            // TODO: Create char if non existent
+                            // Create char if non existent
+                            //ConsoleIO.WriteLineFormatted("§dPlease enter a character name:");
+                            var selectedName = Misc.GenerateName(4); //Console.ReadLine();
+                            Log?.Info($"Attempting to generate a new character with the name '{selectedName}'.");
 
-                            //ActionHandlerRenameChar.Execute((byte)charSelect, _networkManager);
-
-                            //ActionHandlerAskCreateChar.Execute("NAME", 1, _networkManager);
+                            ActionHandlerAskCreateChar.Execute(selectedName, (byte)charSelect, this);
+                            _networkManager.CanSendCharSelection = false;
                         }
+                        else
+                        {
+                            _networkManager.WaitServerAnswer = false;
 
-                        // Clear sending buffer that may contain previous QUIT_GAME when getting back to the char selection screen
-                        _networkConnection.FlushSendBuffer();
+                            // Clear sending buffer that may contain previous QUIT_GAME when getting back to the char selection screen
+                            _networkConnection.FlushSendBuffer();
 
-                        // Auto-selection for fast launching (developer only)
-                        _networkManager.CanSendCharSelection = false;
+                            // Auto-selection for fast launching (developer only)
+                            _networkManager.CanSendCharSelection = false;
 
-                        ActionHandlerLaunchGame.Execute(charSelect.ToString(), _networkManager);
+                            ActionHandlerLaunchGame.Execute(charSelect.ToString(), _networkManager);
+                        }
                     }
                 }
 
