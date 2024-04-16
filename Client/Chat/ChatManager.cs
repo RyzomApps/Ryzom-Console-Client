@@ -65,6 +65,36 @@ namespace Client.Chat
         }
 
         /// <summary>
+        /// Change the chat mode
+        /// </summary>
+        /// <param name="group">Is the chat mode( say/shout/group/clade )</param>
+        /// <param name="dynamicChannelId">The dynamic channel id (if group==dyn_chat).
+        /// Not the db index! Use getDynamicChannelIdFromDbIndex() if you got a dbIndex</param>
+        public void SetChatMode(ChatGroupType group, uint dynamicChannelId = 118095872u)
+        {
+            var mode = (byte)group;
+
+            // Chat team don't need swap mode
+            if (group == ChatGroupType.Team)
+                return;
+
+            var bms = new BitMemoryStream();
+            const string msgType = "STRING:CHAT_MODE";
+
+            if (_networkManager.GetMessageHeaderManager().PushNameToStream(msgType, bms))
+            {
+                bms.Serial(ref mode);
+                bms.Serial(ref dynamicChannelId, 64);
+                _networkManager.Push(bms);
+                //RyzomClient.GetInstance().GetLogger().Debug($"impulseCallBack : {msgType} {mode} sent");
+            }
+            else
+            {
+                RyzomClient.GetInstance().GetLogger().Warn($"Unknown message named '{msgType}'.");
+            }
+        }
+
+        /// <summary>
         /// interprets the incoming tell string
         /// </summary>
         public void ProcessTellString(BitMemoryStream bms, IChatDisplayer chatDisplayer)

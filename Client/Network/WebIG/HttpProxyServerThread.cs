@@ -139,9 +139,9 @@ namespace Client.Network.WebIG
 
                     resp.Close();
                 }
-                catch (Exception e)
+                catch
                 {
-
+                    // ignored
                 }
                 finally
                 {

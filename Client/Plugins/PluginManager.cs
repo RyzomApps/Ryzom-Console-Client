@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using API;
@@ -93,6 +95,10 @@ namespace Client.Plugins
 
                 if (loader == null)
                     continue;
+
+                //// TODO: Check if file is a dependency of the assembly
+                //if (IsReferencedAssembly(Assembly.GetCallingAssembly(), file))
+                //    continue;
 
                 PluginDescriptionFile description;
 
@@ -317,6 +323,43 @@ namespace Client.Plugins
             return result.ToArray();
         }
 
+        /// <summary>
+        /// Recursively reads all assemblies (.dlls) used by my application and checks them for the filename
+        /// </summary>
+        /// <param name="assembly">Assembly to check</param>
+        /// <param name="location">Filename to check</param>
+        /// <returns>True, if the filename matches any dependency</returns>
+        private static bool IsReferencedAssembly(Assembly assembly, FileInfo location)
+        {
+            var assemblyFileInfo = new FileInfo(assembly.Location);
+
+            Debug.Print(assemblyFileInfo.Name);
+
+            if (location.DirectoryName == null || assemblyFileInfo.DirectoryName == null || !location.DirectoryName.Contains(assemblyFileInfo.DirectoryName))
+                return false;
+
+            if (assemblyFileInfo == location)
+                return true;
+
+            foreach (var assemblyName in assembly.GetReferencedAssemblies())
+            {
+                try
+                {
+                    var asm = Assembly.Load(assemblyName);
+
+                    if (IsReferencedAssembly(asm, location))
+                        return true;
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+
+            return false;
+        }
+
+
         /// <inheritdoc/>
         public IPlugin LoadPlugin(FileInfo file)
         {
@@ -357,7 +400,7 @@ namespace Client.Plugins
         /// <inheritdoc/>
         public IPlugin[] GetPlugins()
         {
-            return _plugins?.ToArray() ?? new IPlugin[0];
+            return _plugins?.ToArray() ?? Array.Empty<IPlugin>();
         }
 
         /// <inheritdoc/>

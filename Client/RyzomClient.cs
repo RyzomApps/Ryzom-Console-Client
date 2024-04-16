@@ -189,7 +189,7 @@ namespace Client
         #region Console Client - Initialization
 
         /// <summary>
-        /// Starts the main chat client
+        /// Starts the main client
         /// </summary>
         public RyzomClient(bool autoStart = true)
         {
@@ -259,7 +259,7 @@ namespace Client
         }
 
         /// <summary>
-        /// Starts the main chat client, wich will login to the server.
+        /// Starts the main client, wich will login to the server.
         /// </summary>
         private void StartConsoleClient()
         {
@@ -712,7 +712,7 @@ namespace Client
         }
 
         /// <summary>
-        /// OnInitialize the main loop.
+        /// Initialize the main loop.
         /// If you add something in this function, check CFarTP,
         /// some kind of reinitialization might be useful over there.
         /// </summary>
@@ -1015,45 +1015,29 @@ namespace Client
         /// <summary>
         /// Send a chat message to the server
         /// </summary>
-        /// <param name="message">Message</param>
+        /// <param name="str">Message</param>
         /// <param name="channel">Channel (e.g. around, universe, region, ...)</param>
         /// <returns>True if properly sent</returns>
         /// TODO: Move that closer to the chatManager
-        public bool SendChatMessage(string message, ChatGroupType channel = ChatGroupType.Around)
+        public bool SendChatMessage(string str, ChatGroupType channel = ChatGroupType.Around)
         {
-            if (string.IsNullOrEmpty(message))
+            if (string.IsNullOrEmpty(str))
                 return true;
             try
             {
-                if (message.Length > 255)
-                    message = message.Substring(0, 255);
+                if (str.Length > 255)
+                    str = str[..255];
 
+                _networkManager.GetChatManager().SetChatMode(channel);
+
+                // send STR to IOS
                 var bms = new BitMemoryStream();
-                var msgType = "STRING:CHAT_MODE";
-                var mode = (byte)channel;
-                uint dynamicChannelId = 0;
+                var msgType = channel == ChatGroupType.Team ? "STRING:CHAT_TEAM" : "STRING:CHAT";
 
                 if (_networkManager.GetMessageHeaderManager().PushNameToStream(msgType, bms))
                 {
-                    bms.Serial(ref mode);
-                    bms.Serial(ref dynamicChannelId);
+                    bms.Serial(ref str);
                     _networkManager.Push(bms);
-                    Log?.Debug($"impulseCallBack : {msgType} {mode} sent");
-                }
-                else
-                {
-                    Log?.Warn($"Unknown message named '{msgType}'.");
-                    return false;
-                }
-
-                // send STR to IOS
-                msgType = "STRING:CHAT";
-
-                var out2 = new BitMemoryStream();
-                if (_networkManager.GetMessageHeaderManager().PushNameToStream(msgType, out2))
-                {
-                    out2.Serial(ref message);
-                    _networkManager.Push(out2);
                 }
                 else
                 {
