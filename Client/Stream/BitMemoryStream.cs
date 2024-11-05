@@ -146,9 +146,13 @@ namespace Client.Stream
         /// </summary>
         public void Serial(ref float obj)
         {
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, 32, BitMemoryStreamSerialInfo.SerialType.Buffer, new StackTrace(true)));
+
             if (IsReading())
             {
-                throw new NotImplementedException();
+                var newBits = ReadFromArray(32);
+                var reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                obj = BitConverter.ToSingle(reversed);
             }
             else
             {

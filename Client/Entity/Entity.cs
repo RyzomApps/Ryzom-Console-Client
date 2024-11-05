@@ -551,9 +551,9 @@ namespace Client.Entity
             }
 
             // Convert Database into a Position
-            var x = (float)(Convert.ToDouble(prop) / 1000.0f);
-            var y = nodeY.GetValue64() / 1000.0f;
-            var z = nodeZ.GetValue64() / 1000.0f;
+            var x = Convert.ToSingle(prop) / 1000.0f;
+            var y = Convert.ToSingle(nodeY.GetValue64()) / 1000.0f;
+            var z = Convert.ToSingle(nodeZ.GetValue64()) / 1000.0f;
 
             Pos = new Vector3(x, y, z);
 
