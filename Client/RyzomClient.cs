@@ -838,6 +838,10 @@ namespace Client
                     }
                 }
 
+                // Update the position for the vision.
+                if (_networkManager?.GetEntityManager()?.UserEntity != null)
+                    _networkManager.SetReferencePosition(_networkManager.GetEntityManager().UserEntity.Pos);
+
                 // Send new data Only when server tick changed.
                 if (_networkConnection.GetCurrentServerTick() > _lastGameCycle)
                 {
