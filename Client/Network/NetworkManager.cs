@@ -1087,7 +1087,7 @@ namespace Client.Network
             //}
         }
 
-        private void SetReferencePosition(Vector3 dest)
+        internal void SetReferencePosition(Vector3 dest)
         {
             _networkConnection.GetPropertyDecoder().SetReferencePosition(dest);
         }
