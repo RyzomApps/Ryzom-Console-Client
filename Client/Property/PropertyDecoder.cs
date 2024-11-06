@@ -125,6 +125,7 @@ namespace Client.Property
                     // Absolute position
                     //nlinfo( "RefPos: %d %d %d RefBits: %hd %hd %hd", _RefPosX, _RefPosY, _RefPosZ, _RefBitsX, _RefBitsY, _RefBitsZ );
                     DecodeAbsPos2D(ref act.Position[0], ref act.Position[1], act.Position16[0], act.Position16[1]);
+
                     act.Position[2] = (short)act.Position16[2] << 4;
                     if (act.Interior)
                     {

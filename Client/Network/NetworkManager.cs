@@ -1148,7 +1148,7 @@ namespace Client.Network
             }
 
             // Compute the destination.
-            var dest = new Vector3((float)x / 1000f, (float)y / 1000f, (float)z / 1000f);
+            var dest = new Vector3(x / 1000f, y / 1000f, z / 1000f);
 
             // Update the position for the vision.
             _client.GetNetworkManager().SetReferencePosition(dest);
