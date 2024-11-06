@@ -50,14 +50,22 @@
         /// <summary>
         /// Path to the leveldesign.bnp@sheet_id.bin file
         /// </summary>
-        public static string SheetsIdBinPath = "./data/sheet_id.bin";
+        public const string SheetsIdBinPath = "./data/sheet_id.bin";
 
         /// <summary>
         /// Timeout for the connection if not uninitialized or connected in ticks
         /// </summary>
-        public static int ConnectionTimeout = 5 * 60; // [s] 5 minutes
+        public const int ConnectionTimeout = 5 * 60; // [s] 5 minutes
 
-        public static int ReceiveBuffer = 64000;
+        /// <summary>
+        /// UDP Client Buffer
+        /// </summary>
+        public const int ReceiveBuffer = 64000;
+
+        /// <summary>
+        /// User agent of the Console Client (should be the newest Ryzom user agent)
+        /// </summary>
+        public const string UserAgent = "Ryzom/Omega / v23.07.329 #b2e8a01f6-windows-x64";
 
         /// <summary>
         /// Debugging for the memory stream

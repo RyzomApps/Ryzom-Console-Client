@@ -24,6 +24,20 @@ namespace Client.Commands
 
             foreach (var entity in entityManager.GetApiEntities())
             {
+                // Entity must be defined - Not the player
+                if (entity == null || entity.Slot() == 0)
+                    continue;
+
+                // Try to get the name with a tar command (if the player is to far away) - for the next update
+                if (entity.GetDisplayName().Trim() != "" || entity.GetEntityType() != EntityType.Player)
+                    continue;
+
+                var temp = "";
+                handler.PerformInternalCommand($"tar {entity.Slot()}", ref temp, localVars);
+            }
+
+            foreach (var entity in entityManager.GetApiEntities())
+            {
                 if (entity == null || entity.GetEntityType() != EntityType.Player)
                     continue;
 

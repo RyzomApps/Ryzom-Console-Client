@@ -172,6 +172,8 @@ namespace Client.Config
         public static int WebIgNotifInterval = 10; // time in minutes
         public static List<string> WebIgTrustedDomains = new List<string> { "app.ryzom.com" };
 
+        public static string BrowserProxyUrl = "http://localhost:8000/";
+
         public static bool SaveSessionData = false;
 
         //private static string configPattern = "^(?<parameter>\\w*)[ ]*=[ ]*({(?<value1>\\w*[^={}]*)}|['\"](?<value2>\\w*[^=]*)['\"]|(?<value3>\\w*[^=\"'\\n]*)).*(;|#|\\/\\/)+.*$";

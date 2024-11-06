@@ -40,10 +40,12 @@ using Client.Phrase;
 using Client.Skill;
 using Client.Stream;
 using API.Entity;
+using API.Network.Web;
 using API.Sheet;
 using Client.Strings;
 using Client.Inventory;
 using Client.Interface;
+using Client.Network.Web;
 
 namespace Client
 {
@@ -69,6 +71,7 @@ namespace Client
         private readonly BrickManager _brickManager;
         private readonly SheetIdFactory _sheetIdFactory;
         private readonly ActionHandlerManager _actionHandlerManager;
+        private readonly WebTransfer _webTransfer;
 
         /// <summary>
         /// ryzom client thread to determine if other threads need to invoke
@@ -184,6 +187,8 @@ namespace Client
         public SkillManager GetSkillManager() { return _skillManager; }
 
         public InventoryManager GetInventoryManager() { return _inventoryManager; }
+
+        public IWebTransfer GetWebTransfer() { return _webTransfer; }
         #endregion
 
         #region Console Client - Initialization
@@ -210,10 +215,11 @@ namespace Client
             _networkConnection = new NetworkConnection(this);
             _phraseManager = new PhraseManager(this);
             _inventoryManager = new InventoryManager(this);
+            _webTransfer = new WebTransfer(this);
             _interfaceManager = new InterfaceManager(this);
             _networkManager = new NetworkManager(this);
             _actionHandlerManager = new ActionHandlerManager(this);
-
+            
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");
 

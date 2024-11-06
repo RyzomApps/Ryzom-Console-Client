@@ -8,8 +8,10 @@
 
 using System;
 using System.Xml;
+using API.Network.Web;
 using Client.Brick;
 using Client.Database;
+using Client.Network.Web;
 using Client.Phrase;
 using Client.Skill;
 
@@ -28,6 +30,7 @@ namespace Client.Interface
         private readonly SkillManager _skillManager;
         private readonly BrickManager _brickManager;
         private readonly PhraseManager _phraseManager;
+        private readonly IWebTransfer _webTransfer;
 
         ServerToLocalAutoCopy ServerToLocalAutoCopyInventory;
         ServerToLocalAutoCopy ServerToLocalAutoCopyExchange;
@@ -51,6 +54,7 @@ namespace Client.Interface
             _skillManager = client.GetSkillManager();
             _brickManager = client.GetBrickManager();
             _phraseManager = client.GetPhraseManager();
+            _webTransfer = client.GetWebTransfer();
 
             ServerToLocalAutoCopyInventory = new ServerToLocalAutoCopy(this, _databaseManager);
             ServerToLocalAutoCopyExchange = new ServerToLocalAutoCopy(this, _databaseManager);
@@ -75,7 +79,10 @@ namespace Client.Interface
             _phraseManager.InitInGame();
 
             // Start the WebIG Thread
-            // TODO WebigNotificationThread.StartWebIgNotificationThread(_client);
+            WebigThread.StartThread(_client, _webTransfer);
+
+            // Start the Browser Proxy
+            WebBrowserProxyThread.StartThread(_client, _webTransfer);
         }
 
         public void CreateLocalBranch(string fileName)
