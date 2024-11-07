@@ -78,6 +78,9 @@ namespace Client.Commands
                     stringManager.GetString((uint)nameId, out var name, networkManager);
                     name = EntityHelper.RemoveTitleAndShardFromName(name);
 
+                    if (name.Trim().Length == 0)
+                        continue;
+
                     var posId = databaseManager.GetProp($"SERVER:GROUP:{gm}:POS");
 
                     var y = (int)(posId & uint.MaxValue) / 1000f;

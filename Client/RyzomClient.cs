@@ -1305,7 +1305,8 @@ namespace Client
                         if (entity == null || (entity.GetEntityType() != EntityType.Player && entity.GetEntityType() != EntityType.User) || !entity.GetDisplayName().ToLower().StartsWith(args.Last().ToLower()))
                             continue;
 
-                        ret.Add(entity.GetDisplayName());
+                        if (entity.GetDisplayName().Trim().Length > 0)
+                            ret.Add(entity.GetDisplayName());
                     }
 
                     // player names in team

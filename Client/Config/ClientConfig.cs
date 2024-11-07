@@ -331,6 +331,14 @@ namespace Client.Config
                     UseProxy = bool.Parse(argValue);
                     break;
 
+                case "browserproxyurl":
+                    BrowserProxyUrl = argValue;
+                    break;
+
+                case "browserproxyenabled":
+                    BrowserProxyEnabled = bool.Parse(argValue);
+                    break;
+
                 //case "logfile":
                 //    LogFile = argValue;
                 //    break;
