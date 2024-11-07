@@ -130,7 +130,7 @@ namespace Client.Interface
                 return false;
             }
 
-            int srvVal = leaf.GetValue32();
+            var srvVal = leaf.GetValue32();
             int locVal = _LocalSyncActionCounter;
             srvVal &= _LocalSyncActionCounterMask;
             locVal &= _LocalSyncActionCounterMask;
