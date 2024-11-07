@@ -173,6 +173,7 @@ namespace Client.Config
         public static List<string> WebIgTrustedDomains = new List<string> { "app.ryzom.com" };
 
         public static string BrowserProxyUrl = "http://localhost:8000/";
+        public static bool BrowserProxyEnabled = false;
 
         public static bool SaveSessionData = false;
 

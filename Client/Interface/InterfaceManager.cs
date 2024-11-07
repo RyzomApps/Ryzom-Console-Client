@@ -10,6 +10,7 @@ using System;
 using System.Xml;
 using API.Network.Web;
 using Client.Brick;
+using Client.Config;
 using Client.Database;
 using Client.Network.Web;
 using Client.Phrase;
@@ -82,7 +83,8 @@ namespace Client.Interface
             WebigThread.StartThread(_client, _webTransfer);
 
             // Start the Browser Proxy
-            WebBrowserProxyThread.StartThread(_client, _webTransfer);
+            if (ClientConfig.BrowserProxyEnabled)
+                WebBrowserProxyThread.StartThread(_client, _webTransfer);
         }
 
         public void CreateLocalBranch(string fileName)
