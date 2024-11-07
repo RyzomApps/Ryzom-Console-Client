@@ -59,17 +59,27 @@ namespace Client.Network.Web
         {
             // Create a Http server and start listening for incoming connections
             _listener = new HttpListener();
-            _listener.Prefixes.Add(_url);
-            _listener.Start();
 
-            _logger.Info($"Listening for connections on {_url}");
+            try
+            {
+                _listener.Prefixes.Add(_url);
+                _listener.Start();
 
-            // Handle requests
-            var listenTask = HandleIncomingConnections();
-            listenTask.GetAwaiter().GetResult();
+                _logger.Info($"Listening for connections on {_url}");
 
-            // Close the listener
-            _listener.Close();
+                // Handle requests
+                var listenTask = HandleIncomingConnections();
+                listenTask.GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Could not start the browser proxy: " + e.Message);
+            }
+            finally
+            {
+                // Close the listener
+                _listener.Close();
+            }
         }
 
         private async Task HandleIncomingConnections()

@@ -1307,6 +1307,26 @@ namespace Client
 
                         ret.Add(entity.GetDisplayName());
                     }
+
+                    // player names in team
+                    var databaseManager = GetApiDatabaseManager();
+                    var stringManager = GetApiStringManager();
+                    var networkManager = GetApiNetworkManager();
+
+                    if (databaseManager == null || stringManager == null || networkManager == null) 
+                        return ret;
+
+                    for (var gm = 0; gm < 7; gm++)
+                    {
+                        if (databaseManager.GetProp($"SERVER:GROUP:{gm}:PRESENT") == 0)
+                            break;
+
+                        var nameId = databaseManager.GetProp($"SERVER:GROUP:{gm}:NAME");
+                        stringManager.GetString((uint)nameId, out var name, networkManager);
+                        name = EntityHelper.RemoveTitleAndShardFromName(name);
+                        if(!ret.Contains(name))
+                            ret.Add(name);
+                    }
                 }
             }
 
