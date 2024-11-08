@@ -81,7 +81,7 @@ namespace Client.Database
         public DatabaseNodeBranch GetNodePtr() { return _serverDatabase; }
 
         /// <summary>
-        ///  Returns the root branch of the database.
+        /// Returns the root branch of the database.
         /// </summary>
         public DatabaseNodeBranch GetDb()
         {

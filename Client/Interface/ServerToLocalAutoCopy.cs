@@ -43,7 +43,7 @@ namespace Client.Interface
         private List<Node> _Nodes = new List<Node>();
         /// <summary>Sorting of Nodes, by Server Node</summary>
         List<NodeServerComp> _ServerNodeMap = new List<NodeServerComp>();
-        /// <summary> Sorting of Nodes, by Local Node</summary>
+        /// <summary>Sorting of Nodes, by Local Node</summary>
         List<NodeLocalComp> _LocalNodeMap = new List<NodeLocalComp>();
         /// <summary>List of nodes to update until next synchonized client-server counter</summary>
         private List<Node> _UpdateList = new List<Node>();
@@ -65,7 +65,7 @@ namespace Client.Interface
         // init the AutoCopy
         public void Init(string dbPath)
         {
-            InterfaceManager pIM = _interfaceManger;
+            var pIM = _interfaceManger;
 
             // Get the synchronisation Counter in Server DB
             _ServerCounter = _databaseManager.GetDbProp("SERVER:" + dbPath + ":COUNTER", false);
@@ -158,24 +158,24 @@ namespace Client.Interface
                 return;
             }
 
-            DatabaseNodeLeaf serverLeaf = (DatabaseNodeLeaf)serverNode;
+            var serverLeaf = (DatabaseNodeLeaf)serverNode;
             var pIM = _interfaceManger;
 
             // Add the leaf to the update list. only if not the counter
             if (serverLeaf != _ServerCounter)
             {
                 // build the map key
-                Node nodeComp = new Node();
-                NodeServerComp sc = new NodeServerComp();
+                var nodeComp = new Node();
+                var sc = new NodeServerComp();
                 nodeComp.ServerNode = serverLeaf;
                 sc.Node = nodeComp;
                 // try to find the node associated to this server leaf
-                int index = _ServerNodeMap.IndexOf(sc);
+                var index = _ServerNodeMap.IndexOf(sc);
 
                 // if found
                 if (index > 0 || _ServerNodeMap[0].Node.ServerNode == serverLeaf)
                 {
-                    Node node = _ServerNodeMap[index].Node;
+                    var node = _ServerNodeMap[index].Node;
                     // if this node is not already inserted
                     if (!node.InsertedInUpdateList)
                     {
@@ -190,9 +190,9 @@ namespace Client.Interface
             if (pIM.localActionCounterSynchronizedWith(_ServerCounter))
             {
                 // update all leaves
-                for (int i = 0; i < _UpdateList.Count; i++)
+                for (var i = 0; i < _UpdateList.Count; i++)
                 {
-                    Node node = _UpdateList[i];
+                    var node = _UpdateList[i];
 
                     _LocalUpdating = true;
                     node.LocalNode.SetValue64(node.ServerNode.GetValue64());
@@ -238,7 +238,7 @@ namespace Client.Interface
             }
         }
 
-        // A node here is a pair Server<->Local
+        /// <summary>A node here is a pair Server<->Local</summary>
         private class Node
         {
             public DatabaseNodeLeaf ServerNode;
@@ -253,7 +253,7 @@ namespace Client.Interface
             }
         }
 
-        // Struct for comparing nodes, by either Local or Server pointer
+        /// <summary>Struct for comparing nodes, by either Local or Server pointer</summary>
         private class NodeLocalComp : IComparable<NodeLocalComp>
         {
             public Node Node { get; internal set; }
@@ -274,6 +274,29 @@ namespace Client.Interface
             }
         }
 
-        void BuildRecursLocalLeaves(DatabaseNodeBranch branch, List<DatabaseNodeLeaf> leaves) { }
+        void BuildRecursLocalLeaves(DatabaseNodeBranch branch, List<DatabaseNodeLeaf> leaves)
+        {
+            for (ushort i = 0; i < branch.NodeCount(); i++)
+            {
+                var node = branch.GetNode(i);
+                if (node != null)
+                {
+                    if (node is DatabaseNodeLeaf leaf)
+                    {
+                        // just append to list
+                        leaves.Add(leaf);
+                    }
+                    else
+                    {
+                        // recurs if a branch (should be...)
+                        if (node is DatabaseNodeBranch sonBranch)
+                        {
+                            BuildRecursLocalLeaves(sonBranch, leaves);
+                        }
+                    }
+                }
+            }
+
+        }
     }
 }

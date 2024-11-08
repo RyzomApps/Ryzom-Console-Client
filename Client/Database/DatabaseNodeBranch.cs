@@ -168,9 +168,9 @@ namespace Client.Database
             }
 
             // lookup next element from textid in my index => idx
-            string str = id.ReadNext();
+            var str = id.ReadNext();
 
-            DatabaseNode pNode = Find(str);
+            var pNode = Find(str);
             // Property not found.
             if (pNode == null)
             {
@@ -282,6 +282,14 @@ namespace Client.Database
             _sorted = false;
 
             _predictDatabaseNode = node;
+        }
+
+        /// <summary>
+        /// Get the number of nodes.
+        /// </summary>
+        internal uint NodeCount()
+        {
+            return (ushort)_nodes.Count;
         }
 
         /// <summary>
