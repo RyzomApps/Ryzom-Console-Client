@@ -151,6 +151,22 @@ namespace Client.Network.Web
                     {
                         var htmlData = result.Content.ReadAsStringAsync().Result;
 
+                        // Replace add anchor tags to lua links
+                        htmlData = Regex.Replace(htmlData, @"<lua>([^<]*?)((https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_\+.~#?&//=]*)([^<]*?))+</lua>",
+                            m =>
+                            {
+                                string ret = "<lua>";
+
+                                ret += m.Groups[1].Value;
+
+                                for (int i = 0; i < m.Groups[3].Captures.Count; i++)
+                                {
+                                    ret += "<a href=\"" + m.Groups[3].Captures[i].Value + "\">" + m.Groups[3].Captures[i].Value + "</a>" + m.Groups[4].Captures[i].Value;
+                                }
+
+                                return ret + "</lua>";
+                            });
+
                         // Replace lua tags
                         htmlData = htmlData.Replace("<lua>", "<pre><code class=\"language-clike\">");
                         htmlData = htmlData.Replace("</lua>", "</code></pre>");
@@ -163,9 +179,6 @@ namespace Client.Network.Web
 
                         // Remove size tags
                         htmlData = Regex.Replace(htmlData, "<([^>]*?)(size=\"(.*?)\")(.*?)>", "<$1$4>");
-
-                        // Remove bgcolor tags
-                        //htmlData = Regex.Replace(htmlData, "<([^>]*?)(bgcolor=\"(.*?)\")(.*?)>", "<$1$4>");
 
                         // Add some style informations
                         htmlData = htmlData.Replace("</head>",

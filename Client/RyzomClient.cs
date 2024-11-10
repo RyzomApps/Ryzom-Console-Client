@@ -219,7 +219,7 @@ namespace Client
             _interfaceManager = new InterfaceManager(this);
             _networkManager = new NetworkManager(this);
             _actionHandlerManager = new ActionHandlerManager(this);
-            
+
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");
 
@@ -953,7 +953,14 @@ namespace Client
 
             while (true)
             {
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                try
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                }
+                catch
+                {
+                    return;
+                }
 
                 if (_networkConnection.ConnectionState == ConnectionState.NotInitialized ||
                     _networkConnection.ConnectionState == ConnectionState.Connected)
@@ -1314,7 +1321,7 @@ namespace Client
                     var stringManager = GetApiStringManager();
                     var networkManager = GetApiNetworkManager();
 
-                    if (databaseManager == null || stringManager == null || networkManager == null) 
+                    if (databaseManager == null || stringManager == null || networkManager == null)
                         return ret;
 
                     for (var gm = 0; gm < 7; gm++)
@@ -1325,7 +1332,7 @@ namespace Client
                         var nameId = databaseManager.GetProp($"SERVER:GROUP:{gm}:NAME");
                         stringManager.GetString((uint)nameId, out var name, networkManager);
                         name = EntityHelper.RemoveTitleAndShardFromName(name);
-                        if(!ret.Contains(name))
+                        if (!ret.Contains(name))
                             ret.Add(name);
                     }
                 }
