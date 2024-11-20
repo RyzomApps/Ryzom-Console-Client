@@ -5,13 +5,13 @@ using API.Commands;
 
 namespace Client.Commands
 {
-    public class OpenTargetUrl : CommandBase
+    public class AskPolitely : CommandBase
     {
-        public override string CmdName => "OpenTargetUrl";
+        public override string CmdName => "AskPolitely";
 
         public override string CmdUsage => "[1=bullying]";
 
-        public override string CmdDesc => "Open target url. E.g. \"Ask politely\".";
+        public override string CmdDesc => "Show target url. E.g. \"Ask politely\".";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

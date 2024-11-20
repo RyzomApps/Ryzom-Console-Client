@@ -18,11 +18,11 @@ namespace Client.ActionHandler
     /// <author>Nicolas Brigand</author>
     /// <author>Nevrax France</author>
     /// <date>2002</date>
-    public abstract class ActionHandlerBase : System.IDisposable
+    public abstract class ActionHandlerBase
     {
         public string Name = ActionHandlerManager.EmptyName;
 
-        private readonly IClient _client;
+        protected readonly IClient _client;
 
         /// <summary>
         /// Constructor
@@ -40,13 +40,70 @@ namespace Client.ActionHandler
         /// <param name="parameters">Parameters has the following form : paramName=theParam|paramName2=theParam2|...</param>
         public abstract void Execute(object caller, string parameters);
 
-        public abstract void Dispose();
-
-        public virtual string GetParam(string parameters, string parameterName)
+        private static void SkipBlankAtStart(ref string start)
         {
+            while (!string.IsNullOrEmpty(start))
+            {
+                if (start[0] == ' ' || start[0] == '\t' || start[0] == '\r' || start[0] == '\n')
+                {
+                    start = start.Substring(1, start.Length);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        private static void SkipBlankAtEnd(ref string end)
+        {
+            while (!string.IsNullOrEmpty(end))
+            {
+                if (end[^1] == ' ' || end[^1] == '\t' || end[^1] == '\r' || end[^1] == '\n')
+                {
+                    end = end[0..^1];
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        public virtual string GetParam(string Params, string ParamName)
+        {
+            string allparam = Params;
+            SkipBlankAtStart(ref allparam);
+            string param = ParamName.ToLower();
+
+            while (!string.IsNullOrEmpty(allparam))
+            {
+                int e = allparam.IndexOf('=');
+                if (e == -1 || e == 0)
+                {
+                    break;
+                }
+                int p = allparam.IndexOf('|');
+                string tmp = allparam.Substring(0, e).ToLower();
+                SkipBlankAtEnd(ref tmp);
+                if (tmp == param)
+                {
+                    string tmp2 = allparam.Substring(e + 1, p - e - 1);
+                    SkipBlankAtStart(ref tmp2);
+                    SkipBlankAtEnd(ref tmp2);
+                    return tmp2;
+                }
+                if (p == -1 || p == 0)
+                {
+                    break;
+                }
+                allparam = allparam.Substring(p + 1, allparam.Length);
+                SkipBlankAtStart(ref allparam);
+            }
+
             return "";
         }
 
-        public virtual List<System.Tuple<string, string>> GetAllParams(string parameters) { return new List<Tuple<string, string>>(); }
+        public virtual List<Tuple<string, string>> GetAllParams(string parameters) { return new List<Tuple<string, string>>(); }
     }
 }

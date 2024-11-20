@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using API;
-using API.Chat;
 using API.Commands;
-using Client.Database;
 
 namespace Client.Commands
 {
@@ -27,14 +25,14 @@ namespace Client.Commands
 
             if (ryzomClient.LogState)
             {
-                ryzomClient.GetLogger().Info("uiLogTurnedOff");
+                ryzomClient.GetLogger().Info("Log turned off");
             }
 
             ryzomClient.LogState = !ryzomClient.LogState;
 
             if (ryzomClient.LogState)
             {
-                ryzomClient.GetLogger().Info("uiLogTurnedOn");
+                ryzomClient.GetLogger().Info("Log turned on");
             }
 
             var node = ryzomClient.GetDatabaseManager().GetDbProp("UI:SAVE:CHATLOG_STATE", false);
@@ -45,7 +43,7 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "sh", "y", "yell" };
+            return new[] { "" };
         }
     }
 }

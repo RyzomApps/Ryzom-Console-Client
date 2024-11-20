@@ -6,13 +6,16 @@ using Client.Stream;
 
 namespace Client.Commands
 {
+    /// <summary>
+    /// GCM Exchange
+    /// </summary>
     public class ExchangeProposal : CommandBase
     {
         public override string CmdName => "ExchangeProposal";
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "GCM Exchange";
+        public override string CmdDesc => "Propose item exchange.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

@@ -189,6 +189,8 @@ namespace Client
         public InventoryManager GetInventoryManager() { return _inventoryManager; }
 
         public IWebTransfer GetWebTransfer() { return _webTransfer; }
+
+        public ActionHandlerManager GetActionHandlerManager() { return _actionHandlerManager; }
         #endregion
 
         #region Console Client - Initialization
@@ -215,10 +217,13 @@ namespace Client
             _networkConnection = new NetworkConnection(this);
             _phraseManager = new PhraseManager(this);
             _inventoryManager = new InventoryManager(this);
+            _actionHandlerManager = new ActionHandlerManager(this);
             _webTransfer = new WebTransfer(this);
             _interfaceManager = new InterfaceManager(this);
             _networkManager = new NetworkManager(this);
-            _actionHandlerManager = new ActionHandlerManager(this);
+
+            // Essential action handlers
+            _actionHandlerManager.RegisterActionHandler(new ActionHandlerBrowse(this), "browse");
 
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");
