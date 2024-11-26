@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Numerics;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -918,11 +919,19 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        // called when the server wants to teleport the user
+        ///  called when the server wants to teleport the user
         /// </summary>
         internal void OnTeleport(bool hasSeason)
         {
             DispatchListenerEvent(listener => listener.OnTeleport(hasSeason));
+        }
+
+        /// <summary>
+        /// called when a get request to the specified Uri was responded
+        /// </summary>
+        internal void OnWebTransfer(string url, HttpResponseMessage response)
+        {
+            DispatchListenerEvent(listener => listener.OnWebTransfer(url, response));
         }
 
         #endregion

@@ -42,7 +42,7 @@ namespace Client.Entity
         private readonly Dictionary<uint, Dictionary<uint, Property>> _backupedChanges = new Dictionary<uint, Dictionary<uint, Property>>();
 
         /// <inheritdoc />
-        public List<IEntity> GetApiEntities() => _entities.ToList<IEntity>();
+        public IEntity[] GetApiEntities() => _entities;
 
         public EntityManager(RyzomClient client)
         {
@@ -101,8 +101,10 @@ namespace Client.Entity
             }
 
             // Remove the old one (except the user).
-            if (slot != 0)
-                _entities[slot] = null;
+            if (slot != 0 && _entities[slot] != null)
+            {
+                Remove(slot, false);
+            }
 
             // Check parameter: form
             var entitySheet = _client.GetSheetManager().Get(sheetId);
@@ -208,7 +210,8 @@ namespace Client.Entity
         /// <returns>bool : 'true' if the entity has been correctly removed</returns> 
         public bool Remove(in byte slot, bool warning)
         {
-            _client.Plugins.OnEntityRemove(slot, warning);
+            if (warning)
+                _client.Plugins.OnEntityRemove(slot, warning);
 
             //_client.GetLogger().Info($"EntityManager.Remove({slot}, {warning})");
 

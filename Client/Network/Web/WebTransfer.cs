@@ -72,6 +72,8 @@ namespace Client.Network.Web
             var task = Task.Run(() => _httpClient.GetAsync(new Uri(url)));
             task.Wait();
 
+            _ryzomClient.Plugins.OnWebTransfer(url, task.Result);
+
             return task.Result;
         }
 
