@@ -444,7 +444,7 @@ namespace Client.Network
 
         private void InitTicks()
         {
-            _msPerTick = 100;
+            _msPerTick = 50;
         }
 
         /// <summary>
@@ -1160,12 +1160,14 @@ namespace Client.Network
                                 _idMap.Remove(sheet);
 
                             _propertyDecoder.RemoveEntity(slot);
+                            // TODO: figure out where this line has to be
+                            _propertyDecoder.SetAssociationBits(slot, (ushort)associationBits);
 
                             _changes.Add(new PropertyChange(slot, (byte)PropertyType.RemoveOldEntity));
                         }
                         else
                         {
-                            _client.Log.Debug($"Cannot disassociate slot {(ushort)slot}u (AB {associationBits}): sheet not received yet");
+                            _client.Log.Warn($"Cannot disassociate slot {(ushort)slot}u (AB {associationBits}): sheet not received yet");
                         }
                     }
 
@@ -1367,7 +1369,7 @@ namespace Client.Network
                 _client.GetLogger().Debug($"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
             }
 
-            _msPerTick = 100;
+            _msPerTick = 50;
 
             _currentServerTick = (uint)(_synchronize + _currentReceivedNumber * 2);
 
@@ -2102,7 +2104,7 @@ namespace Client.Network
                             else
                             {
                                 // TEMP
-                                RyzomClient.GetInstance().GetLogger().Debug($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos"); 
+                                RyzomClient.GetInstance().GetLogger().Debug($"{_currentServerTick}: S{(ushort)slot}u: Received mode with null pos");
                             }
                         }
                     }
