@@ -444,7 +444,7 @@ namespace Client.Network
 
         private void InitTicks()
         {
-            _msPerTick = 50;
+            _msPerTick = ClientConfig.MsPerTick;
         }
 
         /// <summary>
@@ -1167,7 +1167,7 @@ namespace Client.Network
                         }
                         else
                         {
-                            _client.Log.Warn($"Cannot disassociate slot {(ushort)slot}u (AB {associationBits}): sheet not received yet");
+                            _client.Log.Debug($"Cannot disassociate slot {(ushort)slot}u (AB {associationBits}): sheet not received yet");
                         }
                     }
 
@@ -1369,7 +1369,7 @@ namespace Client.Network
                 _client.GetLogger().Debug($"database.xml client:{Misc.ByteArrToString(_databaseXmlMD5)} server:{Misc.ByteArrToString(checkDatabaseXml)}");
             }
 
-            _msPerTick = 50;
+            _msPerTick = ClientConfig.MsPerTick;
 
             _currentServerTick = (uint)(_synchronize + _currentReceivedNumber * 2);
 

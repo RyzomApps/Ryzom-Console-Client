@@ -177,6 +177,8 @@ namespace Client.Config
 
         public static bool SaveSessionData = false;
 
+        public static int MsPerTick = 100;
+
         //private static string configPattern = "^(?<parameter>\\w*)[ ]*=[ ]*({(?<value1>\\w*[^={}]*)}|['\"](?<value2>\\w*[^=]*)['\"]|(?<value3>\\w*[^=\"'\\n]*)).*(;|#|\\/\\/)+.*$";
 
         /// <summary>
@@ -347,6 +349,10 @@ namespace Client.Config
                     argValue = argValue.Replace("{", "").Replace("}", "").Trim();
                     OnlineProxyList = argValue.Split(",");
                     break;
+
+                case "mspertick":
+                    MsPerTick = int.Parse(argValue);
+                    return;
 
                 default:
                     RyzomClient.GetInstance().GetLogger().Warn($"Could not parse setting {argName} with value '{argValue}'.");
