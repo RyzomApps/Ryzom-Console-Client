@@ -7,7 +7,11 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
+using Client.Commands;
+using System.Data.SqlTypes;
 using Client.Database;
+using Client.Interface;
+using Client.Sheet;
 using Client.Stream;
 
 namespace Client.Inventory
@@ -294,5 +298,109 @@ namespace Client.Inventory
             }
         }
 
+        /// <summary>
+        /// Auto equip an item (given by index) from the bag (return true if equipped)
+        /// </summary>
+        internal bool AutoEquip(int bagEntryIndex, bool allowReplace)
+        {
+            /*
+            uint i;
+
+            InterfaceManager pIM = InterfaceManager.getInstance();
+            ListSheetBase pList = WidgetManager.getInstance().getElementFromId(LIST_BAG_TEXT) as IListSheetBase;
+            DatabaseCtrlSheet pCSSrc = null;
+
+            if (pList == null)
+                return false;
+
+
+            for (i = 0; i < MAX_BAGINV_ENTRIES; ++i)
+            {
+                pCSSrc = pList.getSheet(i);
+                string sTmp = pCSSrc.getSheet();
+                sTmp = sTmp.Substring(sTmp.LastIndexOf(':') + 1, sTmp.Length);
+                sint nTmp = new sint();
+                fromString(sTmp, nTmp);
+                if (nTmp == bagEntryIndex)
+                    break;
+
+            }
+
+            if (i == MAX_BAGINV_ENTRIES)
+                return false;
+
+            if (pCSSrc == null)
+                return false;
+
+
+            for (i = 0; i < MAX_HANDINV_ENTRIES; ++i)
+            {
+                DatabaseCtrlSheet pCSDst = getHandSheet(i);
+                if (pCSDst == null)
+                {
+                    continue;
+                }
+                string dstPath = getDBIndexPath(pCSDst);
+
+                int indexDstPath = NLGUI.CDBManager.getInstance().getDbProp(dstPath + ":INDEX_IN_BAG").getValue16();
+
+                // Already something in that slot?
+                if (!allowReplace && indexDstPath > 0)
+                {
+                    continue;
+                }
+
+                // Does the source and destination are items ?
+                if (pCSSrc.getType() == CtrlSheetInfo.SheetType_Item)
+                {
+                    if (pCSDst.getType() == CtrlSheetInfo.SheetType_Item)
+                    {
+                        // Right Slot ?
+                        if (pCSDst.canDropItem(pCSSrc))
+                        {
+                            // Ok let us equip with this item
+                            string srcPath = pCSSrc.getSheet();
+                            equip(srcPath, dstPath);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            for (i = 0; i < MAX_EQUIPINV_ENTRIES; ++i)
+            {
+                DatabaseCtrlSheet pCSDst = getEquipSheet(i);
+                if (pCSDst == null)
+                {
+                    continue;
+                }
+                string dstPath = getInventory().getDBIndexPath(pCSDst);
+                int indexDstPath = NLGUI.CDBManager.getInstance().getDbProp(dstPath + ":INDEX_IN_BAG").getValue16();
+
+                // Already something in that slot?
+                if (!allowReplace && indexDstPath > 0)
+                {
+                    continue;
+                }
+
+                // Does the source and destination are items ?
+                if (pCSSrc.getType() == CtrlSheetInfo.SheetType_Item)
+                {
+                    if (pCSDst.getType() == CtrlSheetInfo.SheetType_Item)
+                    {
+                        // Right Slot ?
+                        if (pCSDst.canDropItem(pCSSrc))
+                        {
+                            // Ok let us equip with this item
+                            string srcPath = pCSSrc.getSheet();
+                            equip(srcPath, dstPath);
+                            return true;
+                        }
+                    }
+                }
+            }*/
+
+            return false;
+        }
     }
 }
