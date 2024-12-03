@@ -193,7 +193,7 @@ namespace Client.Phrase
 
             for (i = 0; i < PHRASE_MAX_BOOK_SLOT; i++)
             {
-                var node = _databaseManager.GetDbProp(PHRASE_DB_BOOK + ":" + i + ":PHRASE");
+                var node = _databaseManager.GetDbProp($"{PHRASE_DB_BOOK}:{i}:PHRASE");
                 node.SetValue32(0);
                 _bookDbLeaves[i] = node;
             }
@@ -203,7 +203,7 @@ namespace Client.Phrase
 
             for (i = 0; i < PHRASE_MAX_MEMORY_SLOT; i++)
             {
-                var node = _databaseManager.GetDbProp(PHRASE_DB_MEMORY + ":" + i + ":PHRASE");
+                var node = _databaseManager.GetDbProp($"{PHRASE_DB_MEMORY}:{i}:PHRASE");
                 node.SetValue32(0);
                 _memoryDbLeaves[i] = node;
 
@@ -227,17 +227,17 @@ namespace Client.Phrase
                 for (uint j = 0; j < (int)ProgressType.NumProgressType; j++)
                 {
                     // SHEET
-                    var node1 = _databaseManager.GetDbProp(PHRASE_DB_PROGRESSION[j] + ":" + i + ":SHEET");
+                    var node1 = _databaseManager.GetDbProp($"{PHRASE_DB_PROGRESSION[j]}:{i}:SHEET");
                     node1.SetValue32(0);
                     _progressionDbSheets[j][i] = node1;
 
                     // LEVEL
-                    node1 = _databaseManager.GetDbProp(PHRASE_DB_PROGRESSION[j] + ":" + i + ":LEVEL");
+                    node1 = _databaseManager.GetDbProp($"{PHRASE_DB_PROGRESSION[j]}:{i}:LEVEL");
                     node1.SetValue32(0);
                     _progressionDbLevels[j][i] = node1;
 
                     // LOCKED
-                    node1 = _databaseManager.GetDbProp(PHRASE_DB_PROGRESSION[j] + ":" + i + ":LOCKED");
+                    node1 = _databaseManager.GetDbProp($"{PHRASE_DB_PROGRESSION[j]}:{i}:LOCKED");
                     node1.SetValue32(0);
                     _progressionDbLocks[j][i] = node1;
                 }
@@ -256,8 +256,8 @@ namespace Client.Phrase
 
             for (i = 0; i < PHRASE_MAX_BOTCHAT_SLOT; i++)
             {
-                var nodeSheet = _databaseManager.GetDbProp(PHRASE_DB_BOTCHAT + ":" + i + ":SHEET");
-                var nodePrice = _databaseManager.GetDbProp(PHRASE_DB_BOTCHAT + ":" + i + ":PRICE");
+                var nodeSheet = _databaseManager.GetDbProp($"{PHRASE_DB_BOTCHAT}:{i}:SHEET");
+                var nodePrice = _databaseManager.GetDbProp($"{PHRASE_DB_BOTCHAT}:{i}:PRICE");
 
                 _botChatPhraseSheetLeaves[i] = nodeSheet;
                 _botChatPhrasePriceLeaves[i] = nodePrice;

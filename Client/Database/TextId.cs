@@ -44,6 +44,14 @@ namespace Client.Database
         }
 
         /// <summary>
+        /// Default constructor
+        /// </summary>
+        public TextId()
+        {
+            _idx = 0;
+        }
+
+        /// <summary>
         /// Build a string from this text id
         /// </summary>
         public override string ToString()

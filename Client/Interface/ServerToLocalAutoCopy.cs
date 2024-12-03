@@ -87,6 +87,7 @@ namespace Client.Interface
                 // **** Init the Nodes shortcut
                 // Parse all Local Nodes
                 DatabaseNodeBranch localBranch = _databaseManager.GetDbBranch("LOCAL:" + dbPath);
+
                 if (localBranch != null)
                 {
                     int i;

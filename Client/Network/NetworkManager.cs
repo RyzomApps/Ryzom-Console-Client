@@ -1521,7 +1521,7 @@ namespace Client.Network
 
                             if (leafNode == null)
                             {
-                                _client.Log.Error("Inventory slot property missing in database");
+                                _client.Log.Error("Inventory slot property missing in database " + slotNode._name + ":" + Inventories.InfoVersionStr);
                                 continue;
                             }
 
@@ -1557,13 +1557,12 @@ namespace Client.Network
                                     var leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[i]));
                                     if (leafNode == null)
                                     {
-                                        _client.Log.Error("Inventory slot property missing in database");
+                                        _client.Log.Error("Inventory slot property missing in database " + slotNode._name + ":" + ItemSlot.ItemPropStr[i]);
                                         continue;
                                     }
 
                                     leafNode.SetPropCheckGC(serverTick, itemSlot.GetItemProp((Inventories.ItemPropId)i));
                                 }
-
                             }
                             else
                             {
@@ -1580,7 +1579,7 @@ namespace Client.Network
                                     var leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[(int)itemSlot.GetOneProp().ItemPropId]));
                                     if (leafNode == null)
                                     {
-                                        _client.Log.Error("Inventory slot property missing in database");
+                                        _client.Log.Error("Inventory slot property missing in database " + slotNode._name + ":" + ItemSlot.ItemPropStr[(int)itemSlot.GetOneProp().ItemPropId]);
                                         continue;
                                     }
 
@@ -1603,7 +1602,7 @@ namespace Client.Network
                                         var leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[i]));
                                         if (leafNode == null)
                                         {
-                                            _client.Log.Error("Inventory slot property missing in database");
+                                            _client.Log.Error("Inventory slot property missing in database " + slotNode._name + ":" + ItemSlot.ItemPropStr[i]);
                                             continue;
                                         }
                                         leafNode.SetPropCheckGC(serverTick, 0);
@@ -1622,6 +1621,9 @@ namespace Client.Network
             }
         }
 
+        /// <summary>
+        /// ImpulseUpdateInventory
+        /// </summary>
         private void ImpulseUpdateInventory(BitMemoryStream impulse)
         {
             UpdateInventoryFromStream(impulse, new InventoryCategoryForCharacter(), true);

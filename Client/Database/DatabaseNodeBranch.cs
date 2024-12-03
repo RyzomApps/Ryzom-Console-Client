@@ -153,7 +153,7 @@ namespace Client.Database
         /// <inheritdoc/>
         public override bool AddObserver(IPropertyObserver observer, TextId id)
         {
-            //test if this node is the desired one, if yes, add the observer to all the children nodes
+            // test if this node is the desired one, if yes, add the observer to all the children nodes
             if (id.GetCurrentIndex() == (int)id.Size())
             {
                 for (int i = 0; i < _nodes.Count; ++i)
@@ -220,7 +220,7 @@ namespace Client.Database
         /// </summary>
         /// <param name="id">the TextId identifying the database node</param>
         /// <param name="bCreate">true, if the node should be created</param>
-        internal override DatabaseNode GetNode(TextId id, bool bCreate = true)
+        internal override DatabaseNode GetNode(TextId id, bool bCreate = false)
         {
             // lookup next element from textid in my index => idx
             var str = id.ReadNext();
@@ -235,7 +235,7 @@ namespace Client.Database
                 // Yoyo: must not be SERVER or LOCAL, cause definied through xml.
                 // This may cause some important crash error
                 Debug.Assert(id != null);
-                Debug.Assert(id.GetElement(0) != "SERVER");
+                //Debug.Assert(id.GetElement(0) != "SERVER");
                 //Debug.Assert(id.GetElement(0) != "LOCAL");
 
                 DatabaseNode newNode;

@@ -12,6 +12,7 @@ using API.Network.Web;
 using Client.Brick;
 using Client.Config;
 using Client.Database;
+using Client.Inventory;
 using Client.Network.Web;
 using Client.Phrase;
 using Client.Skill;
@@ -32,6 +33,7 @@ namespace Client.Interface
         private readonly BrickManager _brickManager;
         private readonly PhraseManager _phraseManager;
         private readonly IWebTransfer _webTransfer;
+        private readonly InventoryManager _inventoryManager;
 
         ServerToLocalAutoCopy ServerToLocalAutoCopyInventory;
         ServerToLocalAutoCopy ServerToLocalAutoCopyExchange;
@@ -55,6 +57,7 @@ namespace Client.Interface
             _skillManager = client.GetSkillManager();
             _brickManager = client.GetBrickManager();
             _phraseManager = client.GetPhraseManager();
+            _inventoryManager = client.GetInventoryManager();
             _webTransfer = client.GetWebTransfer();
 
             ServerToLocalAutoCopyInventory = new ServerToLocalAutoCopy(this, _databaseManager);
@@ -79,7 +82,10 @@ namespace Client.Interface
             // SPhrase Manager DB Init (BEFORE loading). Must be init AFTER skill and brick init
             _phraseManager.InitInGame();
 
-            // Start the WebIG Thread
+            // Initialize inventory manager : link to DB and to interface element so must be here
+            _inventoryManager.Init();
+
+            // Start the WebIG Thread - TODO ADD PROXY
             WebigThread.StartThread(_client, _webTransfer);
 
             // Start the Browser Proxy
@@ -95,7 +101,6 @@ namespace Client.Interface
                 var file = new XmlDocument();
 
                 // Init an xml stream
-                file.Load(fileName);
                 file.Load(fileName);
 
                 // Parse the parser output!!!

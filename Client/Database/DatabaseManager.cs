@@ -246,7 +246,7 @@ namespace Client.Database
         /// </summary>
         /// <param name="name">The name of the leaf node.</param>
         /// <param name="create">Specifies if the node should be created if it doesn't exist yet.</param>
-        public DatabaseNodeLeaf GetDbLeaf(string name, bool create)
+        private DatabaseNodeLeaf GetDbLeaf(string name, bool create)
         {
             if (string.IsNullOrEmpty(name))
             {

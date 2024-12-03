@@ -347,6 +347,10 @@ namespace Client.Config
                     MsPerTick = int.Parse(argValue);
                     return;
 
+                case "useinventory":
+                    UseInventory = bool.Parse(argValue);
+                    break;
+
                 default:
                     RyzomClient.GetInstance().GetLogger().Warn($"Could not parse setting {argName} with value '{argValue}'.");
                     return;

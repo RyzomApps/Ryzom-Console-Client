@@ -7,11 +7,8 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using Client.Commands;
-using System.Data.SqlTypes;
+using System.Diagnostics;
 using Client.Database;
-using Client.Interface;
-using Client.Sheet;
 using Client.Stream;
 
 namespace Client.Inventory
@@ -32,15 +29,21 @@ namespace Client.Inventory
         const uint MAX_HANDINV_ENTRIES = 2;
         const uint MAX_EQUIPINV_ENTRIES = 19;
         const uint MAX_ANIMALINV_ENTRIES = 500;
-        const uint MAX_GUILDINV_ENTRIES = 1000;
-        const uint MAX_ROOMINV_ENTRIES = 1000;
+        //const uint MAX_GUILDINV_ENTRIES = 1000;
+        //const uint MAX_ROOMINV_ENTRIES = 1000;
+
+        const int MAX_PACK_ANIMAL = 3;
+        const int MAX_MEKTOUB_MOUNT = 1;
+        const int MAX_OTHER_PET = 3;
+
+        const int MAX_INVENTORY_ANIMAL = (MAX_PACK_ANIMAL + MAX_MEKTOUB_MOUNT + MAX_OTHER_PET);
 
         // This is the personal player inventory max (bag and animal)
-        const uint MAX_PLAYER_INV_ENTRIES = 500;
+        //const uint MAX_PLAYER_INV_ENTRIES = 500;
 
         // db path for the local inventory
-        public const string LOCAL_INVENTORY = "LOCAL:INVENTORY";
-        public const string SERVER_INVENTORY = "SERVER:INVENTORY";
+        const string LOCAL_INVENTORY = "LOCAL:INVENTORY";
+        const string SERVER_INVENTORY = "SERVER:INVENTORY";
 
         // db path for all the inventories (without the SERVER: prefix)
         private readonly string[] InventoryDBs = {
@@ -84,19 +87,7 @@ namespace Client.Inventory
             NUM_ALL_INVENTORY // warning: distinct from NUM_INVENTORY
         }
 
-        public readonly uint NumInventories = new uint();
-
-        // LOCAL INVENTORY
-        private ItemImage[] Bag = new ItemImage[MAX_BAGINV_ENTRIES];
-        private ItemImage[] TempInv = new ItemImage[MAX_TEMPINV_ENTRIES];
-        private int[] Hands = new int[MAX_HANDINV_ENTRIES];
-        //private DatabaseCtrlSheet[] UIHands = new DatabaseCtrlSheet[MAX_HANDINV_ENTRIES];
-        private int[] Equip = new int[MAX_EQUIPINV_ENTRIES];
-
-        //private DatabaseCtrlSheet[] UIEquip = new DatabaseCtrlSheet[MAX_EQUIPINV_ENTRIES];
-        //private DatabaseCtrlSheet[] UIEquip2 = new DatabaseCtrlSheet[MAX_EQUIPINV_ENTRIES];
-        private DatabaseNodeLeaf Money;
-        //private ItemImage[,] PAInv = new ItemImage[MAX_INVENTORY_ANIMAL, MAX_ANIMALINV_ENTRIES];
+        readonly uint NumInventories = new uint();
 
         // SERVER INVENTORY
         private ItemImage[] ServerBag = new ItemImage[MAX_BAGINV_ENTRIES];
@@ -104,14 +95,7 @@ namespace Client.Inventory
         private int[] ServerHands = new int[MAX_HANDINV_ENTRIES];
         private int[] ServerEquip = new int[MAX_EQUIPINV_ENTRIES];
         private DatabaseNodeLeaf ServerMoney;
-        //private ItemImage[,] ServerPAInv = Array.Empty<ItemImage>(MAX_INVENTORY_ANIMAL, MAX_ANIMALINV_ENTRIES);
-
-        // Drag'n'Drop
-        //private TFrom DNDFrom = new TFrom();
-        //private DatabaseCtrlSheet DNDCurrentItem;
-
-        //private SortedDictionary<uint, ClientItemInfo> _ItemInfoMap = new SortedDictionary<uint, ClientItemInfo>();
-        //private LinkedList<ItemInfoWaiter> _ItemInfoWaiters = new LinkedList<ItemInfoWaiter>();
+        private ItemImage[][] ServerPAInv = new ItemImage[MAX_INVENTORY_ANIMAL][];
 
         // Cache to know if bag is locked or not, because of item worn
         private bool[] BagItemEquipped = new bool[MAX_BAGINV_ENTRIES];
@@ -123,22 +107,18 @@ namespace Client.Inventory
         {
             _client = client;
 
-            Money = null;
             ServerMoney = null;
 
             uint i;
 
             for (i = 0; i < MAX_HANDINV_ENTRIES; ++i)
             {
-                Hands[i] = ServerHands[i] = 0;
-                //UIHands[i] = null;
+                ServerHands[i] = 0;
             }
 
             for (i = 0; i < MAX_EQUIPINV_ENTRIES; ++i)
             {
-                Equip[i] = ServerEquip[i] = 0;
-                //UIEquip[i] = null;
-                //UIEquip2[i] = null;
+                ServerEquip[i] = 0;
             }
 
             for (i = 0; i < MAX_BAGINV_ENTRIES; i++)
@@ -149,25 +129,130 @@ namespace Client.Inventory
             //Debug.Assert(NumInventories == InventoryIndexes.Length);
         }
 
+        public void Init()
+        {
+            // LOCAL DB is not implemented
+
+            // SERVER DB
+            InitItemArray($"{SERVER_INVENTORY}:BAG", ServerBag, MAX_BAGINV_ENTRIES);
+            InitItemArray($"{SERVER_INVENTORY}:TEMP", ServerTempInv, MAX_TEMPINV_ENTRIES);
+            ServerMoney = _client.GetDatabaseManager().GetDbProp($"{SERVER_INVENTORY}:MONEY");
+
+            // Init Animals
+            for (uint i = 0; i < MAX_INVENTORY_ANIMAL; i++)
+            {
+                ServerPAInv[i] = new ItemImage[MAX_ANIMALINV_ENTRIES];
+                InitItemArray($"{SERVER_INVENTORY}:PACK_ANIMAL{i}", ServerPAInv[i], MAX_ANIMALINV_ENTRIES);
+            }
+
+            // Drag'n'Drop is not implemented
+
+            // ItemInfoObservers are not implemented
+        }
+
+        /// <summary>
+        /// Init an array of items from a db branch
+        /// </summary>
+        private void InitItemArray(in string dbBranchName, ItemImage[] dest, uint numItems)
+        {
+            return;
+
+            // TODO: init
+
+            Debug.Assert(dest != null);
+
+            var branch = _client.GetDatabaseManager().GetDbBranch(dbBranchName);
+
+            if (branch == null)
+            {
+                _client.Log.Warn($"Can't init inventory image from branch {dbBranchName}.");
+                return;
+            }
+
+            for (uint k = 0; k < numItems; ++k)
+            {
+                if (!(branch.GetNode((ushort)k) is DatabaseNodeBranch itemBranch))
+                {
+                    _client.Log.Warn($"Can't retrieve item {k} of branch {dbBranchName}");
+                }
+                else
+                {
+                    dest[k].Build(itemBranch);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called on impulse
+        /// </summary>
         internal void OnUpdateEquipHands()
         {
-            // TODO
+            // update hands slots after initial BAG inventory has received
+            var pNl = _client.GetDatabaseManager().GetDbProp($"{LOCAL_INVENTORY}:HAND:0:INDEX_IN_BAG", false);
+            if (pNl != null && pNl.GetValue32() != 0)
+            {
+                // TODO _DBEquipObs.update(pNL);
+            }
+
+            pNl = _client.GetDatabaseManager().GetDbProp($"{LOCAL_INVENTORY}:HAND:1:INDEX_IN_BAG", false);
+            if (pNl != null && pNl.GetValue32() != 0)
+            {
+                // TODO _DBEquipObs.update(pNL);
+            }
         }
 
         internal void SortBag()
         {
-            // TODO
+            // Ignored, since there is no interface
         }
 
-        public void equip(in string bagPath, in string invPath)
+        public ItemImage GetServerHandItem(uint index)
         {
-            //if (isSwimming() || isStunned() || isDead() || isRiding())
-            //{
-            //	return;
-            //}
+            Debug.Assert(index < MAX_HANDINV_ENTRIES);
+            return ServerHands[index] != 0 ? ServerBag[ServerHands[index]] : null;
+        }
+        public ItemImage GetServerEquipItem(uint index)
+        {
+            Debug.Assert(index < MAX_EQUIPINV_ENTRIES);
+            return ServerEquip[index] != 0 ? ServerBag[ServerEquip[index]] : null;
+        }
 
-            var pIM = _client.GetInterfaceManager();
+        public ItemImage GetServerPAItem(uint beastIndex, uint index)
+        {
+            Debug.Assert(beastIndex < MAX_INVENTORY_ANIMAL);
+            Debug.Assert(index < MAX_ANIMALINV_ENTRIES);
+            return ServerPAInv[beastIndex][index];
+        }
 
+        public ItemImage GetServerBagItem(uint index)
+        {
+            Debug.Assert(index < MAX_BAGINV_ENTRIES);
+            return ServerBag[index];
+        }
+
+        public ItemImage GetServerItem(uint inv, uint index)
+        {
+            if (inv == (uint)INVENTORIES.bag)
+            {
+                return GetServerBagItem(index);
+            }
+            if (inv >= (uint)INVENTORIES.pet_animal && inv < (uint)INVENTORIES.pet_animal + MAX_INVENTORY_ANIMAL)
+            {
+                return GetServerPAItem(inv - (uint)INVENTORIES.pet_animal, index);
+            }
+
+            _client.Log.Error("Not a bag or pet inventory.");
+
+            return new ItemImage();
+        }
+
+        public ulong GetServerMoney()
+        {
+            return (ulong)(ServerMoney?.GetValue64() ?? 0);
+        }
+
+        public void Equip(in string bagPath, in string invPath)
+        {
             if (bagPath.Length == 0 || invPath.Length == 0)
             {
                 return;
@@ -191,87 +276,17 @@ namespace Client.Inventory
                 ushort.TryParse(invPath.Substring(22, invPath.Length), out invSlot);
             }
 
-            // Hands management : check if we have to unequip left hand because of incompatibility with right hand item
+            // Hands management: check if we have to unequip left hand because of incompatibility with right hand item
             var oldRightIndexInBag = _client.GetDatabaseManager().GetDbProp(invPath + ":INDEX_IN_BAG").GetValue16();
 
-            if (inventory == (ushort)INVENTORIES.handling && invSlot == 0)
-            {
-                // TODO DatabaseCtrlSheet pCSLeftHand = CWidgetManager.getInstance().getElementFromId(CTRL_HAND_LEFT) as DatabaseCtrlSheet;
-                object pCSLeftHand = null;
-
-                if (pCSLeftHand == null)
-                {
-                    return;
-                }
-
-                // get sheet of left item
-                uint leftSheet = 0;
-                var pNL = _client.GetDatabaseManager().GetDbProp(LOCAL_INVENTORY + ":HAND:1:INDEX_IN_BAG", false);
-
-                if (pNL == null)
-                {
-                    return;
-                }
-                if (pNL.GetValue32() > 0)
-                {
-                    var pNL2 = _client.GetDatabaseManager().GetDbProp(LOCAL_INVENTORY + ":BAG:" + (pNL.GetValue32() - 1) + ":SHEET", false);
-                    if (pNL2 == null)
-                    {
-                        return;
-                    }
-                    leftSheet = (uint)pNL2.GetValue32();
-                }
-
-                // get sheet of previous right hand item
-                uint lastRightSheet = 0;
-                if (oldRightIndexInBag > 0)
-                {
-                    pNL = _client.GetDatabaseManager().GetDbProp(LOCAL_INVENTORY + ":BAG:" + (oldRightIndexInBag - 1) + ":SHEET", false);
-                    if (pNL == null)
-                    {
-                        return;
-                    }
-                    lastRightSheet = (uint)pNL.GetValue32();
-                }
-
-                // get sheet of new right hand item
-                uint rightSheet = 0;
-                if (indexInBag + 1 > 0)
-                {
-                    pNL = _client.GetDatabaseManager().GetDbProp(LOCAL_INVENTORY + ":BAG:" + (indexInBag) + ":SHEET", false);
-                    if (pNL == null)
-                    {
-                        return;
-                    }
-                    rightSheet = (uint)pNL.GetValue32();
-                }
-
-                //// TODO If incompatible -> remove
-                //if (!GetInventory().IsLeftHandItemCompatibleWithRightHandItem(leftSheet, rightSheet, lastRightSheet))
-                //{
-                //    GetInventory().Unequip(LOCAL_INVENTORY+ ":HAND:1");
-                //}
-            }
+            // Local inventory handling not implemented
 
             // update the equip DB pointer
             _client.GetDatabaseManager().GetDbProp(invPath + ":INDEX_IN_BAG").SetValue16((short)(indexInBag + 1));
 
-            //// TODO Yoyo add: when the user equip an item, the action are invalid during some time
-            //if (indexInBag < MAX_BAGINV_ENTRIES)
-            //{
-            //    ItemSheet pIS = _client.GetSheetManager().Get(_client.GetSheetIdFactory().SheetId(GetBagItem(indexInBag).getSheetID())) as ItemSheet;
-            //    if (pIS != null)
-            //    {
-            //        PhraseManager pPM = PhraseManager.getInstance();
-            //        pPM.setEquipInvalidation(NetMngr.getCurrentServerTick(), pIS.EquipTime);
-            //    }
-            //}
+            // Phrase invalidation is not implemented
 
-            //// TODO Update trade window if any
-            //if ((BotChatPageAll != null) && (BotChatPageAll.Trade != null))
-            //{
-            //    BotChatPageAll.Trade.invalidateCoords();
-            //}
+            // Bot trade is not implemented
 
             // Send message to the server
             if (inventory != (short)INVENTORIES.UNDEFINED)
@@ -287,7 +302,7 @@ namespace Client.Inventory
                     @out.Serial(ref indexInBag);
                     _client.GetNetworkManager().Push(@out);
 
-                    // TODO pIM.IncLocalSyncActionCounter();
+                    // Local synch counter is not implemented
 
                     //nlinfo("impulseCallBack : %s %d %d %d sent", sMsg.c_str(), inventory, invSlot, indexInBag);
                 }
