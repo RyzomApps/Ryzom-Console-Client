@@ -35,6 +35,7 @@ namespace Client.Interface
         private DatabaseNodeLeaf _ServerCounter;
         // updaters
         private LocalDBObserver _LocalObserver;
+
         private ServerDBObserver _ServerObserver;
         // avoid reentrance
         private bool _LocalUpdating;
@@ -55,6 +56,8 @@ namespace Client.Interface
         {
             _interfaceManger = interfaceManager;
             _databaseManager = databaseManager;
+            _ServerObserver = new ServerDBObserver(this);
+            _LocalObserver = new LocalDBObserver(this);
         }
 
         public void Dispose()
@@ -68,7 +71,7 @@ namespace Client.Interface
             var pIM = _interfaceManger;
 
             // Get the synchronisation Counter in Server DB
-            _ServerCounter = _databaseManager.GetDbProp("SERVER:" + dbPath + ":COUNTER", false);
+            _ServerCounter = _databaseManager.GetServerNode("SERVER:" + dbPath + ":COUNTER", false);
 
             // if found
             if (_ServerCounter != null)
@@ -78,14 +81,15 @@ namespace Client.Interface
                 // **** Add Observers on all nodes
                 // add the observers when server node change
                 textId = new TextId("SERVER:" + dbPath);
-                _databaseManager.GetDb().AddObserver(_ServerObserver, textId);
+                _databaseManager.GetRootDb().AddObserver(_ServerObserver, textId);
 
                 // add the observers when local node change
                 textId = new TextId("LOCAL:" + dbPath);
-                _databaseManager.GetDb().AddObserver(_LocalObserver, textId);
+                _databaseManager.GetRootDb().AddObserver(_LocalObserver, textId);
 
                 // **** Init the Nodes shortcut
                 // Parse all Local Nodes
+                /*
                 DatabaseNodeBranch localBranch = _databaseManager.GetDbBranch("LOCAL:" + dbPath);
 
                 if (localBranch != null)
@@ -145,6 +149,7 @@ namespace Client.Interface
                     _LocalNodeMap.Sort();
                     _ServerNodeMap.Sort();
                 }
+                */
             }
         }
 
@@ -188,7 +193,7 @@ namespace Client.Interface
             }
 
             // if the client and server are synchonized.
-            if (pIM.localActionCounterSynchronizedWith(_ServerCounter))
+            if (pIM.LocalActionCounterSynchronizedWith(_ServerCounter))
             {
                 // update all leaves
                 for (var i = 0; i < _UpdateList.Count; i++)

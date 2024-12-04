@@ -54,8 +54,8 @@ namespace Client.Chat
                 _dynamicChannelIdLeaf[i] = null;
 
                 // get
-                var name = _databaseManager?.GetDbProp($"SERVER:DYN_CHAT:CHANNEL{i}:NAME", false);
-                var id = _databaseManager?.GetDbProp($"SERVER:DYN_CHAT:CHANNEL{i}:ID", false);
+                var name = _databaseManager?.GetServerNode($"SERVER:DYN_CHAT:CHANNEL{i}:NAME", false);
+                var id = _databaseManager?.GetServerNode($"SERVER:DYN_CHAT:CHANNEL{i}:ID", false);
 
                 if (name != null && id != null)
                 {

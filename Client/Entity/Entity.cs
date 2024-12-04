@@ -267,10 +267,10 @@ namespace Client.Entity
             _slot = slot;
 
             // Get the DB Entry - from CCharacterCL::build
-            if (databaseManager?.GetNodePtr() == null)
+            if (databaseManager?.GetServerDb() == null)
                 return;
 
-            var nodeRoot = (DatabaseNodeBranch)(databaseManager.GetNodePtr().GetNode(0));
+            var nodeRoot = (DatabaseNodeBranch)(databaseManager.GetServerDb().GetNode(0));
 
             if (nodeRoot == null)
                 return;
@@ -344,7 +344,7 @@ namespace Client.Entity
             if (_client.GetDatabaseManager() == null)
                 return;
 
-            var nodePtr = client.GetDatabaseManager().GetNodePtr();
+            var nodePtr = client.GetDatabaseManager().GetServerDb();
 
             if (nodePtr == null) return;
 

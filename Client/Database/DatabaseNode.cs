@@ -11,6 +11,7 @@ using System.IO;
 using System.Xml;
 using Client.Interface;
 using Client.Stream;
+using Client.Strings;
 
 namespace Client.Database
 {
@@ -137,5 +138,33 @@ namespace Client.Database
         /// <param name="id">text id identifying the property</param>
         /// <return>false if the node or observer doesn't exist</return>
         public abstract bool RemoveObserver(IPropertyObserver observer, TextId id);
+
+        /// <summary>
+        /// Get the full name of this node separator is ':' (ie UI:INTERFACE:REDSTUFF).
+        /// This will not return the full name with the ROOT!
+        /// </summary>
+        public string GetFullName()
+        {
+            var sTmp = "";
+            _buildFullName(ref sTmp);
+            return sTmp;
+        }
+
+        /// <summary>
+        /// utility to build full name efficiently (without reallocating the string at each parent level)
+        /// </summary>
+        private void _buildFullName(ref string fullName)
+        {
+            // we do not want to recurse up to the ROOT node - we stop 1 level down from the root
+            if (GetParent() != null && GetParent().GetParent() != null)
+            {
+                GetParent()._buildFullName(ref fullName);
+                fullName += ":" + _name;
+            }
+            else
+            {
+                fullName = _name;
+            }
+        }
     }
 }

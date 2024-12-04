@@ -138,7 +138,7 @@ namespace Client.Forage
 
             if (client.GetDatabaseManager() != null)
             {
-                var nodeRoot = (DatabaseNodeBranch)client.GetDatabaseManager().GetNodePtr().GetNode(0);
+                var nodeRoot = (DatabaseNodeBranch)client.GetDatabaseManager().GetServerDb().GetNode(0);
 
                 if (nodeRoot != null)
                 {

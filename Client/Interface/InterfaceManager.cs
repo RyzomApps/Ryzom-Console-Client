@@ -35,11 +35,11 @@ namespace Client.Interface
         private readonly IWebTransfer _webTransfer;
         private readonly InventoryManager _inventoryManager;
 
-        ServerToLocalAutoCopy ServerToLocalAutoCopyInventory;
-        ServerToLocalAutoCopy ServerToLocalAutoCopyExchange;
-        ServerToLocalAutoCopy ServerToLocalAutoCopyDMGift;
-        ServerToLocalAutoCopy ServerToLocalAutoCopyContextMenu;
-        ServerToLocalAutoCopy ServerToLocalAutoCopySkillPoints;
+        //ServerToLocalAutoCopy ServerToLocalAutoCopyInventory;
+        //ServerToLocalAutoCopy ServerToLocalAutoCopyExchange;
+        //ServerToLocalAutoCopy ServerToLocalAutoCopyDMGift;
+        //ServerToLocalAutoCopy ServerToLocalAutoCopyContextMenu;
+        //ServerToLocalAutoCopy ServerToLocalAutoCopySkillPoints;
 
         /** This is the GLOBAL Action counter used to synchronize some systems (including INVENTORY) with the server.*/
         byte _LocalSyncActionCounter;
@@ -60,11 +60,11 @@ namespace Client.Interface
             _inventoryManager = client.GetInventoryManager();
             _webTransfer = client.GetWebTransfer();
 
-            ServerToLocalAutoCopyInventory = new ServerToLocalAutoCopy(this, _databaseManager);
-            ServerToLocalAutoCopyExchange = new ServerToLocalAutoCopy(this, _databaseManager);
-            ServerToLocalAutoCopyDMGift = new ServerToLocalAutoCopy(this, _databaseManager);
-            ServerToLocalAutoCopyContextMenu = new ServerToLocalAutoCopy(this, _databaseManager);
-            ServerToLocalAutoCopySkillPoints = new ServerToLocalAutoCopy(this, _databaseManager);
+            //ServerToLocalAutoCopyInventory = new ServerToLocalAutoCopy(this, _databaseManager);
+            //ServerToLocalAutoCopyExchange = new ServerToLocalAutoCopy(this, _databaseManager);
+            //ServerToLocalAutoCopyDMGift = new ServerToLocalAutoCopy(this, _databaseManager);
+            //ServerToLocalAutoCopyContextMenu = new ServerToLocalAutoCopy(this, _databaseManager);
+            //ServerToLocalAutoCopySkillPoints = new ServerToLocalAutoCopy(this, _databaseManager);
         }
 
         /// <summary>
@@ -106,22 +106,22 @@ namespace Client.Interface
                 // Parse the parser output!!!
                 var localNode = new DatabaseNodeBranch("LOCAL");
                 localNode.Init(file.DocumentElement, null);
-                _databaseManager.GetDb().AttachChild(localNode, "LOCAL");
+                _databaseManager.GetRootDb().AttachChild(localNode, "LOCAL");
 
                 // Create the observers for auto-copy SERVER->LOCAL of inventory
-                ServerToLocalAutoCopyInventory.Init("INVENTORY");
+                //ServerToLocalAutoCopyInventory.Init("INVENTORY");
 
                 // Create the observers for auto-copy SERVER->LOCAL of exchange
-                ServerToLocalAutoCopyExchange.Init("EXCHANGE");
+                //ServerToLocalAutoCopyExchange.Init("EXCHANGE");
 
                 // Create the observers for auto-copy SERVER->LOCAL of dm (animator) gift
-                ServerToLocalAutoCopyDMGift.Init("DM_GIFT");
+                //ServerToLocalAutoCopyDMGift.Init("DM_GIFT");
 
                 // Create the observers for auto-copy SERVER->LOCAL of context menu
-                ServerToLocalAutoCopyContextMenu.Init("TARGET:CONTEXT_MENU");
+                //ServerToLocalAutoCopyContextMenu.Init("TARGET:CONTEXT_MENU");
 
                 // Create the observers for auto-copy SERVER->LOCAL of Skill Points
-                ServerToLocalAutoCopySkillPoints.Init("USER");
+                //ServerToLocalAutoCopySkillPoints.Init("USER");
             }
             catch (Exception e)
             {
@@ -130,7 +130,7 @@ namespace Client.Interface
             }
         }
 
-        internal bool localActionCounterSynchronizedWith(DatabaseNodeLeaf leaf)
+        internal bool LocalActionCounterSynchronizedWith(DatabaseNodeLeaf leaf)
         {
             if (leaf == null)
             {

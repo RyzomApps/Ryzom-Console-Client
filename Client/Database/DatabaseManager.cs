@@ -10,7 +10,6 @@ using System;
 using System.IO;
 using System.Xml;
 using API.Database;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Database
@@ -47,13 +46,13 @@ namespace Client.Database
         /// <summary>
         /// Manages the bank names and mappings
         /// </summary>
-        protected BankHandler BankHandler;
+        private readonly BankHandler _bankHandler;
 
         // TODO: check server and client database structures
-        private DatabaseNodeBranch _serverDatabase;
+        private readonly DatabaseNodeBranch _serverDatabase;
 
         // TODO: non static database
-        private static DatabaseNodeBranch _database;
+        private static DatabaseNodeBranch _rootDatabase;
 
         /// <summary>Pointer to the ryzom client</summary>
         private readonly RyzomClient _client;
@@ -65,10 +64,10 @@ namespace Client.Database
         {
             _client = client;
 
-            //_database = new DatabaseNodeBranch("ROOT");
+            _rootDatabase = new DatabaseNodeBranch("ROOT");
             _serverDatabase = new DatabaseNodeBranch("SERVER");
 
-            BankHandler = new BankHandler((uint)BankIdentifiers.NbCdbBanks);
+            _bankHandler = new BankHandler((uint)BankIdentifiers.NbCdbBanks);
 
             _initInProgress = true;
             _initDeltaReceived = 0;
@@ -78,15 +77,12 @@ namespace Client.Database
         /// Return a ptr on the database node
         /// </summary>
         /// <returns>ptr on the database node</returns>
-        public DatabaseNodeBranch GetNodePtr() { return _serverDatabase; }
+        public DatabaseNodeBranch GetServerDb() { return _serverDatabase; }
 
         /// <summary>
         /// Returns the root branch of the database.
         /// </summary>
-        public DatabaseNodeBranch GetDb()
-        {
-            return _database ??= new DatabaseNodeBranch("ROOT");
-        }
+        public DatabaseNodeBranch GetRootDb() { return _rootDatabase; }
 
 
         /// <summary>
@@ -104,12 +100,12 @@ namespace Client.Database
                 file.Load(fileName);
 
                 // Parse the parser output!!!
-                BankHandler.ResetNodeBankMapping(); // in case the game is restarted from start
-                BankHandler.FillBankNames(BankNames, (uint)(BankIdentifiers.InvalidCdbBank + 1));
+                _bankHandler.ResetNodeBankMapping(); // in case the game is restarted from start
+                _bankHandler.FillBankNames(BankNames, (uint)(BankIdentifiers.InvalidCdbBank + 1));
 
-                _serverDatabase ??= new DatabaseNodeBranch("SERVER"); // redundant?
+                //_serverDatabase ??= new DatabaseNodeBranch("SERVER"); // redundant?
 
-                _serverDatabase.Init(file.DocumentElement, progressCallBack, true, BankHandler);
+                _serverDatabase.Init(file.DocumentElement, progressCallBack, true, _bankHandler);
             }
             catch (Exception e)
             {
@@ -124,11 +120,11 @@ namespace Client.Database
         /// <param name="fileName">is the name of the backup file</param>
         public void Write(string fileName)
         {
-            if (_database != null)
+            if (_rootDatabase != null)
             {
                 var f = new StreamWriter(fileName, false);
 
-                _database.Write(_database.GetName(), f);
+                _rootDatabase.Write(_rootDatabase.GetName(), f);
                 f.Close();
             }
             else
@@ -162,7 +158,7 @@ namespace Client.Database
 
             for (uint i = 0; i != propertyCount; ++i)
             {
-                _serverDatabase.ReadAndMapDelta(gc, s, bank, BankHandler);
+                _serverDatabase.ReadAndMapDelta(gc, s, bank, _bankHandler);
             }
         }
 
@@ -218,17 +214,17 @@ namespace Client.Database
         public void ResetBank(in uint gc, in uint bank)
         {
             //_database.ResetNode(gc, BankHandler.GetUidForBank(bank));
-            _serverDatabase.ResetNode(gc, BankHandler.GetUidForBank(bank));
+            _serverDatabase.ResetNode(gc, _bankHandler.GetUidForBank(bank));
         }
 
         /// <inheritdoc />
         public long GetProp(string name)
         {
-            if (_database == null)
+            if (_rootDatabase == null)
                 throw new Exception("EDBNotInit");
 
             var txtId = new TextId(name);
-            return _database.GetProp(txtId);
+            return _rootDatabase.GetProp(txtId);
         }
 
         /// <summary>
@@ -236,40 +232,45 @@ namespace Client.Database
         /// </summary>
         /// <param name="name">name of the data leaf node we are querying.</param>
         /// <param name="create">when true if a node cannot be found it is created.</param>
-        public DatabaseNodeLeaf GetDbProp(string name, bool create = true)
-        {
-            return GetDbLeaf(name, create);
-        }
-
-        /// <summary>
-        /// Returns the specified leaf node from the database.
-        /// </summary>
-        /// <param name="name">The name of the leaf node.</param>
-        /// <param name="create">Specifies if the node should be created if it doesn't exist yet.</param>
-        private DatabaseNodeLeaf GetDbLeaf(string name, bool create)
+        public DatabaseNodeLeaf GetNode(string name, bool create = true)
         {
             if (string.IsNullOrEmpty(name))
             {
                 return null;
             }
 
-            var leaf = GetNodePtr().GetNode(new TextId(name), create) as DatabaseNodeLeaf;
+            var leaf = _rootDatabase.GetNode(new TextId(name), create) as DatabaseNodeLeaf;
+            return leaf;
+        }
+        
+        /// <summary>
+        /// Retrieves a leaf node from the server database.
+        /// </summary>
+        /// <param name="name">name of the data leaf node we are querying.</param>
+        /// <param name="create">when true if a node cannot be found it is created.</param>
+        public DatabaseNodeLeaf GetServerNode(string name, bool create = true)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+
+            var leaf = _serverDatabase.GetNode(new TextId(name), create) as DatabaseNodeLeaf;
             return leaf;
         }
 
         /// <summary>
-        /// Returns the specified branch node from the database.
+        /// Returns the specified branch node from the server database.
         /// </summary>
         /// <param name="name">The name of the branch.</param>
-
-        internal DatabaseNodeBranch GetDbBranch(string name)
+        internal DatabaseNodeBranch GetServerBranch(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
                 return null;
             }
 
-            var branch = GetNodePtr().GetNode(new TextId(name), false) as DatabaseNodeBranch;
+            var branch = _serverDatabase.GetNode(new TextId(name), false) as DatabaseNodeBranch;
             return branch;
         }
     }

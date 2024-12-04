@@ -197,46 +197,46 @@ namespace Client.Network
                     // TODO: Find out why there are property changes while being in the global menu
                     _entitiesManager.UpdateVisualProperty(change.GameCycle, change.ShortId, change.Property, change.PositionInfo.PredictedInterval);
                 }
-                // Add New Entity (and remove the old one in the slot)
-                else if (change.Property == (byte)PropertyType.AddNewEntity)
-                {
-                    // Remove the old entity
-                    _entitiesManager.Remove(change.ShortId, false);
-
-                    // Create the new entity
-                    if (_entitiesManager.Create(change.ShortId, _networkConnection.GetPropertyDecoder().GetSheetFromEntity(change.ShortId), change.NewEntityInfo) == null)
+                else switch (change.Property)
                     {
-                        _client.GetLogger().Warn($"CNetManager::update : entity in the slot '{change.ShortId}' has not been created.");
-                    }
-                }
-                // Delete an entity
-                else if (change.Property == (byte)PropertyType.RemoveOldEntity)
-                {
-                    _client.GetLogger().Debug($"CNetManager::remove old entity : {(_entitiesManager.GetEntity(change.ShortId) != null ? _entitiesManager.GetEntity(change.ShortId).GetDisplayName().Trim() : "unnamed")} id " + change.ShortId);
+                        // Add New Entity (and remove the old one in the slot)
+                        case (byte)PropertyType.AddNewEntity:
+                            {
+                                // Remove the old entity
+                                _entitiesManager.Remove(change.ShortId, false);
 
-                    // TODO: see why "Remove the old entity" is removing actual entities
-                    _entitiesManager.Remove(change.ShortId, true);
-                }
-                // Lag detected
-                else if (change.Property == (byte)PropertyType.LagDetected)
-                {
-                    _client.GetLogger().Debug("CNetManager::update : Lag detected.");
-                }
-                // Probe received
-                else if (change.Property == (byte)PropertyType.ProbeReceived)
-                {
-                    _client.GetLogger().Debug("CNetManager::update : Probe Received.");
-                }
-                // Connection ready
-                else if (change.Property == (byte)PropertyType.ConnectionReady)
-                {
-                    _client.GetLogger().Debug("CNetManager::update : Connection Ready.");
-                }
-                // Property unknown
-                else
-                {
-                    _client.GetLogger().Warn("CNetManager::update : The property '" + change.Property + "' is unknown.");
-                }
+                                // Create the new entity
+                                if (_entitiesManager.Create(change.ShortId, _networkConnection.GetPropertyDecoder().GetSheetFromEntity(change.ShortId), change.NewEntityInfo) == null)
+                                {
+                                    _client.GetLogger().Warn($"CNetManager::update : entity in the slot '{change.ShortId}' has not been created.");
+                                }
+
+                                break;
+                            }
+                        // Delete an entity
+                        case (byte)PropertyType.RemoveOldEntity:
+                            _client.GetLogger().Debug($"CNetManager::remove old entity : {(_entitiesManager.GetEntity(change.ShortId) != null ? _entitiesManager.GetEntity(change.ShortId).GetDisplayName().Trim() : "unnamed")} id " + change.ShortId);
+
+                            // TODO: see why "Remove the old entity" is removing actual entities
+                            _entitiesManager.Remove(change.ShortId, true);
+                            break;
+                        // Lag detected
+                        case (byte)PropertyType.LagDetected:
+                            _client.GetLogger().Debug("CNetManager::update : Lag detected.");
+                            break;
+                        // Probe received
+                        case (byte)PropertyType.ProbeReceived:
+                            _client.GetLogger().Debug("CNetManager::update : Probe Received.");
+                            break;
+                        // Connection ready
+                        case (byte)PropertyType.ConnectionReady:
+                            _client.GetLogger().Debug("CNetManager::update : Connection Ready.");
+                            break;
+                        // Property unknown
+                        default:
+                            _client.GetLogger().Warn("CNetManager::update : The property '" + change.Property + "' is unknown.");
+                            break;
+                    }
             }
 
             // Clear all changes.
@@ -491,7 +491,7 @@ namespace Client.Network
 
             // setup TEMP DB for title
             //var pIM = _client.GetInterfaceManager();
-            var node = _client.GetDatabaseManager().GetDbProp("UI:TEMP:SERVER_POPUP:TITLE");
+            var node = _client.GetDatabaseManager().GetServerNode("UI:TEMP:SERVER_POPUP:TITLE");
 
             if (node != null)
             {
@@ -1501,7 +1501,7 @@ namespace Client.Network
 
                     var invBranchStr = templ.GetDbStr(invId);
                     var textId = new TextId(invBranchStr);
-                    var inventoryNode = GetDatabaseManager().GetNodePtr().GetNode(textId, false);
+                    var inventoryNode = GetDatabaseManager().GetServerDb().GetNode(textId, false);
                     if (inventoryNode == null) throw new Exception("Inventory missing in database");
 
                     // List of updates
@@ -1521,7 +1521,7 @@ namespace Client.Network
 
                             if (leafNode == null)
                             {
-                                _client.Log.Error("Inventory slot property missing in database " + slotNode._name + ":" + Inventories.InfoVersionStr);
+                                _client.Log.Error("Inventory slot property missing in database " + slotNode.GetFullName() + ":" + Inventories.InfoVersionStr);
                                 continue;
                             }
 
@@ -1530,7 +1530,7 @@ namespace Client.Network
                             {
                                 var infoVersion = new uint();
                                 impulse.Serial(ref infoVersion, (int)Inventories.InfoVersionBitSize);
-                                leafNode.SetPropCheckGC(serverTick, infoVersion);
+                                leafNode.SetPropCheckGc(serverTick, infoVersion);
                             }
                             else
                             {
@@ -1557,11 +1557,11 @@ namespace Client.Network
                                     var leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[i]));
                                     if (leafNode == null)
                                     {
-                                        _client.Log.Error("Inventory slot property missing in database " + slotNode._name + ":" + ItemSlot.ItemPropStr[i]);
+                                        _client.Log.Debug("Inventory slot property missing in database " + slotNode.GetFullName() + ":" + ItemSlot.ItemPropStr[i]);
                                         continue;
                                     }
 
-                                    leafNode.SetPropCheckGC(serverTick, itemSlot.GetItemProp((Inventories.ItemPropId)i));
+                                    leafNode.SetPropCheckGc(serverTick, itemSlot.GetItemProp((Inventories.ItemPropId)i));
                                 }
                             }
                             else
@@ -1579,11 +1579,11 @@ namespace Client.Network
                                     var leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[(int)itemSlot.GetOneProp().ItemPropId]));
                                     if (leafNode == null)
                                     {
-                                        _client.Log.Error("Inventory slot property missing in database " + slotNode._name + ":" + ItemSlot.ItemPropStr[(int)itemSlot.GetOneProp().ItemPropId]);
+                                        _client.Log.Error("Inventory slot property missing in database " + slotNode.GetFullName() + ":" + ItemSlot.ItemPropStr[(int)itemSlot.GetOneProp().ItemPropId]);
                                         continue;
                                     }
 
-                                    leafNode.SetPropCheckGC(serverTick, itemSlot.GetOneProp().ItemPropValue);
+                                    leafNode.SetPropCheckGc(serverTick, itemSlot.GetOneProp().ItemPropValue);
                                 }
                                 else // iuReset
                                 {
@@ -1602,10 +1602,10 @@ namespace Client.Network
                                         var leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[i]));
                                         if (leafNode == null)
                                         {
-                                            _client.Log.Error("Inventory slot property missing in database " + slotNode._name + ":" + ItemSlot.ItemPropStr[i]);
+                                            _client.Log.Error("Inventory slot property missing in database " + slotNode.GetFullName() + ":" + ItemSlot.ItemPropStr[i]);
                                             continue;
                                         }
-                                        leafNode.SetPropCheckGC(serverTick, 0);
+                                        leafNode.SetPropCheckGc(serverTick, 0);
                                     }
                                 }
                             }

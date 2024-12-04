@@ -133,9 +133,9 @@ namespace Client.Entity
             }
 
             // Get the DB Entry
-            if (_client.GetDatabaseManager()?.GetNodePtr() != null)
+            if (_client.GetDatabaseManager()?.GetServerDb() != null)
             {
-                if (_client.GetDatabaseManager().GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
+                if (_client.GetDatabaseManager().GetServerDb().GetNode(0) is DatabaseNodeBranch nodeRoot)
                 {
                     DbEntry = nodeRoot.GetNode(_slot) as DatabaseNodeBranch;
 

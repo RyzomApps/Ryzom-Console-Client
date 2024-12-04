@@ -21,71 +21,58 @@ namespace Client.Inventory
 	/// <date>September 2003</date>
     public class ItemImage
     {
-        private DatabaseNodeLeaf Sheet;
-        private DatabaseNodeLeaf Quality;
-        private DatabaseNodeLeaf Quantity;
-        private DatabaseNodeLeaf UserColor;
-        private DatabaseNodeLeaf CharacBuffs;
-        private DatabaseNodeLeaf Price;
-        private DatabaseNodeLeaf Weight;
-        private DatabaseNodeLeaf NameId;
-        private DatabaseNodeLeaf InfoVersion;
-        private DatabaseNodeLeaf ResaleFlag;
+        private DatabaseNodeLeaf _sheet;
+        private DatabaseNodeLeaf _quality;
+        private DatabaseNodeLeaf _quantity;
+        private DatabaseNodeLeaf _userColor;
+        private DatabaseNodeLeaf _characBuffs;
+        private DatabaseNodeLeaf _price;
+        private DatabaseNodeLeaf _weight;
+        private DatabaseNodeLeaf _nameId;
+        private DatabaseNodeLeaf _infoVersion;
+        private DatabaseNodeLeaf _resaleFlag;
 
-        public uint GetSheetID() { return (uint)(Sheet != null ? Sheet.GetValue32() : 0); }
-        public ushort GetQuality() { return (ushort)(Quality != null ? Quality.GetValue16() : 0); }
-        public ushort GetQuantity() { return (ushort)(Quantity != null ? Quantity.GetValue16() : 0); }
-        public byte GetUserColor() { return (byte)(UserColor != null ? UserColor.GetValue8() : 0); }
-        public byte GetCharacBuffs() { return (byte)(CharacBuffs != null ? CharacBuffs.GetValue8() : 0); }
-        public uint GetPrice() { return (uint)(Price != null ? Price.GetValue32() : 0); }
-        public uint GetWeight() { return (uint)(Weight != null ? Weight.GetValue32() : 0); }
-        public uint GetNameId() { return (uint)(NameId != null ? NameId.GetValue32() : 0); }
-        public byte GetInfoVersion() { return (byte)(InfoVersion != null ? (byte)InfoVersion.GetValue8() : 0); }
-        public byte GetResaleFlag() { return (byte)(ResaleFlag != null ? (byte)ResaleFlag.GetValue8() : 0); }
-        public bool GetLockedByOwner() { return (bool)(ResaleFlag != null ? (ResaleFlag.GetValue8() == (byte)BotChatResaleFlag.ResaleKOLockedByOwner) : false); }
+        public uint GetSheetId() { return (uint)(_sheet?.GetValue32() ?? 0); }
+        public ushort GetQuality() { return (ushort)(_quality?.GetValue16() ?? 0); }
+        public ushort GetQuantity() { return (ushort)(_quantity?.GetValue16() ?? 0); }
+        public byte GetUserColor() { return (byte)(_userColor?.GetValue8() ?? 0); }
+        public byte GetCharacBuffs() { return (byte)(_characBuffs?.GetValue8() ?? 0); }
+        public uint GetPrice() { return (uint)(_price?.GetValue32() ?? 0); }
+        public uint GetWeight() { return (uint)(_weight?.GetValue32() ?? 0); }
+        public uint GetNameId() { return (uint)(_nameId?.GetValue32() ?? 0); }
+        public byte GetInfoVersion() { return (byte)(_infoVersion != null ? (byte)_infoVersion.GetValue8() : 0); }
+        public byte GetResaleFlag() { return (byte)(_resaleFlag != null ? (byte)_resaleFlag.GetValue8() : 0); }
+        public bool GetLockedByOwner() { return (bool)(_resaleFlag != null && (_resaleFlag.GetValue8() == (byte)BotChatResaleFlag.ResaleKOLockedByOwner)); }
 
-        public void SetSheetID(uint si) { if (Sheet != null) { Sheet.SetValue32((int)si); } }
-        public void SetQuality(ushort quality) { if (Quality != null) { Quality.SetValue16((short)quality); } }
-        public void SetQuantity(ushort quantity) { if (Quantity != null) { Quantity.SetValue16((short)quantity); } }
-        public void SetUserColor(byte uc) { if (UserColor != null) { UserColor.SetValue8((byte)uc); } }
-        public void SetCharacBuffs(byte uc) { if (CharacBuffs != null) { CharacBuffs.SetValue8((byte)uc); } }
-        public void SetPrice(uint price) { if (Price != null) { Price.SetValue32((int)price); } }
-        public void SetWeight(uint wgt) { if (Weight != null) { Weight.SetValue32((int)wgt); } }
-        public void SetNameId(uint nid) { if (NameId != null) { NameId.SetValue32((int)nid); } }
-        public void SetInfoVersion(byte iv) { if (InfoVersion != null) { InfoVersion.SetValue8((byte)iv); } }
-        public void SetResaleFlag(byte resale) { if (ResaleFlag != null) { ResaleFlag.SetValue8(resale); } }
-
-        public ItemImage()
-        {
-            Sheet = null;
-            Quality = null;
-            Quantity = null;
-            UserColor = null;
-            CharacBuffs = null;
-            Price = null;
-            Weight = null;
-            NameId = null;
-            InfoVersion = null;
-        }
+        public void SetSheetId(uint si) { _sheet?.SetValue32((int)si); }
+        public void SetQuality(ushort quality) { _quality?.SetValue16((short)quality); }
+        public void SetQuantity(ushort quantity) { _quantity?.SetValue16((short)quantity); }
+        public void SetUserColor(byte uc) { _userColor?.SetValue8((byte)uc); }
+        public void SetCharacBuffs(byte uc) { _characBuffs?.SetValue8((byte)uc); }
+        public void SetPrice(uint price) { _price?.SetValue32((int)price); }
+        public void SetWeight(uint wgt) { _weight?.SetValue32((int)wgt); }
+        public void SetNameId(uint nid) { _nameId?.SetValue32((int)nid); }
+        public void SetInfoVersion(byte iv) { _infoVersion?.SetValue8((byte)iv); }
+        public void SetResaleFlag(byte resale) { _resaleFlag?.SetValue8(resale); }
 
         public void Build(DatabaseNodeBranch branch)
         {
             if (branch == null)
                 return;
-            
-            Sheet = branch.GetNode(new TextId("SHEET"), false) as DatabaseNodeLeaf;
-            Quality = branch.GetNode(new TextId("QUALITY"), false) as DatabaseNodeLeaf;
-            Quantity = branch.GetNode(new TextId("QUANTITY"), false) as DatabaseNodeLeaf;
-            UserColor = branch.GetNode(new TextId("USER_COLOR"), false) as DatabaseNodeLeaf;
-            CharacBuffs = branch.GetNode(new TextId("CHARAC_BUFFS"), false) as DatabaseNodeLeaf;
-            Price = branch.GetNode(new TextId("PRICE"), false) as DatabaseNodeLeaf;
-            Weight = branch.GetNode(new TextId("WEIGHT"), false) as DatabaseNodeLeaf;
-            NameId = branch.GetNode(new TextId("NAMEID"), false) as DatabaseNodeLeaf;
-            InfoVersion = branch.GetNode(new TextId("INFO_VERSION"), false) as DatabaseNodeLeaf;
-            ResaleFlag = branch.GetNode(new TextId("RESALE_FLAG"), false) as DatabaseNodeLeaf;
+
+            _sheet = branch.GetNode(new TextId("SHEET"), false) as DatabaseNodeLeaf;
+            _quality = branch.GetNode(new TextId("QUALITY"), false) as DatabaseNodeLeaf;
+            _quantity = branch.GetNode(new TextId("QUANTITY"), false) as DatabaseNodeLeaf;
+            _userColor = branch.GetNode(new TextId("USER_COLOR"), false) as DatabaseNodeLeaf;
+            _characBuffs = branch.GetNode(new TextId("CHARAC_BUFFS"), false) as DatabaseNodeLeaf;
+            _price = branch.GetNode(new TextId("PRICE"), false) as DatabaseNodeLeaf;
+            _weight = branch.GetNode(new TextId("WEIGHT"), false) as DatabaseNodeLeaf;
+            _nameId = branch.GetNode(new TextId("NAMEID"), false) as DatabaseNodeLeaf;
+            _infoVersion = branch.GetNode(new TextId("INFO_VERSION"), false) as DatabaseNodeLeaf;
+            _resaleFlag = branch.GetNode(new TextId("RESALE_FLAG"), false) as DatabaseNodeLeaf;
 
             // Should always have at least those one: (ie all but Price)
-            Debug.Assert(Sheet != null || Quality != null || Quantity != null || UserColor != null || Weight != null || NameId != null || InfoVersion != null);
+            Debug.Assert(_sheet != null || _quality != null || _quantity != null || _userColor != null || _weight != null || _nameId != null || _infoVersion != null);
         }
     }
 }

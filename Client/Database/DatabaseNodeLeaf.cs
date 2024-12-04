@@ -32,13 +32,13 @@ namespace Client.Database
         private long _oldProperty;
 
         /// <summary>true if this value has changed</summary>
-        bool _changed;
+        private bool _changed;
         private DatabaseNodeBranch _Parent;
 
         /// <summary>
         /// bservers to call when the value really change
         /// </summary>
-        readonly List<IPropertyObserver> _Observers = new List<IPropertyObserver>();
+        readonly List<IPropertyObserver> _observers = new List<IPropertyObserver>();
 
         /// <summary>
         /// constructor
@@ -170,19 +170,30 @@ namespace Client.Database
             }
         }
 
-        internal void SetValue8(byte uc)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void SetValue16(short quality)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
-        /// Set the value of the property
+        /// Return the value of the property before the database change
         /// </summary>
+        public short GetOldValue16()
+        {
+            return (short)(_oldProperty & 0xffff);
+        }
+
+        /// <inheritdoc cref="SetValue64"/>
+        public void SetValue8(byte prop)
+        {
+            var newVal = (long)prop;
+            SetValue64(newVal);
+        }
+
+        /// <inheritdoc cref="SetValue64"/>
+        public void SetValue16(short prop)
+        {
+            var newVal = (long)prop;
+            SetValue64(newVal);
+    
+        }
+
+        /// <inheritdoc cref="SetValue64"/>
         internal void SetValue32(int prop)
         {
             var newVal = (long)prop;
@@ -313,59 +324,49 @@ namespace Client.Database
         /// <summary>
         /// Set the value of a property, only if gc>=_LastChangeGC
         /// </summary>
-        internal bool SetPropCheckGC(uint gc, long value)
+        internal bool SetPropCheckGc(uint gc, long value)
         {
             // Apply only if happens after the DB change
-            if (gc >= _lastChangeGc)
-            {
-                // new recent date
-                _lastChangeGc = gc;
-
-                // Set the property value (and set "_Changed" flag with 'true');
-                SetValue64(value);
-
-                return true;
-            }
-            else
-            {
+            if (gc < _lastChangeGc) 
                 return false;
-            }
+
+            // new recent date
+            _lastChangeGc = gc;
+
+            // Set the property value (and set "_Changed" flag with 'true');
+            SetValue64(value);
+
+            return true;
         }
 
         /// <inheritdoc/>
         public override bool AddObserver(IPropertyObserver observer, TextId id)
         {
-            _Observers.Add(observer);
+            _observers.Add(observer);
             return true;
         }
 
         /// <inheritdoc/>
-        public override bool RemoveObserver(IPropertyObserver observer, TextId UnnamedParameter1)
+        public override bool RemoveObserver(IPropertyObserver observer, TextId unnamedParameter1)
         {
-            if (!_Observers.Contains(observer))
+            if (!_observers.Contains(observer))
                 // no observer has been removed..
                 return false;
 
-            _Observers.Remove(observer);
+            _observers.Remove(observer);
             return true;
         }
 
-        /// <inheritdoc/>
         public void NotifyObservers()
         {
-            List<IPropertyObserver> obs = _Observers;
-
             // notify observer
-            foreach (IPropertyObserver it in obs)
+            foreach (var it in _observers)
             {
                 it.Update(this);
             }
 
             // mark parent branchs
-            if (_parent != null)
-            {
-                _parent.OnLeafChanged(_name);
-            }
+            _parent?.OnLeafChanged(_name);
         }
     }
 }

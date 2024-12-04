@@ -42,8 +42,8 @@ namespace Client.Inventory
         //const uint MAX_PLAYER_INV_ENTRIES = 500;
 
         // db path for the local inventory
-        const string LOCAL_INVENTORY = "LOCAL:INVENTORY";
-        const string SERVER_INVENTORY = "SERVER:INVENTORY";
+        //const string LOCAL_INVENTORY = "LOCAL:INVENTORY";
+        const string INVENTORY = "INVENTORY";
 
         // db path for all the inventories (without the SERVER: prefix)
         private readonly string[] InventoryDBs = {
@@ -92,13 +92,17 @@ namespace Client.Inventory
         // SERVER INVENTORY
         private ItemImage[] ServerBag = new ItemImage[MAX_BAGINV_ENTRIES];
         private ItemImage[] ServerTempInv = new ItemImage[MAX_TEMPINV_ENTRIES];
-        private int[] ServerHands = new int[MAX_HANDINV_ENTRIES];
-        private int[] ServerEquip = new int[MAX_EQUIPINV_ENTRIES];
+        public int[] ServerHands = new int[MAX_HANDINV_ENTRIES];
+        public int[] ServerEquip = new int[MAX_EQUIPINV_ENTRIES];
+        public int[] ServerHotbar = new int[MAX_EQUIPINV_ENTRIES];
         private DatabaseNodeLeaf ServerMoney;
         private ItemImage[][] ServerPAInv = new ItemImage[MAX_INVENTORY_ANIMAL][];
 
         // Cache to know if bag is locked or not, because of item worn
         private bool[] BagItemEquipped = new bool[MAX_BAGINV_ENTRIES];
+
+        // Equipment observer
+        DatabaseEquipObs _DBEquipObs;
 
         // ***************************************************************************
         // db path for all the inventories (without the SERVER: prefix)
@@ -106,6 +110,7 @@ namespace Client.Inventory
         public InventoryManager(RyzomClient client)
         {
             _client = client;
+            _DBEquipObs = new DatabaseEquipObs(client);
 
             ServerMoney = null;
 
@@ -134,15 +139,15 @@ namespace Client.Inventory
             // LOCAL DB is not implemented
 
             // SERVER DB
-            InitItemArray($"{SERVER_INVENTORY}:BAG", ServerBag, MAX_BAGINV_ENTRIES);
-            InitItemArray($"{SERVER_INVENTORY}:TEMP", ServerTempInv, MAX_TEMPINV_ENTRIES);
-            ServerMoney = _client.GetDatabaseManager().GetDbProp($"{SERVER_INVENTORY}:MONEY");
+            InitItemArray($"{INVENTORY}:BAG", ServerBag, MAX_BAGINV_ENTRIES);
+            InitItemArray($"{INVENTORY}:TEMP", ServerTempInv, MAX_TEMPINV_ENTRIES);
+            ServerMoney = _client.GetDatabaseManager().GetServerNode($"{INVENTORY}:MONEY");
 
             // Init Animals
             for (uint i = 0; i < MAX_INVENTORY_ANIMAL; i++)
             {
                 ServerPAInv[i] = new ItemImage[MAX_ANIMALINV_ENTRIES];
-                InitItemArray($"{SERVER_INVENTORY}:PACK_ANIMAL{i}", ServerPAInv[i], MAX_ANIMALINV_ENTRIES);
+                InitItemArray($"{INVENTORY}:PACK_ANIMAL{i}", ServerPAInv[i], MAX_ANIMALINV_ENTRIES);
             }
 
             // Drag'n'Drop is not implemented
@@ -155,13 +160,9 @@ namespace Client.Inventory
         /// </summary>
         private void InitItemArray(in string dbBranchName, ItemImage[] dest, uint numItems)
         {
-            return;
-
-            // TODO: init
-
             Debug.Assert(dest != null);
 
-            var branch = _client.GetDatabaseManager().GetDbBranch(dbBranchName);
+            var branch = _client.GetDatabaseManager().GetServerBranch(dbBranchName);
 
             if (branch == null)
             {
@@ -177,6 +178,7 @@ namespace Client.Inventory
                 }
                 else
                 {
+                    dest[k] = new ItemImage();
                     dest[k].Build(itemBranch);
                 }
             }
@@ -188,16 +190,16 @@ namespace Client.Inventory
         internal void OnUpdateEquipHands()
         {
             // update hands slots after initial BAG inventory has received
-            var pNl = _client.GetDatabaseManager().GetDbProp($"{LOCAL_INVENTORY}:HAND:0:INDEX_IN_BAG", false);
+            var pNl = _client.GetDatabaseManager().GetServerNode($"{INVENTORY}:HAND:0:INDEX_IN_BAG", false);
             if (pNl != null && pNl.GetValue32() != 0)
             {
-                // TODO _DBEquipObs.update(pNL);
+                _DBEquipObs.Update(pNl);
             }
 
-            pNl = _client.GetDatabaseManager().GetDbProp($"{LOCAL_INVENTORY}:HAND:1:INDEX_IN_BAG", false);
+            pNl = _client.GetDatabaseManager().GetServerNode($"{INVENTORY}:HAND:1:INDEX_IN_BAG", false);
             if (pNl != null && pNl.GetValue32() != 0)
             {
-                // TODO _DBEquipObs.update(pNL);
+                _DBEquipObs.Update(pNl);
             }
         }
 
@@ -251,6 +253,25 @@ namespace Client.Inventory
             return (ulong)(ServerMoney?.GetValue64() ?? 0);
         }
 
+        public void WearBagItem(int bagEntryIndex)
+        {
+            if (bagEntryIndex < 0 || bagEntryIndex >= (int)MAX_BAGINV_ENTRIES)
+                return;
+
+            BagItemEquipped[bagEntryIndex] = true;
+            SortBag();
+        }
+
+        public void UnwearBagItem(int bagEntryIndex)
+        {
+            if (bagEntryIndex < 0 || bagEntryIndex >= (int)MAX_BAGINV_ENTRIES)
+                return;
+
+            BagItemEquipped[bagEntryIndex] = false;
+            SortBag();
+        }
+
+
         public void Equip(in string bagPath, in string invPath)
         {
             if (bagPath.Length == 0 || invPath.Length == 0)
@@ -265,24 +286,24 @@ namespace Client.Inventory
             var inventory = (ushort)INVENTORIES.UNDEFINED;
             ushort invSlot = 0xffff;
 
-            if (invPath.StartsWith("LOCAL:INVENTORY:HAND", StringComparison.InvariantCultureIgnoreCase))
+            if (invPath.StartsWith("SERVER:INVENTORY:HAND", StringComparison.InvariantCultureIgnoreCase))
             {
                 inventory = (ushort)INVENTORIES.handling;
                 ushort.TryParse(invPath.Substring(21, invPath.Length), out invSlot);
             }
-            else if (invPath.StartsWith("LOCAL:INVENTORY:EQUIP", StringComparison.InvariantCultureIgnoreCase))
+            else if (invPath.StartsWith("SERVER:INVENTORY:EQUIP", StringComparison.InvariantCultureIgnoreCase))
             {
                 inventory = (ushort)INVENTORIES.equipment;
                 ushort.TryParse(invPath.Substring(22, invPath.Length), out invSlot);
             }
 
             // Hands management: check if we have to unequip left hand because of incompatibility with right hand item
-            var oldRightIndexInBag = _client.GetDatabaseManager().GetDbProp(invPath + ":INDEX_IN_BAG").GetValue16();
+            var oldRightIndexInBag = _client.GetDatabaseManager().GetServerNode(invPath + ":INDEX_IN_BAG").GetValue16();
 
             // Local inventory handling not implemented
 
             // update the equip DB pointer
-            _client.GetDatabaseManager().GetDbProp(invPath + ":INDEX_IN_BAG").SetValue16((short)(indexInBag + 1));
+            _client.GetDatabaseManager().GetServerNode(invPath + ":INDEX_IN_BAG").SetValue16((short)(indexInBag + 1));
 
             // Phrase invalidation is not implemented
 

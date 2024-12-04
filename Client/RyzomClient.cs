@@ -743,12 +743,12 @@ namespace Client
 
                 var textId = new TextId("SERVER");
 
-                if (_databaseManager.GetDb().GetNode(textId, false) != null)
+                if (_databaseManager.GetRootDb().GetNode(textId, false) != null)
                 {
-                    _databaseManager.GetDb().RemoveNode(textId);
+                    _databaseManager.GetRootDb().RemoveNode(textId);
                 }
 
-                _databaseManager.GetDb().AttachChild(_databaseManager.GetNodePtr(), "SERVER");
+                _databaseManager.GetRootDb().AttachChild(_databaseManager.GetServerDb(), "SERVER");
 
                 // Set the database
                 //_networkManager.SetDataBase(_databaseManager.GetNodePtr());
@@ -759,9 +759,9 @@ namespace Client
                 // Add the LOCAL branch
                 textId = new TextId("LOCAL");
 
-                if (_databaseManager.GetDb().GetNode(textId, false) != null)
+                if (_databaseManager.GetRootDb().GetNode(textId, false) != null)
                 {
-                    _databaseManager.GetDb().RemoveNode(textId);
+                    _databaseManager.GetRootDb().RemoveNode(textId);
                 }
 
                 _interfaceManager.CreateLocalBranch(@"data/local_database.xml");

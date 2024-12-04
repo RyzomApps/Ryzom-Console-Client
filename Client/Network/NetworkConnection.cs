@@ -1206,7 +1206,7 @@ namespace Client.Network
                             _client.Log.Warn($"S{(ushort)slot}u: Receiving an invalid position");
                         }
 
-                        var nodeRoot = (DatabaseNodeBranch)_databaseManager?.GetNodePtr().GetNode(0);
+                        var nodeRoot = (DatabaseNodeBranch)_databaseManager?.GetServerDb().GetNode(0);
 
                         if (nodeRoot != null)
                         {
@@ -1255,7 +1255,7 @@ namespace Client.Network
                             // Process orientation
                             _changes.Add(new PropertyChange(slot, (byte)PropertyType.Orientation, timestamp));
 
-                            var nodeRoot = (DatabaseNodeBranch)_databaseManager?.GetNodePtr().GetNode(0);
+                            var nodeRoot = (DatabaseNodeBranch)_databaseManager?.GetServerDb().GetNode(0);
 
                             if (nodeRoot != null)
                             {
@@ -1939,7 +1939,7 @@ namespace Client.Network
                 // Set target list value in database
                 if (_databaseManager != null)
                 {
-                    if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
+                    if (_databaseManager.GetServerDb().GetNode(0) is DatabaseNodeBranch nodeRoot)
                     {
                         var nodeEntity = nodeRoot.GetNode(slot) as DatabaseNodeBranch;
                         Debug.Assert(nodeEntity != null);
@@ -2054,7 +2054,7 @@ namespace Client.Network
                     // Set mode value in database
                     if (_databaseManager != null)
                     {
-                        if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
+                        if (_databaseManager.GetServerDb().GetNode(0) is DatabaseNodeBranch nodeRoot)
                         {
                             var node = nodeRoot.GetNode(slot).GetNode(propIndex) as DatabaseNodeLeaf;
                             Debug.Assert(node != null);
@@ -2069,7 +2069,7 @@ namespace Client.Network
                     if (modeEnum == combatFloat)
                     {
                         // Set theta
-                        if (_databaseManager?.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
+                        if (_databaseManager?.GetServerDb().GetNode(0) is DatabaseNodeBranch nodeRoot)
                         {
                             var node = nodeRoot.GetNode(slot).GetNode((byte)PropertyType.Orientation) as DatabaseNodeLeaf;
                             Debug.Assert(node != null);
@@ -2091,7 +2091,7 @@ namespace Client.Network
 
                                 _propertyDecoder.DecodeAbsPos2D(ref x, ref y, x16, y16);
 
-                                if (_databaseManager.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot)
+                                if (_databaseManager.GetServerDb().GetNode(0) is DatabaseNodeBranch nodeRoot)
                                 {
                                     var node = nodeRoot.GetNode(slot).GetNode(0) as DatabaseNodeLeaf;
                                     Debug.Assert(node != null);
@@ -2127,7 +2127,7 @@ namespace Client.Network
                     // Process property
                     _changes.Add(new PropertyChange(slot, propIndex, timeStamp));
 
-                    if (_databaseManager?.GetNodePtr().GetNode(0) is DatabaseNodeBranch nodeRoot2)
+                    if (_databaseManager?.GetServerDb().GetNode(0) is DatabaseNodeBranch nodeRoot2)
                     {
                         var node = nodeRoot2.GetNode(slot).GetNode(propIndex) as DatabaseNodeLeaf;
                         Debug.Assert(node != null);

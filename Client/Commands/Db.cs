@@ -34,7 +34,7 @@ namespace Client.Commands
                     var value = long.Parse(args[1], CultureInfo.InvariantCulture);
 
                     // Set the property.
-                    var prop = ryzomClient.GetDatabaseManager().GetDbProp(args[0], false);
+                    var prop = ryzomClient.GetDatabaseManager().GetNode(args[0], true);
 
                     if (prop == null)
                         return $"{args[0]} was not found in the database.";
@@ -45,7 +45,7 @@ namespace Client.Commands
                 }
                 case 1:
                 {
-                    var prop = ryzomClient.GetDatabaseManager().GetDbProp(args[0], false);
+                    var prop = ryzomClient.GetDatabaseManager().GetNode(args[0], false);
 
                     if (prop == null)
                         return $"{args[0]} was not found in the database.";

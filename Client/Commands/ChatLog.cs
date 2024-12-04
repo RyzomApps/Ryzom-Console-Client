@@ -35,7 +35,7 @@ namespace Client.Commands
                 ryzomClient.GetLogger().Info("Log turned on");
             }
 
-            var node = ryzomClient.GetDatabaseManager().GetDbProp("UI:SAVE:CHATLOG_STATE", false);
+            var node = ryzomClient.GetDatabaseManager().GetServerNode("UI:SAVE:CHATLOG_STATE", false);
             node?.SetValue32(ryzomClient.LogState ? 1 : 0);
 
             return "";
