@@ -37,6 +37,8 @@ namespace Client.Commands
 
             ryzomClient.GetPhraseManager().Write(dumpName + "_phrases.rec");
 
+            ryzomClient.GetInventoryManager().Write(dumpName + "_inventory.rec");
+
             return "";
         }
 

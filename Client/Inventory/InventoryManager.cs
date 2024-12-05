@@ -8,7 +8,10 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
+using API.Sheet;
 using Client.Database;
+using Client.Sheet;
 using Client.Stream;
 
 namespace Client.Inventory
@@ -201,6 +204,36 @@ namespace Client.Inventory
             {
                 _DBEquipObs.Update(pNl);
             }
+        }
+
+        /// <summary>
+        /// Dump all inventory to a file.
+        /// </summary>
+        public void Write(string fileName)
+        {
+            var f = new StreamWriter(fileName, false);
+
+            for (uint i = 0; i < MAX_BAGINV_ENTRIES; i++)
+            {
+                var sbi = GetServerBagItem(i);
+
+                if (sbi == null || sbi.GetSheetId() == 0)
+                    continue;
+
+                var sheet = _client.GetApiSheetIdFactory().SheetId(sbi.GetSheetId());
+                var name = "";
+                var family = "";
+
+                if (sbi.GetNameId() != 0)
+                    _client.GetStringManager().GetDynString(sbi.GetNameId(), out name, _client.GetNetworkManager());
+
+                if (sheet.GetSheetType() == (uint)SheetType.ITEM)
+                    family = ((EntitySheet)sheet).Type.ToString();
+
+                f.WriteLine($"{i}\t{sheet.Name}\t{family}\t{name}\t{sbi.GetQuality()}\t{sbi.GetQuantity()}");
+            }
+
+            f.Close();
         }
 
         internal void SortBag()
