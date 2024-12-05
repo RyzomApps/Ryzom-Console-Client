@@ -30,7 +30,7 @@ namespace Client.Database
         /// <summary>
         /// Database bank identifiers (please change BankNames in cpp accordingly)
         /// </summary>
-        public enum BankIdentifiers { CdbPlayer = 0, CdbGuild = 1, /* CDBContinent, */ CdbOutpost = 2, /* CDBGlobal, */ NbCdbBanks = 3, InvalidCdbBank = 4 };
+        private enum BankIdentifiers { CdbPlayer = 0, CdbGuild = 1, /* CDBContinent, */ CdbOutpost = 2, /* CDBGlobal, */ NbCdbBanks = 3, InvalidCdbBank = 4 };
 
         /// <summary>
         /// Names of the bank identifiers

@@ -78,7 +78,7 @@ namespace Client.Network.Action
 
             bms.Invert();
 
-            _nbBlock = int.MaxValue; //0xFFFFFFFF;
+            _nbBlock = int.MaxValue;
 
             networkConnection.ImpulseCallback?.Invoke(bms);
         }

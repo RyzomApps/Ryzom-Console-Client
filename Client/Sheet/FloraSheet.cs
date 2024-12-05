@@ -37,7 +37,7 @@ namespace Client.Sheet
         /// <summary>
         /// Get total weight of plant infos
         /// </summary> 
-        public ulong getPlantInfoTotalWeight()
+        public ulong GetPlantInfoTotalWeight()
         {
             return _TotalWeight;
         }
