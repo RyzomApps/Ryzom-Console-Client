@@ -99,10 +99,17 @@ namespace Client.Config
         public static long OnlineProxyListExpiration = 10 * 60; // [s]
 
         public static string[] OnlineProxyList = {
-            "https://openproxylist.xyz/socks5.txt",
+            "https://worm.rip/socks5.txt",
+            "https://api.openproxylist.xyz/socks5.txt",
+            "https://api.proxyscrape.com/?request=displayproxies&proxytype=socks5",
             "https://proxyspace.pro/socks5.txt",
             "https://raw.githubusercontent.com/Anonym0usWork1221/Free-Proxies/main/proxy_files/socks5_proxies.txt",
             "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt",
+            "https://raw.githubusercontent.com/mmpx12/proxy-list/master/socks5.txt",
+            "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/socks5.txt",
+            "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies_anonymous/socks5.txt",
+            "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/socks5/data.txt",
+            "https://raw.githubusercontent.com/roosterkid/openproxylist/main/SOCKS5_RAW.txt",
             "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks5.txt",
             "https://raw.githubusercontent.com/sunny9577/proxy-scraper/master/generated/socks5_proxies.txt",
             "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt",
@@ -339,7 +346,7 @@ namespace Client.Config
                 //    break;
 
                 case "onlineproxylist":
-                    argValue = argValue.Replace("{", "").Replace("}", "").Trim();
+                    argValue = argValue.Replace("{", "").Replace("}", "").Replace("socks5://", "").Trim();
                     OnlineProxyList = argValue.Split(",");
                     break;
 
