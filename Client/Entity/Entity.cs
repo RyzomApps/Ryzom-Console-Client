@@ -601,7 +601,7 @@ namespace Client.Entity
         /// <summary>
         /// Build the entity from a sheet.
         /// </summary>
-        public virtual bool Build(EntitySheet sheet, RyzomClient client)
+        public virtual bool Build(Sheet.Sheet sheet, RyzomClient client)
         {
             // Entity created.
             return true;

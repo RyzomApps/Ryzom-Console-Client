@@ -192,7 +192,7 @@ namespace Client.Entity
                 _entities[slot].NpcAlias(newEntityInfo.Alias);
 
                 // Build the entity from a sheet.
-                if (_entities[slot].Build((EntitySheet)entitySheet, _client))
+                if (_entities[slot].Build((Sheet.Sheet)entitySheet, _client))
                 {
                     // Apply properties from backup
                     ApplyBackupProperties(slot);

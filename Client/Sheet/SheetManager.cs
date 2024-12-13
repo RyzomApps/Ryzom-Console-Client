@@ -897,7 +897,7 @@ namespace Client.Sheet
         /// Processing the sheet
         /// </summary>
         /// <param name="sheet">sheet to process</param>
-        public void ProcessSheet(EntitySheet sheet)
+        public void ProcessSheet(Sheet sheet)
         {
             // For now: no op
         }
@@ -973,9 +973,9 @@ namespace Client.Sheet
         /// </summary>
         /// <param name="num">sheet number</param>
         /// <returns>pointer on the sheet according to the param or 0 if any pb</returns>
-        public IEntitySheet Get(ISheetId num)
+        public ISheet Get(ISheetId num)
         {
-            return _entitySheetContainer.ContainsKey((SheetId)num) ? _entitySheetContainer[(SheetId)num].EntitySheet : null;
+            return _entitySheetContainer.ContainsKey((SheetId)num) ? _entitySheetContainer[(SheetId)num].Sheet : null;
         }
 
         /// <summary>

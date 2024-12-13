@@ -18,7 +18,7 @@ namespace Client.Forage
     /// <author>Olivier Cado</author>
     /// <author>Nevrax France</author>
     /// <date>2003</date>
-    public class ForageSourceSheet : EntitySheet
+    public class ForageSourceSheet : Sheet.Sheet
     {
         private string _fxFilename;
         private string _fxSafeFilename;

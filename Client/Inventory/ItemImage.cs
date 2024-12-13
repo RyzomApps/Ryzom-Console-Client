@@ -9,6 +9,7 @@
 using Client.Chat;
 using Client.Database;
 using System.Diagnostics;
+using API.Inventory;
 
 namespace Client.Inventory
 {
@@ -19,7 +20,7 @@ namespace Client.Inventory
 	/// <author>Nicolas Vizerie</author>
 	/// <author>Nevrax France</author>
 	/// <date>September 2003</date>
-    public class ItemImage
+    public class ItemImage : IItemImage
     {
         private DatabaseNodeLeaf _sheet;
         private DatabaseNodeLeaf _quality;

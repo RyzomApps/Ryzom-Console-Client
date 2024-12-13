@@ -28,7 +28,7 @@ namespace Client.Sheet
         /// <summary>
         /// The data which will be filled in readGeorges and serial
         /// </summary>
-        public EntitySheet EntitySheet { get; internal set; }
+        public Sheet Sheet { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -47,45 +47,49 @@ namespace Client.Sheet
 
             var type = (SheetType)intType;
 
-            EntitySheet = null;
+            Sheet = null;
 
             switch (type)
             {
                 case SheetType.FAUNA:
-                    EntitySheet = new CharacterSheet(_client.GetSheetIdFactory());
-                    InitSheet(EntitySheet, stream, type);
+                    Sheet = new CharacterSheet(_client.GetSheetIdFactory());
+                    InitSheet(Sheet, stream, type);
                     break;
 
                 case SheetType.CHAR:
-                    EntitySheet = new PlayerSheet(_client.GetSheetIdFactory());
-                    InitSheet(EntitySheet, stream, type);
+                    Sheet = new PlayerSheet(_client.GetSheetIdFactory());
+                    InitSheet(Sheet, stream, type);
+                    break;
+
+                case SheetType.ITEM:
+                    Sheet = new ItemSheet(_client.GetSheetIdFactory());
+                    InitSheet(Sheet, stream, type);
                     break;
 
                 case SheetType.SBRICK:
-                    EntitySheet = new BrickSheet(_client.GetSheetIdFactory());
-                    InitSheet(EntitySheet, stream, type);
+                    Sheet = new BrickSheet(_client.GetSheetIdFactory());
+                    InitSheet(Sheet, stream, type);
                     break;
 
                 case SheetType.SPHRASE:
-                    EntitySheet = new PhraseSheet(_client.GetSheetIdFactory());
-                    InitSheet(EntitySheet, stream, type);
+                    Sheet = new PhraseSheet(_client.GetSheetIdFactory());
+                    InitSheet(Sheet, stream, type);
                     break;
 
                 case SheetType.FORAGE_SOURCE:
-                    EntitySheet = new ForageSourceSheet(_client.GetSheetIdFactory());
-                    InitSheet(EntitySheet, stream, type);
+                    Sheet = new ForageSourceSheet(_client.GetSheetIdFactory());
+                    InitSheet(Sheet, stream, type);
                     break;
 
                 case SheetType.RACE_STATS:
-                    EntitySheet = new RaceStatsSheet(_client.GetSheetIdFactory());
-                    InitSheet(EntitySheet, stream, type);
+                    Sheet = new RaceStatsSheet(_client.GetSheetIdFactory());
+                    InitSheet(Sheet, stream, type);
                     break;
 
                 case SheetType.FLORA:
                 case SheetType.OBJECT:
                 case SheetType.FX:
                 case SheetType.BUILDING:
-                case SheetType.ITEM:
                 case SheetType.PLANT:
                 case SheetType.MISSION:
                 case SheetType.PACT:
@@ -126,7 +130,7 @@ namespace Client.Sheet
         /// <summary>
         /// Useful for serial
         /// </summary>
-        public void InitSheet(EntitySheet sheet, BitStreamFile stream, SheetType type)
+        public void InitSheet(Sheet sheet, BitStreamFile stream, SheetType type)
         {
             if (sheet == null)
                 return;

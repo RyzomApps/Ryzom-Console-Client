@@ -54,7 +54,7 @@ namespace Client.Entity
 
         /// Pointer on the Sheet with basic parameters.
         // TODO: PlayerSheet
-        protected readonly EntitySheet _Sheet;
+        protected readonly Sheet.Sheet _Sheet;
 
         /// Pointer on the Sheet with basic parameters.
         protected RaceStatsSheet _PlayerSheet;
@@ -117,7 +117,7 @@ namespace Client.Entity
         /// <summary>
         /// Build the entity from a sheet.
         /// </summary>
-        public override bool Build(EntitySheet sheet, RyzomClient client)
+        public override bool Build(Sheet.Sheet sheet, RyzomClient client)
         {
             // Cast the sheet in the right type.
             _PlayerSheet = (RaceStatsSheet)sheet;

@@ -693,7 +693,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server activates/deactivates use of female titles
+        /// Called when the server activates/deactivates use of female titles
         /// </summary>
         public void OnGuildUseFemaleTitles(bool useFemaleTitles)
         {
@@ -701,7 +701,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server upload the phrases.
+        /// Called when the server upload the phrases.
         /// </summary>
         public void OnPhraseDownLoad(List<PhraseSlot> phrases, List<PhraseMemorySlot> memorizedPhrases)
         {
@@ -709,7 +709,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server block/unblock some reserved titles
+        /// Called when the server block/unblock some reserved titles
         /// </summary>
         public void OnGuildUpdatePlayerTitle(bool unblock, int len, List<ushort> titles)
         {
@@ -717,7 +717,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server sends a new re-spawn point
+        /// Called when the server sends a new re-spawn point
         /// </summary>
         public void OnDeathRespawnPoint(int x, int y)
         {
@@ -725,7 +725,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server sends the encyclopedia initialization
+        /// Called when the server sends the encyclopedia initialization
         /// </summary>
         public void OnEncyclopediaInit()
         {
@@ -733,7 +733,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server sends the inventory initialization
+        /// Called when the server sends the inventory initialization
         /// </summary>
         public void OnInitInventory(uint serverTick)
         {
@@ -741,7 +741,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server sends the database initialization
+        /// Called when the server sends the database initialization
         /// </summary>
         public void OnDatabaseInitPlayer(uint serverTick)
         {
@@ -749,7 +749,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server sends the database updates
+        /// Called when the server sends the database updates
         /// </summary>
         public void OnDatabaseUpdatePlayer(uint serverTick)
         {
@@ -757,7 +757,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server updates the user hp, sap, stamina and focus bars/stats
+        /// Called when the server updates the user hp, sap, stamina and focus bars/stats
         /// </summary>
         public void OnUserBars(byte msgNumber, int hp, int sap, int sta, int focus)
         {
@@ -765,7 +765,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when a database bank gets initialized
+        /// Called when a database bank gets initialized
         /// </summary>
         public void OnDatabaseInitBank(uint serverTick, uint bank, DatabaseManager databaseManager)
         {
@@ -773,7 +773,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when a database bank gets updated
+        /// Called when a database bank gets updated
         /// </summary>
         internal void OnDatabaseUpdateBank(uint serverTick, uint bank, DatabaseManager databaseManager)
         {
@@ -781,7 +781,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when a database bank gets reset
+        /// Called when a database bank gets reset
         /// </summary>
         internal void OnDatabaseResetBank(uint serverTick, uint bank, DatabaseManager databaseManager)
         {
@@ -789,7 +789,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the string cache reloads
+        /// Called when the string cache reloads
         /// </summary>
         public void OnReloadCache(int timestamp)
         {
@@ -797,7 +797,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the local string set updates
+        /// Called when the local string set updates
         /// </summary>
         public void OnStringResp(uint stringId, string strUtf8)
         {
@@ -814,7 +814,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the player gets invited to a team
+        /// Called when the player gets invited to a team
         /// </summary>
         public void OnTeamInvitation(uint textID)
         {
@@ -822,7 +822,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server sends information about the user char after the login
+        /// Called when the server sends information about the user char after the login
         /// </summary>
         public void OnUserChar(int highestMainlandSessionId, int firstConnectedTime, int playedTime, Vector3 initPos, Vector3 initFront, byte season, int role, bool isInRingSession)
         {
@@ -830,7 +830,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server sends information about the all the user chars
+        /// Called when the server sends information about the all the user chars
         /// </summary>
         internal void OnUserChars()
         {
@@ -838,7 +838,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the client receives the shard id and the web host from the server
+        /// Called when the client receives the shard id and the web host from the server
         /// </summary>
         public void OnShardID(uint shardId, string webHost)
         {
@@ -846,7 +846,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when an entity health, sap, stamina or focus value changes
+        /// Called when an entity health, sap, stamina or focus value changes
         /// </summary>
         public void OnEntityUpdateBars(uint gameCycle, long prop, byte slot, sbyte hitPoints, byte stamina, byte sap, byte focus)
         {
@@ -854,7 +854,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when an entity position update occurs
+        /// Called when an entity position update occurs
         /// </summary>
         public void OnEntityUpdatePos(uint gameCycle, long prop, byte slot, uint predictedInterval, Vector3 pos)
         {
@@ -862,7 +862,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when an entity orientation update occurs
+        /// Called when an entity orientation update occurs
         /// </summary>
         public void OnEntityUpdateOrient(uint gameCycle, long prop)
         {
@@ -879,7 +879,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when an entity is created
+        /// Called when an entity is created
         /// </summary>
         public void OnEntityCreate(byte slot)
         {
@@ -887,7 +887,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when an entity gets removed
+        /// Called when an entity gets removed
         /// </summary>
         public void OnEntityRemove(byte slot, bool _)
         {
@@ -895,7 +895,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when visual property is updated
+        /// Called when visual property is updated
         /// </summary>
         public void OnEntityUpdateVisualProperty(uint gameCycle, byte slot, uint prop, uint predictedInterval)
         {
@@ -903,7 +903,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server phrase execution acknowledgment has been received
+        /// Called when the server phrase execution acknowledgment has been received
         /// </summary>
         public void OnPhraseAckExecute(bool cyclic, byte counterValue, bool ok)
         {
@@ -911,7 +911,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when the server cancels the client quit process
+        /// Called when the server cancels the client quit process
         /// </summary>
         internal void OnServerQuitAbort()
         {
@@ -919,7 +919,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        ///  called when the server wants to teleport the user
+        /// Called when the server wants to teleport the user
         /// </summary>
         internal void OnTeleport(bool hasSeason)
         {
@@ -927,11 +927,19 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// called when a get request to the specified Uri was responded
+        /// Called when a get request to the specified Uri was responded
         /// </summary>
         internal void OnWebTransfer(string url, HttpResponseMessage response)
         {
             DispatchListenerEvent(listener => listener.OnWebTransfer(url, response));
+        }
+
+        /// <summary>
+        /// Called when the bag index for a hand slot was initialised
+        /// </summary>
+        public void OnInitEquipHands(int handIndex, int bagIndex)
+        {
+            DispatchListenerEvent(listener => listener.OnInitEquipHands(handIndex, bagIndex));
         }
 
         #endregion

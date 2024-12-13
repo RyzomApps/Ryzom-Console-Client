@@ -115,7 +115,7 @@ namespace Client.Forage
         /// <summary>
         /// Build the entity from a sheet.
         /// </summary>
-        public override bool Build(EntitySheet sheet, RyzomClient client)
+        public override bool Build(Sheet.Sheet sheet, RyzomClient client)
         {
             // Get FX filename and info from the sheet
             if (!(sheet is ForageSourceSheet forageSourceSheet))

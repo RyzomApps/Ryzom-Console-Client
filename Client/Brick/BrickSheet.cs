@@ -15,7 +15,7 @@ using Client.Stream;
 namespace Client.Brick
 {
     // TODO: Implementation
-    internal class BrickSheet : EntitySheet
+    internal class BrickSheet : Sheet.Sheet
     {
         public string IdIcon;
 

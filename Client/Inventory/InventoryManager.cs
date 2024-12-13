@@ -9,7 +9,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using API.Sheet;
+using API.Inventory;
 using Client.Database;
 using Client.Sheet;
 using Client.Stream;
@@ -23,7 +23,7 @@ namespace Client.Inventory
     /// <author>Nicolas Vizerie</author>
     /// <author>Nevrax France</author>
     /// <date>September 2003</date>
-    public class InventoryManager
+    public class InventoryManager : IInventoryManager
     {
         private readonly RyzomClient _client;
 
@@ -142,15 +142,15 @@ namespace Client.Inventory
             // LOCAL DB is not implemented
 
             // SERVER DB
-            InitItemArray($"{INVENTORY}:BAG", ServerBag, MAX_BAGINV_ENTRIES);
-            InitItemArray($"{INVENTORY}:TEMP", ServerTempInv, MAX_TEMPINV_ENTRIES);
+            InitItemArray($"{INVENTORY}:BAG", ref ServerBag, MAX_BAGINV_ENTRIES);
+            InitItemArray($"{INVENTORY}:TEMP", ref ServerTempInv, MAX_TEMPINV_ENTRIES);
             ServerMoney = _client.GetDatabaseManager().GetServerNode($"{INVENTORY}:MONEY");
 
             // Init Animals
             for (uint i = 0; i < MAX_INVENTORY_ANIMAL; i++)
             {
                 ServerPAInv[i] = new ItemImage[MAX_ANIMALINV_ENTRIES];
-                InitItemArray($"{INVENTORY}:PACK_ANIMAL{i}", ServerPAInv[i], MAX_ANIMALINV_ENTRIES);
+                InitItemArray($"{INVENTORY}:PACK_ANIMAL{i}", ref ServerPAInv[i], MAX_ANIMALINV_ENTRIES);
             }
 
             // Drag'n'Drop is not implemented
@@ -161,7 +161,7 @@ namespace Client.Inventory
         /// <summary>
         /// Init an array of items from a db branch
         /// </summary>
-        private void InitItemArray(in string dbBranchName, ItemImage[] dest, uint numItems)
+        private void InitItemArray(in string dbBranchName, ref ItemImage[] dest, uint numItems)
         {
             Debug.Assert(dest != null);
 
@@ -197,12 +197,14 @@ namespace Client.Inventory
             if (pNl != null && pNl.GetValue32() != 0)
             {
                 _DBEquipObs.Update(pNl);
+                _client.Plugins.OnInitEquipHands(0, pNl.GetValue32());
             }
 
             pNl = _client.GetDatabaseManager().GetServerNode($"{INVENTORY}:HAND:1:INDEX_IN_BAG", false);
             if (pNl != null && pNl.GetValue32() != 0)
             {
                 _DBEquipObs.Update(pNl);
+                _client.Plugins.OnInitEquipHands(1, pNl.GetValue32());
             }
         }
 
@@ -215,22 +217,24 @@ namespace Client.Inventory
 
             for (uint i = 0; i < MAX_BAGINV_ENTRIES; i++)
             {
-                var sbi = GetServerBagItem(i);
+                var sbi = GetBagItem(i);
 
                 if (sbi == null || sbi.GetSheetId() == 0)
                     continue;
 
-                var sheet = _client.GetApiSheetIdFactory().SheetId(sbi.GetSheetId());
+                var sheetId = _client.GetApiSheetIdFactory().SheetId(sbi.GetSheetId());
                 var name = "";
                 var family = "";
 
                 if (sbi.GetNameId() != 0)
                     _client.GetStringManager().GetDynString(sbi.GetNameId(), out name, _client.GetNetworkManager());
 
-                if (sheet.GetSheetType() == (uint)SheetType.ITEM)
-                    family = ((EntitySheet)sheet).Type.ToString();
+                var sheet = _client.GetApiSheetManager().Get(sheetId);
 
-                f.WriteLine($"{i}\t{sheet.Name}\t{family}\t{name}\t{sbi.GetQuality()}\t{sbi.GetQuantity()}");
+                if (sheet is ItemSheet itemSheet)
+                    family = itemSheet.Family.ToString();
+
+                f.WriteLine($"{i}\t{sheetId.Name}\t{family}\t{name}\t{sbi.GetQuality()}\t{sbi.GetQuantity()}");
             }
 
             f.Close();
@@ -241,39 +245,39 @@ namespace Client.Inventory
             // Ignored, since there is no interface
         }
 
-        public ItemImage GetServerHandItem(uint index)
+        public IItemImage GetHandItem(uint index)
         {
             Debug.Assert(index < MAX_HANDINV_ENTRIES);
             return ServerHands[index] != 0 ? ServerBag[ServerHands[index]] : null;
         }
-        public ItemImage GetServerEquipItem(uint index)
+        public IItemImage GetEquipmentItem(uint index)
         {
             Debug.Assert(index < MAX_EQUIPINV_ENTRIES);
             return ServerEquip[index] != 0 ? ServerBag[ServerEquip[index]] : null;
         }
 
-        public ItemImage GetServerPAItem(uint beastIndex, uint index)
+        public IItemImage GetPackAnimalItem(uint beastIndex, uint index)
         {
             Debug.Assert(beastIndex < MAX_INVENTORY_ANIMAL);
             Debug.Assert(index < MAX_ANIMALINV_ENTRIES);
             return ServerPAInv[beastIndex][index];
         }
 
-        public ItemImage GetServerBagItem(uint index)
+        public IItemImage GetBagItem(uint index)
         {
             Debug.Assert(index < MAX_BAGINV_ENTRIES);
             return ServerBag[index];
         }
 
-        public ItemImage GetServerItem(uint inv, uint index)
+        public IItemImage GetServerItem(uint inv, uint index)
         {
             if (inv == (uint)INVENTORIES.bag)
             {
-                return GetServerBagItem(index);
+                return GetBagItem(index);
             }
             if (inv >= (uint)INVENTORIES.pet_animal && inv < (uint)INVENTORIES.pet_animal + MAX_INVENTORY_ANIMAL)
             {
-                return GetServerPAItem(inv - (uint)INVENTORIES.pet_animal, index);
+                return GetPackAnimalItem(inv - (uint)INVENTORIES.pet_animal, index);
             }
 
             _client.Log.Error("Not a bag or pet inventory.");
@@ -304,7 +308,11 @@ namespace Client.Inventory
             SortBag();
         }
 
-
+        /// <summary>
+        /// Equip a bag item
+        /// </summary>
+        /// <param name="bagPath">SERVER:INVENTORY:BAG:165</param>
+        /// <param name="invPath">SERVER:INVENTORY:HAND:0 OR SERVER:INVENTORY:EQUIP:5</param>
         public void Equip(in string bagPath, in string invPath)
         {
             if (bagPath.Length == 0 || invPath.Length == 0)
@@ -314,29 +322,32 @@ namespace Client.Inventory
 
             // Get inventory and slot
             var sIndexInBag = bagPath.Substring(bagPath.LastIndexOf(':') + 1, bagPath.Length);
-            ushort.TryParse(sIndexInBag, out var indexInBag);
+            if (!ushort.TryParse(sIndexInBag, out var indexInBag))
+                return;
 
             var inventory = (ushort)INVENTORIES.UNDEFINED;
             ushort invSlot = 0xffff;
 
-            if (invPath.StartsWith("SERVER:INVENTORY:HAND", StringComparison.InvariantCultureIgnoreCase))
+            if (invPath.StartsWith("INVENTORY:HAND", StringComparison.InvariantCultureIgnoreCase))
             {
                 inventory = (ushort)INVENTORIES.handling;
-                ushort.TryParse(invPath.Substring(21, invPath.Length), out invSlot);
+                if (!ushort.TryParse(invPath.Substring(21, invPath.Length), out invSlot))
+                    return;
             }
-            else if (invPath.StartsWith("SERVER:INVENTORY:EQUIP", StringComparison.InvariantCultureIgnoreCase))
+            else if (invPath.StartsWith("INVENTORY:EQUIP", StringComparison.InvariantCultureIgnoreCase))
             {
                 inventory = (ushort)INVENTORIES.equipment;
-                ushort.TryParse(invPath.Substring(22, invPath.Length), out invSlot);
+                if (!ushort.TryParse(invPath.Substring(22, invPath.Length), out invSlot))
+                    return;
             }
 
             // Hands management: check if we have to unequip left hand because of incompatibility with right hand item
-            var oldRightIndexInBag = _client.GetDatabaseManager().GetServerNode(invPath + ":INDEX_IN_BAG").GetValue16();
+            var oldRightIndexInBag = _client.GetDatabaseManager().GetServerNode("SERVER:" + invPath + ":INDEX_IN_BAG").GetValue16();
 
             // Local inventory handling not implemented
 
             // update the equip DB pointer
-            _client.GetDatabaseManager().GetServerNode(invPath + ":INDEX_IN_BAG").SetValue16((short)(indexInBag + 1));
+            _client.GetDatabaseManager().GetServerNode("SERVER:" + invPath + ":INDEX_IN_BAG").SetValue16((short)(indexInBag + 1));
 
             // Phrase invalidation is not implemented
 

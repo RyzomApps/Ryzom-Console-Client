@@ -19,7 +19,7 @@ namespace Client.Phrase
     /// <author>Matthieu Besson</author>
     /// <author>Nevrax France</author>
     /// <date>2003 September</date>
-    public class PhraseSheet : EntitySheet
+    public class PhraseSheet : Sheet.Sheet
     {
         // <summary>
         // All these values are sheet id
@@ -124,7 +124,7 @@ namespace Client.Phrase
         /// Build the entity from an external script
         /// TODO: entity?
         /// </summary>
-        public bool Build(EntitySheet root)
+        public bool Build(Sheet.Sheet root)
         {
             //string sTmp;
             //string sTmp2;

@@ -15,7 +15,7 @@ namespace Client.Sheet
     /// <summary>
     /// Info about flora, read from a .flora sheet
     /// </summary>
-    public class FloraSheet : EntitySheet
+    public class FloraSheet : Sheet
     {
         private readonly SheetIdFactory _sheetIdFactory;
         private readonly List<CPlantInfo> _Plants = new List<CPlantInfo>();

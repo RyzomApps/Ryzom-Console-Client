@@ -20,7 +20,7 @@ namespace Client.Sheet
     /// <author>Guillaume PUZIN (GUIGUI)</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    public class PlayerSheet : EntitySheet
+    public class PlayerSheet : Sheet
     {
         private readonly SheetIdFactory _sheetIdFactory;
         public Equipment Ammo = new Equipment();

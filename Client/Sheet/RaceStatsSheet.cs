@@ -15,7 +15,7 @@ namespace Client.Sheet
     /// <summary>
     /// Class to manage .race_stats sheets
     /// </summary>
-    public class RaceStatsSheet : EntitySheet
+    public class RaceStatsSheet : Sheet
     {
         private enum Characteristics
         {

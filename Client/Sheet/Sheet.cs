@@ -17,7 +17,7 @@ namespace Client.Sheet
     /// <author>Guillaume PUZIN</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    public abstract class EntitySheet : IEntitySheet
+    public abstract class Sheet : ISheet
     {
         //private readonly SheetIdFactory _sheetIdFactory;
 
@@ -34,7 +34,7 @@ namespace Client.Sheet
         /// <summary>
         /// Constructor
         /// </summary>
-        protected EntitySheet(SheetIdFactory sheetIdFactory)
+        protected Sheet(SheetIdFactory sheetIdFactory)
         {
             //_sheetIdFactory = sheetIdFactory;
             _type = SheetType.UNKNOWN_SHEET_TYPE;

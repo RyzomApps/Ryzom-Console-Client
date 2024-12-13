@@ -554,7 +554,7 @@ namespace Client.Strings
             }
         }
 
-        public bool GetDynString(uint dynStringId, out string result, NetworkManager networkManager)
+        public bool GetDynString(uint dynStringId, out string result, INetworkManager networkManager)
         {
             result = "";
 
@@ -584,7 +584,7 @@ namespace Client.Strings
                 return false;
             }
 
-            if (BuildDynString(_waitingDynStrings[dynStringId], networkManager))
+            if (BuildDynString(_waitingDynStrings[dynStringId], (NetworkManager)networkManager))
             {
                 result = _waitingDynStrings[dynStringId].String;
                 _receivedDynStrings.Add(dynStringId, _waitingDynStrings[dynStringId]);

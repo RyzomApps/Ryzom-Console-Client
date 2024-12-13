@@ -16,7 +16,7 @@ using Client.Stream;
 
 namespace Client.Sheet
 {
-    public class CharacterSheet : EntitySheet
+    public class CharacterSheet : Sheet
     {
         private readonly SheetIdFactory _sheetIdFactory;
 

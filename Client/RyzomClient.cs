@@ -40,6 +40,7 @@ using Client.Phrase;
 using Client.Skill;
 using Client.Stream;
 using API.Entity;
+using API.Inventory;
 using API.Network.Web;
 using API.Sheet;
 using Client.Strings;
@@ -187,6 +188,8 @@ namespace Client
         public SkillManager GetSkillManager() { return _skillManager; }
 
         public InventoryManager GetInventoryManager() { return _inventoryManager; }
+
+        public IInventoryManager GetApiInventoryManager() { return _inventoryManager; }
 
         public IWebTransfer GetWebTransfer() { return _webTransfer; }
 

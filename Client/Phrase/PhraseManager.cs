@@ -282,7 +282,7 @@ namespace Client.Phrase
 
             foreach (var (key, value) in sm)
             {
-                if (!(value.EntitySheet is { Type: SheetType.SPHRASE }))
+                if (!(value.Sheet is { Type: SheetType.SPHRASE }))
                     continue;
 
                 BuildPhraseFromSheet(ref tmpPhrase, key.AsInt());
