@@ -311,8 +311,8 @@ namespace Client.Inventory
         /// <summary>
         /// Equip a bag item
         /// </summary>
-        /// <param name="bagPath">SERVER:INVENTORY:BAG:165</param>
-        /// <param name="invPath">SERVER:INVENTORY:HAND:0 OR SERVER:INVENTORY:EQUIP:5</param>
+        /// <param name="bagPath">INVENTORY:BAG:165</param>
+        /// <param name="invPath">INVENTORY:HAND:0 OR INVENTORY:EQUIP:5</param>
         public void Equip(in string bagPath, in string invPath)
         {
             if (bagPath.Length == 0 || invPath.Length == 0)
@@ -321,7 +321,7 @@ namespace Client.Inventory
             }
 
             // Get inventory and slot
-            var sIndexInBag = bagPath.Substring(bagPath.LastIndexOf(':') + 1, bagPath.Length);
+            var sIndexInBag = bagPath[(bagPath.LastIndexOf(':') + 1)..];
             if (!ushort.TryParse(sIndexInBag, out var indexInBag))
                 return;
 
@@ -331,15 +331,20 @@ namespace Client.Inventory
             if (invPath.StartsWith("INVENTORY:HAND", StringComparison.InvariantCultureIgnoreCase))
             {
                 inventory = (ushort)INVENTORIES.handling;
-                if (!ushort.TryParse(invPath.Substring(21, invPath.Length), out invSlot))
+                if (!ushort.TryParse(invPath[15..], out invSlot))
                     return;
             }
             else if (invPath.StartsWith("INVENTORY:EQUIP", StringComparison.InvariantCultureIgnoreCase))
             {
                 inventory = (ushort)INVENTORIES.equipment;
-                if (!ushort.TryParse(invPath.Substring(22, invPath.Length), out invSlot))
+                if (!ushort.TryParse(invPath[16..], out invSlot))
                     return;
             }
+            //else if (strnicmp(invPath.c_str(), "LOCAL:INVENTORY:HOTBAR", 22) == 0)
+            //{
+            //    inventory = INVENTORIES::hotbar;
+            //    fromString(invPath.substr(23, invPath.size()), invSlot);
+            //}
 
             // Hands management: check if we have to unequip left hand because of incompatibility with right hand item
             var oldRightIndexInBag = _client.GetDatabaseManager().GetServerNode("SERVER:" + invPath + ":INDEX_IN_BAG").GetValue16();
@@ -373,8 +378,114 @@ namespace Client.Inventory
                 }
                 else
                 {
-                    _client.Log.Warn($"Don't know message name {sMsg}");
+                    _client.Log.Error($"Don't know message name {sMsg}");
                 }
+            }
+            else
+            {
+                _client.Log.Error($"Inventory is undefined.");
+            }
+        }
+
+        /// <summary>
+        /// Unequip an item
+        /// </summary>
+        /// <param name="invPath">INVENTORY:HAND:0 OR INVENTORY:EQUIP:5</param>
+        internal void UnEquip(string invPath)
+        {
+            if (invPath.Length == 0)
+            {
+                return;
+            }
+
+            var oldIndexInBag = _client.GetDatabaseManager().GetProp("SERVER:" + invPath + ":INDEX_IN_BAG");
+            if (oldIndexInBag == 0)
+            {
+                return;
+            }
+
+            // Get inventory and slot
+            var inventory = (ushort)INVENTORIES.UNDEFINED;
+            ushort invSlot = 0xffff;
+
+            if (invPath.StartsWith("INVENTORY:HAND", StringComparison.InvariantCultureIgnoreCase))
+            {
+                inventory = (ushort)INVENTORIES.handling;
+                if (!ushort.TryParse(invPath[15..], out invSlot))
+                    return;
+            }
+            else if (invPath.StartsWith("INVENTORY:EQUIP", StringComparison.InvariantCultureIgnoreCase))
+            {
+                inventory = (ushort)INVENTORIES.equipment;
+                if (!ushort.TryParse(invPath[16..], out invSlot))
+                    return;
+            }
+            //else if (strnicmp(invPath.c_str(), "LOCAL:INVENTORY:HOTBAR", 22) == 0)
+            //{
+            //    inventory = INVENTORIES.hotbar;
+            //    fromString(invPath.substr(23, invPath.size()), invSlot);
+            //}
+
+            // TODO Hands management : check if we have to unequip left hand because of incompatibility with right hand item
+            //if (inventory == INVENTORIES.handling && invSlot == 0)
+            //{
+            //    DatabaseCtrlSheet pCSLeftHand = CWidgetManager.getInstance().getElementFromId(CTRL_HAND_LEFT) as CDBCtrlSheet;
+            //    if (pCSLeftHand == null)
+            //    {
+            //        return;
+            //    }
+            //
+            //    DatabaseNodeLeaf pNL = NLGUI.CDBManager.getInstance().getDbProp(LOCAL_INVENTORY ":HAND:1:INDEX_IN_BAG", false);
+            //    if (pNL == null)
+            //    {
+            //        return;
+            //    }
+            //
+            //    // get sheet of left item
+            //    uint leftSheet = getInventory().getBagItemSheet(pNL.getValue32() - 1);
+            //
+            //    // get sheet of previous right hand item
+            //    uint lastRightSheet = getInventory().getBagItemSheet(oldIndexInBag - 1);
+            //
+            //    // sheet of new right hand item
+            //    uint rightSheet = 0;
+            //
+            //    // If incompatible -> remove
+            //    if (!getInventory().isLeftHandItemCompatible(leftSheet, rightSheet, lastRightSheet))
+            //    {
+            //        getInventory().unequip(LOCAL_INVENTORY ":HAND:1");
+            //    }
+            //}
+
+            // TODO not needed since we only work with server db
+            //_client.GetDatabaseManager().GetNode(invPath + ":INDEX_IN_BAG",false).SetValue16(0);
+
+            // Update trade window if any - not used in RCC
+
+            // Send message to the server
+            if (inventory != (ushort)INVENTORIES.UNDEFINED)
+            {
+                BitMemoryStream @out = new BitMemoryStream();
+                const string sMsg = "ITEM:UNEQUIP";
+                if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(sMsg, @out))
+                {
+                    // Fill the message (equipped inventory, equipped inventory slot)
+                    @out.Serial(ref inventory);
+                    @out.Serial(ref invSlot);
+                    _client.GetNetworkManager().Push(@out);
+
+                    //pIM.incLocalSyncActionCounter();
+
+                    //nlinfo("impulseCallBack : %s %d %d sent", sMsg.c_str(), inventory, invSlot);
+                }
+                else
+                {
+                    _client.Log.Error($"Don't know message name {sMsg}");
+                }
+            }
+            else
+            {
+                _client.Log.Error($"Inventory is undefined.");
             }
         }
 
@@ -383,104 +494,7 @@ namespace Client.Inventory
         /// </summary>
         internal bool AutoEquip(int bagEntryIndex, bool allowReplace)
         {
-            /*
-            uint i;
-
-            InterfaceManager pIM = InterfaceManager.getInstance();
-            ListSheetBase pList = WidgetManager.getInstance().getElementFromId(LIST_BAG_TEXT) as IListSheetBase;
-            DatabaseCtrlSheet pCSSrc = null;
-
-            if (pList == null)
-                return false;
-
-
-            for (i = 0; i < MAX_BAGINV_ENTRIES; ++i)
-            {
-                pCSSrc = pList.getSheet(i);
-                string sTmp = pCSSrc.getSheet();
-                sTmp = sTmp.Substring(sTmp.LastIndexOf(':') + 1, sTmp.Length);
-                sint nTmp = new sint();
-                fromString(sTmp, nTmp);
-                if (nTmp == bagEntryIndex)
-                    break;
-
-            }
-
-            if (i == MAX_BAGINV_ENTRIES)
-                return false;
-
-            if (pCSSrc == null)
-                return false;
-
-
-            for (i = 0; i < MAX_HANDINV_ENTRIES; ++i)
-            {
-                DatabaseCtrlSheet pCSDst = getHandSheet(i);
-                if (pCSDst == null)
-                {
-                    continue;
-                }
-                string dstPath = getDBIndexPath(pCSDst);
-
-                int indexDstPath = NLGUI.CDBManager.getInstance().getDbProp(dstPath + ":INDEX_IN_BAG").getValue16();
-
-                // Already something in that slot?
-                if (!allowReplace && indexDstPath > 0)
-                {
-                    continue;
-                }
-
-                // Does the source and destination are items ?
-                if (pCSSrc.getType() == CtrlSheetInfo.SheetType_Item)
-                {
-                    if (pCSDst.getType() == CtrlSheetInfo.SheetType_Item)
-                    {
-                        // Right Slot ?
-                        if (pCSDst.canDropItem(pCSSrc))
-                        {
-                            // Ok let us equip with this item
-                            string srcPath = pCSSrc.getSheet();
-                            equip(srcPath, dstPath);
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            for (i = 0; i < MAX_EQUIPINV_ENTRIES; ++i)
-            {
-                DatabaseCtrlSheet pCSDst = getEquipSheet(i);
-                if (pCSDst == null)
-                {
-                    continue;
-                }
-                string dstPath = getInventory().getDBIndexPath(pCSDst);
-                int indexDstPath = NLGUI.CDBManager.getInstance().getDbProp(dstPath + ":INDEX_IN_BAG").getValue16();
-
-                // Already something in that slot?
-                if (!allowReplace && indexDstPath > 0)
-                {
-                    continue;
-                }
-
-                // Does the source and destination are items ?
-                if (pCSSrc.getType() == CtrlSheetInfo.SheetType_Item)
-                {
-                    if (pCSDst.getType() == CtrlSheetInfo.SheetType_Item)
-                    {
-                        // Right Slot ?
-                        if (pCSDst.canDropItem(pCSSrc))
-                        {
-                            // Ok let us equip with this item
-                            string srcPath = pCSSrc.getSheet();
-                            equip(srcPath, dstPath);
-                            return true;
-                        }
-                    }
-                }
-            }*/
-
-            return false;
+            throw new NotImplementedException();
         }
     }
 }

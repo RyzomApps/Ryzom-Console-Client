@@ -5,13 +5,13 @@ using API.Commands;
 
 namespace Client.Commands
 {
-    public class AutoEquip : CommandBase
+    public class UnEquip : CommandBase
     {
-        public override string CmdName => "AutoEquip";
+        public override string CmdName => "UnEquip";
 
-        public override string CmdUsage => "<index>";
+        public override string CmdUsage => "<invPath>";
 
-        public override string CmdDesc => "Auto equip an item from the bag.";
+        public override string CmdDesc => "Unequip an item.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -21,13 +21,13 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "Please specify the index of an item in the bag.";
+                return "Please inventory path (INVENTORY:HAND:0 OR INVENTORY:EQUIP:5).";
 
-            var itemIndex = int.Parse(args[0]);
+            var invPath = args[0].ToUpper().Trim();
 
             var inventoryManager = ryzomClient.GetInventoryManager();
 
-            inventoryManager.AutoEquip(itemIndex, true);
+            inventoryManager.UnEquip(invPath);
 
             return "";
         }
