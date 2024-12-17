@@ -26,6 +26,11 @@ namespace Client.Logger
         /// <inheritdoc />
         public bool ChatEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Last logged message.
+        /// </summary>
+        public string LastMessage { get; set; } = "";
+
         /// <inheritdoc />
         public abstract void Chat(string msg);
 
@@ -106,7 +111,10 @@ namespace Client.Logger
         /// </summary>
         protected virtual void Log(object msg)
         {
-            ConsoleIO.WriteLineFormatted(msg.ToString());
+            if (LastMessage != msg.ToString())
+                ConsoleIO.WriteLineFormatted(msg.ToString());
+
+            LastMessage = msg.ToString();
         }
 
         /// <summary>
@@ -114,7 +122,10 @@ namespace Client.Logger
         /// </summary>
         protected virtual void Log(string msg)
         {
-            ConsoleIO.WriteLineFormatted(msg);
+            if (LastMessage != msg)
+                ConsoleIO.WriteLineFormatted(msg);
+
+            LastMessage = msg;
         }
 
         /// <summary>

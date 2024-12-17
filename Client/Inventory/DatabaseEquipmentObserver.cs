@@ -1,8 +1,5 @@
-﻿using System;
-using Client.Interface;
-using System.Collections.Generic;
+﻿using Client.Interface;
 using Client.Database;
-using Client.Sheet;
 
 namespace Client.Inventory
 {
@@ -29,59 +26,40 @@ namespace Client.Inventory
             //CInterfaceManager pIM = CInterfaceManager.getInstance();
             var sTmp = node.GetFullName();
 
-            if (!(node is DatabaseNodeLeaf pNl))
-            {
+            if (!(node is DatabaseNodeLeaf pNL))
                 return;
-            }
 
-            // Set database for wearing the right item
-            var vCs = new List<DatabaseCtrlSheet>();
-
-            if (sTmp[20..].Equals("SERVER:INVENTORY:HAND", StringComparison.InvariantCultureIgnoreCase))
+            if (sTmp.StartsWith("SERVER:INVENTORY:HAND"))
             {
                 // Coming from hand
-                sTmp = sTmp.Substring(21, sTmp.Length);
+                sTmp = sTmp[22..];
                 sTmp = sTmp[..sTmp.LastIndexOf(':')];
-                var index = int.Parse(sTmp);
-
-                // local hands not implemented
-
+                var index = uint.Parse(sTmp);
                 // update Hands.
-                _client.GetInventoryManager().ServerHands[index] = pNl.GetValue16();
+                _client.GetInventoryManager().ServerHands[index] = pNL.GetValue16() - 1;
             }
-            else if (sTmp.StartsWith("SERVER:INVENTORY:EQUIP", StringComparison.InvariantCultureIgnoreCase))
+            else if (sTmp.StartsWith("SERVER:INVENTORY:EQUIP"))
             {
                 // Coming from equipement
-                sTmp = sTmp.Substring(22, sTmp.Length);
+                sTmp = sTmp[23..];
                 sTmp = sTmp[..sTmp.LastIndexOf(':')];
-                var index = int.Parse(sTmp);
-
-                // local equip not implemented
-
+                var index = uint.Parse(sTmp);
                 // update Equips.
-                _client.GetInventoryManager().ServerEquip[index] = pNl.GetValue16();
+                _client.GetInventoryManager().ServerEquip[index] = pNL.GetValue16() - 1;
             }
-            else if (sTmp.StartsWith("SERVER:INVENTORY:HOTBAR", StringComparison.InvariantCultureIgnoreCase))
+            else if (sTmp.StartsWith("SERVER:INVENTORY:HOTBAR"))
             {
                 // Coming from hand
-                sTmp = sTmp[23..sTmp.Length];
+                sTmp = sTmp[24..];
                 sTmp = sTmp[..sTmp.LastIndexOf(':')];
-                var index = int.Parse(sTmp);
-
-                // local hotbar not implemented
-
+                var index = uint.Parse(sTmp);
                 // update Hotbar.
-                _client.GetInventoryManager().ServerHotbar[index] = pNl.GetValue16();
-            }
-
-            if (vCs.Count == 0)
-            {
-                return;
+                _client.GetInventoryManager().ServerHotbar[index] = pNL.GetValue16() - 1;
             }
 
             // Remove Last reference and update database
-            var oldVal = pNl.GetOldValue16() - 1;
-            var newVal = pNl.GetValue16() - 1;
+            var oldVal = pNL.GetOldValue16() - 1;
+            var newVal = pNL.GetValue16() - 1;
 
             if (oldVal != -1)
             {
@@ -91,15 +69,14 @@ namespace Client.Inventory
             if (newVal != -1)
             {
                 _client.GetInventoryManager().WearBagItem(newVal);
-
-                // ControlSheets are not implemented
+                // ignored
             }
             else
             {
-                // in some case left sheet is same than right sheet so don't clear it now (ex: 2 hands item, right hand exclusive) not implemented
+                // in some case left sheet is same than right sheet so don't clear it now (ex: 2 hands item, right hand exclusive) ignored
             }
 
-            // Hands management in not implemented
+            // Hands management ignored since there is no UI
         }
     }
 }

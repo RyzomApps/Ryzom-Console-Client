@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using API.Inventory;
@@ -32,6 +33,7 @@ namespace Client.Inventory
         const uint MAX_HANDINV_ENTRIES = 2;
         const uint MAX_EQUIPINV_ENTRIES = 19;
         const uint MAX_ANIMALINV_ENTRIES = 500;
+        const uint MAX_HOTBARINV_ENTRIES = 5;
         //const uint MAX_GUILDINV_ENTRIES = 1000;
         //const uint MAX_ROOMINV_ENTRIES = 1000;
 
@@ -68,26 +70,30 @@ namespace Client.Inventory
         {
             // TODO : remove handling, merge it with equipement
             handling = 0,
-            temporary, // 1
-            equipment, // 2
-            bag, // 3
-            pet_animal, // 4 Character can have 5 pack animal
-            pet_animal1 = pet_animal, // for toString => TInventory convertion
+            temporary,                      // 1
+            equipment,                      // 2
+            hotbar,                         // 3
+            bag,                            // 4
+            pet_animal,                     // 5 Character can have 7 pack animal
+            pet_animal1 = pet_animal,       // for toString => TInventory convertion
             pet_animal2,
             pet_animal3,
             pet_animal4,
-            max_pet_animal, // 8
-            NUM_INVENTORY = max_pet_animal, // 8
-            UNDEFINED = NUM_INVENTORY, // 8
+            pet_animal5,
+            pet_animal6,
+            pet_animal7,
+            max_pet_animal,                 // 12
+            NUM_INVENTORY = max_pet_animal, // 12
+            UNDEFINED = NUM_INVENTORY,      // 12
 
-            exchange, // 9  This is not a bug : exchange is a fake inventory
-            exchange_proposition, // 10  and should not count in the number of inventory
-            // same for botChat trading.
-            trading, // 11
-            reward_sharing, // 12 fake inventory, not in database.xml. Used by the item info protocol only
-            guild, // 13 (warning: number stored in guild saved file)
-            player_room, // 14
-            NUM_ALL_INVENTORY // warning: distinct from NUM_INVENTORY
+            exchange,                       // 13  This is not a bug : exchange is a fake inventory
+            exchange_proposition,           // 14  and should not count in the number of inventory
+                                            // same for botChat trading.
+            trading,                        // 15
+            reward_sharing,                 // 16 fake inventory, not in database.xml. Used by the item info protocol only
+            guild,                          // 17 (warning: number stored in guild saved file)
+            player_room,                    // 18
+            NUM_ALL_INVENTORY				// warning: distinct from NUM_INVENTORY
         }
 
         readonly uint NumInventories = new uint();
@@ -97,7 +103,7 @@ namespace Client.Inventory
         private ItemImage[] ServerTempInv = new ItemImage[MAX_TEMPINV_ENTRIES];
         public int[] ServerHands = new int[MAX_HANDINV_ENTRIES];
         public int[] ServerEquip = new int[MAX_EQUIPINV_ENTRIES];
-        public int[] ServerHotbar = new int[MAX_EQUIPINV_ENTRIES];
+        public int[] ServerHotbar = new int[MAX_HOTBARINV_ENTRIES];
         private DatabaseNodeLeaf ServerMoney;
         private ItemImage[][] ServerPAInv = new ItemImage[MAX_INVENTORY_ANIMAL][];
 
@@ -140,6 +146,9 @@ namespace Client.Inventory
         public void Init()
         {
             // LOCAL DB is not implemented
+            InitIndirection($"{INVENTORY}:HAND:", ref ServerHands, MAX_HANDINV_ENTRIES, true);
+            InitIndirection($"{INVENTORY}:EQUIP:", ref ServerEquip, MAX_EQUIPINV_ENTRIES, true);
+            InitIndirection($"{INVENTORY}:HOTBAR:", ref ServerHotbar, MAX_HOTBARINV_ENTRIES, true);
 
             // SERVER DB
             InitItemArray($"{INVENTORY}:BAG", ref ServerBag, MAX_BAGINV_ENTRIES);
@@ -183,6 +192,27 @@ namespace Client.Inventory
                 {
                     dest[k] = new ItemImage();
                     dest[k].Build(itemBranch);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Init array of int that represents indirection to the bag
+        /// </summary>
+        public void InitIndirection(string dbbranch, ref int[] indices, uint nbIndex, bool putObs)
+        {
+            for (uint i = 0; i < nbIndex; ++i)
+            {
+                DatabaseNodeLeaf pNL = _client.GetDatabaseManager().GetServerNode(dbbranch + i + ":INDEX_IN_BAG");
+
+                if (putObs)
+                {
+                    TextId textId = new TextId();
+                    pNL.AddObserver(_DBEquipObs, textId);
+                }
+                if (pNL != null)
+                {
+                    indices[i] = pNL.GetValue32();
                 }
             }
         }
@@ -248,12 +278,13 @@ namespace Client.Inventory
         public IItemImage GetHandItem(uint index)
         {
             Debug.Assert(index < MAX_HANDINV_ENTRIES);
-            return ServerHands[index] != 0 ? ServerBag[ServerHands[index]] : null;
+            return ServerHands[index] > 0 ? ServerBag[ServerHands[index]] : null;
         }
+
         public IItemImage GetEquipmentItem(uint index)
         {
             Debug.Assert(index < MAX_EQUIPINV_ENTRIES);
-            return ServerEquip[index] != 0 ? ServerBag[ServerEquip[index]] : null;
+            return ServerEquip[index] > 0 ? ServerBag[ServerEquip[index]] : null;
         }
 
         public IItemImage GetPackAnimalItem(uint beastIndex, uint index)
@@ -340,19 +371,20 @@ namespace Client.Inventory
                 if (!ushort.TryParse(invPath[16..], out invSlot))
                     return;
             }
-            //else if (strnicmp(invPath.c_str(), "LOCAL:INVENTORY:HOTBAR", 22) == 0)
-            //{
-            //    inventory = INVENTORIES::hotbar;
-            //    fromString(invPath.substr(23, invPath.size()), invSlot);
-            //}
+            else if (invPath.StartsWith("INVENTORY:HOTBAR", StringComparison.InvariantCultureIgnoreCase))
+            {
+                inventory = (ushort)INVENTORIES.hotbar;
+                if (!ushort.TryParse(invPath[17..], out invSlot))
+                    return;
+            }
 
             // Hands management: check if we have to unequip left hand because of incompatibility with right hand item
-            var oldRightIndexInBag = _client.GetDatabaseManager().GetServerNode("SERVER:" + invPath + ":INDEX_IN_BAG").GetValue16();
+            var oldRightIndexInBag = _client.GetDatabaseManager().GetServerNode($"SERVER:{invPath}:INDEX_IN_BAG").GetValue16();
 
             // Local inventory handling not implemented
 
             // update the equip DB pointer
-            _client.GetDatabaseManager().GetServerNode("SERVER:" + invPath + ":INDEX_IN_BAG").SetValue16((short)(indexInBag + 1));
+            _client.GetDatabaseManager().GetServerNode($"SERVER:{invPath}:INDEX_IN_BAG").SetValue16((short)(indexInBag + 1));
 
             // Phrase invalidation is not implemented
 
@@ -398,7 +430,8 @@ namespace Client.Inventory
                 return;
             }
 
-            var oldIndexInBag = _client.GetDatabaseManager().GetProp("SERVER:" + invPath + ":INDEX_IN_BAG");
+            long oldIndexInBag = _client.GetDatabaseManager().GetServerNode($"SERVER:{invPath}:INDEX_IN_BAG").GetValue16();
+
             if (oldIndexInBag == 0)
             {
                 return;

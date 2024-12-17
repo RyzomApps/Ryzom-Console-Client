@@ -14,7 +14,6 @@
             if (!InfoEnabled)
                 return;
 
-
             Log("[INFO] " + msg);
         }
 
