@@ -19,7 +19,6 @@ using API.Plugins.Interfaces;
 using Client.Client;
 using Client.Database;
 using Client.Phrase;
-using Client.Property;
 
 namespace Client.Plugins
 {

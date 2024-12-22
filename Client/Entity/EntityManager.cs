@@ -323,7 +323,7 @@ namespace Client.Entity
                     }
                     else
                     {
-                        _client.Log.Info($"Found entity '{name}' in a distance of {distance:0.0} m (User: {UserEntity.Pos} - Entity: {entity.Pos}).");
+                        _client.Log.Debug($"Found entity '{name}' in a distance of {distance:0.0} m (User: {UserEntity.Pos} - Entity: {entity.Pos}).");
                     }
                 }
             }
