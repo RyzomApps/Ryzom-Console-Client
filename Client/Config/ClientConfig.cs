@@ -95,6 +95,7 @@ namespace Client.Config
 
         // Proxy
         public static bool UseProxy = false;
+        public static int ProxyLoginRetries = 30;
 
         public static long OnlineProxyListExpiration = 10 * 60; // [s]
 

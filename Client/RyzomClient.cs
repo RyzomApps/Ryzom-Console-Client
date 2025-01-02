@@ -47,6 +47,7 @@ using Client.Strings;
 using Client.Inventory;
 using Client.Interface;
 using Client.Network.Web;
+using Client.Network.Proxy;
 
 namespace Client
 {
@@ -534,10 +535,14 @@ namespace Client
                 catch (NetworkLoginException e)
                 {
                     GetLogger().Error(e.Message);
+
+                    if (ClientConfig.UseProxy)
+                        ProxyManager.SetProxyBrokenFlag(true);
+
                     loginRetries++;
 
                     // login exception
-                    if (loginRetries < 5 && ClientConfig.UseProxy)
+                    if (loginRetries < ClientConfig.ProxyLoginRetries && ClientConfig.UseProxy)
                     {
                         // udp proxy may be bad - try another one
                         GetLogger().Warn("Login retry #" + loginRetries + "...");

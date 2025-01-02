@@ -13,26 +13,19 @@ namespace Client.Network.Proxy
 {
     public static class ProxyManager
     {
+        public static List<string> brokenHosts = new List<string>();
+
         internal static UdpSocketProxied workingSocks5ProxyUdp = null;
         internal static Socket workingSocks5ProxyTcp = null;
 
         private static readonly Random rng = new Random();
 
-        public static void Shuffle<T>(this IList<T> list)
-        {
-            int n = list.Count;
-
-            while (n > 1)
-            {
-                n--;
-                int k = rng.Next(n + 1);
-                T value = list[k];
-                list[k] = list[n];
-                list[n] = value;
-            }
-        }
-
-        /// TODO: the current method for the threading is unclean and need work -> refactor
+        /// <summary>
+        /// Attempts to find a working SOCKS5 UDP proxy server.
+        /// </summary>
+        /// <param name="logger">Logger for logging information.</param>
+        /// <param name="address">The destination address to connect through the proxy.</param>
+        /// <returns>A Socket object if a working SOCKS5 UDP proxy is found; otherwise, an exception is thrown.</returns>
         public static UdpSocketProxied GetSocks5ProxyUdp(ILogger logger, string address)
         {
             List<Thread> currentThreads = new List<Thread>();
@@ -56,7 +49,7 @@ namespace Client.Network.Proxy
                 {
                     var hostString = proxies[index];
 
-                    logger?.Info($"[{index}] Trying to use SOCKS5 proxy server '{hostString}'.");
+                    //logger?.Info($"[{index}] Trying to use SOCKS5 proxy server '{hostString}'.");
 
                     var t = new Thread(() => TrySocks5ProxyUdp(logger, address, hostString));
                     currentThreads.Add(t);
@@ -84,25 +77,12 @@ namespace Client.Network.Proxy
             throw new WebException("Could not find a socks 5 udp proxy.");
         }
 
-        internal static void TrySocks5ProxyUdp(ILogger logger, string address, string hostString)
-        {
-            try
-            {
-                var proxy = new UdpSocketProxied(hostString);
-                proxy.Connect(address);
-
-                if (workingSocks5ProxyUdp == null)
-                {
-                    workingSocks5ProxyUdp = proxy;
-                }
-            }
-            catch (Exception innerE)
-            {
-                if (workingSocks5ProxyUdp == null)
-                    logger?.Warn(innerE.Message);
-            }
-        }
-
+        /// <summary>
+        /// Attempts to find a working SOCKS5 TCP proxy server.
+        /// </summary>
+        /// <param name="logger">Logger for logging information.</param>
+        /// <param name="address">The destination address to connect through the proxy.</param>
+        /// <returns>A Socket object if a working SOCKS5 TCP proxy is found; otherwise, an exception is thrown.</returns>
         public static Socket GetSocks5ProxyTcp(ILogger logger, string destAddress)
         {
             List<Thread> currentThreads = new List<Thread>();
@@ -126,7 +106,7 @@ namespace Client.Network.Proxy
                 {
                     var proxyAddress = proxies[index];
 
-                    logger?.Info($"[{index}] Trying to use SOCKS5 proxy server '{proxyAddress}'.");
+                    //logger?.Info($"[{index}] Trying to use SOCKS5 proxy server '{proxyAddress}'.");
 
                     var t = new Thread(() => TrySocks5ProxyTcp(logger, proxyAddress, destAddress));
                     currentThreads.Add(t);
@@ -141,7 +121,7 @@ namespace Client.Network.Proxy
                 try
                 {
                     thread.Interrupt();
-                    thread.Join();
+                    //thread.Join();
                 }
                 catch { }
             }
@@ -154,7 +134,104 @@ namespace Client.Network.Proxy
             throw new WebException("Could not find a socks 5 tcp proxy.");
         }
 
-        internal static void TrySocks5ProxyTcp(ILogger logger, string proxyAddress, string destAddress)
+        /// <summary>
+        /// Adds a current proxy to the list of broken hosts.
+        /// </summary>
+        internal static void SetProxyBrokenFlag(bool udpProxy)
+        {
+            if (udpProxy && workingSocks5ProxyUdp != null)
+                brokenHosts.Add(workingSocks5ProxyUdp.HostName);
+            else if (!udpProxy && workingSocks5ProxyTcp != null)
+                brokenHosts.Add(workingSocks5ProxyTcp.RemoteEndPoint.ToString());
+        }
+
+        /// <summary>
+        /// Downloads all proxy lists, saves them into a file and returns the list.
+        /// </summary>
+        /// <returns>string array of proxy server addresses</returns>
+        public static string[] DownloadProxyList(ILogger logger)
+        {
+            var ret = new List<string>();
+//#if !DEBUG
+            if (!File.Exists("./data/proxies.txt") || (DateTime.Now - File.GetLastWriteTime("./data/proxies.txt")).TotalSeconds > ClientConfig.OnlineProxyListExpiration)
+//#endif
+            foreach (var proxyUrl in ClientConfig.OnlineProxyList)
+            {
+                try
+                {
+                    var proxies = new TimedWebClient { Timeout = 5000 }.DownloadString(proxyUrl).Split('\r', '\n');
+
+                    foreach (var tmpProxy in proxies)
+                    {
+                        // local copy
+                        var proxy = tmpProxy;
+
+                        if (proxy.Contains(" "))
+                        {
+                            // list with other parameters - assume first row is proxy address
+                            proxy = proxy.Split(" ")[0];
+                        }
+
+                        // filter invalid list entries
+                        if (proxy.Trim().Length == 0 ||
+                            proxy.Trim().StartsWith("#") ||
+                            !proxy.Contains(":") ||
+                            !IPAddress.TryParse(proxy.Split(':')[0], out _))
+                            continue;
+
+                        // exclude ephemeral port range (short-lived sessions)
+                        //if (!int.TryParse(proxy.Split(':')[1], out var port) ||
+                        //    port >= 32768 && port <= 65535)
+                        //    continue;
+
+                        if (ret.Contains("0.0.0.0") || ret.Contains("127.0.0.1"))
+                            continue;
+
+                        if (!ret.Contains(proxy))
+                            ret.Add(proxy);
+                    }
+                }
+                catch
+                {
+                    logger?.Warn($"Error while processing proxy list from '{proxyUrl}'.");
+                }
+            }
+
+            if (ret.Count > 0)
+            {
+                logger?.Info($"Download of proxy server list successful. {ret.Count} proxies total.");
+                ret.Sort();
+                File.WriteAllLines("./data/proxies.txt", ret, Encoding.UTF8);
+            }
+            else
+            {
+                logger?.Info("Local proxy server list has not yet expired or download of the list failed. Using local list.");
+                ret = File.ReadAllLines("./data/proxies.txt", Encoding.UTF8).ToList();
+            }
+
+            return ret.ToArray();
+        }
+
+        private static void TrySocks5ProxyUdp(ILogger logger, string address, string hostString)
+        {
+            try
+            {
+                var proxy = new UdpSocketProxied(hostString);
+                proxy.Connect(address);
+
+                if (workingSocks5ProxyUdp == null)
+                {
+                    workingSocks5ProxyUdp = proxy;
+                }
+            }
+            catch (Exception innerE)
+            {
+                if (workingSocks5ProxyUdp == null)
+                    logger?.Warn(innerE.Message);
+            }
+        }
+
+        private static void TrySocks5ProxyTcp(ILogger logger, string proxyAddress, string destAddress)
         {
             try
             {
@@ -184,69 +261,36 @@ namespace Client.Network.Proxy
             }
         }
 
-        /// <summary>
-        /// Downloads all proxy lists, saves them into a file and returns the list.
-        /// </summary>
-        /// <returns>string array of proxy server addresses</returns>
-        public static string[] DownloadProxyList(ILogger logger)
+        private static void Shuffle<T>(this IList<T> list)
         {
-            var ret = new List<string>();
-#if !DEBUG
-            if (!File.Exists("./data/proxies.txt") || (DateTime.Now - File.GetLastWriteTime("./data/proxies.txt")).TotalSeconds > ClientConfig.OnlineProxyListExpiration)
-#endif
-            foreach (var proxyUrl in ClientConfig.OnlineProxyList)
+            int n = list.Count;
+
+            while (n > 1)
             {
-                try
-                {
-                    var proxies = new WebClient().DownloadString(proxyUrl).Split('\r', '\n');
-
-                    foreach (var tmpProxy in proxies)
-                    {
-                        // local copy
-                        var proxy = tmpProxy;
-
-                        if (proxy.Contains(" "))
-                        {
-                            // list with other parameters - assume first row is proxy address
-                            proxy = proxy.Split(" ")[0];
-                        }
-
-                        // filter invalid list entries
-                        if (proxy.Trim().Length == 0 ||
-                            proxy.Trim().StartsWith("#") ||
-                            !proxy.Contains(":") ||
-                            !IPAddress.TryParse(proxy.Split(':')[0], out _))
-                            continue;
-
-                        // exclude ephemeral port range (short-lived sessions)
-                        if (!int.TryParse(proxy.Split(':')[1], out var port) ||
-                            //port >= 1024 && port <= 5000 ||
-                            port >= 32768 && port <= 65535)
-                            continue;
-
-                        if (!ret.Contains(proxy))
-                            ret.Add(proxy);
-                    }
-                }
-                catch
-                {
-                    logger?.Warn($"Error while processing proxy list from '{proxyUrl}'.");
-                }
+                n--;
+                int k = rng.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
             }
+        }
+    }
 
-            if (ret.Count > 0)
-            {
-                logger?.Info($"Download of proxy server list successful. {ret.Count} proxies total.");
-                ret.Sort();
-                File.WriteAllLines("./data/proxies.txt", ret, Encoding.UTF8);
-            }
-            else
-            {
-                logger?.Info("Local proxy server list has not yet expired or download of the list failed. Using local list.");
-                ret = File.ReadAllLines("./data/proxies.txt", Encoding.UTF8).ToList();
-            }
+    public class TimedWebClient : WebClient
+    {
+        /// <summary>Timeout in milliseconds, default = 600,000 msec</summary>
+        public int Timeout { get; set; }
 
-            return ret.ToArray();
+        public TimedWebClient()
+        {
+            Timeout = 600000;
+        }
+
+        protected override WebRequest GetWebRequest(Uri address)
+        {
+            var objWebRequest = base.GetWebRequest(address);
+            objWebRequest.Timeout = this.Timeout;
+            return objWebRequest;
         }
     }
 }

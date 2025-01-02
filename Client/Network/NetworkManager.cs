@@ -1033,6 +1033,41 @@ namespace Client.Network
 
         private void ImpulseDynChatOpen(BitMemoryStream impulse)
         {
+            uint BotUID = 0; // Compressed Index
+            uint BotName = 0; // Server string
+
+            impulse.Serial(ref BotUID);
+            impulse.Serial(ref BotName);
+
+            #region workaround for: impulse.SerialCont(ref DynStrs);
+            var len = 0;
+            impulse.Serial(ref len);
+
+            List<uint> DynStrs = new List<uint>(); // 0 - Desc, 1 - Option0, 2 - Option1, etc....
+
+            for (var i = 0; i < len; i++)
+            {
+                uint value = 0;
+                impulse.Serial(ref value);
+                DynStrs.Add(value);
+            }
+            #endregion end workaround
+
+            string sTmp = "impulseCallback : Received BOTCHAT:DYNCHAT_OPEN BotUID:";
+            sTmp += BotUID + " BotName:";
+            sTmp += BotName + " DynStrs:";
+            for (int i = 0; i < DynStrs.Count; ++i)
+            {
+                sTmp += DynStrs[i];
+                if (i != DynStrs.Count - 1)
+                {
+                    sTmp += ",";
+                }
+            }
+            _client.GetLogger().Info(sTmp);
+            
+            //InSceneBubbleManager.dynChatOpen(BotUID, BotName, DynStrs);
+
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 

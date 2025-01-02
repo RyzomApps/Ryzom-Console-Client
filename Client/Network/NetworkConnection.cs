@@ -466,7 +466,7 @@ namespace Client.Network
                     _client.GetLogger().Info($"Trying to find a working UDP proxy. This could take a moment...");
 
                     _connection = ProxyManager.GetSocks5ProxyUdp(null, _frontendAddress);
-                    ProxyCountry = IpInfoIo.GetUserCountryByIp(((UdpSocketProxied)_connection).HostName);
+                    ProxyCountry = ((UdpSocketProxied)_connection).HostName; //IpInfoIo.GetUserCountryByIp(((UdpSocketProxied)_connection).HostName);
 
                     _client.GetLogger().Info($"Using proxy server '{((UdpSocketProxied)_connection).HostName}' for the game data.");
                 }

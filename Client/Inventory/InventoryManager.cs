@@ -347,14 +347,15 @@ namespace Client.Inventory
         public void Equip(in string bagPath, in string invPath)
         {
             if (bagPath.Length == 0 || invPath.Length == 0)
-            {
                 return;
-            }
 
             // Get inventory and slot
             var sIndexInBag = bagPath[(bagPath.LastIndexOf(':') + 1)..];
             if (!ushort.TryParse(sIndexInBag, out var indexInBag))
+            {
+                _client.Log.Error($"Could not parse bag index.");
                 return;
+            }
 
             var inventory = (ushort)INVENTORIES.UNDEFINED;
             ushort invSlot = 0xffff;
@@ -363,23 +364,32 @@ namespace Client.Inventory
             {
                 inventory = (ushort)INVENTORIES.handling;
                 if (!ushort.TryParse(invPath[15..], out invSlot))
+                {
+                    _client.Log.Error($"Could not parse slot.");
                     return;
+                }
             }
             else if (invPath.StartsWith("INVENTORY:EQUIP", StringComparison.InvariantCultureIgnoreCase))
             {
                 inventory = (ushort)INVENTORIES.equipment;
                 if (!ushort.TryParse(invPath[16..], out invSlot))
+                {
+                    _client.Log.Error($"Could not parse slot.");
                     return;
+                }
             }
             else if (invPath.StartsWith("INVENTORY:HOTBAR", StringComparison.InvariantCultureIgnoreCase))
             {
                 inventory = (ushort)INVENTORIES.hotbar;
                 if (!ushort.TryParse(invPath[17..], out invSlot))
+                {
+                    _client.Log.Error($"Could not parse slot.");
                     return;
+                }
             }
 
             // Hands management: check if we have to unequip left hand because of incompatibility with right hand item
-            var oldRightIndexInBag = _client.GetDatabaseManager().GetServerNode($"SERVER:{invPath}:INDEX_IN_BAG").GetValue16();
+            // var oldRightIndexInBag = _client.GetDatabaseManager().GetServerNode($"SERVER:{invPath}:INDEX_IN_BAG").GetValue16();
 
             // Local inventory handling not implemented
 
@@ -405,8 +415,6 @@ namespace Client.Inventory
                     _client.GetNetworkManager().Push(@out);
 
                     // Local synch counter is not implemented
-
-                    //nlinfo("impulseCallBack : %s %d %d %d sent", sMsg.c_str(), inventory, invSlot, indexInBag);
                 }
                 else
                 {
@@ -426,16 +434,12 @@ namespace Client.Inventory
         internal void UnEquip(string invPath)
         {
             if (invPath.Length == 0)
-            {
                 return;
-            }
 
             long oldIndexInBag = _client.GetDatabaseManager().GetServerNode($"SERVER:{invPath}:INDEX_IN_BAG").GetValue16();
 
-            if (oldIndexInBag == 0)
-            {
-                return;
-            }
+            //if (oldIndexInBag == 0)
+            //    return;
 
             // Get inventory and slot
             var inventory = (ushort)INVENTORIES.UNDEFINED;
@@ -445,50 +449,31 @@ namespace Client.Inventory
             {
                 inventory = (ushort)INVENTORIES.handling;
                 if (!ushort.TryParse(invPath[15..], out invSlot))
+                {
+                    _client.Log.Error($"Could not parse slot.");
                     return;
+                }
             }
             else if (invPath.StartsWith("INVENTORY:EQUIP", StringComparison.InvariantCultureIgnoreCase))
             {
                 inventory = (ushort)INVENTORIES.equipment;
                 if (!ushort.TryParse(invPath[16..], out invSlot))
+                {
+                    _client.Log.Error($"Could not parse slot.");
                     return;
+                }
             }
-            //else if (strnicmp(invPath.c_str(), "LOCAL:INVENTORY:HOTBAR", 22) == 0)
-            //{
-            //    inventory = INVENTORIES.hotbar;
-            //    fromString(invPath.substr(23, invPath.size()), invSlot);
-            //}
+            else if (invPath.StartsWith("INVENTORY:HOTBAR", StringComparison.InvariantCultureIgnoreCase))
+            {
+                inventory = (ushort)INVENTORIES.hotbar;
+                if (!ushort.TryParse(invPath[17..], out invSlot))
+                {
+                    _client.Log.Error($"Could not parse slot.");
+                    return;
+                }
+            }
 
             // TODO Hands management : check if we have to unequip left hand because of incompatibility with right hand item
-            //if (inventory == INVENTORIES.handling && invSlot == 0)
-            //{
-            //    DatabaseCtrlSheet pCSLeftHand = CWidgetManager.getInstance().getElementFromId(CTRL_HAND_LEFT) as CDBCtrlSheet;
-            //    if (pCSLeftHand == null)
-            //    {
-            //        return;
-            //    }
-            //
-            //    DatabaseNodeLeaf pNL = NLGUI.CDBManager.getInstance().getDbProp(LOCAL_INVENTORY ":HAND:1:INDEX_IN_BAG", false);
-            //    if (pNL == null)
-            //    {
-            //        return;
-            //    }
-            //
-            //    // get sheet of left item
-            //    uint leftSheet = getInventory().getBagItemSheet(pNL.getValue32() - 1);
-            //
-            //    // get sheet of previous right hand item
-            //    uint lastRightSheet = getInventory().getBagItemSheet(oldIndexInBag - 1);
-            //
-            //    // sheet of new right hand item
-            //    uint rightSheet = 0;
-            //
-            //    // If incompatible -> remove
-            //    if (!getInventory().isLeftHandItemCompatible(leftSheet, rightSheet, lastRightSheet))
-            //    {
-            //        getInventory().unequip(LOCAL_INVENTORY ":HAND:1");
-            //    }
-            //}
 
             // TODO not needed since we only work with server db
             //_client.GetDatabaseManager().GetNode(invPath + ":INDEX_IN_BAG",false).SetValue16(0);
@@ -506,10 +491,6 @@ namespace Client.Inventory
                     @out.Serial(ref inventory);
                     @out.Serial(ref invSlot);
                     _client.GetNetworkManager().Push(@out);
-
-                    //pIM.incLocalSyncActionCounter();
-
-                    //nlinfo("impulseCallBack : %s %d %d sent", sMsg.c_str(), inventory, invSlot);
                 }
                 else
                 {

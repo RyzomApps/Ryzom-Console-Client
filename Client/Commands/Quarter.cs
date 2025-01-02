@@ -24,9 +24,7 @@ namespace Client.Commands
             if (!target.HasValue || target.Value == Constants.InvalidSlot)
                 return "Nothing selected.";
 
-            //ryzomClient.GetNetworkManager().PushPickup(target.Value, TargettingType.Harvestable);
-            //ryzomClient.GetNetworkManager().PushPickup(target.Value, TargettingType.Harvestable);
-            ryzomClient.GetNetworkManager().PushPickup(target.Value, TargettingType.LootableHarvestable);
+            ryzomClient.GetNetworkManager().PushPickup(target.Value, TargettingType.Harvestable);
 
             return "";
         }

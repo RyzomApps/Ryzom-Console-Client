@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -91,6 +90,7 @@ namespace Client.Network
             else
             {
                 var request = WebRequest.CreateHttp(urlLogin);
+                request.Timeout = 10000;
                 request.Method = "GET";
 
                 using var response = (HttpWebResponse)request.GetResponse();
@@ -128,6 +128,9 @@ namespace Client.Network
                 responseString = responseString[(first + 2)..];
             }
 
+            if (responseString.Length == 0)
+                throw new InvalidOperationException("No response from the login server.");
+
             switch (responseString[0])
             {
                 case 'H':
@@ -163,7 +166,7 @@ namespace Client.Network
                     parts = lines[1].Split('#');
 
                     if (parts.Length < 3)
-                        throw new InvalidOperationException("Invalid server return, missing patch URLs");
+                        throw new InvalidOperationException("Invalid server return, missing patch URLs.");
 
                     var r2ServerVersion = parts[0];
                     var r2BackupPatchURL = parts[1];
@@ -186,6 +189,9 @@ namespace Client.Network
                         client.SessionData.Save("session_" + login + ".json");
 
                     break;
+
+                default:
+                    throw new WebException($"Invalid login server response '{responseString[..64]}{(responseString.Length > 64 ? "..." : "")}'.");
             }
         }
 
@@ -197,6 +203,7 @@ namespace Client.Network
             var urlSalt = $"{url}?cmd=ask&cp=2&login={login}&lg={ClientConfig.LanguageCode}";
 
             var requestSalt = WebRequest.CreateHttp(urlSalt);
+            requestSalt.Timeout = 10000;
             requestSalt.Method = "GET";
 
             using var responseSalt = (HttpWebResponse)requestSalt.GetResponse();
