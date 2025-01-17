@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Client.WinAPI
 {
@@ -39,8 +40,10 @@ namespace Client.WinAPI
             catch (DllNotFoundException)
             {
                 // Probably on mono, fallback to ctrl+c only
-                Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e) { RunCleanUp(); };
+                Console.CancelKeyPress += delegate { RunCleanUp(); };
             }
+
+            AppDomain.CurrentDomain.ProcessExit += delegate { RunCleanUp(); };
         }
 
         /// <summary>
@@ -60,10 +63,12 @@ namespace Client.WinAPI
         /// </remarks>
         private static void RunCleanUp()
         {
-            foreach (Action action in Actions)
+            foreach (var action in Actions)
             {
                 action();
             }
+
+            Thread.Sleep(1000);
         }
 
         /// <summary>
@@ -76,10 +81,12 @@ namespace Client.WinAPI
         /// </remarks>
         private static bool CleanUp(CtrlType sig)
         {
-            foreach (Action action in Actions)
+            foreach (var action in Actions)
             {
                 action();
             }
+
+            Thread.Sleep(1000);
 
             return false;
         }

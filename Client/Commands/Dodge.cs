@@ -20,6 +20,8 @@ namespace Client.Commands
 
             ryzomClient.GetNetworkManager().SendMsgToServer("COMBAT:DODGE");
 
+            handler.GetLogger().Info("§eYou will try to dodge melee attacks.");
+
             return "";
         }
 

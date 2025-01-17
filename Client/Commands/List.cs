@@ -35,8 +35,7 @@ namespace Client.Commands
                 if (entity.GetDisplayName().Trim() != "" || entity.GetEntityType() != EntityType.Player)
                     continue;
 
-                var temp = "";
-                handler.PerformInternalCommand($"tar {entity.Slot()}", ref temp, localVars);
+                handler.PerformInternalCommand($"tar {entity.Slot()}", out _, localVars);
             }
 
             // Iterate players

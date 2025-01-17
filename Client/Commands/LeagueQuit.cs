@@ -25,8 +25,7 @@ namespace Client.Commands
                 return "Wrong argument count in the command.";
 
             // leaguequit - Perform admin command
-            var response = "";
-            ryzomClient.PerformInternalCommand("a setLeague", ref response);
+            ryzomClient.PerformInternalCommand("a setLeague", out var response);
             return response;
         }
 

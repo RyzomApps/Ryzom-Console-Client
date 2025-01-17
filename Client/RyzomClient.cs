@@ -48,6 +48,7 @@ using Client.Inventory;
 using Client.Interface;
 using Client.Network.Web;
 using Client.Network.Proxy;
+using Client.WinAPI;
 
 namespace Client
 {
@@ -204,6 +205,10 @@ namespace Client
         /// </summary>
         public RyzomClient(bool autoStart = true)
         {
+            // Setup exit with the quit command
+            ExitCleanUp.Add(delegate { PerformInternalCommand("quit", out _); });
+            ExitCleanUp.Add(OnDisconnect);
+
             _instance = this;
             _clientThread = Thread.CurrentThread;
 
@@ -278,18 +283,7 @@ namespace Client
         /// </summary>
         private void StartConsoleClient()
         {
-            if (ClientConfig.DiscordWebhook.Trim() != "")
-            {
-                Log = new DiscordLogger(ClientConfig.DiscordWebhook);
-            }
-            //else if (ClientConfig.LogToFile)
-            //{
-            //    Log = new FileLogLogger(ClientConfig.LogFile, ClientConfig.PrependTimestamp);
-            //}
-            else
-            {
-                Log = new FilteredLogger();
-            }
+            Log = ClientConfig.DiscordWebhook.Trim() != "" ? new DiscordLogger(ClientConfig.DiscordWebhook) : new FilteredLogger();
 
             Log.DebugEnabled = ClientConfig.DebugEnabled;
 
@@ -434,12 +428,13 @@ namespace Client
 
             _databaseManager?.FlushObserverCalls();
 
+            if(ClientConfig.UseProxy)
+                Log?.Info("§eTrying to find a working TCP proxy. This could take a moment...");
+
             while (!loggedIn)
             {
                 try
                 {
-                    //SessionData = SessionData.Load("session_" + ClientConfig.Username + ".json");
-
                     Network.Login.CheckLogin(this, ClientConfig.Username, ClientConfig.Password, ClientConfig.ApplicationServer, "");
 
                     loggedIn = true;
@@ -448,19 +443,20 @@ namespace Client
                 {
                     Log?.Warn(e.Message);
 
-                    if (!e.Message.Contains("already online"))
-                        return false;
-
-                    if (firstRetry)
+                    if (e.Message.Contains("already online") && firstRetry)
                     {
                         Log?.Info("Retrying in 1 second...");
                         Thread.Sleep(1000);
                         firstRetry = false;
                     }
-                    else
+                    else if (e.Message.Contains("already online"))
                     {
                         Log?.Info("Retrying in 30 seconds...");
                         Thread.Sleep(30000);
+                    }
+                    else if (!ClientConfig.UseProxy)
+                    {
+                        return false;
                     }
                 }
             }
@@ -1134,10 +1130,9 @@ namespace Client
             // Send command
             if (ClientConfig.InternalCmdChar == ' ' || text[0] == ClientConfig.InternalCmdChar)
             {
-                var responseMsg = "";
                 var command = ClientConfig.InternalCmdChar == ' ' ? text : text[1..];
 
-                if (!PerformInternalCommand(command, ref responseMsg) && ClientConfig.InternalCmdChar == '/')
+                if (!PerformInternalCommand(command, out var responseMsg) && ClientConfig.InternalCmdChar == '/')
                 {
                     // Command not found
                     Log.Info("§c" + responseMsg);
@@ -1175,7 +1170,6 @@ namespace Client
                     {
                         //Send the first 100/256 chars of the command
                         text = text[..maxLength];
-                        _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text));
                     }
                     else
                     {
@@ -1185,11 +1179,10 @@ namespace Client
                             _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text[..maxLength]));
                             text = text[maxLength..];
                         }
-
-                        _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text));
                     }
                 }
-                else _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text));
+
+                _chatQueue.Enqueue(new KeyValuePair<ChatGroupType, string>(Channel, text));
             }
         }
 
@@ -1233,11 +1226,8 @@ namespace Client
         }
 
         /// <inheritdoc />
-        public bool PerformInternalCommand(string command, ref string responseMsg, Dictionary<string, object> localVars = null)
+        public bool PerformInternalCommand(string command, out string responseMsg, Dictionary<string, object> localVars = null)
         {
-            if (responseMsg == null)
-                throw new ArgumentNullException(nameof(responseMsg));
-
             // Process the provided command
             var commandName = command.Split(' ')[0].ToLower();
 
@@ -1355,9 +1345,9 @@ namespace Client
         }
 
         /// <summary>
-        /// Disconnect the client from the server (initiated from RCC)
+        /// Signalling a disconnection of the client from the server (initiated from RCC)
         /// </summary>
-        public void Disconnect()
+        private void OnDisconnect()
         {
             Plugins.OnDisconnect();
 
@@ -1365,7 +1355,6 @@ namespace Client
             {
                 _cmdprompt?.Interrupt();
                 _cmdprompt = null;
-                //_cmdprompt?.Join();
             }
             catch
             {
@@ -1376,7 +1365,6 @@ namespace Client
             {
                 _timeoutdetector?.Interrupt();
                 _timeoutdetector = null;
-                //_timeoutdetector?.Join();
             }
             catch
             {

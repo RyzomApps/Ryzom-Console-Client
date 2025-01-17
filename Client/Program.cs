@@ -27,14 +27,14 @@ namespace Client
 
         public static string[] Startupargs;
 
-        public static string Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+        public static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
 
         public static readonly string BuildInfo;
 
         /// <summary>
         /// ISO-8859-1: Windows-1252 or CP-1252 (code page 1252) single-byte character encoding (commonly mislabeled as "ANSI")
         /// </summary>
-        public static Encoding Enc1252;
+        public static readonly Encoding Enc1252;
 
         /// <summary>
         /// Detect if the user is running Ryzom Console Client through Mono
@@ -136,25 +136,8 @@ namespace Client
                 RequestPassword();
             }
 
-            /*
-            if (ClientConfig.SelectCharacter == -1)
-            {
-                ConsoleIO.WriteLineFormatted("§dPlease enter your character slot [0-4]:");
-                ClientConfig.SelectCharacter = int.Parse(Console.ReadLine() ?? throw new Exception("Invalid slot."));
-            }
-
-            if (ClientConfig.SelectCharacter < 0 || ClientConfig.SelectCharacter > 4) throw new Exception("Invalid slot.");
-            */
-
-            // Setup exit cleaning code
-            ExitCleanUp.Add(delegate
-            {
-                // Do NOT use Program.Exit() as creating new Thread cause program to freeze
-                if (_client == null) return;
-
-                _client.Disconnect();
-                ConsoleIO.Reset();
-            });
+            // Setup exit cleanup code for the console
+            ExitCleanUp.Add(ConsoleIO.Reset);
 
             Startupargs = args;
             InitializeClient();
@@ -215,16 +198,8 @@ namespace Client
         /// </summary>
         public static void Exit(int exitcode = 0)
         {
-            new Thread(new ThreadStart(delegate
-            {
-                if (_client != null)
-                {
-                    _client.Disconnect();
-                    ConsoleIO.Reset();
-                }
-
-                Environment.Exit(exitcode);
-            })).Start();
+            // Exit the application
+            Environment.Exit(exitcode);
         }
     }
 }

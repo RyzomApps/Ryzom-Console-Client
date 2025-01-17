@@ -21,12 +21,12 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             // Check parameters / Perform admin command
-            var response = "";
+            string response;
 
             if (args.Length > 0 && args[0] == "1")
-                ryzomClient.PerformInternalCommand("a openTargetUrl 1", ref response);
+                ryzomClient.PerformInternalCommand("a openTargetUrl 1", out response);
             else
-                ryzomClient.PerformInternalCommand("a openTargetUrl", ref response);
+                ryzomClient.PerformInternalCommand("a openTargetUrl", out response);
 
             return response;
         }

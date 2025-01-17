@@ -19,7 +19,7 @@ namespace Client.Network
     /// <summary>
     /// http login process prior to the udp connection to the ryzom server
     /// </summary>
-    public class Login
+    public static class Login
     {
         /// <summary>
         /// getting server information and try to login the client with the given credentials
@@ -45,47 +45,51 @@ namespace Client.Network
 
             if (ClientConfig.UseProxy)
             {
-                do
+                //do
+                //{
+
+                //try
+                //{
+                
+                var socket = ProxyManager.GetSocks5ProxyTcp(null, ClientConfig.StartupHost);
+
+                client.GetLogger().Info($"Using proxy server '{socket.RemoteEndPoint}' to login.");
+
+                var requestStr = $"GET {urlLogin} HTTP/1.1\r\n" +
+                $"Host: {ClientConfig.StartupHost}\r\n" +
+                "User-Agent: Ryzom/Omega / v23.12.346 #adddfe118-windows-x64\r\n" +
+                "Accept: */*\r\n" +
+                "Accept-Language: en\r\n" +
+                "Accept-Charset: utf-8\r\n" +
+                "\r\n";
+
+                // send
+                var remoteRequest = Encoding.UTF8.GetBytes(requestStr);
+                socket.Send(remoteRequest);
+
+                // receive
+                int count;
+                var remoteBuffer = new byte[1024];
+                responseString = "";
+
+                while ((count = socket.Receive(remoteBuffer)) != 0)
                 {
-                    try
-                    {
-                        client.GetLogger().Info($"Trying to find a working TCP proxy. This could take a moment...");
+                    var receivedData = Encoding.UTF8.GetString(remoteBuffer, 0, count);
+                    responseString += receivedData;
+                }
 
-                        var socket = ProxyManager.GetSocks5ProxyTcp(null, ClientConfig.StartupHost);
+                socket.Close();
+                //}
+                //catch (Exception e)
+                //{
+                //    client.GetLogger().Error($"Exception: {e.Message}");
+                //    responseString = "";
+                //}
 
-                        client.GetLogger().Info($"Using proxy server '{socket.RemoteEndPoint}' to login.");
+                //} while (!responseString.Contains("200 OK"));
 
-                        var requestStr = $"GET {urlLogin} HTTP/1.1\r\n" +
-                        $"Host: {ClientConfig.StartupHost}\r\n" +
-                        "User-Agent: Ryzom/Omega / v23.12.346 #adddfe118-windows-x64\r\n" +
-                        "Accept: */*\r\n" +
-                        "Accept-Language: en\r\n" +
-                        "Accept-Charset: utf-8\r\n" +
-                        "\r\n";
-
-                        // send
-                        byte[] remoteRequest = Encoding.UTF8.GetBytes(requestStr);
-                        socket.Send(remoteRequest);
-
-                        // receive
-                        int count;
-                        byte[] remoteBuffer = new byte[1024];
-                        responseString = "";
-
-                        while ((count = socket.Receive(remoteBuffer)) != 0)
-                        {
-                            string receivedData = Encoding.UTF8.GetString(remoteBuffer, 0, count);
-                            responseString += receivedData;
-                        }
-
-                        socket.Close();
-                    }
-                    catch (Exception e)
-                    {
-                        client.GetLogger().Error($"Exception: {e.Message}");
-                        responseString = "";
-                    }
-                } while (!responseString.Contains("200 OK"));
+                if (!responseString.Contains("200 OK"))
+                    throw new WebException($"Invalid login server response '{responseString[..64]}{(responseString.Length > 64 ? "..." : "")}'.");
             }
             else
             {
@@ -158,7 +162,7 @@ namespace Client.Network
                     var fsAddr = parts[2];
 
                     // store the ring startup page
-                    var ringMainURL = parts[3];
+                    var ringMainUrl = parts[3];
                     var farTpUrlBase = parts[4];
                     var startStat = parts.Length >= 6 && parts[5] == "1";
 
@@ -169,7 +173,7 @@ namespace Client.Network
                         throw new InvalidOperationException("Invalid server return, missing patch URLs.");
 
                     var r2ServerVersion = parts[0];
-                    var r2BackupPatchURL = parts[1];
+                    var r2BackupPatchUrl = parts[1];
 
                     var r2PatchUrLs = parts[2].Split(' ');
 
@@ -177,11 +181,11 @@ namespace Client.Network
                     {
                         Cookie = currentCookie,
                         FsAddr = fsAddr,
-                        RingMainURL = ringMainURL,
+                        RingMainURL = ringMainUrl,
                         FarTpUrlBase = farTpUrlBase,
                         StartStat = startStat, // bool
                         R2ServerVersion = r2ServerVersion,
-                        R2BackupPatchURL = r2BackupPatchURL,
+                        R2BackupPatchURL = r2BackupPatchUrl,
                         R2PatchUrLs = r2PatchUrLs // string[]
                     };
 
@@ -233,7 +237,7 @@ namespace Client.Network
         /// Return a pointer to static data consisting of the "salt"
         /// followed by an encryption produced by the "key" and "salt".
         /// </summary>
-        protected static string Crypt(string password, string salt)
+        private static string Crypt(string password, string salt)
         {
             if (salt.Length < 2 || salt[0] != '$' || salt[1] != '6') return DesCrypter.Crypt(salt, password);
 

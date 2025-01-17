@@ -25,8 +25,7 @@ namespace Client.Commands
                 return "Wrong argument count in the command.";
 
             // Perform admin command
-            var response = "";
-            ryzomClient.PerformInternalCommand("a updateTarget", ref response);
+            ryzomClient.PerformInternalCommand("a updateTarget", out var response);
             return response;
         }
 

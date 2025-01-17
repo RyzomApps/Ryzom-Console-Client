@@ -20,6 +20,8 @@ namespace Client.Commands
 
             ryzomClient.GetNetworkManager().SendMsgToServer("COMBAT:PARRY");
 
+            handler.GetLogger().Info("§eYou will try to parry melee attacks.");
+
             return "";
         }
 

@@ -40,8 +40,7 @@ namespace Client.Commands
             }
 
             // Invite a named player - Perform admin command
-            var response = "";
-            ryzomClient.PerformInternalCommand("a teamInvite " + args[0], ref response);
+            ryzomClient.PerformInternalCommand($"a teamInvite {args[0]}", out var response);
             return response;
         }
 

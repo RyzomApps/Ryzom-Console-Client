@@ -25,8 +25,7 @@ namespace Client.Commands
                 return "Wrong argument count in the command.";
 
             // Perform admin command
-            var response = "";
-            ryzomClient.PerformInternalCommand("a connectLangChannel " + string.Join(' ', args), ref response);
+            ryzomClient.PerformInternalCommand($"a connectLangChannel {string.Join(' ', args)}", out var response);
             return response;
         }
 

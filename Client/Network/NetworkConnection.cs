@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
@@ -463,7 +462,7 @@ namespace Client.Network
             {
                 if (proxied)
                 {
-                    _client.GetLogger().Info($"Trying to find a working UDP proxy. This could take a moment...");
+                    _client.GetLogger().Info("§eTrying to find a working UDP proxy. This could take a moment...");
 
                     _connection = ProxyManager.GetSocks5ProxyUdp(null, _frontendAddress);
                     ProxyCountry = ((UdpSocketProxied)_connection).HostName; //IpInfoIo.GetUserCountryByIp(((UdpSocketProxied)_connection).HostName);

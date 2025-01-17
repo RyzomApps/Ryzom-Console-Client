@@ -25,8 +25,7 @@ namespace Client.Commands
                 return "Wrong argument count in the command.";
 
             // Perform admin command
-            var response = "";
-            ryzomClient.PerformInternalCommand("a guildInvite " + args[0], ref response);
+            ryzomClient.PerformInternalCommand($"a guildInvite {args[0]}", out var response);
             return response;
         }
 

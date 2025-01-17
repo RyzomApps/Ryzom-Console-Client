@@ -38,16 +38,11 @@ namespace Client.Network
         public bool ServerReceivedReady;
 
         public byte PlayerSelectedSlot = 0;
-        public byte ServerPeopleActive = 255;
-        public byte ServerCareerActive = 255;
+        private byte _serverPeopleActive = 255;
+        private byte _serverCareerActive = 255;
 
-        public List<CharacterSummary> CharacterSummaries = new List<CharacterSummary>();
+        public readonly List<CharacterSummary> CharacterSummaries = new List<CharacterSummary>();
         public bool WaitServerAnswer;
-
-        /// <summary>
-        /// This is the mainland selected at the create person screen
-        /// </summary>
-        public uint MainlandSelected = 0;
 
         public string PlayerSelectedHomeShardName { get; set; } = "";
         public string PlayerSelectedHomeShardNameWithParenthesis = "";
@@ -70,14 +65,9 @@ namespace Client.Network
         private readonly InventoryManager _inventoryManager;
 
         /// <summary>
-        /// was the initial server season received
-        /// </summary>
-        public bool ServerSeasonReceived;
-
-        /// <summary>
         /// season
         /// </summary>
-        byte ServerSeasonValue = 0;
+        private byte _serverSeasonValue;
 
         /// <summary>
         /// manages entities and shapes instances
@@ -104,7 +94,7 @@ namespace Client.Network
 
         public DatabaseManager GetDatabaseManager() => _databaseManager;
 
-        public InventoryManager GetInventoryManager() => _inventoryManager;
+        private InventoryManager GetInventoryManager() => _inventoryManager;
 
         /// <inheritdoc />
         public uint GetCurrentServerTick() => _networkConnection.GetCurrentServerTick();
@@ -112,7 +102,7 @@ namespace Client.Network
         /// <inheritdoc />
         public double[] GetTps() => _networkConnection.GetTps();
 
-        readonly Random random = new Random();
+        private readonly Random _random = new Random();
 
         /// <summary>
         /// Constructor
@@ -194,49 +184,52 @@ namespace Client.Network
                 if (change.Property < (byte)PropertyType.AddNewEntity)
                 {
                     // Update the visual property for the slot
-                    // TODO: Find out why there are property changes while being in the global menu
                     _entitiesManager.UpdateVisualProperty(change.GameCycle, change.ShortId, change.Property, change.PositionInfo.PredictedInterval);
                 }
-                else switch (change.Property)
+                else
+                {
+                    switch (change.Property)
                     {
                         // Add New Entity (and remove the old one in the slot)
                         case (byte)PropertyType.AddNewEntity:
+                            // Remove the old entity
+                            _entitiesManager.Remove(change.ShortId, false);
+
+                            // Create the new entity
+                            if (_entitiesManager.Create(change.ShortId, _networkConnection.GetPropertyDecoder().GetSheetFromEntity(change.ShortId), change.NewEntityInfo) == null)
                             {
-                                // Remove the old entity
-                                _entitiesManager.Remove(change.ShortId, false);
-
-                                // Create the new entity
-                                if (_entitiesManager.Create(change.ShortId, _networkConnection.GetPropertyDecoder().GetSheetFromEntity(change.ShortId), change.NewEntityInfo) == null)
-                                {
-                                    _client.GetLogger().Warn($"CNetManager::update : entity in the slot '{change.ShortId}' has not been created.");
-                                }
-
-                                break;
+                                _client.GetLogger().Warn($"CNetManager::update : entity in the slot '{change.ShortId}' has not been created.");
                             }
+
+                            break;
+
                         // Delete an entity
                         case (byte)PropertyType.RemoveOldEntity:
                             _client.GetLogger().Debug($"CNetManager::remove old entity : {(_entitiesManager.GetEntity(change.ShortId) != null ? _entitiesManager.GetEntity(change.ShortId).GetDisplayName().Trim() : "unnamed")} id " + change.ShortId);
-
-                            // TODO: see why "Remove the old entity" is removing actual entities
                             _entitiesManager.Remove(change.ShortId, true);
                             break;
+
                         // Lag detected
                         case (byte)PropertyType.LagDetected:
                             _client.GetLogger().Debug("CNetManager::update : Lag detected.");
                             break;
+
                         // Probe received
                         case (byte)PropertyType.ProbeReceived:
                             _client.GetLogger().Debug("CNetManager::update : Probe Received.");
                             break;
+
                         // Connection ready
                         case (byte)PropertyType.ConnectionReady:
                             _client.GetLogger().Debug("CNetManager::update : Connection Ready.");
                             break;
+
                         // Property unknown
                         default:
                             _client.GetLogger().Warn("CNetManager::update : The property '" + change.Property + "' is unknown.");
                             break;
                     }
+                }
             }
 
             // Clear all changes.
@@ -582,7 +575,7 @@ namespace Client.Network
         }
 
         /// <summary>
-        /// TODO: Respawn point set
+        /// Respawn point set
         /// </summary>
         private void ImpulseDeathRespawnPoint(BitMemoryStream impulse)
         {
@@ -1033,41 +1026,40 @@ namespace Client.Network
 
         private void ImpulseDynChatOpen(BitMemoryStream impulse)
         {
-            uint BotUID = 0; // Compressed Index
-            uint BotName = 0; // Server string
+            uint botUid = 0; // Compressed Index
+            uint botName = 0; // Server string
 
-            impulse.Serial(ref BotUID);
-            impulse.Serial(ref BotName);
+            impulse.Serial(ref botUid);
+            impulse.Serial(ref botName);
 
             #region workaround for: impulse.SerialCont(ref DynStrs);
             var len = 0;
             impulse.Serial(ref len);
 
-            List<uint> DynStrs = new List<uint>(); // 0 - Desc, 1 - Option0, 2 - Option1, etc....
+            var dynStrs = new List<uint>(); // 0 - Desc, 1 - Option0, 2 - Option1, etc....
 
             for (var i = 0; i < len; i++)
             {
                 uint value = 0;
                 impulse.Serial(ref value);
-                DynStrs.Add(value);
+                dynStrs.Add(value);
             }
             #endregion end workaround
 
-            string sTmp = "impulseCallback : Received BOTCHAT:DYNCHAT_OPEN BotUID:";
-            sTmp += BotUID + " BotName:";
-            sTmp += BotName + " DynStrs:";
-            for (int i = 0; i < DynStrs.Count; ++i)
+            var sTmp = "impulseCallback : Received BOTCHAT:DYNCHAT_OPEN BotUID:";
+            sTmp += botUid + " BotName:";
+            sTmp += botName + " DynStrs:";
+
+            for (var i = 0; i < dynStrs.Count; ++i)
             {
-                sTmp += DynStrs[i];
-                if (i != DynStrs.Count - 1)
+                sTmp += dynStrs[i];
+                if (i != dynStrs.Count - 1)
                 {
                     sTmp += ",";
                 }
             }
-            _client.GetLogger().Info(sTmp);
-            
-            //InSceneBubbleManager.dynChatOpen(BotUID, BotName, DynStrs);
 
+            _client.GetLogger().Info(sTmp);
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
@@ -1109,7 +1101,7 @@ namespace Client.Network
                 if (!GetEntityManager().GetApiUserEntity().IsDead())
                 {
                     // Add some Noise to get unstuck ;)
-                    var noise = Vector3.Normalize(new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, 0));
+                    var noise = Vector3.Normalize(new Vector3((float)_random.NextDouble() - 0.5f, (float)_random.NextDouble() - 0.5f, 0));
                     dest += noise * 1;
                 }
 
@@ -1142,14 +1134,14 @@ namespace Client.Network
         /// <summary>
         /// Message from the server to teleport the user.
         /// </summary>
-        internal void ImpulseTp(BitMemoryStream impulse, bool hasSeason)
+        private void ImpulseTp(BitMemoryStream impulse, bool hasSeason)
         {
             var userEntity = _client.GetNetworkManager().GetEntityManager().GetApiUserEntity();
 
-            int x = new int();
-            int y = new int();
-            int z = new int();
-            bool useHeading = new bool();
+            var x = new int();
+            var y = new int();
+            var z = new int();
+            var useHeading = new bool();
 
             impulse.Serial(ref x);
             impulse.Serial(ref y);
@@ -1159,12 +1151,12 @@ namespace Client.Network
             // Is there an orientation too ?
             if (useHeading)
             {
-                float angle = new float();
+                var angle = new float();
                 impulse.Serial(ref angle);
 
                 _client.GetLogger().Debug($"impulseTP: to {x} {y} {z} {angle}");
 
-                Vector3 ori = new Vector3((float)Math.Cos(angle), (float)Math.Sin(angle), 0f);
+                var ori = new Vector3((float)Math.Cos(angle), (float)Math.Sin(angle), 0f);
                 Vector3.Normalize(ori);
 
                 userEntity.Dir = ori;
@@ -1178,8 +1170,7 @@ namespace Client.Network
 
             if (hasSeason)
             {
-                impulse.Serial(ref ServerSeasonValue);
-                ServerSeasonReceived = true;
+                impulse.Serial(ref _serverSeasonValue);
             }
 
             // Compute the destination.
@@ -1199,7 +1190,7 @@ namespace Client.Network
                 _client.GetLogger().Info("Teleport acknowledge sent.");
             }
             else
-                _client.GetLogger().Warn("impulseTP: unknown message name : 'TP:ACK'."); ;
+                _client.GetLogger().Warn("impulseTP: unknown message name : 'TP:ACK'.");
 
             _client.Plugins.OnTeleport(hasSeason);
         }
@@ -1343,10 +1334,9 @@ namespace Client.Network
             // Received USER_CHAR
             _client.GetLogger().Debug("ImpulseCallBack : Received CONNECTION:USER_CHAR");
 
-            UserCharMsg.Read(impulse, out var x, out var y, out var z, out var heading, out ServerSeasonValue, out var userRole, out var isInRingSession, out var highestMainlandSessionId, out var firstConnectedTime, out CharPlayedTime);
+            UserCharMsg.Read(impulse, out var x, out var y, out var z, out var heading, out _serverSeasonValue, out var userRole, out var isInRingSession, out var highestMainlandSessionId, out var firstConnectedTime, out CharPlayedTime);
 
             // Set the season that will be used when selecting the continent from the position
-            ServerSeasonReceived = true;
 
             if (_entitiesManager.UserEntity != null)
             {
@@ -1360,7 +1350,7 @@ namespace Client.Network
                 // Update the position for the vision.
                 _networkConnection.SetReferencePosition(_entitiesManager.UserEntity.Pos);
 
-                _client.Plugins.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, _entitiesManager.UserEntity.Pos, _entitiesManager.UserEntity.Front, ServerSeasonValue, userRole, isInRingSession);
+                _client.Plugins.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, _entitiesManager.UserEntity.Pos, _entitiesManager.UserEntity.Front, _serverSeasonValue, userRole, isInRingSession);
             }
             else
             {
@@ -1372,7 +1362,7 @@ namespace Client.Network
                 // Update the position for the vision.
                 _networkConnection.SetReferencePosition(userEntityInitPos);
 
-                _client.Plugins.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, userEntityInitPos, userEntityInitFront, ServerSeasonValue, userRole, isInRingSession);
+                _client.Plugins.OnUserChar(highestMainlandSessionId, firstConnectedTime, CharPlayedTime, userEntityInitPos, userEntityInitFront, _serverSeasonValue, userRole, isInRingSession);
             }
 
             _client.UserCharPosReceived = true;
@@ -1383,8 +1373,8 @@ namespace Client.Network
             // received USER_CHARS
             _client.GetLogger().Info("Received the following characters from the server:");
 
-            impulse.Serial(ref ServerPeopleActive);
-            impulse.Serial(ref ServerCareerActive);
+            impulse.Serial(ref _serverPeopleActive);
+            impulse.Serial(ref _serverCareerActive);
 
             // read characters summary
             CharacterSummaries.Clear();
@@ -1504,7 +1494,7 @@ namespace Client.Network
             }
         }
 
-        private void UpdateInventoryFromStream(BitMemoryStream impulse, InventoryCategoryTemplate templ, bool notifyItemSheetChanges)
+        private void UpdateInventoryFromStream(BitMemoryStream impulse, InventoryCategoryTemplate templ)
         {
             if (!ClientConfig.UseInventory)
                 return;
@@ -1536,7 +1526,7 @@ namespace Client.Network
 
                     var invBranchStr = templ.GetDbStr(invId);
                     var textId = new TextId(invBranchStr);
-                    var inventoryNode = GetDatabaseManager().GetServerDb().GetNode(textId, false);
+                    var inventoryNode = GetDatabaseManager().GetServerDb().GetNode(textId);
                     if (inventoryNode == null) throw new Exception("Inventory missing in database");
 
                     // List of updates
@@ -1582,8 +1572,6 @@ namespace Client.Network
                             {
                                 var itemSlot = new ItemSlot();
                                 itemSlot.SerialAll(impulse, templ);
-
-                                //nldebug( "Inv %s Update %u", CInventoryCategoryTemplate::InventoryStr[invId], itemSlot.getSlotIndex() );
 
                                 // Apply all properties to database
                                 var slotNode = (DatabaseNodeBranch)inventoryNode.GetNode((ushort)itemSlot.GetSlotIndex());
@@ -1647,8 +1635,6 @@ namespace Client.Network
                         }
                     }
                 }
-
-                GetInventoryManager().SortBag();
             }
             catch (Exception e)
             {
@@ -1661,7 +1647,7 @@ namespace Client.Network
         /// </summary>
         private void ImpulseUpdateInventory(BitMemoryStream impulse)
         {
-            UpdateInventoryFromStream(impulse, new InventoryCategoryForCharacter(), true);
+            UpdateInventoryFromStream(impulse, new InventoryCategoryForCharacter());
 
             _client.Plugins.OnInitInventory(0);
         }

@@ -6,11 +6,10 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using Client.Inventory;
 using Client.Stream;
 using static Client.Inventory.Inventories;
 
-namespace Client.Network
+namespace Client.Inventory
 {
     public class OneProp
     {

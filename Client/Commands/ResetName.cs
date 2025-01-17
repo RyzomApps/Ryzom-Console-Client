@@ -25,8 +25,7 @@ namespace Client.Commands
                 return "Wrong argument count in the command.";
 
             // resetname - Perform admin command
-            var response = "";
-            ryzomClient.PerformInternalCommand("a resetName", ref response);
+            ryzomClient.PerformInternalCommand("a resetName", out var response);
             return response;
         }
 
