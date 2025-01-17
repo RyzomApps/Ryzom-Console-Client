@@ -225,7 +225,10 @@ namespace Client
             _sheetIdFactory = new SheetIdFactory(this);
             _networkConnection = new NetworkConnection(this);
             _phraseManager = new PhraseManager(this);
-            _inventoryManager = new InventoryManager(this);
+
+            if(ClientConfig.UseInventory)
+                _inventoryManager = new InventoryManager(this);
+
             _actionHandlerManager = new ActionHandlerManager(this);
             _webTransfer = new WebTransfer(this);
             _interfaceManager = new InterfaceManager(this);

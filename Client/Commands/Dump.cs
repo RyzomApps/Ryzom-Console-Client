@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
+using Client.Config;
 
 namespace Client.Commands
 {
@@ -29,7 +30,8 @@ namespace Client.Commands
             // TODO: Write information to start as the version (RecordVersion, currentPos)
 
             // Write the DB
-            ryzomClient.GetDatabaseManager().Write(dumpName + "_db.rec");
+            if(ClientConfig.UseDatabase)
+                ryzomClient.GetDatabaseManager().Write(dumpName + "_db.rec");
 
             // TODO: Dump Client CFG.
 
@@ -37,7 +39,8 @@ namespace Client.Commands
 
             ryzomClient.GetPhraseManager().Write(dumpName + "_phrases.rec");
 
-            ryzomClient.GetInventoryManager().Write(dumpName + "_inventory.rec");
+            if(ClientConfig.UseInventory)
+                ryzomClient.GetInventoryManager().Write(dumpName + "_inventory.rec");
 
             return "";
         }
