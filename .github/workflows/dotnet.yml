@@ -19,7 +19,7 @@ jobs:
         run: echo %date% %time:~0,-3%>"Client\Resources\BuildDate.txt"
         
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
           
