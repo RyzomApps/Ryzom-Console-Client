@@ -38,7 +38,7 @@
   <ItemGroup>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
-    <PackageReference Include="TextCopy" Version="6.2.0" />
+    <PackageReference Include="TextCopy" Version="6.2.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\API\API.csproj">
