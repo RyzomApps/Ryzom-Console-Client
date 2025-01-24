@@ -2,7 +2,7 @@
 
   <PropertyGroup>
   	<IntermediateOutputPath>$(SolutionDir)\obj\$(MSBuildProjectName)</IntermediateOutputPath>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <OutDir>$(SolutionDir)\bin\$(Configuration)\$(TargetFramework)\$(MSBuildProjectName)</OutDir>
