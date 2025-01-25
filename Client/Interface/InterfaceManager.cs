@@ -83,7 +83,7 @@ namespace Client.Interface
             _phraseManager.InitInGame();
 
             // Initialize inventory manager : link to DB and to interface element so must be here
-            _inventoryManager.Init();
+            _inventoryManager?.Init();
 
             // Start the WebIG Thread - TODO ADD PROXY
             WebigThread.StartThread(_client, _webTransfer);
