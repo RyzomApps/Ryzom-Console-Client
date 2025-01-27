@@ -1661,7 +1661,8 @@ namespace Client.Network
 
             _databaseManager?.SetInitPacketReceived();
 
-            GetInventoryManager().OnUpdateEquipHands();
+            if (ClientConfig.UseInventory)
+                GetInventoryManager().OnUpdateEquipHands();
         }
 
         /// <summary>

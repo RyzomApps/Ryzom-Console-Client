@@ -171,7 +171,7 @@ namespace Client.Config
 
         public static string WebIgMainDomain = "http://app.ryzom.com";
         public static int WebIgNotifInterval = 10; // time in minutes
-        public static List<string> WebIgTrustedDomains = new List<string> { "app.ryzom.com" };
+        public static List<string> WebIgTrustedDomains = ["app.ryzom.com"];
 
         public static string BrowserProxyUrl = "http://localhost:8000/";
         public static bool BrowserProxyEnabled = false;
@@ -236,7 +236,7 @@ namespace Client.Config
             }
             catch (IOException e)
             {
-                ConsoleIO.WriteLineFormatted("§cError loading Settings: " + e.Message);
+                ConsoleIO.WriteLineFormatted($"§cError loading Settings: {e.Message}");
             }
         }
 
@@ -360,7 +360,7 @@ namespace Client.Config
                     break;
 
                 default:
-                    RyzomClient.GetInstance().GetLogger().Warn($"Could not parse setting {argName} with value '{argValue}'.");
+                    ConsoleIO.WriteLineFormatted($"§cCould not parse setting {argName} with value '{argValue}'.");
                     return;
             }
         }
