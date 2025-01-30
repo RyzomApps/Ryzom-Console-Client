@@ -54,10 +54,10 @@ namespace Client.Discord
             if (string.IsNullOrEmpty(Url))
                 throw new NullReferenceException(@"Invalid Webhook URL.");
 
-            var bound = "------------------------" + DateTime.Now.Ticks.ToString("x");
+            var bound = $"------------------------{DateTime.Now.Ticks:x}";
 
             var webhook = new WebClient();
-            webhook.Headers.Add("Content-Type", "multipart/form-data; boundary=" + bound);
+            webhook.Headers.Add("Content-Type", $"multipart/form-data; boundary={bound}");
 
             var stream = new MemoryStream();
 

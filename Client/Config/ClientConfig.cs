@@ -12,6 +12,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using Client.Helper;
+using File = System.IO.File;
 
 namespace Client.Config
 {
@@ -95,7 +96,7 @@ namespace Client.Config
 
         // Proxy
         public static bool UseProxy = false;
-        public static int ProxyLoginRetries = 30;
+        public static int ProxyLoginRetries = 10;
 
         public static long OnlineProxyListExpiration = 10 * 60; // [s]
 
@@ -114,6 +115,7 @@ namespace Client.Config
             "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks5.txt",
             "https://raw.githubusercontent.com/sunny9577/proxy-scraper/master/generated/socks5_proxies.txt",
             "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt",
+            "https://raw.githubusercontent.com/vakhov/fresh-proxy-list/refs/heads/master/socks5.txt",
             "https://www.proxy-list.download/api/v1/get?type=socks5",
         };
 
@@ -252,10 +254,7 @@ namespace Client.Config
 
             // Write configuration file with current version number
             File.WriteAllText(settingsfile,
-                "# Ryzom Console Client v"
-                + Program.Version
-                + Environment.NewLine
-                + settingsContents, Encoding.UTF8);
+                $"# Ryzom Console Client v{Program.Version}{Environment.NewLine}{settingsContents}", Encoding.UTF8);
         }
 
         /// <summary>

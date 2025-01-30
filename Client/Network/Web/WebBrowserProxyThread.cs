@@ -73,7 +73,7 @@ namespace Client.Network.Web
             }
             catch (Exception e)
             {
-                _logger.Error("Could not start the browser proxy: " + e.Message);
+                _logger.Error($"Could not start the browser proxy: {e.Message}");
             }
             finally
             {
@@ -120,7 +120,7 @@ namespace Client.Network.Web
                     if (realDomain.IndexOf("/", StringComparison.Ordinal) != -1)
                     {
                         realPath = realDomain[realDomain.IndexOf("/", StringComparison.Ordinal)..];
-                        realDomain = "http://" + realDomain[..realDomain.IndexOf("/", StringComparison.Ordinal)];
+                        realDomain = $"http://{realDomain[..realDomain.IndexOf("/", StringComparison.Ordinal)]}";
                     }
                     else if (realDomain.Trim() == "")
                     {
@@ -129,7 +129,7 @@ namespace Client.Network.Web
                     }
                     else
                     {
-                        realPath = "/" + realDomain;
+                        realPath = $"/{realDomain}";
                         realDomain = ClientConfig.WebIgMainDomain;
                     }
 
@@ -139,7 +139,7 @@ namespace Client.Network.Web
 
                     if (!result.IsSuccessStatusCode)
                     {
-                        _logger.Warn(url + " returned " + result.ReasonPhrase);
+                        _logger.Warn($"{url} returned {result.ReasonPhrase}");
                         resp.Close();
                         continue;
                     }
@@ -161,10 +161,10 @@ namespace Client.Network.Web
 
                                 for (int i = 0; i < m.Groups[3].Captures.Count; i++)
                                 {
-                                    ret += "<a href=\"" + m.Groups[3].Captures[i].Value + "\">" + m.Groups[3].Captures[i].Value + "</a>" + m.Groups[4].Captures[i].Value;
+                                    ret += $"<a href=\"{m.Groups[3].Captures[i].Value}\">{m.Groups[3].Captures[i].Value}</a>{m.Groups[4].Captures[i].Value}";
                                 }
 
-                                return ret + "</lua>";
+                                return $"{ret}</lua>";
                             });
 
                         // Replace lua tags

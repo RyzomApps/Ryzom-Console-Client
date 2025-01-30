@@ -20,14 +20,14 @@ namespace Client.ActionHandler
     /// <date>2002</date>
     public abstract class ActionHandlerBase
     {
-        public string Name = ActionHandlerManager.EmptyName;
+        public readonly string Name = ActionHandlerManager.EmptyName;
 
         protected readonly IClient _client;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">Ryzom Client</param>
         protected ActionHandlerBase(IClient client)
         {
             _client = client;
@@ -39,6 +39,46 @@ namespace Client.ActionHandler
         /// <param name="caller">Control that calls the action</param>
         /// <param name="parameters">Parameters has the following form : paramName=theParam|paramName2=theParam2|...</param>
         public abstract void Execute(object caller, string parameters);
+
+        public virtual List<Tuple<string, string>> GetAllParams(string parameters) { return []; }
+
+        protected virtual string GetParam(string @params, string paramName)
+        {
+            var allparam = @params;
+
+            SkipBlankAtStart(ref allparam);
+
+            var param = paramName.ToLower();
+
+            while (!string.IsNullOrEmpty(allparam))
+            {
+                var e = allparam.IndexOf('=');
+
+                if (e is -1 or 0)
+                    break;
+
+                var p = allparam.IndexOf('|');
+                var tmp = allparam[..e].ToLower();
+
+                SkipBlankAtEnd(ref tmp);
+
+                if (tmp == param)
+                {
+                    var tmp2 = p == -1 ? allparam[(e + 1)..] : allparam.Substring(e + 1, p - e - 1);
+                    SkipBlankAtStart(ref tmp2);
+                    SkipBlankAtEnd(ref tmp2);
+                    return tmp2;
+                }
+
+                if (p is -1 or 0)
+                    break;
+
+                allparam = allparam[(p + 1)..];
+                SkipBlankAtStart(ref allparam);
+            }
+
+            return "";
+        }
 
         private static void SkipBlankAtStart(ref string start)
         {
@@ -61,7 +101,7 @@ namespace Client.ActionHandler
             {
                 if (end[^1] == ' ' || end[^1] == '\t' || end[^1] == '\r' || end[^1] == '\n')
                 {
-                    end = end[0..^1];
+                    end = end[..^1];
                 }
                 else
                 {
@@ -69,41 +109,5 @@ namespace Client.ActionHandler
                 }
             }
         }
-
-        public virtual string GetParam(string Params, string ParamName)
-        {
-            string allparam = Params;
-            SkipBlankAtStart(ref allparam);
-            string param = ParamName.ToLower();
-
-            while (!string.IsNullOrEmpty(allparam))
-            {
-                int e = allparam.IndexOf('=');
-                if (e == -1 || e == 0)
-                {
-                    break;
-                }
-                int p = allparam.IndexOf('|');
-                string tmp = allparam.Substring(0, e).ToLower();
-                SkipBlankAtEnd(ref tmp);
-                if (tmp == param)
-                {
-                    string tmp2 = allparam.Substring(e + 1, p - e - 1);
-                    SkipBlankAtStart(ref tmp2);
-                    SkipBlankAtEnd(ref tmp2);
-                    return tmp2;
-                }
-                if (p == -1 || p == 0)
-                {
-                    break;
-                }
-                allparam = allparam.Substring(p + 1, allparam.Length);
-                SkipBlankAtStart(ref allparam);
-            }
-
-            return "";
-        }
-
-        public virtual List<Tuple<string, string>> GetAllParams(string parameters) { return new List<Tuple<string, string>>(); }
     }
 }

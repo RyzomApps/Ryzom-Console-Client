@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -939,6 +940,30 @@ namespace Client.Plugins
         public void OnInitEquipHands(int handIndex, int bagIndex)
         {
             DispatchListenerEvent(listener => listener.OnInitEquipHands(handIndex, bagIndex));
+        }
+
+        /// <summary>
+        /// Called when flying health points (HP) deltas should be display for an entity
+        /// </summary>
+        internal void OnCombatFlyingHpDelta(uint entityId, int color, short hpDelta)
+        {
+            DispatchListenerEvent(listener => listener.OnCombatFlyingHpDelta(entityId, color, hpDelta));
+        }
+
+        /// <summary>
+        /// Called when a combat-related special effect flying text for an entity should be displayed
+        /// </summary>
+        internal void OnCombatFlyingTextItemSpecialEffectProc(uint entityId, int color, byte effect, int param)
+        {
+            DispatchListenerEvent(listener => listener.OnCombatFlyingTextItemSpecialEffectProc(entityId, color, effect, param));
+        }
+
+        /// <summary>
+        /// Called when a combat-related flying text for an entity should be displayed
+        /// </summary>
+        internal void OnCombatFlyingText(uint entityId, int color, byte type)
+        {
+            DispatchListenerEvent(listener => listener.OnCombatFlyingText(entityId, color, type));
         }
 
         #endregion

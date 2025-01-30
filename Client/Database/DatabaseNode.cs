@@ -159,7 +159,7 @@ namespace Client.Database
             if (GetParent() != null && GetParent().GetParent() != null)
             {
                 GetParent()._buildFullName(ref fullName);
-                fullName += ":" + _name;
+                fullName += $":{_name}";
             }
             else
             {

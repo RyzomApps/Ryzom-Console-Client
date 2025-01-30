@@ -321,7 +321,7 @@ namespace Client.Sheet
                 if (sheetList.Length > 0)
                     sheetList.Append("\r\n");
 
-                sheetList.Append(key + "\t" + value);
+                sheetList.Append($"{key}\t{value}");
                 found++;
             }
 

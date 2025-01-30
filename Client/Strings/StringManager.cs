@@ -128,7 +128,7 @@ namespace Client.Strings
 
             try
             {
-                _cacheFilename = "save/" + _shardId.Split(":")[0] + ".string_cache";
+                _cacheFilename = $"save/{_shardId.Split(":")[0]}.string_cache";
 
                 _client.GetLogger().Info($"Loading string cache from {Path.GetFullPath(_cacheFilename)}");
 
@@ -536,7 +536,7 @@ namespace Client.Strings
                         temp.Append(dynInfo.String[move..]);
 
                         // apply any 'delete' character in the string and replace double '%'
-                        temp = temp.Replace("" + (char)8, "");
+                        temp = temp.Replace($"{(char)8}", "");
                         temp = temp.Replace("%%", "");
 
                         dynInfo.Status = StringStatus.Complete;
@@ -825,7 +825,7 @@ namespace Client.Strings
 
             for (uint i = 0; i < textLocalizations.Length; i++)
             {
-                if (textLocalizations[i][..3] == CultureInfo.CurrentCulture.TwoLetterISOLanguageName + "]")
+                if (textLocalizations[i][..3] == $"{CultureInfo.CurrentCulture.TwoLetterISOLanguageName}]")
                 {
                     defaultText = textLocalizations[i][3..];
                     return defaultText;
@@ -894,7 +894,7 @@ namespace Client.Strings
             //    }
             //}
 
-            var badString = "<NotExist:" + lwrLabel + ">";
+            var badString = $"<NotExist:{lwrLabel}>";
             return badString;
         }
 

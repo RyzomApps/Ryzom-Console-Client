@@ -29,7 +29,7 @@ namespace Client.Logger
         {
             _logFile = file;
             _prependTimestamp = prependTimestamp;
-            Save("### Log started at " + Misc.GetTimestamp() + " ###");
+            Save($"### Log started at {Misc.GetTimestamp()} ###");
         }
 
         /// <summary>
@@ -70,8 +70,8 @@ namespace Client.Logger
             catch (Exception e)
             {
                 // Must use base since we already failed to write log
-                base.Error("Cannot write to log file: " + e.Message);
-                base.Debug("Stack trace: \n" + e.StackTrace);
+                base.Error($"Cannot write to log file: {e.Message}");
+                base.Debug($"Stack trace: \n{e.StackTrace}");
             }
         }
 
@@ -83,7 +83,7 @@ namespace Client.Logger
             {
                 LogAndSave(msg);
             }
-            else Debug("[Logger] One Chat message filtered: " + msg);
+            else Debug($"[Logger] One Chat message filtered: {msg}");
         }
 
         /// <inheritdoc />
@@ -92,7 +92,7 @@ namespace Client.Logger
             if (!DebugEnabled) return;
             if (ShouldDisplay(FilterChannel.Debug, msg))
             {
-                LogAndSave("§8[DEBUG] " + msg);
+                LogAndSave($"\u00a78[DEBUG] {msg}");
             }
         }
 

@@ -51,7 +51,7 @@ namespace Client.Logger
             {
                 lock (_loggerLock)
                 {
-                    Log("§8[DEBUG] " + msg);
+                    Log($"\u00a78[DEBUG] {msg}");
                 }
             }
 
@@ -76,7 +76,7 @@ namespace Client.Logger
 
             lock (_loggerLock)
             {
-                Log("§6[WARN] " + msg);
+                Log($"\u00a76[WARN] {msg}");
             }
         }
 
@@ -87,7 +87,7 @@ namespace Client.Logger
 
             lock (_loggerLock)
             {
-                Log("§c[ERROR] " + msg);
+                Log($"\u00a7c[ERROR] {msg}");
             }
         }
 
@@ -105,7 +105,7 @@ namespace Client.Logger
                     Log(msg);
                 }
             }
-            else Debug("[Logger] One Chat message filtered: " + msg);
+            else Debug($"[Logger] One Chat message filtered: {msg}");
         }
 
         protected enum FilterChannel

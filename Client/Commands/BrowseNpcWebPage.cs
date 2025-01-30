@@ -32,7 +32,7 @@ namespace Client.Commands
 
             if (!url.StartsWith("http://") && !url.StartsWith("https://"))
             {
-                url = ClientConfig.WebIgMainDomain + "/" + url.Replace(" ", "/index.php?");
+                url = $"{ClientConfig.WebIgMainDomain}/{url.Replace(" ", "/index.php?")}";
             }
 
             //ryzomClient.GetActionHandlerManager().GetActionHandler("browse").Execute(this, url);

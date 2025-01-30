@@ -172,7 +172,7 @@ namespace Client.Inventory
         {
             for (uint i = 0; i < nbIndex; ++i)
             {
-                var pNl = _client.GetDatabaseManager().GetServerNode(dbbranch + i + ":INDEX_IN_BAG");
+                var pNl = _client.GetDatabaseManager().GetServerNode($"{dbbranch}{i}:INDEX_IN_BAG");
 
                 if (putObs)
                 {

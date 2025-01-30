@@ -36,7 +36,7 @@ namespace Client.Logger
             var messageFlusher = new Thread(FlushMessages) { Name = "RCC DiscordLogger MessageFlusher" };
             messageFlusher.Start();
 
-            QueueMessage("### Log started at " + Misc.GetTimestamp() + " ###");
+            QueueMessage($"### Log started at {Misc.GetTimestamp()} ###");
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Client.Logger
 
                     while (_messageQueue.Count > 0 && text.Length < 2000 - 256)
                     {
-                        text += _messageQueue.Dequeue() + "\r\n";
+                        text += $"{_messageQueue.Dequeue()}\r\n";
                     }
 
                     text = text[..^2];
@@ -74,8 +74,8 @@ namespace Client.Logger
                 catch (Exception e)
                 {
                     // Must use base since we already failed to write log
-                    base.Error("Cannot write to webhook: " + e.Message);
-                    base.Debug("Stack trace: \n" + e.StackTrace);
+                    base.Error($"Cannot write to webhook: {e.Message}");
+                    base.Debug($"Stack trace: \n{e.StackTrace}");
                 }
             }
         }
@@ -115,7 +115,7 @@ namespace Client.Logger
             {
                 LogAndSave(msg);
             }
-            else Debug("[Logger] One Chat message filtered: " + msg);
+            else Debug($"[Logger] One Chat message filtered: {msg}");
         }
 
         /// <inheritdoc />
@@ -124,7 +124,7 @@ namespace Client.Logger
             if (!DebugEnabled) return;
             if (ShouldDisplay(FilterChannel.Debug, msg))
             {
-                LogAndSave("[DEBUG] " + msg);
+                LogAndSave($"[DEBUG] {msg}");
             }
         }
 
@@ -133,7 +133,7 @@ namespace Client.Logger
         {
             base.Error(msg);
             if (ErrorEnabled)
-                QueueMessage("[ERROR] " + msg);
+                QueueMessage($"[ERROR] {msg}");
         }
 
         /// <inheritdoc />
@@ -141,7 +141,7 @@ namespace Client.Logger
         {
             base.Info(msg);
             if (InfoEnabled)
-                QueueMessage("[INFO] " + msg);
+                QueueMessage($"[INFO] {msg}");
         }
 
         /// <inheritdoc />
@@ -149,7 +149,7 @@ namespace Client.Logger
         {
             base.Warn(msg);
             if (WarnEnabled)
-                QueueMessage("[WARN] " + msg);
+                QueueMessage($"[WARN] {msg}");
         }
     }
 }

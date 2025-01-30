@@ -55,7 +55,7 @@ namespace Client.Commands
                     return str;
                 }
                 default:
-                    return "Usage: " + CmdUsage;
+                    return $"Usage: {CmdUsage}";
             }
 
             return "";

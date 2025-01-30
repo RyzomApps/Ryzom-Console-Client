@@ -22,7 +22,7 @@ namespace Client.Commands
 
             // Check parameters.
             if (args.Length != 0)
-                return "Usage: " + CmdUsage;
+                return $"Usage: {CmdUsage}";
 
             DatabaseManager.VerboseDatabase = !DatabaseManager.VerboseDatabase;
 

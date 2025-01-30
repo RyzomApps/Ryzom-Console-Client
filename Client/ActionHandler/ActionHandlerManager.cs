@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Client.Commands;
 
 namespace Client.ActionHandler
 {
@@ -21,10 +20,10 @@ namespace Client.ActionHandler
     {
         private readonly RyzomClient _client;
 
-        /// map of action handler factories
-        public SortedDictionary<string, ActionHandlerBase> FactoryMap = new SortedDictionary<string, ActionHandlerBase>();
-        public SortedDictionary<ActionHandlerBase, string> NameMap = new SortedDictionary<ActionHandlerBase, string>();
-        public static string EmptyName = "";
+        // map of action handler factories
+        private readonly SortedDictionary<string, ActionHandlerBase> _factoryMap = new();
+        //private readonly SortedDictionary<ActionHandlerBase, string> _nameMap = new();
+        public const string EmptyName = "";
         private bool _handlersLoaded;
 
         /// <summary>
@@ -33,59 +32,6 @@ namespace Client.ActionHandler
         public ActionHandlerManager(RyzomClient client)
         {
             _client = client;
-        }
-
-        public void GetActionHandlers(List<string> handlers)
-        {
-            handlers.Clear();
-
-            using var itr = FactoryMap.GetEnumerator();
-
-            while (itr.MoveNext())
-            {
-                handlers.Add(itr.Current.Key);
-            }
-        }
-
-        /// <summary>
-        /// return pointer to action handler or null if it doesn't exist
-        /// </summary>
-        public ActionHandlerBase GetActionHandler(in string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return null;
-
-            if (FactoryMap.ContainsKey(name))
-                return FactoryMap[name];
-
-            RyzomClient.GetInstance().GetLogger().Warn("Couldn't find action handler " + name);
-            return null;
-
-        }
-
-        /// <summary>
-        /// Return the name of the action handler given its pointer
-        /// </summary>
-        public string GetActionHandlerName(ActionHandlerBase pAh)
-        {
-            return NameMap.ContainsKey(pAh) ? NameMap[pAh] : EmptyName;
-        }
-
-        /// <summary>
-        /// return the Action Handler 'name'. if name is of form 'ah:params', then params are filled (NB: else not changed)
-        /// </summary>
-        public ActionHandlerBase GetAh(in string name, ref string @params)
-        {
-            // Special AH form?
-            var i = name.IndexOf(':');
-
-            if (i == -1)
-                // standalone form
-                return GetActionHandler(name);
-
-            var ahName = name.Substring(0, i);
-            @params = name[(i + 1)..];
-            return GetActionHandler(ahName);
         }
 
         /// <summary>
@@ -100,40 +46,79 @@ namespace Client.ActionHandler
                 Debug.Assert(char.IsLower(c) || !char.IsLetter(c));
             }
 
-            //var pAhfm = GetInstance();
-            /*pAhfm.*/FactoryMap.Add(name, handler);
-            /*pAhfm.*/NameMap.Add(handler, name);
+            _factoryMap.Add(name, handler);
+            //_nameMap.Add(handler, name);
         }
 
-       /// <summary>
-       /// Load action handlers from the 'ActionHandler' namespace
-       /// </summary>
-       public void LoadActionHandlers()
-       {
-           if (_handlersLoaded) return;
-       
-           var cmdsClasses = Program.GetTypesInNamespace("Client.Commands");
-       
-           foreach (var type in cmdsClasses)
-           {
-               if (!type.IsSubclassOf(typeof(ActionHandlerBase))) continue;
-       
-               try
-               {
-                   var cmd = (ActionHandlerBase)Activator.CreateInstance(type);
-       
-                   if (cmd != null)
-                   {
-                       RegisterActionHandler(cmd, cmd.Name);
-                   }
-               }
-               catch (Exception e)
-               {
-                   _client.Log.Warn(e.Message);
-               }
-           }
-       
-           _handlersLoaded = true;
-       }
+        /// <summary>
+        /// Load action handlers from the 'ActionHandler' namespace
+        /// </summary>
+        public void LoadActionHandlers()
+        {
+            if (_handlersLoaded) return;
+
+            var cmdsClasses = Program.GetTypesInNamespace("Client.Commands");
+
+            foreach (var type in cmdsClasses)
+            {
+                if (!type.IsSubclassOf(typeof(ActionHandlerBase))) continue;
+
+                try
+                {
+                    var cmd = (ActionHandlerBase)Activator.CreateInstance(type);
+
+                    if (cmd != null)
+                    {
+                        RegisterActionHandler(cmd, cmd.Name);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _client.Log.Warn(e.Message);
+                }
+            }
+
+            _handlersLoaded = true;
+        }
+
+        /// <summary>
+        /// Executes an action handler based on the provided command line input.
+        /// </summary>
+        public void RunActionHandler(string cmdLine, object caller, string userParams)
+        {
+            // Exit if no command line is provided
+            if (string.IsNullOrWhiteSpace(cmdLine))
+                return;
+
+            // Split the command line into action name and parameters
+            var index = cmdLine.IndexOf(':');
+            var ahName = index != -1 ? cmdLine[..index] : cmdLine;
+            var ahParams = index != -1 ? cmdLine[(index + 1)..] : string.Empty;
+
+            // Replace parameters with user-defined parameters if provided
+            if (!string.IsNullOrEmpty(userParams))
+                ahParams = userParams;
+
+            // Attempt to retrieve and execute the action handler
+            if (!_factoryMap.TryGetValue(ahName, out var actionHandler))
+            {
+                _client.GetLogger().Warn($"Action handler '{ahName}' not found.");
+                return;
+            }
+
+            actionHandler.Execute(caller, ahParams);
+
+            //// Attempt to execute the quick help action handler
+            //const string submitQuickHelp = "submit_quick_help";
+            //if (_factoryMap.TryGetValue(submitQuickHelp, out var quickHelpHandler))
+            //{
+            //    var eventString = $"{ahName}:{ahParams}";
+            //    quickHelpHandler.Execute(null, eventString);
+            //}
+            //else
+            //{
+            //    _client.GetLogger().Warn($"Action handler '{submitQuickHelp}' not found.");
+            //}
+        }
     }
 }

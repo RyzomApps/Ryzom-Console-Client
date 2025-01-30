@@ -19,9 +19,9 @@ namespace Client.Network
                 {
                     var parts = _cookie.Split('|');
 
-                    CookieUserAddr = Convert.ToInt32("0x" + parts[0], 16);
-                    CookieUserKey = Convert.ToInt32("0x" + parts[1], 16);
-                    CookieUserId = Convert.ToInt32("0x" + parts[2], 16);
+                    CookieUserAddr = Convert.ToInt32($"0x{parts[0]}", 16);
+                    CookieUserKey = Convert.ToInt32($"0x{parts[1]}", 16);
+                    CookieUserId = Convert.ToInt32($"0x{parts[2]}", 16);
                     CookieValid = !(CookieUserAddr == 0 && CookieUserKey == 0 && CookieUserId == 0);
                 }
                 catch (Exception)

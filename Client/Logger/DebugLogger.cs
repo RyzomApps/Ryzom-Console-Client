@@ -6,7 +6,7 @@
         {
             if (!DebugEnabled) return;
 
-            Log("[DEBUG] " + msg);
+            Log($"[DEBUG] {msg}");
         }
 
         public override void Info(string msg)
@@ -14,7 +14,7 @@
             if (!InfoEnabled)
                 return;
 
-            Log("[INFO] " + msg);
+            Log($"[INFO] {msg}");
         }
 
         public override void Warn(string msg)
@@ -22,7 +22,7 @@
             if (!WarnEnabled)
                 return;
 
-            Log("[WARN] " + msg);
+            Log($"[WARN] {msg}");
         }
 
         public override void Error(string msg)
@@ -30,7 +30,7 @@
             if (!ErrorEnabled)
                 return;
 
-            Log("[ERROR] " + msg);
+            Log($"[ERROR] {msg}");
         }
 
         public override void Chat(string msg)
@@ -38,7 +38,7 @@
             if (!ChatEnabled)
                 return;
 
-            Log("[CHAT] " + msg);
+            Log($"[CHAT] {msg}");
         }
 
         /// <summary>

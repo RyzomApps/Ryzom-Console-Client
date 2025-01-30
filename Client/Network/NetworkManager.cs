@@ -27,6 +27,7 @@ using Client.Sheet;
 using Client.Stream;
 using Client.Strings;
 using Client.Inventory;
+using System.Drawing;
 
 namespace Client.Network
 {
@@ -41,13 +42,27 @@ namespace Client.Network
         private byte _serverPeopleActive = 255;
         private byte _serverCareerActive = 255;
 
-        public readonly List<CharacterSummary> CharacterSummaries = new List<CharacterSummary>();
+        public readonly List<CharacterSummary> CharacterSummaries = [];
         public bool WaitServerAnswer;
 
         public string PlayerSelectedHomeShardName { get; set; } = "";
         public string PlayerSelectedHomeShardNameWithParenthesis = "";
 
         public bool GameExit;
+
+        public bool FreeTrial { get; set; }
+
+        public List<string> ShardNames { get; set; } = [];
+
+        public List<MainlandSummary> Mainlands { get; set; } = [];
+
+        public string UserPrivileges { get; set; } = "";
+
+        public bool CharNameValid { get; set; }
+
+        public int MainlandSelected { get; set; }
+
+        public bool CharNameValidArrived { get; set; }
 
         /// <summary>
         /// client is ready for the selection of the character - non ryzom variable (for workarounds)
@@ -205,7 +220,7 @@ namespace Client.Network
 
                         // Delete an entity
                         case (byte)PropertyType.RemoveOldEntity:
-                            _client.GetLogger().Debug($"CNetManager::remove old entity : {(_entitiesManager.GetEntity(change.ShortId) != null ? _entitiesManager.GetEntity(change.ShortId).GetDisplayName().Trim() : "unnamed")} id " + change.ShortId);
+                            _client.GetLogger().Debug($"CNetManager::remove old entity : {(_entitiesManager.GetEntity(change.ShortId) != null ? _entitiesManager.GetEntity(change.ShortId).GetDisplayName().Trim() : "unnamed")} id {change.ShortId}");
                             _entitiesManager.Remove(change.ShortId, true);
                             break;
 
@@ -226,7 +241,7 @@ namespace Client.Network
 
                         // Property unknown
                         default:
-                            _client.GetLogger().Warn("CNetManager::update : The property '" + change.Property + "' is unknown.");
+                            _client.GetLogger().Warn($"CNetManager::update : The property '{change.Property}' is unknown.");
                             break;
                     }
                 }
@@ -425,19 +440,96 @@ namespace Client.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        private void ImpulseCombatFlyingText(BitMemoryStream impulse)
+        enum TCombatFlyingText
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            None = 0,
+            TargetDodge,
+            TargetParry,
+            TargetEvade,
+            SelfEvade,
+            TargetResist,
+            SelfResist,
+            SelfInterrupt,
+            SelfFailure
+        };
+
+        private void ImpulseCombatFlyingHpDelta(BitMemoryStream impulse)
+        {
+            uint entityID = 0;
+            uint rgba = 0;
+            short hpDelta = 0;
+
+            impulse.Serial(ref entityID);
+            impulse.Serial(ref rgba);
+            impulse.Serial(ref hpDelta);
+
+            var color = Color.FromArgb((byte)(rgba >> 24 & 255), (byte)(rgba >> 16 & 255), (byte)(rgba >> 8 & 255), (byte)(rgba & 255));
+
+            _client.Plugins.OnCombatFlyingHpDelta(entityID, color.ToArgb(), hpDelta);
         }
 
         private void ImpulseCombatFlyingTextItemSpecialEffectProc(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            uint entityID = 0;
+            uint rgba = 0;
+            byte effect = 0;
+            int param = 0;
+
+            impulse.Serial(ref entityID);
+            impulse.Serial(ref rgba);
+            impulse.Serial(ref effect);
+            impulse.Serial(ref param);
+
+            var color = Color.FromArgb((byte)(rgba >> 24 & 255), (byte)(rgba >> 16 & 255), (byte)(rgba >> 8 & 255), (byte)(rgba & 255));
+
+            _client.Plugins.OnCombatFlyingTextItemSpecialEffectProc(entityID, color.ToArgb(), effect, param);
         }
 
-        private void ImpulseCombatFlyingHpDelta(BitMemoryStream impulse)
+        private void ImpulseCombatFlyingText(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            uint entityID = 0;
+            byte tmp = 0;
+
+            impulse.Serial(ref entityID);
+            impulse.Serial(ref tmp);
+            var type = (TCombatFlyingText)tmp;
+
+            var color =  Color.FromArgb(255, 255, 255);
+            string text = "";
+            //float dt = 0.0f;
+
+            switch (type)
+            {
+                case TCombatFlyingText.TargetDodge:
+                    color = Color.FromArgb(255, 128, 64);
+                    break;
+                case TCombatFlyingText.TargetParry:
+                    color = Color.FromArgb(255, 128, 64);
+                    break;
+                case TCombatFlyingText.TargetEvade:
+                    color = Color.FromArgb(255, 128, 64);
+                    break;
+                case TCombatFlyingText.SelfEvade:
+                    color = Color.FromArgb(255, 255, 0);
+                    break;
+                case TCombatFlyingText.TargetResist:
+                    color = Color.FromArgb(255, 128, 64);
+                    break;
+                case TCombatFlyingText.SelfResist:
+                    color = Color.FromArgb(255, 255, 0);
+                    break;
+                case TCombatFlyingText.SelfInterrupt:
+                    color = Color.FromArgb(200, 0, 0);
+                    break;
+                case TCombatFlyingText.SelfFailure:
+                    color = Color.FromArgb(200, 0, 0);
+                    break;
+                default:
+                    _client.GetLogger().Warn("Bad type for COMBAT_FLYING_TEXT:TCombatFlyingText enum");
+                    break;
+            }
+
+            _client.Plugins.OnCombatFlyingText(entityID, color.ToArgb(), (byte)type);
         }
 
         private void CbImpulsionGatewayMessage(BitMemoryStream impulse)
@@ -486,10 +578,7 @@ namespace Client.Network
             //var pIM = _client.GetInterfaceManager();
             var node = _client.GetDatabaseManager().GetServerNode("UI:TEMP:SERVER_POPUP:TITLE");
 
-            if (node != null)
-            {
-                node.SetValue32((int)titleTextId);
-            }
+            node?.SetValue32((int)titleTextId);
 
             _client.GetStringManager().WaitDynString(titleTextId, (a, b) => { _client.GetLogger().Info($"{a} {b}"); }, this);
             _client.GetStringManager().WaitDynString(docTextId, (a, b) => { _client.GetLogger().Info($"{a} {b}"); }, this);
@@ -659,7 +748,6 @@ namespace Client.Network
         private void ImpulsePhraseDownload(BitMemoryStream impulse)
         {
             // Read Known Phrases
-
             #region workaround for: impulse.serialCont(phrases);
             var len = 0;
             impulse.Serial(ref len);
@@ -1047,8 +1135,8 @@ namespace Client.Network
             #endregion end workaround
 
             var sTmp = "impulseCallback : Received BOTCHAT:DYNCHAT_OPEN BotUID:";
-            sTmp += botUid + " BotName:";
-            sTmp += botName + " DynStrs:";
+            sTmp += $"{botUid} BotName:";
+            sTmp += $"{botName} DynStrs:";
 
             for (var i = 0; i < dynStrs.Count; ++i)
             {
@@ -1296,7 +1384,13 @@ namespace Client.Network
 
         private void ImpulseCharNameValid(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            byte nTmp = 0;
+            impulse.Serial(ref nTmp);
+
+            CharNameValid = nTmp != 0;
+            CharNameValidArrived = true;
         }
 
         private void ImpulseServerReady(BitMemoryStream impulse)
@@ -1388,10 +1482,53 @@ namespace Client.Network
                 var cs = new CharacterSummary();
                 cs.Serial(impulse);
                 if ((PeopleType)cs.People != PeopleType.Unknown)
-                    _client.GetLogger().Info($"§d[{i}] {EntityHelper.RemoveShardFromName(cs.Name)}§r from shard {cs.Mainland} of type {(PeopleType)cs.People}.");
+                    _client.GetLogger().Info($"§d[§b{i}§d] {EntityHelper.RemoveShardFromName(cs.Name)}§r from shard {cs.Mainland} of type {(PeopleType)cs.People}.");
                 CharacterSummaries.Add(cs);
             }
             #endregion
+
+            // read shard name summaries
+            var shardNamesLength = 0;
+            impulse.Serial(ref shardNamesLength);
+
+            ShardNames.Clear();
+            for (var i = 0; i < shardNamesLength; i++)
+            {
+                var shardName = string.Empty;
+                impulse.Serial(ref shardName, false);
+                ShardNames.Add(shardName);
+            }
+
+            // TODO: ShardNames.Instance.LoadShardNames(shardNames);
+
+            // read privileges
+            var userPrivileges = "";
+            impulse.Serial(ref userPrivileges);
+            UserPrivileges = userPrivileges;
+
+            // read FreeTrial status
+            var freeTrial = true;
+            impulse.Serial(ref freeTrial);
+            FreeTrial = freeTrial;
+
+            // read Mainlands
+            var mainlandsLength = 0;
+            impulse.Serial(ref mainlandsLength);
+
+            Mainlands.Clear();
+            for (var i = 0; i < mainlandsLength; i++)
+            {
+                var mainland = new MainlandSummary();
+                mainland.Serial(impulse);
+                Mainlands.Add(mainland);
+            }
+
+            // Assuming there's only one Mainland
+            MainlandSelected = Mainlands[0].Id;
+
+            // TODO: Handle new character keysets if applicable
+
+            // TODO: UpdatePatcherPriorityBasedOnCharacters();
 
             _client.GetLogger().Debug("st_ingame->st_select_char");
             CanSendCharSelection = true;
@@ -1546,7 +1683,7 @@ namespace Client.Network
 
                             if (leafNode == null)
                             {
-                                _client.Log.Error("Inventory slot property missing in database " + slotNode.GetFullName() + ":" + Inventories.InfoVersionStr);
+                                _client.Log.Error($"Inventory slot property missing in database {slotNode.GetFullName()}:{Inventories.InfoVersionStr}");
                                 continue;
                             }
 
@@ -1580,7 +1717,7 @@ namespace Client.Network
                                     var leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[i]));
                                     if (leafNode == null)
                                     {
-                                        _client.Log.Debug("Inventory slot property missing in database " + slotNode.GetFullName() + ":" + ItemSlot.ItemPropStr[i]);
+                                        _client.Log.Debug($"Inventory slot property missing in database {slotNode.GetFullName()}:{ItemSlot.ItemPropStr[i]}");
                                         continue;
                                     }
 
@@ -1602,7 +1739,7 @@ namespace Client.Network
                                     var leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[(int)itemSlot.GetOneProp().ItemPropId]));
                                     if (leafNode == null)
                                     {
-                                        _client.Log.Error("Inventory slot property missing in database " + slotNode.GetFullName() + ":" + ItemSlot.ItemPropStr[(int)itemSlot.GetOneProp().ItemPropId]);
+                                        _client.Log.Error($"Inventory slot property missing in database {slotNode.GetFullName()}:{ItemSlot.ItemPropStr[(int)itemSlot.GetOneProp().ItemPropId]}");
                                         continue;
                                     }
 
@@ -1625,7 +1762,7 @@ namespace Client.Network
                                         var leafNode = (DatabaseNodeLeaf)(slotNode.Find(ItemSlot.ItemPropStr[i]));
                                         if (leafNode == null)
                                         {
-                                            _client.Log.Error("Inventory slot property missing in database " + slotNode.GetFullName() + ":" + ItemSlot.ItemPropStr[i]);
+                                            _client.Log.Error($"Inventory slot property missing in database {slotNode.GetFullName()}:{ItemSlot.ItemPropStr[i]}");
                                             continue;
                                         }
                                         leafNode.SetPropCheckGc(serverTick, 0);

@@ -25,15 +25,15 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length == 0 || args.Length > 2)
-                return "Usage: " + CmdUsage;
+                return $"Usage: {CmdUsage}";
 
-            if (!short.TryParse(args[0], out var max)) return "Usage: " + CmdUsage;
+            if (!short.TryParse(args[0], out var max)) return $"Usage: {CmdUsage}";
 
             short min = 1;
 
             if (args.Length > 1)
                 if (!short.TryParse(args[1], out min))
-                    return "Usage: " + CmdUsage;
+                    return $"Usage: {CmdUsage}";
 
             if (min > max)
                 (min, max) = (max, min);

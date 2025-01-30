@@ -68,7 +68,7 @@ namespace Client.Commands
                     break;
                 default:
                     // Bad argument number.
-                    return "Usage: " + CmdUsage;
+                    return $"Usage: {CmdUsage}";
             }
 
             // Teleport to the right destination.

@@ -211,7 +211,7 @@ namespace Client.Database
             }
             else
             {
-                RyzomClient.GetInstance().GetLogger().Error("Missing bank for first-level databaseNode " + newName);
+                RyzomClient.GetInstance().GetLogger().Error($"Missing bank for first-level databaseNode {newName}");
             }
         }
 
@@ -476,7 +476,7 @@ namespace Client.Database
             // Look for the node
             if (!(GetNode(id, false) is DatabaseNodeBranch pNode))
             {
-                RyzomClient.GetInstance().GetLogger().Warn("node " + id + " not found");
+                RyzomClient.GetInstance().GetLogger().Warn($"node {id} not found");
                 return;
             }
 

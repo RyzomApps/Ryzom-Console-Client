@@ -12,46 +12,41 @@ using Client.Stream;
 namespace Client.ActionHandler;
 
 /// <summary>
-/// Ask the server to rename a character
+/// Ask the server to delete a character
 /// </summary>
-public class ActionHandlerRenameChar : ActionHandlerBase
+public class ActionHandlerDeleteChar : ActionHandlerBase
 {
     /// <summary>
     /// Constructor
     /// </summary>
-    public ActionHandlerRenameChar(IClient client) : base(client) { }
+    public ActionHandlerDeleteChar(IClient client) : base(client) { }
 
     /// <summary>
-    /// Execute the answer to the action
+    /// Execute the request to delete a character
     /// </summary>
     public override void Execute(object caller, string parameters)
     {
         // Extract parameters
         var slot = byte.Parse(GetParam(parameters, "slot")); // u8
-        var name = GetParam(parameters, "name"); // s
-        var surname = GetParam(parameters, "surname"); // s
-
 
         var ryzomClient = (RyzomClient)_client;
         var networkManager = ryzomClient.GetNetworkManager();
         var @out = new BitMemoryStream();
 
-        if (!networkManager.GetMessageHeaderManager().PushNameToStream("CONNECTION:RENAME_CHAR", @out))
+        if (!networkManager.GetMessageHeaderManager().PushNameToStream("CONNECTION:DELETE_CHAR", @out))
         {
-            ryzomClient.GetLogger().Error("Don't know message name CONNECTION:RENAME_CHAR");
+            ryzomClient.GetLogger().Error("Don't know message name CONNECTION:DELETE_CHAR");
             return;
         }
 
-        // Create the message to send to the server for renaming
+        // Create the message to send to the server for deleting the character
         @out.Serial(ref slot);
-        @out.Serial(ref name, false);
-        @out.Serial(ref surname, false);
 
         networkManager.Push(@out);
         networkManager.Send(networkManager.GetNetworkConnection().GetCurrentServerTick());
 
         networkManager.WaitServerAnswer = true;
 
-        ryzomClient.GetLogger().Debug("impulseCallBack : CONNECTION:RENAME_CHAR sent");
+        ryzomClient.GetLogger().Debug("impulseCallBack : CONNECTION:DELETE_CHAR sent");
     }
 }

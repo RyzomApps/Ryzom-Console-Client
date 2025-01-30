@@ -71,7 +71,7 @@ namespace Client.Interface
             var pIM = _interfaceManger;
 
             // Get the synchronisation Counter in Server DB
-            _ServerCounter = _databaseManager.GetServerNode("SERVER:" + dbPath + ":COUNTER", false);
+            _ServerCounter = _databaseManager.GetServerNode($"SERVER:{dbPath}:COUNTER", false);
 
             // if found
             if (_ServerCounter != null)
@@ -80,11 +80,11 @@ namespace Client.Interface
 
                 // **** Add Observers on all nodes
                 // add the observers when server node change
-                textId = new TextId("SERVER:" + dbPath);
+                textId = new TextId($"SERVER:{dbPath}");
                 _databaseManager.GetRootDb().AddObserver(_ServerObserver, textId);
 
                 // add the observers when local node change
-                textId = new TextId("LOCAL:" + dbPath);
+                textId = new TextId($"LOCAL:{dbPath}");
                 _databaseManager.GetRootDb().AddObserver(_LocalObserver, textId);
 
                 // **** Init the Nodes shortcut

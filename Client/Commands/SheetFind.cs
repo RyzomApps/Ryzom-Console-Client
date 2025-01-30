@@ -21,7 +21,7 @@ namespace Client.Commands
 
             // Check parameters
             if (args.Length == 0)
-                return "Usage: " + CmdUsage;
+                return $"Usage: {CmdUsage}";
 
             var pattern = args[0];
 

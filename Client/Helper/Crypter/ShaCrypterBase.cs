@@ -91,10 +91,7 @@ namespace Client.Helper.Crypter
                 truncatedSalt = ByteArray.TruncateAndCopy(saltBytes, 16);
                 crypt = Crypt(formattedKey, truncatedSalt, rounds, CreateHashAlgorithm());
 
-                string result = CryptPrefix
-                    + (roundsStringPresent ? string.Format("rounds={0}$", rounds) : "")
-                    + Encoding.ASCII.GetString(truncatedSalt) + '$'
-                    + Base64Encoding.UnixMD5.GetString(crypt);
+                string result = $"{CryptPrefix}{(roundsStringPresent ? string.Format("rounds={0}$", rounds) : "")}{Encoding.ASCII.GetString(truncatedSalt)}${Base64Encoding.UnixMD5.GetString(crypt)}";
                 return result;
             }
             finally
@@ -200,11 +197,7 @@ namespace Client.Helper.Crypter
             Check.Null("cryptPrefix", cryptPrefix);
             Check.Range("keyCharacters", keyCharacters, 0, int.MaxValue);
 
-            string regex = @"\A"
-                + Regex.Escape(cryptPrefix)
-                + @"(rounds=(?<rounds>[0-9]{1,9})\$)?(?<salt>[A-Za-z0-9]{1,200})(\$(?<crypt>[A-Za-z0-9]{"
-                + keyCharacters.ToString()
-                + @"}))?\z";
+            string regex = $@"\A{Regex.Escape(cryptPrefix)}(rounds=(?<rounds>[0-9]{{1,9}})\$)?(?<salt>[A-Za-z0-9]{{1,200}})(\$(?<crypt>[A-Za-z0-9]{{{keyCharacters}}}))?\z";
             return new Regex(regex, RegexOptions.CultureInvariant);
         }
 

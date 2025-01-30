@@ -67,7 +67,7 @@ namespace Client.Database
                         }
                         else
                         {
-                            RyzomClient.GetInstance().GetLogger().Warn("CCDBNodeLeaf::init : property is an INT and should be between [1,64] but it is " + nbBit + " bit(s).");
+                            RyzomClient.GetInstance().GetLogger().Warn($"CCDBNodeLeaf::init : property is an INT and should be between [1,64] but it is {nbBit} bit(s).");
                             _type = EPropType.UNKNOWN;
                         }
 

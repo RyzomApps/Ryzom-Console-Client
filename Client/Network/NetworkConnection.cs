@@ -477,7 +477,7 @@ namespace Client.Network
             }
             catch (Exception e)
             {
-                throw new Exception("FS refused the connection (" + e.Message + ")");
+                throw new Exception($"FS refused the connection ({e.Message})");
             }
 
             ConnectionState = ConnectionState.Login;
@@ -592,7 +592,7 @@ namespace Client.Network
             }
             catch (Exception e)
             {
-                _client.GetLogger().Error("Exception: " + e.Message);
+                _client.GetLogger().Error($"Exception: {e.Message}");
                 _connectionState = ConnectionState.Disconnect;
             }
 
@@ -1258,7 +1258,7 @@ namespace Client.Network
 
                             if (nodeRoot != null)
                             {
-                                var node = (DatabaseNodeLeaf)(nodeRoot.GetNode(slot).GetNode((byte)PropertyType.Orientation));
+                                var node = (DatabaseNodeLeaf)nodeRoot.GetNode(slot).GetNode((byte)PropertyType.Orientation);
                                 Debug.Assert(node != null);
                                 node.SetValue64(ac.GetValue());
 
@@ -1436,8 +1436,8 @@ namespace Client.Network
 
             // don't acknowledge system messages and normal messages in
             // because this will disturb impulsion from frontend, that will interpret it as if previous messages were ok
-            var ackBool = (!_systemMode && (_connectionState == ConnectionState.Connected || _connectionState == ConnectionState.Synchronize));
-            var ackBit = (ackBool ? (uint)1 : 0);
+            var ackBool = !_systemMode && _connectionState is ConnectionState.Connected or ConnectionState.Synchronize;
+            var ackBit = ackBool ? (uint)1 : 0;
 
             if (_currentReceivedNumber - _lastReceivedNumber < 32)
             {
@@ -1446,7 +1446,7 @@ namespace Client.Network
             }
             else
             {
-                _ackBitMask = (_currentReceivedNumber - _lastReceivedNumber == 32 && _lastAckBit != 0) ? 0x80000000 : 0x00000000;
+                _ackBitMask = _currentReceivedNumber - _lastReceivedNumber == 32 && _lastAckBit != 0 ? 0x80000000 : 0x00000000;
             }
 
             _lastAckBit = ackBit;
@@ -1473,10 +1473,7 @@ namespace Client.Network
         /// </summary>
         public void Disconnect()
         {
-            if (ConnectionState == ConnectionState.NotInitialized ||
-                ConnectionState == ConnectionState.NotConnected ||
-                ConnectionState == ConnectionState.Authenticate ||
-                ConnectionState == ConnectionState.Disconnect)
+            if (ConnectionState is ConnectionState.NotInitialized or ConnectionState.NotConnected or ConnectionState.Authenticate or ConnectionState.Disconnect)
             {
                 _client.GetLogger().Warn("Unable to disconnect: Not connected yet or already disconnected.");
                 ConnectionState = ConnectionState.Disconnect;
@@ -1641,7 +1638,7 @@ namespace Client.Network
         {
             try
             {
-                Debug.Assert(LastSentCycle < cycle);
+                Debug.Assert(LastSentCycle <= cycle);
 
                 LastSentCycle = cycle;
 
@@ -1932,7 +1929,7 @@ namespace Client.Network
                 {
                     var values = new byte[listSize];
                     msgin.Serial(ref values);
-                    _targetSlotsList = new List<byte>(values);
+                    _targetSlotsList = [..values];
                 }
 
                 // Set target list value in database

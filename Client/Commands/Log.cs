@@ -25,7 +25,7 @@ namespace Client.Commands
 
             // check args, if there s not the right number of parameter, return bad
             if (args.Length != 1)
-                return "Usage: " + CmdUsage;
+                return $"Usage: {CmdUsage}";
 
             switch (args[0].ToLower())
             {
@@ -57,7 +57,7 @@ namespace Client.Commands
 
                 default:
                     // Unknown Log System . return false.
-                    return "Usage: " + CmdUsage;
+                    return $"Usage: {CmdUsage}";
             }
         }
 

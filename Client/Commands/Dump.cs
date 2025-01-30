@@ -31,16 +31,16 @@ namespace Client.Commands
 
             // Write the DB
             if(ClientConfig.UseDatabase)
-                ryzomClient.GetDatabaseManager().Write(dumpName + "_db.rec");
+                ryzomClient.GetDatabaseManager().Write($"{dumpName}_db.rec");
 
             // TODO: Dump Client CFG.
 
             // TODO: Dump entities.
 
-            ryzomClient.GetPhraseManager().Write(dumpName + "_phrases.rec");
+            ryzomClient.GetPhraseManager().Write($"{dumpName}_phrases.rec");
 
             if(ClientConfig.UseInventory)
-                ryzomClient.GetInventoryManager().Write(dumpName + "_inventory.rec");
+                ryzomClient.GetInventoryManager().Write($"{dumpName}_inventory.rec");
 
             return "";
         }

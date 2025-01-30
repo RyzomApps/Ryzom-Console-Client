@@ -416,7 +416,7 @@ namespace Client.Helper
         /// </summary>
         public static void WriteLine(string line)
         {
-            Write(line + '\n');
+            Write($"{line}\n");
         }
 
         /// <summary>
@@ -424,7 +424,7 @@ namespace Client.Helper
         /// </summary>
         public static void Write(char c)
         {
-            Write("" + c);
+            Write($"{c}");
         }
 
         /// <summary>
@@ -610,7 +610,7 @@ namespace Client.Helper
         {
             if (_buffer.Length <= 0) return;
 
-            _buffer2 = "" + _buffer[^1] + _buffer2;
+            _buffer2 = $"{_buffer[^1]}{_buffer2}";
             _buffer = _buffer[..^1];
             GoBack();
         }

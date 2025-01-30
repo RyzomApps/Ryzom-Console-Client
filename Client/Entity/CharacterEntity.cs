@@ -475,7 +475,7 @@ namespace Client.Entity
             // Store the name Id
             _nameId = nameId;
 
-            _client.GetLogger().Debug("UpdateVisualPropertyName " + nameId + " " + Slot());
+            _client.GetLogger().Debug($"UpdateVisualPropertyName {nameId} {Slot()}");
 
             client.GetStringManager().WaitString(nameId, this, client.GetNetworkManager());
 

@@ -224,7 +224,7 @@ namespace Client.Sheet
 
                         //SheetManagerEntry.setVersion(TypeVersion[i].Version);
 
-                        var path = TypeVersion[i].Type + ".packed_sheets";
+                        var path = $"{TypeVersion[i].Type}.packed_sheets";
 
                         //if (forceRecompute && !string.IsNullOrEmpty(path))
                         //{
@@ -238,7 +238,7 @@ namespace Client.Sheet
                         //}
 
                         //if (path.Contains("sbrick.packed_sheets") || path.Contains("sphrase.packed_sheets") || path.Contains("forage_source.packed_sheets"))
-                        if (File.Exists("./data/" + path))
+                        if (File.Exists($"./data/{path}"))
                             LoadForm(extensions, path, ref entitySheetContainer, sheetIdFactory, updatePackedSheet);
 
                         foreach (var (key, value) in entitySheetContainer)
@@ -302,7 +302,7 @@ namespace Client.Sheet
             // check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
             Debug.Assert(packedFilename.IndexOf(".packed_sheets", StringComparison.Ordinal) != -1);
 
-            string packedFilenamePath = "./data/" + packedFilename; //Path.lookup(File.getFilename(packedFilename), false, false);
+            string packedFilenamePath = $"./data/{packedFilename}"; //Path.lookup(File.getFilename(packedFilename), false, false);
 
             if (string.IsNullOrEmpty(packedFilenamePath))
             {

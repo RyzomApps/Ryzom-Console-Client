@@ -55,13 +55,7 @@ namespace Client.Network
 
                 client.GetLogger().Info($"Using proxy server '{socket.RemoteEndPoint}' to login.");
 
-                var requestStr = $"GET {urlLogin} HTTP/1.1\r\n" +
-                $"Host: {ClientConfig.StartupHost}\r\n" +
-                "User-Agent: Ryzom/Omega / v23.12.346 #adddfe118-windows-x64\r\n" +
-                "Accept: */*\r\n" +
-                "Accept-Language: en\r\n" +
-                "Accept-Charset: utf-8\r\n" +
-                "\r\n";
+                var requestStr = $"GET {urlLogin} HTTP/1.1\r\nHost: {ClientConfig.StartupHost}\r\nUser-Agent: Ryzom/Omega / v23.12.346 #adddfe118-windows-x64\r\nAccept: */*\r\nAccept-Language: en\r\nAccept-Charset: utf-8\r\n\r\n";
 
                 // send
                 var remoteRequest = Encoding.UTF8.GetBytes(requestStr);
@@ -190,7 +184,7 @@ namespace Client.Network
                     };
 
                     if (ClientConfig.SaveSessionData)
-                        client.SessionData.Save("session_" + login + ".json");
+                        client.SessionData.Save($"session_{login}.json");
 
                     break;
 
@@ -243,7 +237,7 @@ namespace Client.Network
 
             if (salt.StartsWith("$6$") && !salt.Contains("$rounds="))
             {
-                salt = "$6$rounds=5000$" + salt[3..];
+                salt = $"$6$rounds=5000${salt[3..]}";
             }
 
             if (salt.EndsWith("$"))

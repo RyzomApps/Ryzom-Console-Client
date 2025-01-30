@@ -73,7 +73,7 @@ namespace Client.Stream
         {
             get
             {
-                return _debugData.Aggregate("", (current, data) => current + $"{data}\r\n");
+                return _debugData.Aggregate("", (current, data) => $"{current}{data}\r\n");
             }
         }
 
@@ -708,7 +708,7 @@ namespace Client.Stream
         /// </summary>
         public string ToString(bool displayBytes)
         {
-            var ret = "CBMemStream " + (IsReading() ? "in" : "out") + "\r\n";
+            var ret = $"CBMemStream {(IsReading() ? "in" : "out")}\r\n";
 
             if (displayBytes)
             {
@@ -716,7 +716,7 @@ namespace Client.Stream
                 for (var index = 0; index < bs.Length; index++)
                 {
                     var b = bs[index];
-                    ret += Convert.ToString(b, 2).PadLeft(8, '0') + " ";
+                    ret += $"{Convert.ToString(b, 2).PadLeft(8, '0')} ";
                     if (index % 8 == 7) ret += "\r\n";
                 }
             }
@@ -755,13 +755,13 @@ namespace Client.Stream
 
             string ret = $"BMS: beginpos {beginpos} endpos {endpos} beginbitpos {beginbitpos} endbitpos {endbitpos}\r\n";
 
-            ret += DisplayByteBits(Buffer()[beginpos], 8, 8 - (beginbitpos - beginpos * 8), true) + "\r\n";
+            ret += $"{DisplayByteBits(Buffer()[beginpos], 8, 8 - (beginbitpos - beginpos * 8), true)}\r\n";
 
             int p;
 
             for (p = beginpos + 1; p < endpos - 1; ++p)
             {
-                ret += DisplayByteBits(Buffer()[p], 8, 0, false) + "\r\n";
+                ret += $"{DisplayByteBits(Buffer()[p], 8, 0, false)}\r\n";
             }
 
             if (endpos > beginpos)

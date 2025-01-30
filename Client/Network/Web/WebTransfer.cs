@@ -99,11 +99,7 @@ namespace Client.Network.Web
             var name = _ryzomClient.GetNetworkManager()?.PlayerSelectedHomeShardName;
             name = EntityHelper.RemoveTitleAndShardFromName(name);
 
-            url += $"{(url.IndexOf('?') != -1 ? "&" : "?")}shardid={_ryzomClient.CharacterHomeSessionId}" +
-                   $"&name={name}" +
-                   $"&lang={ClientConfig.LanguageCode}" +
-                   $"&datasetid={userEntity.DataSetId()}" +
-            "&ig=1";
+            url += $"{(url.IndexOf('?') != -1 ? "&" : "?")}shardid={_ryzomClient.CharacterHomeSessionId}&name={name}&lang={ClientConfig.LanguageCode}&datasetid={userEntity.DataSetId()}&ig=1";
 
             var cid = _ryzomClient.SessionData.CookieUserId * 16 + _ryzomClient.GetNetworkManager().PlayerSelectedSlot;
             url += $"&cid={cid}&authkey={GetWebAuthKey()}";

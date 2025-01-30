@@ -159,7 +159,7 @@ namespace Client.Network
                         throw new NotImplementedException("IP V6 address");
 
                     default:
-                        throw new NotImplementedException("ATYP address type " + bytes[3] + " not implemented.");
+                        throw new NotImplementedException($"ATYP address type {bytes[3]} not implemented.");
                 }
 
                 // remove the header - IP V4 only

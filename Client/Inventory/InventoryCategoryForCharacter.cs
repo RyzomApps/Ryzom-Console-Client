@@ -37,7 +37,7 @@ namespace Client.Inventory
         /// </summary>
         public string GetDbStr(uint invId)
         {
-            return "INVENTORY:" + ToString(invId);
+            return $"INVENTORY:{ToString(invId)}";
         }
 
         public bool NeedPlainInfoVersionTransfer()

@@ -24,7 +24,7 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "Usage: " + CmdUsage;
+                return $"Usage: {CmdUsage}";
 
             var dynId = (uint) Convert.ToInt32(args[0]);
 

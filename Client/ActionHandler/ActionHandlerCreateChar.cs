@@ -7,11 +7,8 @@
 ///////////////////////////////////////////////////////////////////
 
 using API;
-using API.Network;
 using Client.Client;
 using Client.Messages;
-using Client.Network;
-using Client.Sheet;
 using Client.Stream;
 
 namespace Client.ActionHandler
@@ -19,28 +16,37 @@ namespace Client.ActionHandler
     /// <summary>
     /// Ask the server to create a character
     /// </summary>
-    public static class ActionHandlerAskCreateChar
+    public class ActionHandlerCreateChar : ActionHandlerBase
     {
         /// <summary>
-        /// Execute the answer to the action
+        /// Constructor
         /// </summary>
-        public static void Execute(string name, byte slot, IClient client)
+        public ActionHandlerCreateChar(IClient client) : base(client) { }
+
+        /// <summary>
+        /// Execute the request to create a character
+        /// </summary>
+        public override void Execute(object caller, string parameters)
         {
-            var ryzomClient = (RyzomClient)client;
+            var slot = byte.Parse(GetParam(parameters, "slot")); // u8
+            var name = GetParam(parameters, "name"); // s
+
+            var ryzomClient = (RyzomClient)_client;
 
             // Create the message for the server to create the character
             var @out = new BitMemoryStream();
 
             if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream("CONNECTION:CREATE_CHAR", @out))
             {
-                ryzomClient.GetLogger().Warn("Don't know message name CONNECTION:CREATE_CHAR");
+                ryzomClient.GetLogger().Error("Don't know message name CONNECTION:CREATE_CHAR");
                 return;
             }
 
             // Build the character summary
-            var cs = new CharacterSummary {
-                //Mainland = ryzomClient.GetNetworkManager().MainlandSelected,
+            var cs = new CharacterSummary
+            {
                 Name = name,
+                Mainland = 101
             };
 
             // Create the message to send to the server from the character summary
@@ -49,22 +55,22 @@ namespace Client.ActionHandler
             createCharMsg.Slot = slot;
 
             // Setup the new career
-            createCharMsg.NbPointFighter = 2;
-            createCharMsg.NbPointCaster = 1; 
+            createCharMsg.NbPointFighter = 1;
+            createCharMsg.NbPointCaster = 2;
             createCharMsg.NbPointCrafter = 1;
             createCharMsg.NbPointHarvester = 1;
 
             // Setup starting point
-            createCharMsg.StartPoint = 0; // kaemon
+            createCharMsg.StartPoint = 20; // New NewbieLand start village (starting_city)
 
             // Send the message to the server
             createCharMsg.SerialBitMemStream(@out);
             ryzomClient.GetNetworkManager().Push(@out);
-            ryzomClient.GetNetworkManager().Send();
+            ryzomClient.GetNetworkManager().Send(ryzomClient.GetNetworkConnection().GetCurrentServerTick());
 
             ryzomClient.GetNetworkManager().WaitServerAnswer = true;
 
-            RyzomClient.GetInstance().GetLogger().Debug("impulseCallBack : CONNECTION:CREATE_CHAR sent");
+            ryzomClient.GetLogger().Debug("impulseCallBack : CONNECTION:CREATE_CHAR sent");
         }
     }
 }

@@ -22,12 +22,10 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length == 0)
-                return "Please specify a channel name: " + string.Join(", ", Enum.GetNames(typeof(ChatGroupType))) +
-                       ".";
+                return $"Please specify a channel name: {string.Join(", ", Enum.GetNames(typeof(ChatGroupType)))}.";
 
             if (!Enum.TryParse<ChatGroupType>(args[0], true, out var type))
-                return "Cannot find channel. Valid channels are: " +
-                       string.Join(", ", Enum.GetNames(typeof(ChatGroupType))) + ".";
+                return $"Cannot find channel. Valid channels are: {string.Join(", ", Enum.GetNames(typeof(ChatGroupType)))}.";
 
             ryzomClient.Channel = type;
 

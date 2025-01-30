@@ -34,7 +34,7 @@ namespace Client.Commands
 
             for (var i = 0; i < tps.Length; i++) tpsAvg[i] = Format(tps[i]);
 
-            return ChatColor.GOLD + "TPS from last 1m, 5m, 15m: " + string.Join(", ", tpsAvg);
+            return $"{ChatColor.GOLD}TPS from last 1m, 5m, 15m: {string.Join(", ", tpsAvg)}";
         }
 
         private static string Format(double tps)

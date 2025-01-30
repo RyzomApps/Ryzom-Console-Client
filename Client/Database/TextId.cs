@@ -58,7 +58,7 @@ namespace Client.Database
         {
             if (_ids.Count == 0) return "";
             var str = _ids[0];
-            for (var i = 1; i < _ids.Count; i++) str += ":" + _ids[i];
+            for (var i = 1; i < _ids.Count; i++) str += $":{_ids[i]}";
             return str;
         }
 

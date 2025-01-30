@@ -49,6 +49,7 @@ using Client.Interface;
 using Client.Network.Web;
 using Client.Network.Proxy;
 using Client.WinAPI;
+using static System.Threading.Thread;
 
 namespace Client
 {
@@ -210,7 +211,7 @@ namespace Client
             ExitCleanUp.Add(OnDisconnect);
 
             _instance = this;
-            _clientThread = Thread.CurrentThread;
+            _clientThread = CurrentThread;
 
             Plugins = new PluginManager(this);
             Plugins.RegisterInterface(typeof(PluginLoader));
@@ -226,7 +227,7 @@ namespace Client
             _networkConnection = new NetworkConnection(this);
             _phraseManager = new PhraseManager(this);
 
-            if(ClientConfig.UseInventory)
+            if (ClientConfig.UseInventory)
                 _inventoryManager = new InventoryManager(this);
 
             _actionHandlerManager = new ActionHandlerManager(this);
@@ -236,6 +237,11 @@ namespace Client
 
             // Essential action handlers
             _actionHandlerManager.RegisterActionHandler(new ActionHandlerBrowse(this), "browse");
+            _actionHandlerManager.RegisterActionHandler(new ActionHandlerCreateChar(this), "ask_create_char");
+            _actionHandlerManager.RegisterActionHandler(new ActionHandlerDeleteChar(this), "ask_delete_char");
+            _actionHandlerManager.RegisterActionHandler(new ActionHandlerRenameChar(this), "ask_rename_char");
+            _actionHandlerManager.RegisterActionHandler(new ActionHandlerAskValidName(this), "ask_valid_name");
+            _actionHandlerManager.RegisterActionHandler(new ActionHandlerLaunchGame(this, _networkManager), "launch_game");
 
             // create the data dir
             if (!Directory.Exists("data")) Directory.CreateDirectory("data");
@@ -277,7 +283,7 @@ namespace Client
         {
             get => Log is FileLogLogger;
             set => Log = value
-                ? new FileLogLogger("save/log_" + GetNetworkManager().PlayerSelectedHomeShardName + ".txt", ClientConfig.PrependTimestamp)
+                ? new FileLogLogger($"save/log_{GetNetworkManager().PlayerSelectedHomeShardName}.txt", ClientConfig.PrependTimestamp)
                 : new FilteredLogger();
         }
 
@@ -431,7 +437,7 @@ namespace Client
 
             _databaseManager?.FlushObserverCalls();
 
-            if(ClientConfig.UseProxy)
+            if (ClientConfig.UseProxy)
                 Log?.Info("§eTrying to find a working TCP proxy. This could take a moment...");
 
             while (!loggedIn)
@@ -449,13 +455,13 @@ namespace Client
                     if (e.Message.Contains("already online") && firstRetry)
                     {
                         Log?.Info("Retrying in 1 second...");
-                        Thread.Sleep(1000);
+                        Sleep(1000);
                         firstRetry = false;
                     }
                     else if (e.Message.Contains("already online"))
                     {
                         Log?.Info("Retrying in 30 seconds...");
-                        Thread.Sleep(30000);
+                        Sleep(30000);
                     }
                     else if (!ClientConfig.UseProxy)
                     {
@@ -505,11 +511,6 @@ namespace Client
             _networkManager.GameExit = false;
 
             // Initialize global variables
-            //_networkManager.UserChar = false;
-            //_networkManager.NoUserChar = false;
-            //_networkManager.ConnectInterf = true;
-            //_networkManager.CreateInterf = true;
-            //_networkManager.CharacterInterf = true;
             _networkManager.WaitServerAnswer = false;
 
             // Start the finite state machine
@@ -544,7 +545,7 @@ namespace Client
                     if (loginRetries < ClientConfig.ProxyLoginRetries && ClientConfig.UseProxy)
                     {
                         // udp proxy may be bad - try another one
-                        GetLogger().Warn("Login retry #" + loginRetries + "...");
+                        GetLogger().Warn($"Login retry #{loginRetries}...");
                         interfaceState = InterfaceState.AutoLogin;
                     }
                     else
@@ -600,7 +601,7 @@ namespace Client
         /// <summary>
         /// Launch the interface to choose a character
         /// </summary>
-        public InterfaceState GlobalMenu()
+        private InterfaceState GlobalMenu()
         {
             var serverTick = _networkConnection.GetCurrentServerTick();
             var playerWantToGoInGame = false;
@@ -626,7 +627,7 @@ namespace Client
                     }
                     else
                     {
-                        Thread.Sleep(10);
+                        Sleep(10);
                     }
                 }
 
@@ -654,29 +655,43 @@ namespace Client
                     {
                         var charSelect = ClientConfig.SelectCharacter;
 
+                        // Display character selection menu
                         if (charSelect == -1)
                         {
-                            ConsoleIO.WriteLineFormatted("§dPlease enter your character slot [0-4]:");
-                            var selectedSlot = Console.ReadLine();
+                            ConsoleIO.WriteLineFormatted("§dPlease enter your character slot [§b0§d-§b4§d] or action [§bR§d]ename, [§bD§d]elete, or [§bE§d]xit:");
+                            var input = Console.ReadLine();
 
-                            charSelect = int.Parse(selectedSlot ?? throw new Exception("Invalid slot."));
+                            if (input != null)
+                            {
+                                // Handle exit action
+                                if (input.Equals("E", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return InterfaceState.QuitTheGame;
+                                }
+
+                                // Handle character action
+                                if (input.Equals("R", StringComparison.OrdinalIgnoreCase) || input.Equals("D", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    ProcessCharacterAction(input, charSelect);
+                                    return InterfaceState.GlobalMenu;
+                                }
+
+                                // Handle 0-4 selection
+                                charSelect = int.Parse(input);
+                            }
                         }
 
-                        if (charSelect < 0 || charSelect > 4) throw new Exception("Invalid slot.");
+                        if (charSelect is < 0 or > 4)
+                        {
+                            Log?.Error("Invalid slot.");
+                            return InterfaceState.GlobalMenu;
+                        }
 
                         // check that the preselected character is available
                         if (_networkManager.CharacterSummaries[charSelect].People == (int)PeopleType.Unknown)
                         {
-                            // Cache the slot, for the retries
-                            ClientConfig.SelectCharacter = charSelect;
-
-                            // Create char if non existent
-                            //ConsoleIO.WriteLineFormatted("§dPlease enter a character name:");
-                            var selectedName = Misc.GenerateName(4); //Console.ReadLine();
-                            Log?.Info($"Attempting to generate a new character with the name '{selectedName}'.");
-
-                            ActionHandlerAskCreateChar.Execute(selectedName, (byte)charSelect, this);
-                            _networkManager.CanSendCharSelection = false;
+                            // Launch the character creation process if the slot is empty
+                            ProcessCharacterAction("N", charSelect);
                         }
                         else
                         {
@@ -688,9 +703,17 @@ namespace Client
                             // Auto-selection for fast launching (developer only)
                             _networkManager.CanSendCharSelection = false;
 
-                            ActionHandlerLaunchGame.Execute(charSelect.ToString(), _networkManager);
+                            GetActionHandlerManager().RunActionHandler("launch_game", null, $"slot={charSelect}|edit_mode=0");
                         }
                     }
+                }
+
+                if (_networkManager.CharNameValidArrived)
+                {
+                    Log?.Debug("impulseCallBack : received charNameValidArrived");
+
+                    //_networkManager.CharNameValidArrived = false;
+                    _networkManager.WaitServerAnswer = false;
                 }
 
                 if (_networkManager.ServerReceivedReady)
@@ -727,10 +750,124 @@ namespace Client
 
             // Init the current Player Home shard Id and name
             CharacterHomeSessionId = _networkManager.CharacterSummaries[_networkManager.PlayerSelectedSlot].Mainland;
-            //PlayerSelectedMainland = _networkManager.CharacterSummaries[_networkManager.PlayerSelectedSlot].Mainland;
             _networkManager.PlayerSelectedHomeShardNameWithParenthesis = $"({playerName})";
 
             return InterfaceState.GoInTheGame;
+        }
+
+        /// <summary>
+        /// Handles character actions such as renaming, creating, and deleting characters.
+        /// </summary>
+        /// <param name="action">The action to perform: 'R' for rename, 'N' for create, 'D' for delete.</param>
+        /// <param name="slot">The index of the character slot.</param>
+        /// <returns>If the action was successful.</returns>
+        private bool ProcessCharacterAction(string action, int slot = -1)
+        {
+            if (slot == -1)
+            {
+                ConsoleIO.WriteLineFormatted("§dPlease enter your character slot [§b0§d-§b4§d]:");
+                var input = Console.ReadLine();
+
+                if (input != null)
+                    slot = int.Parse(input);
+                else
+                    throw new Exception("Invalid slot.");
+
+                if (slot is < 0 or > 4)
+                    throw new Exception("Invalid slot.");
+            }
+
+            if (action.Equals("R", StringComparison.OrdinalIgnoreCase))
+            {
+                // Renaming character
+                if (_networkManager.CharacterSummaries[slot].People != (int)PeopleType.Unknown)
+                {
+                    ConsoleIO.WriteLineFormatted("§dPlease enter a new name for your character:");
+                    var newName = Console.ReadLine();
+
+                    // Validate the character name
+                    if (ValidateCharacterName(newName, slot, "rename"))
+                    {
+                        GetActionHandlerManager().RunActionHandler("ask_rename_char", null, $"name={newName}|slot={slot}");
+                        return true;
+                    }
+
+                    ConsoleIO.WriteLineFormatted("§cInvalid name. Please try again.");
+                }
+                else
+                {
+                    ConsoleIO.WriteLineFormatted("§cYou cannot rename a character that does not exist.");
+                }
+            }
+
+            if (action.Equals("N", StringComparison.OrdinalIgnoreCase))
+            {
+                // Creating character
+                if (_networkManager.CharacterSummaries[slot].People == (int)PeopleType.Unknown)
+                {
+                    ConsoleIO.WriteLineFormatted("§dPlease enter a character name:");
+                    var selectedName = Console.ReadLine();
+
+                    // Validate the character name
+                    if (ValidateCharacterName(selectedName, slot, "create"))
+                    {
+                        GetActionHandlerManager().RunActionHandler("ask_create_char", null, $"name={selectedName}|slot={slot}");
+                        return true;
+                    }
+
+                    ConsoleIO.WriteLineFormatted("§cInvalid name. Please try again.");
+                }
+                else
+                {
+                    ConsoleIO.WriteLineFormatted("§cYou cannot create a character in a slot that already has a character.");
+                }
+            }
+
+            if (action.Equals("D", StringComparison.OrdinalIgnoreCase))
+            {
+                // Deleting character
+                if (_networkManager.CharacterSummaries[slot].People != (int)PeopleType.Unknown)
+                {
+                    ConsoleIO.WriteLineFormatted($"§dAre you sure you want to delete the character '{_networkManager.CharacterSummaries[slot].Name}'? (Y/N)");
+                    var confirm = Console.ReadLine();
+
+                    if (confirm != null && confirm.Equals("Y", StringComparison.OrdinalIgnoreCase))
+                    {
+                        GetActionHandlerManager().RunActionHandler("ask_delete_char", null, $"slot={slot}");
+                        return true;
+                    }
+                }
+                else
+                {
+                    ConsoleIO.WriteLineFormatted("§cYou cannot delete a character that does not exist.");
+                    return false;
+                }
+            }
+
+            // In case none of the actions were matched
+            return false;
+        }
+
+        /// <summary>
+        /// Validates a character name by sending a request to the server and waiting for a response.
+        /// </summary>
+        private bool ValidateCharacterName(string name, int slot, string action)
+        {
+            var ryzomClient = RyzomClient.GetInstance();
+
+            ryzomClient.GetNetworkManager().CharNameValidArrived = false;
+
+            // Execute the action handler to validate the name
+            GetActionHandlerManager().RunActionHandler("ask_valid_name", null, $"name={name}");
+
+            // Wait for the validation response
+            if (!ryzomClient.GetNetworkManager().CharNameValidArrived)
+            {
+                ryzomClient.GetNetworkManager().Update(); // keep updating until we get the response
+            }
+
+            // Check if the name is valid
+            return ryzomClient.GetNetworkManager().CharNameValid;
         }
 
         /// <summary>
@@ -766,7 +903,7 @@ namespace Client
                 // Add the LOCAL branch
                 textId = new TextId("LOCAL");
 
-                if (_databaseManager.GetRootDb().GetNode(textId, false) != null)
+                if (_databaseManager.GetRootDb().GetNode(textId) != null)
                 {
                     _databaseManager.GetRootDb().RemoveNode(textId);
                 }
@@ -811,7 +948,7 @@ namespace Client
             var emptyEntityInfo = new PropertyChange.TNewEntityInfo();
             emptyEntityInfo.Reset();
             _networkManager.GetEntityManager().Create(0, userSheet.AsInt(), emptyEntityInfo);
-            Log.Info("Created user entity with the sheet " + userSheet);
+            Log.Info($"Created user entity with the sheet {userSheet}");
 
             // Create the message for the server that the client is ready
             var out2 = new BitMemoryStream();
@@ -861,7 +998,7 @@ namespace Client
                     _networkManager.SetReferencePosition(_networkManager.GetEntityManager().UserEntity.Pos);
 
                 // Send new data Only when server tick changed.
-                if (_networkConnection.GetCurrentServerTick() > _lastGameCycle)
+                if (_networkConnection.GetCurrentServerTick() > _lastGameCycle && _networkManager != null)
                 {
                     BitMemoryStream out2;
 
@@ -930,7 +1067,7 @@ namespace Client
                 }
 
                 // Do not eat up all the processor
-                Thread.Sleep(10);
+                Sleep(10);
 
                 // Get the Connection State.
                 var connectionState = _networkConnection.ConnectionState;
@@ -943,6 +1080,7 @@ namespace Client
                 if (connectionState != ConnectionState.Disconnect && connectionState != ConnectionState.Quit) continue;
 
                 _networkManager.GameExit = true;
+
                 break;
             } // end of main loop
 
@@ -967,7 +1105,7 @@ namespace Client
             {
                 try
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                    Sleep(TimeSpan.FromSeconds(10));
                 }
                 catch
                 {
@@ -997,7 +1135,7 @@ namespace Client
         /// </summary>
         private void CommandPrompt()
         {
-            Thread.Sleep(500);
+            Sleep(500);
 
             while (true)
             {
@@ -1138,12 +1276,12 @@ namespace Client
                 if (!PerformInternalCommand(command, out var responseMsg) && ClientConfig.InternalCmdChar == '/')
                 {
                     // Command not found
-                    Log.Info("§c" + responseMsg);
+                    Log.Info($"\u00a7c{responseMsg}");
                 }
                 else if (responseMsg.Length > 0)
                 {
                     // Command successful with response
-                    Log.Info("§f" + responseMsg);
+                    Log.Info($"\u00a7f{responseMsg}");
                 }
             }
             // Send text
@@ -1246,7 +1384,7 @@ namespace Client
                     }
                     else if (_cmds.TryGetValue(arguments, out var cmd))
                     {
-                        responseMsg = "§e" + ClientConfig.InternalCmdChar + cmd.GetCmdDescTranslated();
+                        responseMsg = $"\u00a7e{ClientConfig.InternalCmdChar}{cmd.GetCmdDescTranslated()}";
                     }
                     else responseMsg = $"Unknown command '{arguments}'. Use '{HelpCommand}' for command list.";
                 }
@@ -1425,13 +1563,13 @@ namespace Client
         /// Check if running on a different thread and InvokeOnMainThread is required
         /// </summary>
         /// <returns>True if calling thread is not the main thread</returns>
-        public bool InvokeRequired => GetNetReadThreadId() != Thread.CurrentThread.ManagedThreadId;
+        private static bool InvokeRequired => GetNetReadThreadId() != CurrentThread.ManagedThreadId;
 
         /// <summary>
         /// Get net read thread (main thread) ID
         /// </summary>
         /// <returns>Net read thread ID</returns>
-        public int GetNetReadThreadId()
+        private static int GetNetReadThreadId()
         {
             return _clientThread?.ManagedThreadId ?? -1;
         }

@@ -14,7 +14,7 @@ namespace Client.Network
     {
         internal static string GetUserAgent()
         {
-            return GetUserAgentName() + "/" + GetUserAgentVersion();
+            return $"{GetUserAgentName()}/{GetUserAgentVersion()}";
         }
 
         private static string GetUserAgentName()

@@ -143,7 +143,7 @@ namespace Client.Plugins
             Validate.IsTrue(plugin is Plugin, "Plugin is not associated with this PluginLoader");
             if (plugin.IsEnabled()) return;
 
-            plugin.GetLogger().Info("Enabling " + plugin.GetDescription().GetFullName());
+            plugin.GetLogger().Info($"Enabling {plugin.GetDescription().GetFullName()}");
 
             var csPlugin = (Plugin)(plugin);
             var pluginName = csPlugin.GetDescription().GetName();

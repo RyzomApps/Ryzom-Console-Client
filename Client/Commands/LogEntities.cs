@@ -23,7 +23,7 @@ namespace Client.Commands
 
             // Check parameters
             if (args.Length != 0)
-                return "Usage: " + CmdUsage;
+                return $"Usage: {CmdUsage}";
 
             // Log entities
             ryzomClient.GetNetworkManager().GetEntityManager().WriteEntities();

@@ -81,7 +81,7 @@ namespace Client.Property
 
         internal bool RemoveEntity(byte entity)
         {
-            Debug.Assert(entity < _entities.Length, "entity=" + (ushort)entity + "u size=" + _entities.Length);
+            Debug.Assert(entity < _entities.Length, $"entity={(ushort)entity}u size={_entities.Length}");
 
             //Workaround: assert converted to test when failure in vision from the server
             //if (!_entities[entity].EntryUsed)
