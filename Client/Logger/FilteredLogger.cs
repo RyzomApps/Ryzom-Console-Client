@@ -6,6 +6,8 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Client.Helper;
 using static Client.Config.ClientConfig;
@@ -18,29 +20,25 @@ namespace Client.Logger
 
         protected bool ShouldDisplay(FilterChannel channel, string msg)
         {
-            Regex regexToUse = null;
-            // Convert to bool for XOR later. Whitelist = 0, Blacklist = 1
-            var filterMode = FilterMode == FilterModeEnum.NegativeList;
+            // Determine the current filter mode (positivelist = 0, negativelist = 1)
+            bool isNegativelistMode = FilterMode == FilterModeEnum.NegativeList;
 
-            switch (channel)
+            // Select the appropriate regex list based on the channel
+            List<Regex> regexesToUse = channel switch
             {
-                case FilterChannel.Chat:
-                    regexToUse = ChatFilter;
-                    break;
+                FilterChannel.Chat => ChatFilters,
+                FilterChannel.Debug => [DebugFilter],
+                _ => null
+            };
 
-                case FilterChannel.Debug:
-                    regexToUse = DebugFilter;
-                    break;
-            }
+            // If there are no regex patterns, return the opposite of the filter mode
+            if (regexesToUse == null) return !isNegativelistMode;
 
-            if (regexToUse != null)
-            {
-                // IsMatch and white/blacklist result can be represented using XOR
-                // e.g.  matched(true) ^ blacklist(true) => shouldn't log(false)
-                return regexToUse.IsMatch(msg) ^ filterMode;
-            }
+            // Check if any regex matches the message
+            bool isMatch = regexesToUse.Any(regex => regex.IsMatch(msg));
 
-            return true;
+            // Return the XOR of isMatch and the filter mode
+            return isMatch ^ isNegativelistMode;
         }
 
         public override void Debug(string msg)
@@ -60,7 +58,7 @@ namespace Client.Logger
 
         public override void Info(string msg)
         {
-            if (!InfoEnabled) 
+            if (!InfoEnabled)
                 return;
 
             lock (_loggerLock)
@@ -71,7 +69,7 @@ namespace Client.Logger
 
         public override void Warn(string msg)
         {
-            if (!WarnEnabled) 
+            if (!WarnEnabled)
                 return;
 
             lock (_loggerLock)
@@ -82,7 +80,7 @@ namespace Client.Logger
 
         public override void Error(string msg)
         {
-            if (!ErrorEnabled) 
+            if (!ErrorEnabled)
                 return;
 
             lock (_loggerLock)
@@ -93,7 +91,7 @@ namespace Client.Logger
 
         public override void Chat(string msg)
         {
-            if (!ChatEnabled) 
+            if (!ChatEnabled)
                 return;
 
             if (ShouldDisplay(FilterChannel.Chat, msg))

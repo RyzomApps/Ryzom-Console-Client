@@ -83,7 +83,12 @@ namespace Client.Config
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
 
         // Filtering
-        public static Regex ChatFilter = null;
+        public static List<Regex> ChatFilters = [
+            new Regex(@" [ \w\(\)]+ invoke[s]* a[n]* \w+ spell on [ \w\(\)]+\."),
+            new Regex(@" You are now at full \w+\."),
+            new Regex(@" [ \w\(\)]+ is now at full \w+ and no longer needs \w+ recovery spells\."),
+            new Regex(@" You succesfully cast your spell\."),
+        ];
         public static Regex DebugFilter = null;
         public static FilterModeEnum FilterMode = FilterModeEnum.NegativeList;
 
@@ -357,6 +362,16 @@ namespace Client.Config
                 case "useinventory":
                     UseInventory = bool.Parse(argValue);
                     break;
+
+                case "chatfilter":
+                    argValue = argValue.Replace("{", "").Replace("}", "").Trim();
+                    var filters = argValue.Split(",");
+                    ChatFilters.Clear();
+                    foreach (var filter in filters)
+                    {
+                        ChatFilters.Add(new Regex(CleanUpArgument(filter.Trim())));
+                    }
+                    return;
 
                 default:
                     ConsoleIO.WriteLineFormatted($"§cCould not parse setting {argName} with value '{argValue}'.");
