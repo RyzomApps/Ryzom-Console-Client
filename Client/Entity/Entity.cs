@@ -254,9 +254,9 @@ namespace Client.Entity
         }
 
         /// <inheritdoc />
-        public void SetTargetSlot(byte entityId)
+        public void SetTargetSlot(byte slot)
         {
-            _targetSlot = entityId;
+            _targetSlot = slot;
         }
 
         /// <summary>

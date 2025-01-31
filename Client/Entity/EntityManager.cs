@@ -362,5 +362,26 @@ namespace Client.Entity
             // Close the File.
             file.Close();
         }
+
+        /// <summary>
+        /// Get an entity by dataset index. Returns null if the entity is not found.
+        /// </summary>
+        /// <param name="compressedIndex">The dataset index to search for.</param>
+        /// <returns>An instance of <see cref="Entity"/> if found; otherwise, null.</returns>
+        public IEntity GetEntityByCompressedIndex(uint compressedIndex)
+        {
+            if (compressedIndex == Constants.InvalidClientDatasetIndex)
+                return null;
+
+            for (uint i = 0; i < _nbMaxEntity; i++)
+            {
+                if (_entities[i] != null && _entities[i].DataSetId() == compressedIndex)
+                {
+                    return _entities[i];
+                }
+            }
+
+            return null;
+        }
     }
 }
