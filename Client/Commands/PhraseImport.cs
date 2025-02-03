@@ -80,6 +80,7 @@ namespace Client.Commands
                     memoryLine = uint.Parse(splits[0].Split(":")[0]);
                     memoryIndex = uint.Parse(splits[0].Split(":")[1]);
 
+                    // Get a new phrase ID
                     phraseId = ryzomClient.GetPhraseManager().AllocatePhraseSlot();
 
                     phrase = new PhraseCom();
@@ -109,33 +110,20 @@ namespace Client.Commands
             // Check for existing phrase ID in the specified memory line and index
             var existingPhraseId = ryzomClient.GetPhraseManager().GetPhraseIdFromMemory(memoryLine, memoryIndex);
 
-            if (existingPhraseId != 0)
+            if (existingPhraseId == 0)
             {
-                // Check how many times this phrase is used
-                var usageCount = ryzomClient.GetPhraseManager().CountAllThatUsePhrase(existingPhraseId);
-
-                // If the usage count is 1, delete the existing phrase
-                if (usageCount == 1)
-                {
-                    ryzomClient.GetLogger().Info($"§cDeleting phrase {existingPhraseId} as it is used only used once.");
-                    ryzomClient.GetPhraseManager().ErasePhrase(existingPhraseId);
-                    ryzomClient.GetPhraseManager().SendDeleteToServer(existingPhraseId);
-                    ryzomClient.GetNetworkManager().Update();
-                }
-
-                // server forget
-                ryzomClient.GetLogger().Info($"§eForgetting phrase on memory line {memoryLine} slot {memoryIndex}.");
-                ryzomClient.GetPhraseManager().SendForgetToServer(memoryLine, memoryIndex);
+                // learn and add to action bar
+                ryzomClient.GetLogger().Info($"§aImporting phrase {(phrase.Name.Length > 0 ? $"'{phrase.Name}'" : $"{phraseId}")} to memory line {memoryLine} slot {memoryIndex}.");
+                ryzomClient.GetPhraseManager().SendLearnToServer(phraseId);
+                ryzomClient.GetPhraseManager().SetPhraseInternal(phraseId, ryzomClient.GetPhraseManager().GetPhrase(phraseId), false, false);
                 ryzomClient.GetNetworkManager().Update();
+
+                ryzomClient.GetPhraseManager().SendMemorizeToServer(memoryLine, memoryIndex, phraseId);
             }
-
-            // learn and add to action bar
-            ryzomClient.GetLogger().Info($"§aImporting phrase {(phrase.Name.Length > 0 ? $"'{phrase.Name}'" : $"{phraseId}")} to memory line {memoryLine} slot {memoryIndex}.");
-            ryzomClient.GetPhraseManager().SendLearnToServer(phraseId);
-            ryzomClient.GetPhraseManager().SetPhraseInternal(phraseId, ryzomClient.GetPhraseManager().GetPhrase(phraseId), false, false);
-            ryzomClient.GetNetworkManager().Update();
-
-            ryzomClient.GetPhraseManager().SendMemorizeToServer(memoryLine, memoryIndex, phraseId);
+            else
+            {
+                ryzomClient.GetLogger().Error($"Importing phrase {(phrase.Name.Length > 0 ? $"'{phrase.Name}'" : $"{phraseId}")} to memory line {memoryLine} slot {memoryIndex} failed. Already a phrase at this slot.");
+            }
         }
 
         public override IEnumerable<string> GetCmdAliases()

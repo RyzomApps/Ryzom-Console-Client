@@ -107,10 +107,10 @@ namespace Client.Phrase
         private SheetId _enchantWeaponMainBrick;
 
         /// <summary>Map of All Phrase. Contains the Book + some system phrase (1: the Edition Phrase)</summary>
-        private readonly Dictionary<int, PhraseCom> _phraseMap = new();
+        private readonly Dictionary<int, PhraseCom> _phraseMap = [];
 
         /// <summary>map each phrase to its sheet id</summary>
-        private readonly Dictionary<PhraseCom, int> _phraseToSheet = new();
+        private readonly Dictionary<PhraseCom, int> _phraseToSheet = [];
 
         /// <summary>extra client data</summary>
         private readonly List<PhraseClient> _phraseClient = [];
