@@ -17,7 +17,7 @@ namespace Client.Commands
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
-            if (!(handler is RyzomClient ryzomClient))
+            if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
@@ -30,7 +30,7 @@ namespace Client.Commands
             // TODO: Write information to start as the version (RecordVersion, currentPos)
 
             // Write the DB
-            if(ClientConfig.UseDatabase)
+            if (ClientConfig.UseDatabase)
                 ryzomClient.GetDatabaseManager().Write($"{dumpName}_db.rec");
 
             // TODO: Dump Client CFG.
@@ -39,7 +39,7 @@ namespace Client.Commands
 
             ryzomClient.GetPhraseManager().Write($"{dumpName}_phrases.rec");
 
-            if(ClientConfig.UseInventory)
+            if (ClientConfig.UseInventory)
                 ryzomClient.GetInventoryManager().Write($"{dumpName}_inventory.rec");
 
             return "";

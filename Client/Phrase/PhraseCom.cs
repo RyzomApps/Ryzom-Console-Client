@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using API.Sheet;
 using Client.Sheet;
 using Client.Stream;
@@ -34,17 +33,17 @@ namespace Client.Phrase
         /// <summary>
         /// List Of SBricks composing the phrase.
         /// </summary>
-        public List<SheetId> Bricks = new List<SheetId>();
+        public readonly List<SheetId> Bricks = [];
 
         /// <summary>
         /// Index into Bricks to use as icon (if out of range, then automatic icon selection)
         /// </summary>
-        public byte IconIndex = byte.MaxValue;
+        private byte _iconIndex = byte.MaxValue;
 
         /// <summary>
         /// Empty element
         /// </summary>
-        public static PhraseCom EmptyPhrase = new PhraseCom();
+        public static readonly PhraseCom EmptyPhrase = new();
 
         /// <summary>
         /// This serial is made for server->client com. NB: SheetId must be initialized.
@@ -132,7 +131,7 @@ namespace Client.Phrase
                     // the sbrick SheetId must be <65535, else error!
                     if (compId >= 65535)
                     {
-                        Console.WriteLine($"ERROR: found a .sbrick SheetId with SubId>=65535: {phrase.Bricks[i]}");
+                        Console.WriteLine($@"ERROR: found a .sbrick SheetId with SubId >= 65535: {phrase.Bricks[i]}");
                         // and leave 0.
                     }
                     else
@@ -154,7 +153,7 @@ namespace Client.Phrase
                 #endregion
             }
 
-            stream.Serial(ref phrase.IconIndex);
+            stream.Serial(ref phrase._iconIndex);
         }
     }
 }

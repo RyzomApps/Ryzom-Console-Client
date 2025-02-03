@@ -13,7 +13,6 @@ using System.IO;
 using System.Linq;
 using API.Sheet;
 using Client.Brick;
-using Client.Client;
 using Client.Database;
 using Client.Sheet;
 using Client.Stream;
@@ -28,6 +27,7 @@ namespace Client.Phrase
     /// <author>Lionel Berenguier</author>
     /// <author>Nevrax France</author>
     /// <date>2003</date>
+    /// <remarks>There is a Network BUG which prevents us from simply doing {Forget(), Delete()} Old, then {Learn(), Memorize()} New (Messages are shuffled).</remarks>
     public class PhraseManager
     {
         private enum ProgressType
@@ -107,19 +107,19 @@ namespace Client.Phrase
         private SheetId _enchantWeaponMainBrick;
 
         /// <summary>Map of All Phrase. Contains the Book + some system phrase (1: the Edition Phrase)</summary>
-        private readonly Dictionary<int, PhraseCom> _phraseMap = new Dictionary<int, PhraseCom>();
+        private readonly Dictionary<int, PhraseCom> _phraseMap = new();
 
         /// <summary>map each phrase to its sheet id</summary>
-        private readonly Dictionary<PhraseCom, int> _phraseToSheet = new Dictionary<PhraseCom, int>();
+        private readonly Dictionary<PhraseCom, int> _phraseToSheet = new();
 
         /// <summary>extra client data</summary>
-        private readonly List<PhraseClient> _phraseClient = new List<PhraseClient>();
+        private readonly List<PhraseClient> _phraseClient = [];
 
-        private readonly List<MemoryLine> _memories = new List<MemoryLine>();
+        private readonly List<MemoryLine> _memories = [];
 
         private readonly RyzomClient _client;
 
-        int _selectedMemoryDB = -1;
+        int _selectedMemoryDb = -1;
 
         //static bool _registerClassDone;
 
@@ -148,7 +148,7 @@ namespace Client.Phrase
         private void Reset()
         {
             _initInGameDone = false;
-            _selectedMemoryDB = -1;
+            _selectedMemoryDb = -1;
         }
 
         /// <remarks>
@@ -159,10 +159,10 @@ namespace Client.Phrase
             if (memoryLine < 0)
                 memoryLine = -1;
 
-            if (_selectedMemoryDB == memoryLine)
+            if (_selectedMemoryDb == memoryLine)
                 return;
 
-            _selectedMemoryDB = memoryLine;
+            _selectedMemoryDb = memoryLine;
 
             // since memory selection changes then must update all the DB and the Ctrl states
             UpdateMemoryDbAll();
@@ -282,7 +282,7 @@ namespace Client.Phrase
 
             foreach (var (key, value) in sm)
             {
-                if (!(value.Sheet is { Type: SheetType.SPHRASE }))
+                if (value.Sheet is not { Type: SheetType.SPHRASE })
                     continue;
 
                 BuildPhraseFromSheet(ref tmpPhrase, key.AsInt());
@@ -487,7 +487,7 @@ namespace Client.Phrase
             _memories[memoryLine].Slot[memorySlot].Id = (uint)slot;
 
             // must update DB?
-            if (memoryLine == _selectedMemoryDB /*||  memoryLine == _selectedMemoryDBalt*/)
+            if (memoryLine == _selectedMemoryDb /*||  memoryLine == _selectedMemoryDBalt*/)
             {
                 // update the DB
                 UpdateMemoryDbSlot((uint)memorySlot);
@@ -533,7 +533,7 @@ namespace Client.Phrase
             if (!_initInGameDone)
                 return;
 
-            if (_selectedMemoryDB == -1 || _selectedMemoryDB >= _memories.Count)
+            if (_selectedMemoryDb == -1 || _selectedMemoryDb >= _memories.Count)
             {
                 for (uint i = 0; i < PHRASE_MAX_MEMORY_SLOT; i++)
                 {
@@ -544,7 +544,7 @@ namespace Client.Phrase
             {
                 for (uint i = 0; i < PHRASE_MAX_MEMORY_SLOT; i++)
                 {
-                    var slot = _memories[_selectedMemoryDB].Slot[i];
+                    var slot = _memories[_selectedMemoryDb].Slot[i];
 
                     if (!slot.IsPhrase())
                     {
@@ -558,7 +558,7 @@ namespace Client.Phrase
             }
         }
 
-        public void UpdateMemoryDbSlot(uint memorySlot)
+        private void UpdateMemoryDbSlot(uint memorySlot)
         {
             // If DB not inited, no-op
             if (!_initInGameDone)
@@ -567,10 +567,10 @@ namespace Client.Phrase
             if (memorySlot >= PHRASE_MAX_MEMORY_SLOT)
                 return;
 
-            if (_selectedMemoryDB == -1 || _selectedMemoryDB >= _memories.Count)
+            if (_selectedMemoryDb == -1 || _selectedMemoryDb >= _memories.Count)
                 return;
 
-            var slot = _memories[_selectedMemoryDB].Slot[memorySlot];
+            var slot = _memories[_selectedMemoryDb].Slot[memorySlot];
 
             if (!slot.IsPhrase())
             {
@@ -603,6 +603,8 @@ namespace Client.Phrase
 
                 var m = 0;
 
+                f.WriteLine("#Line:Slot\tId\tIsMacro\tIsMacroVisualDirty\tName\tBricksCount\tcount");
+
                 foreach (var memory in _memories)
                 {
                     var s = 0;
@@ -611,19 +613,23 @@ namespace Client.Phrase
                     {
                         var phrase = GetPhrase(slot.Id);
 
-                        //if (phrase != PhraseCom.EmptyPhrase)
-                        //{
-                        f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase.Name}\t{phrase.Bricks?.Count}");
+                        f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase.Name}\t{phrase.Bricks?.Count}\t{CountAllThatUsePhrase(slot.Id)}");
 
                         if (phrase.Bricks != null)
+                        {
+                            if (phrase.Bricks.Count > 0)
+                                f.WriteLine("#\tId\tShortId\tSheetType\tIdIcon\tName");
 
-                            foreach (var brick in phrase?.Bricks)
+                            foreach (var brick in phrase.Bricks)
                             {
                                 var bs = (BrickSheet)_sheetManager.Get(brick);
 
-                                f.WriteLine($"\t{brick.AsInt()}\t{brick.GetShortId()}\t{brick.GetSheetType()}\t{bs?.IdIcon}");
+                                f.WriteLine($"\t{brick.AsInt()}\t{brick.GetShortId()}\t{brick.GetSheetType()}\t{bs?.IdIcon}\t{brick.Name}");
                             }
-                        //}
+
+                            if (phrase.Bricks.Count > 0)
+                                f.WriteLine("#Line:Slot\tId\tIsMacro\tIsMacroVisualDirty\tName\tBricksCount\tcount");
+                        }
 
                         s++;
                     }
@@ -672,11 +678,11 @@ namespace Client.Phrase
                 PhraseCom.Serial(ref phrase, @out, _sheetIdFactory);
 
                 _client.GetNetworkManager().Push(@out);
-                _client.GetLogger().Info($"impulseCallBack : {sMsg} {memoryId} {slotId} {pid} (phrase) sent");
+                _client.GetLogger().Debug($"{sMsg} {memoryId} {slotId} {pid} (phrase) sent");
             }
             else
             {
-                _client.GetLogger().Warn($"impulseCallBack : unknown message name : '{sMsg}'.");
+                _client.GetLogger().Warn($"Unknown message name : '{sMsg}'.");
             }
         }
 
@@ -698,11 +704,11 @@ namespace Client.Phrase
                 @out.Serial(ref slotId);
 
                 _client.GetNetworkManager().Push(@out);
-                _client.GetLogger().Info($"impulseCallBack : {sMsg} {memoryId} {slotId} sent");
+                _client.GetLogger().Debug($"{sMsg} {memoryId} {slotId} sent");
             }
             else
             {
-                _client.GetLogger().Warn($"impulseCallBack : unknown message name : '{sMsg}'.");
+                _client.GetLogger().Warn($"Unknown message name: '{sMsg}'.");
             }
         }
 
@@ -717,18 +723,301 @@ namespace Client.Phrase
                 return;
 
             var @out = new BitMemoryStream();
-            if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream("PHRASE:LEARN", @out))
+            const string sMsg = "PHRASE:LEARN";
+
+            if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(sMsg, @out))
             {
                 var slotId = (ushort)phraseId;
                 @out.Serial(ref slotId);
                 PhraseCom.Serial(ref phrase, @out, _sheetIdFactory);
                 _client.GetNetworkManager().Push(@out);
-                _client.GetLogger().Info($"impulseCallBack : PHRASE:LEARN {slotId} (phrase) sent");
+                _client.GetLogger().Debug($"{sMsg} {slotId} sent");
             }
             else
             {
-                _client.GetLogger().Warn(" unknown message name 'PHRASE:LEARN");
+                _client.GetLogger().Warn($"Unknown message name: '{sMsg}'.");
             }
+        }
+
+        /// <summary>
+        /// Common Method to send the execution msg to server
+        /// </summary>
+        internal void SendExecuteToServer(uint memoryLine, uint memorySlot, bool cyclic)
+        {
+            var @out = new BitMemoryStream();
+            var msgName = cyclic ? "PHRASE:EXECUTE_CYCLIC" : "PHRASE:EXECUTE";
+
+            if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, @out))
+            {
+                //serial the sentence memorized index
+                var memoryId = (byte)memoryLine;
+                var slotId = (byte)memorySlot;
+                @out.Serial(ref memoryId);
+                @out.Serial(ref slotId);
+                _client.GetNetworkManager().Push(@out);
+
+                _client.GetLogger().Info($"{msgName} {memoryLine} {memorySlot} {cyclic} sent");
+            }
+            else
+            {
+                _client.GetLogger().Warn($"Unknown message named '{msgName}'.");
+            }
+        }
+
+        /// <summary>
+        /// Execute a cristalize action on both client and server side
+        /// </summary>
+        public void ExecuteCristalize(uint memoryLine, uint memorySlot)
+        {
+            // Increment counter client side (like an execution) (no cyclic)
+            SendExecuteToServer((byte)memoryLine, (byte)memorySlot, false);
+
+            // Special sendExecuteToServer
+            // Removed ClientCfg.Local check and related code.
+            // Instead, directly push the message to the server.
+            var @out = new BitMemoryStream();
+            const string sMsg = "PHRASE:CRISTALIZE";
+
+            if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(sMsg, @out))
+            {
+                // serial the sentence memorized index
+                var memoryId = (byte)memoryLine;
+                var slotId = (byte)memorySlot;
+                @out.Serial(ref memoryId);
+                @out.Serial(ref slotId);
+                _client.GetNetworkManager().Push(@out);
+            }
+            else
+            {
+                _client.GetLogger().Warn($"unknown message {sMsg}");
+            }
+        }
+
+        /// <summary>
+        /// Execute a default attack, on both client and server side.
+        /// </summary>
+        /// <remarks>Try to launch a standard action "default attack" if found.</remarks>
+        public void ExecuteDefaultAttack()
+        {
+            // Try to find a "default attack" in memories
+            if (FindDefaultAttack(out var memoryLine, out var memorySlot))
+            {
+                SendExecuteToServer((byte)memoryLine, (byte)memorySlot, true);
+            }
+            else
+            {
+                // Removed ClientCfg.Local check and related code.
+                // Directly send the attack message to the server.
+                const string msgName = "COMBAT:DEFAULT_ATTACK";
+                var @out = new BitMemoryStream();
+                if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, @out))
+                {
+                    _client.GetNetworkManager().Push(@out);
+                }
+                else
+                {
+                    _client.GetLogger().Warn($"unknown message named '{msgName}'.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send the PHRASE:DELETE message to the server
+        /// </summary>
+        /// <param name="slot">The slot to delete</param>
+        public void SendDeleteToServer(uint slot)
+        {
+            var @out = new BitMemoryStream();
+            if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream("PHRASE:DELETE", @out))
+            {
+                var slotId = (ushort)slot;
+                @out.Serial(ref slotId);
+                _client.GetNetworkManager().Push(@out);
+            }
+            else
+            {
+                _client.GetLogger().Warn("unknown message name 'PHRASE:DELETE'");
+            }
+        }
+
+        /// <summary>
+        /// Rememorize all memories that use this slot
+        /// </summary>
+        /// <param name="slot">The phrase slot to re-memorize</param>
+        public void RememorizeAllThatUsePhrase(uint slot)
+        {
+            var someMemorized = false;
+
+            // For all memory slot
+            for (var i = 0; i < _memories.Count; i++)
+            {
+                for (var j = 0; j < PHRASE_MAX_MEMORY_SLOT; j++)
+                {
+                    if (!_memories[i].Slot[j].IsPhrase() || _memories[i].Slot[j].Id != slot)
+                        continue;
+
+                    // Re-memorize the phrase, need server only
+                    SendMemorizeToServer((uint)i, (uint)j, slot);
+                    someMemorized = true;
+                }
+            }
+
+            // Update all memory ctrl states if some re-learned
+            if (someMemorized)
+            {
+                UpdateAllMemoryCtrlState();
+            }
+        }
+
+        /// <summary>
+        /// Count all memories that use this phrase.
+        /// </summary>
+        /// <param name="slot">The phrase slot to count.</param>
+        /// <returns>The count of memories using the given phrase slot.</returns>
+        public uint CountAllThatUsePhrase(uint slot)
+        {
+            if (slot == 0)
+                return 0;
+
+            // For all memory slots
+            uint count = 0;
+            for (uint i = 0; i < _memories.Count; i++)
+            {
+                for (uint j = 0; j < PHRASE_MAX_MEMORY_SLOT; j++)
+                {
+                    if (_memories[(int)i].Slot[j].IsPhrase() &&
+                        _memories[(int)i].Slot[j].Id == slot)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// Search the default attack like on client. Returns false if not found. 
+        /// Prefers to find in the currently selected memory line.
+        /// </summary>
+        /// <param name="memoryLine">Output parameter for the found memory line index.</param>
+        /// <param name="memorySlot">Output parameter for the found memory slot index.</param>
+        /// <returns>True if a default attack is found, otherwise false.</returns>
+        private bool FindDefaultAttack(out uint memoryLine, out uint memorySlot)
+        {
+            var brickManager = _client.GetBrickManager();
+
+            memoryLine = 0;
+            memorySlot = 0;
+
+            if (_memories.Count == 0)
+                return false;
+
+            // Create a sorted list of memory lines, prioritizing the selected one
+            var memoryLineSort = Enumerable.Range(0, _memories.Count).ToList();
+
+            // Remove and push the selected memory line to the front
+            if (_selectedMemoryDb >= 0 && _selectedMemoryDb < memoryLineSort.Count)
+            {
+                memoryLineSort.RemoveAt(_selectedMemoryDb);
+                memoryLineSort.Insert(0, _selectedMemoryDb);
+            }
+
+            // Parse all memories
+            foreach (var lineIndex in memoryLineSort)
+            {
+                var memLine = _memories[lineIndex];
+                for (uint j = 0; j < PHRASE_MAX_MEMORY_SLOT; j++)
+                {
+                    if (!memLine.Slot[j].IsPhrase())
+                        continue;
+
+                    var phrase = GetPhrase(memLine.Slot[j].Id);
+
+                    // The phrase must have only one brick: the default attack brick
+                    if (phrase.Bricks.Count != 1)
+                        continue;
+
+                    var brick = brickManager.GetBrick(phrase.Bricks[0]);
+
+                    // Check if it's a combat root brick
+                    if (brick == null || !brick.IsRoot() || !brick.IsCombat())
+                        continue;
+
+                    // Found default attack
+                    memoryLine = (uint)lineIndex;
+                    memorySlot = j;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Retrieves the phrase ID from the specified memory line and index.
+        /// </summary>
+        /// <param name="memoryLine">The memory line index.</param>
+        /// <param name="memoryIndex">The slot index in the memory line.</param>
+        /// <returns>The phrase ID if found; otherwise, 0.</returns>
+        public uint GetPhraseIdFromMemory(uint memoryLine, uint memoryIndex)
+        {
+            if (memoryLine >= _memories.Count || memoryIndex >= PHRASE_MAX_MEMORY_SLOT)
+            {
+                return 0; // Invalid memory line or index
+            }
+
+            var slot = _memories[(int)memoryLine].Slot[memoryIndex];
+            return slot.IsPhrase() ? slot.Id : 0; // Return the ID if it's a valid phrase
+        }
+
+        public void SetPhraseInternal(uint slot, PhraseCom phrase, bool lockPhrase, bool updateDb)
+        {
+            // Don't allow slot too big. Don't allow to set the 0 slot.
+            if (slot > PHRASE_MAX_ID || slot == 0)
+                return;
+
+            // Enlarge _phraseClient if needed
+            //while (slot >= _phraseClient.Count)
+            //{
+            //    _phraseClient.Add(new PhraseClient());
+            //}
+
+            // Set the phrase
+            _phraseMap[(int)slot] = phrase;
+
+            // Increment the phrase version
+            _phraseClient[(int)slot].Version++;
+
+            // BotChat lock?
+            _phraseClient[(int)slot].Lock = lockPhrase;
+
+            // For Free Slot Management
+            _maxSlotSet = Math.Max(_maxSlotSet, (int)slot);
+
+            // Update the book if necessary
+            if (updateDb && !lockPhrase && slot >= (uint)SlotType.BookStartSlot)
+            {
+                UpdateBookDb();
+            }
+        }
+
+        public void ErasePhrase(uint slot)
+        {
+            if (slot >= _phraseClient.Count)
+                return;
+
+            _phraseMap.Remove((int)slot);
+            _phraseClient[(int)slot].Version = -1;
+            _phraseClient[(int)slot].Lock = false;
+
+            // Make this slot available for allocation
+            //_freeSlots.Add((int)slot);
+
+            // Update the book.
+            UpdateBookDb();
+
+            // Ignore: If the phrase erased was currently executed, must stop it
         }
     }
 }

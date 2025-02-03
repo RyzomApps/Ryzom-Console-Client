@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using API;
 using API.Commands;
-using API.Sheet;
-using Client.Brick;
 using Client.Phrase;
 using Client.Sheet;
 
@@ -14,22 +12,30 @@ namespace Client.Commands
     {
         public override string CmdName => "PhraseImport";
 
-        public override string CmdUsage => "<filename>";
+        public override string CmdUsage => "<filename> [page]";
 
-        public override string CmdDesc => "Import a phrase from a file.";
+        public override string CmdDesc => "Import a phrase from a file. Optionally specify an action bar page.";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
-            if (!(handler is RyzomClient ryzomClient))
+            if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
-
-            if (args.Length != 1)
-                return "Please specify a file name.";
+            if (args.Length is < 1 or > 2)
+                return "Please specify a file name and optionally an ActionBarPage.";
 
             if (!File.Exists(args[0]))
                 return "File does not exist.";
+
+            uint? actionBarPage = null;
+            if (args.Length == 2)
+            {
+                if (!uint.TryParse(args[1], out var page))
+                    return "Invalid ActionBarPage specified. It must be a number.";
+
+                actionBarPage = page;
+            }
 
             var lines = File.ReadLines(args[0]);
 
@@ -38,12 +44,18 @@ namespace Client.Commands
             uint memoryLine = 0;
             uint memoryIndex = 0;
 
+            // Change this line to initialize within the loop
             foreach (var line in lines)
             {
                 var splits = line.Split("\t");
 
-                if (line.StartsWith("\t"))
+                if (line.Trim().StartsWith('#'))
                 {
+                    // Ignore comments
+                }
+                else if (line.StartsWith('\t'))
+                {
+                    // Line starts with a tab -> Brick
                     if (phrase == null)
                         continue;
 
@@ -54,64 +66,81 @@ namespace Client.Commands
                 }
                 else
                 {
-                    SendPhraseToServer(ryzomClient, ref phrase, ref memoryLine, ref memoryIndex, ref phraseId);
+                    // First, send the previous phrase to the server if it exists
+                    if (!actionBarPage.HasValue || memoryLine == actionBarPage.Value)
+                        SendPhraseToServer(ryzomClient, phrase, memoryLine, memoryIndex, phraseId);
+
+                    phraseId = 0;
+                    memoryLine = 0;
+                    memoryIndex = 0;
 
                     if (splits.Length <= 5)
                         continue;
+
+                    memoryLine = uint.Parse(splits[0].Split(":")[0]);
+                    memoryIndex = uint.Parse(splits[0].Split(":")[1]);
 
                     phraseId = ryzomClient.GetPhraseManager().AllocatePhraseSlot();
 
                     phrase = new PhraseCom();
                     ryzomClient.GetPhraseManager().SetPhraseNoUpdateDb((ushort)phraseId, phrase);
 
-                    var memory = splits[0].Split(":");
-                    memoryLine = uint.Parse(memory[0]);
-                    memoryIndex = uint.Parse(memory[1]);
-
-                    if (!splits[4].StartsWith("<"))
+                    if (!splits[4].StartsWith('<'))
                         phrase.Name = splits[4];
                 }
             }
 
-            SendPhraseToServer(ryzomClient, ref phrase, ref memoryLine, ref memoryIndex, ref phraseId);
+            // Send the last phrase to the server after EOF
+            if (!actionBarPage.HasValue || memoryLine == actionBarPage.Value)
+                SendPhraseToServer(ryzomClient, phrase, memoryLine, memoryIndex, phraseId);
 
             return "";
         }
 
         /// <summary>
-        /// forget memory<br/>
-        /// learn phrase<br/>
-        /// memorize phrase
+        /// Updates the server with a new phrase by first removing an existing phrase from memory,
+        /// then adding the new phrase to the specified memory line and index.
         /// </summary>
-        private static void SendPhraseToServer(RyzomClient ryzomClient, ref PhraseCom phrase, ref uint memoryLine, ref uint memoryIndex, ref uint phraseId)
+        private static void SendPhraseToServer(RyzomClient ryzomClient, PhraseCom phrase, uint memoryLine, uint memoryIndex, uint phraseId)
         {
-            if (phrase == null)
+            if (phrase == null || phrase.Bricks.Count <= 0)
                 return;
 
-            // server forget
-            ryzomClient.GetPhraseManager().SendForgetToServer(memoryLine, memoryIndex);
+            // Check for existing phrase ID in the specified memory line and index
+            var existingPhraseId = ryzomClient.GetPhraseManager().GetPhraseIdFromMemory(memoryLine, memoryIndex);
 
-            if (phrase.Bricks.Count > 0)
+            if (existingPhraseId != 0)
             {
-                // add the new phrase
-                ryzomClient.GetLogger().Info($"Importing phrase {(phrase.Name.Length > 0 ? phrase.Name : $"{phraseId}")} to memory line {memoryLine} slot {memoryIndex}.");
+                // Check how many times this phrase is used
+                var usageCount = ryzomClient.GetPhraseManager().CountAllThatUsePhrase(existingPhraseId);
 
-                // server - learn
-                ryzomClient.GetPhraseManager().SendLearnToServer(phraseId);
+                // If the usage count is 1, delete the existing phrase
+                if (usageCount == 1)
+                {
+                    ryzomClient.GetLogger().Info($"§cDeleting phrase {existingPhraseId} as it is used only used once.");
+                    ryzomClient.GetPhraseManager().ErasePhrase(existingPhraseId);
+                    ryzomClient.GetPhraseManager().SendDeleteToServer(existingPhraseId);
+                    ryzomClient.GetNetworkManager().Update();
+                }
 
-                // server - add to action bar
-                ryzomClient.GetPhraseManager().SendMemorizeToServer(memoryLine, memoryIndex, phraseId);
+                // server forget
+                ryzomClient.GetLogger().Info($"§eForgetting phrase on memory line {memoryLine} slot {memoryIndex}.");
+                ryzomClient.GetPhraseManager().SendForgetToServer(memoryLine, memoryIndex);
+                ryzomClient.GetNetworkManager().Update();
             }
 
-            phrase = null;
-            phraseId = 0;
-            memoryLine = 0;
-            memoryIndex = 0;
+            // learn and add to action bar
+            ryzomClient.GetLogger().Info($"§aImporting phrase {(phrase.Name.Length > 0 ? $"'{phrase.Name}'" : $"{phraseId}")} to memory line {memoryLine} slot {memoryIndex}.");
+            ryzomClient.GetPhraseManager().SendLearnToServer(phraseId);
+            ryzomClient.GetPhraseManager().SetPhraseInternal(phraseId, ryzomClient.GetPhraseManager().GetPhrase(phraseId), false, false);
+            ryzomClient.GetNetworkManager().Update();
+
+            ryzomClient.GetPhraseManager().SendMemorizeToServer(memoryLine, memoryIndex, phraseId);
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new string[] { "ImportPhrase" };
+            return ["ImportPhrase"];
         }
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using Client.Stream;
 
 namespace Client.Commands
 {
@@ -16,7 +15,7 @@ namespace Client.Commands
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
-            if (!(handler is RyzomClient ryzomClient))
+            if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
@@ -26,8 +25,8 @@ namespace Client.Commands
 
             var cyclic = false;
 
-            var worked = byte.TryParse(args[0], out var memoryId);
-            worked &= byte.TryParse(args[1], out var slotId);
+            var worked = uint.TryParse(args[0], out var memoryLine);
+            worked &= uint.TryParse(args[1], out var memorySlot);
 
             if (args.Length == 3)
                 worked &= bool.TryParse(args[2], out cyclic);
@@ -36,27 +35,14 @@ namespace Client.Commands
                 return "One of the arguments could not be parsed.";
 
             // send msg
-            var out2 = new BitMemoryStream();
-            var msgName = cyclic ? "PHRASE:EXECUTE_CYCLIC" : "PHRASE:EXECUTE";
-
-            if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
-            {
-                //serial the sentence memorized index
-                out2.Serial(ref memoryId);
-                out2.Serial(ref slotId);
-                ryzomClient.GetNetworkManager().Push(out2);
-            }
-            else
-            {
-                return $"Unknown message named '{msgName}'.";
-            }
+            ryzomClient.GetPhraseManager().SendExecuteToServer(memoryLine, memorySlot, cyclic);
 
             return "";
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new string[] { };
+            return [];
         }
     }
 }
