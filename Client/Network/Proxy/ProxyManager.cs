@@ -15,7 +15,7 @@ namespace Client.Network.Proxy
 {
     public static class ProxyManager
     {
-        public static List<string> brokenHosts = new List<string>();
+        public static List<string> brokenHosts = [];
 
         internal static UdpSocketProxied workingSocks5ProxyUdp = null;
         internal static Socket workingSocks5ProxyTcp = null;
@@ -87,11 +87,11 @@ namespace Client.Network.Proxy
         /// <returns>A Socket object if a working SOCKS5 TCP proxy is found; otherwise, an exception is thrown.</returns>
         public static Socket GetSocks5ProxyTcp(ILogger logger, string destAddress)
         {
-            List<Thread> currentThreads = new List<Thread>();
+            List<Thread> currentThreads = [];
             workingSocks5ProxyTcp = null;
 
             // Download and open the proxies file to read from.
-            var proxies = DownloadProxyList(RyzomClient.GetInstance().GetLogger()).Where(proxy => (proxy.Trim().Length != 0 && !proxy.Trim().StartsWith("#") && IPAddress.TryParse(proxy.Split(':')[0], out _))).ToList();
+            var proxies = DownloadProxyList(RyzomClient.GetInstance().GetLogger()).Where(proxy => proxy.Trim().Length != 0 && !proxy.Trim().StartsWith('#') && IPAddress.TryParse(proxy.Split(':')[0], out _)).ToList();
             proxies.Shuffle();
 
             //var rnd = new Random(DateTime.Now.Millisecond);
@@ -305,10 +305,7 @@ namespace Client.Network.Proxy
         /// <summary>Timeout in milliseconds, default = 600,000 msec</summary>
         public int Timeout { get; set; }
 
-        public TimedWebClient()
-        {
-            Timeout = 600000;
-        }
+        public TimedWebClient() => Timeout = 600000;
 
         protected override WebRequest GetWebRequest(Uri address)
         {
