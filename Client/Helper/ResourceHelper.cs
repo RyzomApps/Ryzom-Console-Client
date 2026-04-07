@@ -20,17 +20,21 @@ namespace Client.Helper
             {
                 case byte[] bytes:
                     File.WriteAllBytes(fileName, bytes);
-                    File.SetCreationTimeUtc(fileName, fileInfo.LastWriteTime);
                     break;
 
                 case string text:
                     File.WriteAllText(fileName, text);
-                    File.SetCreationTimeUtc(fileName, fileInfo.LastWriteTime);
                     break;
 
                 default:
                     throw new Exception("Resource is neither of type byte[] nor type text. Cannot save it!");
             }
+
+            // Create a DateTime object for 01-01-1970
+            DateTime epochDate = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            File.SetCreationTimeUtc(fileName, epochDate);
+            File.SetLastWriteTimeUtc(fileName, epochDate);
+            File.SetLastAccessTimeUtc(fileName, epochDate);
         }
     }
 }

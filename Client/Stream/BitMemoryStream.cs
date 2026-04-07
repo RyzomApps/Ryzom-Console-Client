@@ -30,7 +30,7 @@ namespace Client.Stream
         /// </summary>
         public BitMemoryStream(byte[] input)
         {
-            _contentBits = Array.Empty<bool>();
+            _contentBits = [];
             _inputStream = true;
             MemCpy(input);
         }
@@ -42,7 +42,7 @@ namespace Client.Stream
         {
             _inputStream = inputStream;
 
-            _contentBits = new bool[/*defaultCapacity * 8*/0];
+            _contentBits = [];
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Client.Stream
             else
             {
                 byte[] bytes = { obj };
-                AddToArray(bytes);
+                SerialBuffer(bytes);
             }
         }
 
@@ -137,7 +137,7 @@ namespace Client.Stream
             else
             {
                 var bytes = BitConverter.GetBytes(obj);
-                AddToArray(bytes);
+                SerialBuffer(bytes);
             }
         }
 
@@ -157,7 +157,7 @@ namespace Client.Stream
             else
             {
                 var bytes = BitConverter.GetBytes(obj);
-                AddToArray(bytes);
+                SerialBuffer(bytes);
             }
         }
 
@@ -177,7 +177,7 @@ namespace Client.Stream
             else
             {
                 var bytes = BitConverter.GetBytes(obj);
-                AddToArray(bytes);
+                SerialBuffer(bytes);
             }
         }
 
@@ -197,7 +197,7 @@ namespace Client.Stream
             else
             {
                 var bytes = BitConverter.GetBytes(obj);
-                AddToArray(bytes);
+                SerialBuffer(bytes);
             }
         }
 
@@ -222,7 +222,7 @@ namespace Client.Stream
             else
             {
                 var bytes = BitConverter.GetBytes(obj);
-                AddToArray(bytes);
+                SerialBuffer(bytes);
             }
         }
 
@@ -263,7 +263,7 @@ namespace Client.Stream
                     if (bitArrayIndex >= nbits) break;
                 }
 
-                bitArr = bitArr.Reverse().ToArray();
+                bitArr = [.. bitArr.Reverse()];
 
                 foreach (var bit in bitArr)
                 {
@@ -299,8 +299,7 @@ namespace Client.Stream
             else
             {
                 var bytes = BitConverter.GetBytes(obj);
-                //bytes = bytes.Reverse().ToArray();
-                AddToArray(bytes);
+                SerialBuffer(bytes);
             }
         }
 
@@ -314,35 +313,31 @@ namespace Client.Stream
             if (IsReading())
             {
                 var newBits = ReadFromArray(64);
-                byte[] reversed = ConvertBoolArrayToByteArray(newBits).Reverse().ToArray();
+                byte[] reversed = [.. ConvertBoolArrayToByteArray(newBits).Reverse()];
                 obj = BitConverter.ToInt64(reversed);
             }
             else
             {
                 var bytes = BitConverter.GetBytes(obj);
-                AddToArray(bytes);
+                SerialBuffer(bytes);
             }
         }
 
         /// <summary>
         /// serializes type byte[]
         /// </summary>
-        public void Serial(ref byte[] obj)
+        public void Serial(ref byte[] bytes)
         {
-            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, obj.Length * 8, BitMemoryStreamSerialInfo.SerialType.ByteArray, new StackTrace(true)));
+            if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, bytes.Length * 8, BitMemoryStreamSerialInfo.SerialType.ByteArray, new StackTrace(true)));
 
             if (IsReading())
             {
-                var newBits = ReadFromArray(obj.Length * 8);
-
-                //obj = ConvertBoolArrayToByteArray(newBits);
-                obj = ConvertBoolArrayToByteArray(newBits); //.Reverse().ToArray();
-                //obj = BitConverter.ToInt64(reversed);
+                var newBits = ReadFromArray(bytes.Length * 8);
+                bytes = ConvertBoolArrayToByteArray(newBits);
             }
             else
             {
-                //var bytes = BitConverter.GetBytes(obj);
-                AddToArray(obj.Reverse().ToArray());
+                SerialBuffer(bytes, false);
             }
         }
 
@@ -388,34 +383,21 @@ namespace Client.Stream
                 for (uint i = 0; i != len * (isUtf16 ? 2 : 1); ++i)
                     Serial(ref b[i]);
 
+                // Match the encoding
                 obj = isUtf16 ? Encoding.BigEndianUnicode.GetString(b) : Encoding.UTF8.GetString(b);
             }
             else
             {
-                obj = new string(obj.Reverse().ToArray());
-                var str8 = new byte[obj.Length * (isUtf16 ? 2 : 1)];
-                var index2 = 0;
-
                 var len = obj.Length;
                 Serial(ref len);
 
-                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * (isUtf16 ? 2 : 1) * 8, BitMemoryStreamSerialInfo.SerialType.BoolArray, new StackTrace(true)));
+                if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * (isUtf16 ? 2 : 1) * 8, BitMemoryStreamSerialInfo.SerialType.String, new StackTrace(true)));
 
-                for (var i = 0; i < obj.ToCharArray().Length; ++i)
-                {
-                    var c = obj.ToCharArray()[i];
-                    var bytes = BitConverter.GetBytes(c); // TODO use right encoding
+                // Match the encoding
+                byte[] bytes = isUtf16 ? Encoding.BigEndianUnicode.GetBytes(obj) : Encoding.UTF8.GetBytes(obj);
 
-                    str8[index2] = bytes[0];
-                    index2++;
-
-                    if (!isUtf16) continue;
-
-                    str8[index2] = 0;
-                    index2++;
-                }
-
-                AddToArray(str8);
+                // Need to reverse the array since the function adds it backwards
+                SerialBuffer(bytes, false);
             }
         }
 
@@ -427,7 +409,7 @@ namespace Client.Stream
             if (IsReading())
             {
                 var len = obj.Length;
-                List<byte> bytefield = new List<byte>();
+                List<byte> bytefield = [];
 
                 if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len, BitMemoryStreamSerialInfo.SerialType.BoolArray, new StackTrace(true)));
 
@@ -447,7 +429,7 @@ namespace Client.Stream
                 Serial(ref v, len);
                 bytefield.AddRange(BitConverter.GetBytes(v));
 
-                bool[] converted = ConvertByteArrayToBoolArray(bytefield.ToArray()).Reverse().ToArray();
+                bool[] converted = [.. ConvertByteArrayToBoolArray([.. bytefield]).Reverse()];
 
                 Array.Copy(converted, obj, obj.Length);
             }
@@ -479,7 +461,7 @@ namespace Client.Stream
                 {
                     Serial(ref v);
 
-                    buf.AddToArray(new[] { v });
+                    buf.SerialBuffer([v]);
                 }
             }
             else
@@ -501,9 +483,6 @@ namespace Client.Stream
             uint v = 0;
             uint streamVersion;
 
-            // Open the node
-            //xmlPush("VERSION");
-
             if (IsReading())
             {
                 Serial(ref b);
@@ -513,12 +492,6 @@ namespace Client.Stream
                 else
                     v = b;
                 streamVersion = v;
-
-                // Exception test.
-                //if (_ThrowOnOlder && streamVersion < currentVersion)
-                //	throw EOlderStream(*this);
-                //if (_ThrowOnNewer && streamVersion > currentVersion)
-                //	throw ENewerStream(*this);
             }
             else
             {
@@ -536,9 +509,6 @@ namespace Client.Stream
                     Serial(ref b);
                 }
             }
-
-            // Close the node
-            //xmlPop();
 
             return streamVersion;
         }
@@ -563,32 +533,38 @@ namespace Client.Stream
         /// <summary>
         /// HELPER since this is not c++, memcopy (overwrite) byte[] data to the bit[] array of the stream
         /// </summary>
-        public void MemCpy(byte[] data)
+        public void MemCpy(byte[] bytes)
         {
-            if (data.Length * 8 > _contentBits.Length)
-                _contentBits = new bool[data.Length * 8];
+            if (bytes.Length * 8 > _contentBits.Length)
+                _contentBits = new bool[bytes.Length * 8];
 
-            AddToArray(data);
+            SerialBuffer(bytes);
 
             _bitPos = 0;
         }
 
         /// <summary>
-        /// add the bytes to the end of the stream
+        /// Add the bytes to the end of the stream
         /// </summary>
-        private void AddToArray(byte[] bytes)
+        private void SerialBuffer(byte[] bytes, bool bigEndian = true)
         {
-            var newBits = new BitArray(bytes);
-
-            for (var index = 0; index < newBits.Count; index++)
+            // Process bytes in the correct order
+            for (int byteIndex = 0; byteIndex < bytes.Length; byteIndex++)
             {
-                if (_bitPos >= _contentBits.Length)
-                {
-                    Array.Resize(ref _contentBits, _contentBits.Length + 8);
-                }
+                int actualByteIndex = bigEndian ? bytes.Length - byteIndex - 1 : byteIndex;
+                byte currentByte = bytes[actualByteIndex];
 
-                _contentBits[_bitPos] = newBits[newBits.Count - index - 1];
-                _bitPos++;
+                // Process bits within the byte (always MSB first)
+                for (int bitIndex = 7; bitIndex >= 0; bitIndex--)
+                {
+                    if (_bitPos >= _contentBits.Length)
+                    {
+                        Array.Resize(ref _contentBits, _contentBits.Length + 8);
+                    }
+
+                    _contentBits[_bitPos] = ((currentByte >> bitIndex) & 1) == 1;
+                    _bitPos++;
+                }
             }
         }
 
@@ -634,11 +610,9 @@ namespace Client.Stream
         /// <summary>
         /// Convert Byte Array To Bool Array
         /// </summary>
-        /// <param name="bytes"></param>
-        /// <returns></returns>
         public static bool[] ConvertByteArrayToBoolArray(byte[] bytes)
         {
-            BitArray b = new BitArray(bytes);
+            BitArray b = new(bytes);
             bool[] bitValues = new bool[b.Count];
             b.CopyTo(bitValues, 0);
             Array.Reverse(bitValues);
@@ -646,7 +620,7 @@ namespace Client.Stream
         }
 
         /// <summary>
-        /// read a byte at a given offset from the bit (8x) array
+        /// Read a byte at a given offset from the bit (8x) array
         /// </summary>
         private static byte ReadByte(bool[] boolArr, int offset)
         {
@@ -704,7 +678,7 @@ namespace Client.Stream
         }
 
         /// <summary>
-        /// byte or bitwise output of the stream
+        /// Byte or bitwise output of the stream
         /// </summary>
         public string ToString(bool displayBytes)
         {
@@ -775,7 +749,7 @@ namespace Client.Stream
         /// <summary>
         ///  Display the bits (with 0 and 1) composing a byte (from right to left)
         /// </summary>
-        string DisplayByteBits(byte b, int nbits, int beginpos, bool displayBegin)
+        private static string DisplayByteBits(byte b, int nbits, int beginpos, bool displayBegin)
         {
             string ret = "";
 

@@ -68,6 +68,16 @@
         public const string UserAgent = "Ryzom/Omega / v23.07.329 #b2e8a01f6-windows-x64";
 
         /// <summary>
+        /// Start of the emotes in behaviours
+        /// </summary>
+        public const byte BehaviourEmoteBegin = 46;
+
+        /// <summary>
+        /// Behaviour enum idle index
+        /// </summary>
+        public const byte BehaviourIdle = 1;
+
+        /// <summary>
         /// Debugging for the memory stream
         /// </summary>
 #if DEBUG

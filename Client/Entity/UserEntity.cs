@@ -232,7 +232,7 @@ namespace Client.Entity
 
         public void Attack()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>

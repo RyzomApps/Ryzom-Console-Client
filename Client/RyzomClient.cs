@@ -11,44 +11,45 @@ using API.Chat;
 using API.Client;
 using API.Commands;
 using API.Database;
+using API.Entity;
 using API.Helper;
 using API.Helper.Tasks;
+using API.Inventory;
 using API.Logger;
 using API.Network;
+using API.Network.Web;
 using API.Plugins;
 using API.Plugins.Interfaces;
+using API.Sheet;
 using Client.ActionHandler;
+using Client.Brick;
 using Client.Chat;
 using Client.Client;
 using Client.Config;
 using Client.Database;
 using Client.Helper;
+using Client.Interface;
+using Client.Inventory;
 using Client.Logger;
 using Client.Network;
+using Client.Network.Proxy;
+using Client.Network.Web;
+using Client.Phrase;
 using Client.Plugins;
 using Client.Property;
 using Client.Sheet;
+using Client.Skill;
+using Client.Stream;
+using Client.Strings;
+using Client.WinAPI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
-using Client.Brick;
-using Client.Phrase;
-using Client.Skill;
-using Client.Stream;
-using API.Entity;
-using API.Inventory;
-using API.Network.Web;
-using API.Sheet;
-using Client.Strings;
-using Client.Inventory;
-using Client.Interface;
-using Client.Network.Web;
-using Client.Network.Proxy;
-using Client.WinAPI;
 using static System.Threading.Thread;
 
 namespace Client
@@ -1365,6 +1366,70 @@ namespace Client
             _cmdNames.Remove(cmdName.ToLower());
             return true;
         }
+
+        /// <summary>
+        /// Returns a formatted string listing all available commands with their arguments and descriptions
+        /// </summary>
+        /// <returns>Formatted string with command information</returns>
+        public string ListAllCommands()
+        {
+            var output = new StringBuilder();
+            output.AppendLine("=== Available Commands ===");
+            output.AppendLine();
+
+            // Get unique commands (filter out aliases)
+            var uniqueCommands = new Dictionary<string, CommandBase>();
+            foreach (var cmdName in _cmdNames)
+            {
+                if (_cmds.TryGetValue(cmdName, out var cmd))
+                {
+                    // Only add if it's the primary command name (not an alias)
+                    if (cmd.CmdName.Equals(cmdName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        uniqueCommands[cmdName] = cmd;
+                    }
+                }
+            }
+
+            // Sort commands alphabetically
+            var sortedCommands = uniqueCommands.OrderBy(kvp => kvp.Key);
+
+            foreach (var (cmdName, cmd) in sortedCommands)
+            {
+                // Get command description
+                var description = cmd.GetCmdDescTranslated();
+
+                // Get command usage/arguments
+                var usage = cmd.CmdUsage;
+
+                // Get aliases if any
+                var aliases = cmd.GetCmdAliases();
+
+                output.AppendLine($"Command: {ClientConfig.InternalCmdChar}{cmdName}");
+
+                if (!string.IsNullOrEmpty(description))
+                {
+                    output.AppendLine($"  Description: {description}");
+                }
+
+                if (!string.IsNullOrEmpty(usage))
+                {
+                    output.AppendLine($"  Usage: {ClientConfig.InternalCmdChar}{cmdName} {usage}");
+                }
+
+                if (aliases != null && aliases.Any())
+                {
+                    output.AppendLine($"  Aliases: {string.Join(", ", aliases.Select(a => ClientConfig.InternalCmdChar + a))}");
+                }
+
+                output.AppendLine();
+            }
+
+            output.AppendLine($"Use '{ClientConfig.InternalCmdChar}{HelpCommand} <command>' for more details on a specific command.");
+
+            return output.ToString();
+        }
+
 
         /// <inheritdoc />
         public bool PerformInternalCommand(string command, out string responseMsg, Dictionary<string, object> localVars = null)
