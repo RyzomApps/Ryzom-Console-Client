@@ -13,7 +13,7 @@ namespace Client.Network.Proxy
 {
     public static class ProxyManager
     {
-        public static List<string> brokenHosts = new List<string>();
+        public static List<string> brokenHosts = [];
 
         internal static UdpSocketProxied workingSocks5ProxyUdp = null;
         internal static Socket workingSocks5ProxyTcp = null;
@@ -28,7 +28,7 @@ namespace Client.Network.Proxy
         /// <returns>A Socket object if a working SOCKS5 UDP proxy is found; otherwise, an exception is thrown.</returns>
         public static UdpSocketProxied GetSocks5ProxyUdp(ILogger logger, string address)
         {
-            List<Thread> currentThreads = new List<Thread>();
+            var currentThreads = new List<Thread>();
             workingSocks5ProxyUdp = null;
 
             // Download and open the proxies file to read from.
