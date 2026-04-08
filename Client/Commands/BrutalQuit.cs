@@ -18,7 +18,7 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] {"ragequit", "forcequit"};
+            return ["ragequit", "forcequit"];
         }
     }
 }

@@ -93,14 +93,14 @@ namespace Client
         /// </summary>
         private Thread _timeoutdetector;
 
-        private readonly List<string> _cmdNames = new List<string>();
-        private readonly Dictionary<string, CommandBase> _cmds = new Dictionary<string, CommandBase>();
+        private readonly List<string> _cmdNames = [];
+        private readonly Dictionary<string, CommandBase> _cmds = [];
         private bool _commandsLoaded;
 
         private readonly Queue<KeyValuePair<ChatGroupType, string>> _chatQueue = new Queue<KeyValuePair<ChatGroupType, string>>();
 
-        private readonly Queue<Action> _threadTasks = new Queue<Action>();
-        private readonly object _threadTasksLocks = new object();
+        private readonly Queue<Action> _threadTasks = new();
+        private readonly object _threadTasksLocks = new();
 
         /// <summary>
         /// when was the last Update call of the RyzomClient
@@ -1430,6 +1430,22 @@ namespace Client
             return output.ToString();
         }
 
+        /// <inheritdoc>
+        public bool IsValidCommand(string command)
+        {
+            if (string.IsNullOrWhiteSpace(command))
+                return false;
+
+            // // Extract the command name (first word before space)
+            var parts = command.Split([' '], 2, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+                return false;
+
+            var commandName = parts[0].ToLower();
+
+            // Check if it's the help command or exists in the command dictionary
+            return commandName == HelpCommand || _cmds.ContainsKey(commandName);
+        }
 
         /// <inheritdoc />
         public bool PerformInternalCommand(string command, out string responseMsg, Dictionary<string, object> localVars = null)

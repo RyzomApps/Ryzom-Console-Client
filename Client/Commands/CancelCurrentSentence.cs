@@ -20,7 +20,7 @@ namespace Client.Commands
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {
             // no parameter needed
-            if (!(handler is RyzomClient ryzomClient))
+            if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             // Create the message for the server to cancel the phrase being executed
@@ -38,7 +38,7 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new string[] { };
+            return [];
         }
     }
 }

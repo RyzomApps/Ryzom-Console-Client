@@ -47,7 +47,7 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new string[] { };
+            return [];
         }
     }
 }

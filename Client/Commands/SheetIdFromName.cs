@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using API;
 using API.Commands;
-using API.Sheet;
 
 namespace Client.Commands
 {
@@ -33,7 +32,7 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "" };
+            return [""];
         }
     }
 }
