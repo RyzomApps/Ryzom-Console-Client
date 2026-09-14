@@ -600,7 +600,7 @@ namespace Client.Plugins
         }
 
         /// <summary>
-        /// Called from the main instance to update all the listener every some ticks
+        /// Called from the client to update all the listener every some ticks
         /// </summary>
         public void OnUpdate()
         {
@@ -610,7 +610,7 @@ namespace Client.Plugins
             }
             catch (Exception e)
             {
-                if (!(e is ThreadAbortException))
+                if (e is not ThreadAbortException)
                 {
                     _client.GetLogger().Warn($"OnUpdate: Got error: {e}");
                 }
@@ -625,7 +625,7 @@ namespace Client.Plugins
                 }
                 catch (Exception e)
                 {
-                    if (!(e is ThreadAbortException))
+                    if (e is not ThreadAbortException)
                     {
                         _client.GetLogger().Warn($"OnUpdate: Got error from {plugin}: {e}");
                     }
@@ -964,6 +964,30 @@ namespace Client.Plugins
         internal void OnCombatFlyingText(uint entityId, int color, byte type)
         {
             DispatchListenerEvent(listener => listener.OnCombatFlyingText(entityId, color, type));
+        }
+
+        /// <summary>
+        /// Called when a the server corrects the user position
+        /// </summary>
+        internal void OnCorrectPos(Vector3 from, Vector3 dest, Vector3 noisyDest)
+        {
+            DispatchListenerEvent(listener => listener.OnCorrectPos(from, dest, noisyDest));
+        }
+
+        /// <summary>
+        /// Called when the server increments the tick value
+        /// </summary>
+        internal void OnTick(uint tick)
+        {
+            DispatchListenerEvent(listener => listener.OnTick(tick));
+        }
+
+        /// <summary>
+        /// Called when position was queued for sending to the server. Only triggert if position sending is enabled.
+        /// </summary>
+        internal void OnPositionSent(Vector3 position)
+        {
+            DispatchListenerEvent(listener => listener.OnPositionSent(position));
         }
 
         #endregion

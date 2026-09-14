@@ -48,6 +48,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using static System.Threading.Thread;
@@ -97,7 +98,7 @@ namespace Client
         private readonly Dictionary<string, CommandBase> _cmds = [];
         private bool _commandsLoaded;
 
-        private readonly Queue<KeyValuePair<ChatGroupType, string>> _chatQueue = new Queue<KeyValuePair<ChatGroupType, string>>();
+        private readonly Queue<KeyValuePair<ChatGroupType, string>> _chatQueue = new();
 
         private readonly Queue<Action> _threadTasks = new();
         private readonly object _threadTasksLocks = new();
@@ -527,10 +528,8 @@ namespace Client
                     interfaceState = interfaceState switch
                     {
                         InterfaceState.AutoLogin => AutoLogin(cookie, fsaddr, _firstConnection),
-                        InterfaceState.GlobalMenu =>
-                            // Interface to choose a char
-                            GlobalMenu(),
-                        _ => throw new ArgumentOutOfRangeException()
+                        InterfaceState.GlobalMenu => GlobalMenu(), // Interface to choose a char
+                        _ => throw new NotSupportedException(interfaceState.ToString() + " is not supported here.")
                     };
                 }
                 catch (NetworkLoginException e)
@@ -1010,6 +1009,8 @@ namespace Client
 
                         if (_networkManager.GetEntityManager().UserEntity.SendToServer(out2, _networkManager.GetMessageHeaderManager(), this))
                         {
+                            // Notify on tick change
+                            Plugins.OnPositionSent(_networkManager.GetEntityManager().UserEntity.Pos.Clone());
                             _networkManager.Push(out2);
                         }
 
@@ -1046,6 +1047,9 @@ namespace Client
 
                     // Update the Last tick received from the server.
                     _lastGameCycle = _networkConnection.GetCurrentServerTick();
+
+                    // Notify on tick change
+                    Plugins.OnTick(_networkConnection.GetCurrentServerTick());
                 }
 
                 // Stats2Title
@@ -1471,7 +1475,7 @@ namespace Client
                 }
                 else
                 {
-                    responseMsg = $"§e--- §fCommands §e---§r\r\n{string.Join(", ", _cmdNames.ToArray())}.";
+                    responseMsg = $"§e--- §fCommands §e---§r\r\n{string.Join(", ", [.. _cmdNames])}.";
                 }
             }
             else if (_cmds.TryGetValue(commandName, out var cmd))
@@ -1644,7 +1648,7 @@ namespace Client
         /// Check if running on a different thread and InvokeOnMainThread is required
         /// </summary>
         /// <returns>True if calling thread is not the main thread</returns>
-        private static bool InvokeRequired => GetNetReadThreadId() != CurrentThread.ManagedThreadId;
+        private static bool InvokeRequired => GetNetReadThreadId() != Environment.CurrentManagedThreadId;
 
         /// <summary>
         /// Get net read thread (main thread) ID

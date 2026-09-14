@@ -252,9 +252,7 @@ namespace Client.Entity
             //if (_Primitive) _Primitive->getGlobalPosition(_LastGPosSent, dynamicWI);
 
             // Send Position & Orientation
-            //CPositionMsg positionMsg;
-
-            // hack for CPositionMsg
+            // Hack for CPositionMsg
             var x = (int)(Pos.X * 1000);
             var y = (int)(Pos.Y * 1000);
             var z = (int)(Pos.Z * 1000);
@@ -378,7 +376,6 @@ namespace Client.Entity
             //        }
             //    }
             //}
-
         }
     }
 }

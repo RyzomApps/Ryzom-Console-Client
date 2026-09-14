@@ -264,11 +264,11 @@ namespace Client.Network
         /// </summary>
         public double[] GetTps()
         {
-            return new[] {
+            return [
                 Tps1.GetAverage(),
                 Tps5.GetAverage(),
                 Tps15.GetAverage()
-            };
+            ];
         }
 
         /// <summary>

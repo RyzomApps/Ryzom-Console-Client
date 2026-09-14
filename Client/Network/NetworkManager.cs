@@ -11,23 +11,24 @@ using API.Entity;
 using API.Network;
 using Client.Chat;
 using Client.Client;
+using Client.Commands;
+using Client.Config;
 using Client.Database;
 using Client.Entity;
+using Client.Inventory;
 using Client.Messages;
 using Client.Network.Action;
 using Client.Phrase;
 using Client.Property;
-using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Reflection;
-using System.Threading;
-using Client.Config;
 using Client.Sheet;
 using Client.Stream;
 using Client.Strings;
-using Client.Inventory;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Numerics;
+using System.Reflection;
+using System.Threading;
 
 namespace Client.Network
 {
@@ -117,7 +118,7 @@ namespace Client.Network
         /// <inheritdoc />
         public double[] GetTps() => _networkConnection.GetTps();
 
-        private readonly Random _random = new Random();
+        private readonly System.Random _random = new System.Random();
 
         /// <summary>
         /// Constructor
@@ -495,7 +496,7 @@ namespace Client.Network
             var type = (TCombatFlyingText)tmp;
 
             var color =  Color.FromArgb(255, 255, 255);
-            string text = "";
+            //string text = "";
             //float dt = 0.0f;
 
             switch (type)
@@ -698,7 +699,6 @@ namespace Client.Network
         {
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
-
 
         private void ImpulseItemInfoSet(BitMemoryStream impulse)
         {
@@ -1183,14 +1183,17 @@ namespace Client.Network
             {
                 // Compute the destination.
                 var dest = new Vector3(x / 1000.0f, y / 1000.0f, z / 1000.0f);
+                var from = _entitiesManager.UserEntity.Pos;
 
                 _client.GetLogger().Warn($"Position error: Server relocated the user entity to {dest}.");
+
+                var noisyDest = dest;
 
                 if (!GetEntityManager().GetApiUserEntity().IsDead())
                 {
                     // Add some Noise to get unstuck ;)
                     var noise = Vector3.Normalize(new Vector3((float)_random.NextDouble() - 0.5f, (float)_random.NextDouble() - 0.5f, 0));
-                    dest += noise * 1;
+                    noisyDest += noise * 1;
                 }
 
                 // Update the position for the vision.
@@ -1198,6 +1201,9 @@ namespace Client.Network
 
                 // Change the user poisition.
                 _entitiesManager.UserEntity.CorrectPos(dest);
+
+                // Inform plugins
+                _client.Plugins.OnCorrectPos(from, dest, noisyDest);
             }
             //}
         }
