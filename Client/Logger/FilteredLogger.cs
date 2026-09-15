@@ -20,25 +20,29 @@ namespace Client.Logger
 
         protected bool ShouldDisplay(FilterChannel channel, string msg)
         {
-            // Determine the current filter mode (positivelist = 0, negativelist = 1)
-            bool isNegativelistMode = FilterMode == FilterModeEnum.NegativeList;
-
-            // Select the appropriate regex list based on the channel
-            List<Regex> regexesToUse = channel switch
+            try
             {
-                FilterChannel.Chat => ChatFilters,
-                FilterChannel.Debug => [DebugFilter],
-                _ => null
-            };
+                // Determine the current filter mode (positivelist = 0, negativelist = 1)
+                bool isNegativelistMode = FilterMode == FilterModeEnum.NegativeList;
 
-            // If there are no regex patterns, return the opposite of the filter mode
-            if (regexesToUse == null) return !isNegativelistMode;
+                // Select the appropriate regex list based on the channel
+                List<Regex> regexesToUse = channel switch
+                {
+                    FilterChannel.Chat => ChatFilters,
+                    FilterChannel.Debug => [DebugFilter],
+                    _ => null
+                };
 
-            // Check if any regex matches the message
-            bool isMatch = regexesToUse.Any(regex => regex.IsMatch(msg));
+                // If there are no regex patterns, return the opposite of the filter mode
+                if (regexesToUse == null) return !isNegativelistMode;
 
-            // Return the XOR of isMatch and the filter mode
-            return isMatch ^ isNegativelistMode;
+                // Check if any regex matches the message
+                bool isMatch = regexesToUse.Any(regex => regex.IsMatch(msg));
+
+                // Return the XOR of isMatch and the filter mode
+                return isMatch ^ isNegativelistMode;
+            }
+            catch { return false; }
         }
 
         public override void Debug(string msg)

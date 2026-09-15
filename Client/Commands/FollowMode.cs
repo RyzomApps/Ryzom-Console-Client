@@ -6,13 +6,13 @@ using Client.Stream;
 
 namespace Client.Commands
 {
-    public class Follow : CommandBase
+    public class FollowMode : CommandBase
     {
-        public override string CmdName => "follow";
+        public override string CmdName => "followMode";
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Follow the target";
+        public override string CmdDesc => "Start the mode for following the target (only for server events)";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

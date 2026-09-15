@@ -6,11 +6,11 @@ using Client.Stream;
 
 namespace Client.Commands
 {
-    public class NoFollow : CommandBase
+    public class NoFollowMode : CommandBase
     {
-        public override string CmdName => "noFollow";
+        public override string CmdName => "noFollowMode";
         public override string CmdUsage => "";
-        public override string CmdDesc => "Stop following the target";
+        public override string CmdDesc => "Stop the mode for following the target (only for server events)";
 
         public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
         {

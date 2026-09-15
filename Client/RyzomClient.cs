@@ -1471,7 +1471,11 @@ namespace Client
                     {
                         responseMsg = $"\u00a7e{ClientConfig.InternalCmdChar}{cmd.GetCmdDescTranslated()}";
                     }
-                    else responseMsg = $"Unknown command '{arguments}'. Use '{HelpCommand}' for command list.";
+                    else
+                    {
+                        responseMsg = $"Unknown command '{arguments}'. Use '{HelpCommand}' for command list.";
+                        return false;
+                    }
                 }
                 else
                 {
@@ -1482,13 +1486,15 @@ namespace Client
             {
                 try
                 {
-                    responseMsg = cmd.Run(this, command, localVars);
+                    if (!cmd.Run(this, command, out responseMsg, localVars))
+                        return false;
 
                     Plugins.OnInternalCommand(commandName, command, responseMsg);
                 }
                 catch (Exception e)
                 {
                     responseMsg = $"Command '{commandName}' caused {e}: {e.Message}\r\n{e.StackTrace}";
+                    return false;
                 }
             }
             else
