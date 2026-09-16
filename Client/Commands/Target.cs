@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using API;
 using API.Commands;
-using API.Entity;
 
 namespace Client.Commands
 {

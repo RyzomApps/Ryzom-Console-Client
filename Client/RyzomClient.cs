@@ -48,7 +48,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Numerics;
 using System.Text;
 using System.Threading;
 using static System.Threading.Thread;
@@ -957,7 +956,9 @@ namespace Client
             {
                 out2.Serial(ref ClientConfig.LanguageCode);
                 _networkManager.Push(out2);
-                _networkManager.Send(_networkConnection.GetCurrentServerTick());
+                var gameTick = _networkConnection.GetCurrentServerTick();
+                _networkManager.Send(gameTick);
+                Plugins.OnConnectionReadySent(gameTick, userSheet, ClientConfig.LanguageCode);
             }
             else
             {

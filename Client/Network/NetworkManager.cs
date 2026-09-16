@@ -11,7 +11,6 @@ using API.Entity;
 using API.Network;
 using Client.Chat;
 using Client.Client;
-using Client.Commands;
 using Client.Config;
 using Client.Database;
 using Client.Entity;

@@ -6,7 +6,6 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Phrase

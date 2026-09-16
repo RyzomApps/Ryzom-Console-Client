@@ -6,7 +6,6 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using Client.Network;
 using Client.Sheet;
 using Client.Stream;
 using SheetType = API.Sheet.SheetType;

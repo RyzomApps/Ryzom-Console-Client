@@ -10,7 +10,6 @@
 
 using Client.Network.Proxy;
 using System;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 

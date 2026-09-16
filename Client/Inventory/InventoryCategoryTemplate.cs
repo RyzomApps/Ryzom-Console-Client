@@ -6,8 +6,6 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-
 namespace Client.Inventory
 {
     public interface InventoryCategoryTemplate

@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 using API.Helper;
-using Client.Network;
 using Client.Stream;
 
 namespace Client.Messages

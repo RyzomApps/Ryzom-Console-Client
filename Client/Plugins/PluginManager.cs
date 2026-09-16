@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -17,6 +16,7 @@ using API.Helper;
 using API.Network;
 using API.Plugins;
 using API.Plugins.Interfaces;
+using API.Sheet;
 using Client.Client;
 using Client.Database;
 using Client.Phrase;
@@ -988,6 +988,14 @@ namespace Client.Plugins
         internal void OnPositionSent(Vector3 position)
         {
             DispatchListenerEvent(listener => listener.OnPositionSent(position));
+        }
+
+        /// <summary>
+        /// Called when the message for the server that the client is ready was pushed to the stream
+        /// </summary>
+        internal void OnConnectionReadySent(uint gameTick, ISheetId userSheet, string languageCode)
+        {
+            DispatchListenerEvent(listener => listener.OnConnectionReadySent(gameTick, userSheet, languageCode));
         }
 
         #endregion
