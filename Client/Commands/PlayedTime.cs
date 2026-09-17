@@ -17,24 +17,18 @@ namespace Client.Commands
 
         public override string CmdDesc => "Display the characters overall time played";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
-            var msg = "You played with this character for %time.";
+            responseMsg = "You played with this character for %time.";
 
-            var secondsHumanReadable = TimeSpan.FromSeconds(ryzomClient.GetNetworkManager().CharPlayedTime)
-                .ToHumanReadableString();
+            var secondsHumanReadable = TimeSpan.FromSeconds(ryzomClient.GetNetworkManager().CharPlayedTime).ToHumanReadableString();
 
-            msg = msg.Replace("%time", secondsHumanReadable);
+            responseMsg = responseMsg.Replace("%time", secondsHumanReadable);
 
-            return msg;
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

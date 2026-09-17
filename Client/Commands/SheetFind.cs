@@ -11,8 +11,9 @@ namespace Client.Commands
         public override string CmdUsage => "<search pattern>";
         public override string CmdDesc => "Display all sheets matching the search pattern.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -20,17 +21,21 @@ namespace Client.Commands
 
             // Check parameters
             if (args.Length == 0)
-                return $"Usage: {CmdUsage}";
+            {
+                responseMsg = $"Usage: {CmdUsage}";
+                return false;
+            }
 
             var pattern = args[0];
 
             // Log entities
-            return ryzomClient.GetSheetIdFactory().FindSheet(pattern);
+            responseMsg = ryzomClient.GetSheetIdFactory().FindSheet(pattern);
+            return true;
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] {"SheetFind"};
+            return ["SheetFind"];
         }
     }
 }

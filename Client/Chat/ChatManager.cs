@@ -6,14 +6,14 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
-using System.Diagnostics;
 using API.Chat;
 using Client.Database;
 using Client.Messages;
 using Client.Network;
 using Client.Stream;
 using Client.Strings;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Client.Chat
 {

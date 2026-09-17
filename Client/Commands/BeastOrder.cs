@@ -36,56 +36,60 @@ namespace Client.Commands
 
         public override string CmdDesc => "Give an order to the beast";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length != 2)
-                return "Please specify two arguments.";
+            {
+                responseMsg = "Please specify two arguments.";
+                return false;
+            }
 
             if (!Enum.TryParse(args[0], out AnimalsOrders order))
             {
-                return $"invalid beast order: {args[0]}.";
+                responseMsg = $"invalid beast order: {args[0]}.";
+                return false;
             }
+
 
             if (!long.TryParse(args[1], out var beastIndex))
             {
-                return $"Can't read beast index: {args[1]}.";
+                responseMsg = $"Can't read beast index: {args[1]}.";
+                return false;
             }
 
             if (order == AnimalsOrders.FREE)
             {
-                return "Can't free a beast with the console client.";
+                responseMsg = "Can't free a beast with the console client.";
+                return false;
             }
 
             // launch the command
             var @out = new BitMemoryStream();
-            var msgName = "ANIMALS:BEAST";
+            const string msgName = "ANIMALS:BEAST";
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, @out))
             {
-                byte u8BeastIndex = (byte)beastIndex;
+                var u8BeastIndex = (byte)beastIndex;
                 @out.Serial(ref u8BeastIndex); // to activate on server side
-                                               // 0 -> all beasts, otherwise, the index of the beast
+                // 0 -> all beasts, otherwise, the index of the beast
 
-                byte u8Order = (byte)order;
+                var u8Order = (byte)order;
                 @out.Serial(ref u8Order);
                 ryzomClient.GetNetworkManager().Push(@out);
             }
             else
             {
-                return $"Unknown message named '{msgName}'.";
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] { "" };
+            return true;
         }
     }
 }

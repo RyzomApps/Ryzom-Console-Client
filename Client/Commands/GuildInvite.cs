@@ -13,8 +13,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Invites a player to your guild. Can only be used by officers, high officers and the guild leader.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -22,16 +23,17 @@ namespace Client.Commands
 
             // Check parameters
             if (args.Length != 1)
-                return "Wrong argument count in the command.";
+            {
+                responseMsg = "Wrong argument count in the command.";
+                return false;
+            }
 
             // Perform admin command
             ryzomClient.PerformInternalCommand($"a guildInvite {args[0]}", out var response);
-            return response;
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] { "" };
+            {
+                responseMsg = response;
+                return false;
+            }
         }
     }
 }

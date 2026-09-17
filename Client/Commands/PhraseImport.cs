@@ -16,23 +16,33 @@ namespace Client.Commands
 
         public override string CmdDesc => "Import a phrase from a file. Optionally specify an action bar page.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
             if (args.Length is < 1 or > 2)
-                return "Please specify a file name and optionally an ActionBarPage.";
+            {
+                responseMsg = "Please specify a file name and optionally an ActionBarPage.";
+                return false;
+            }
 
             if (!File.Exists(args[0]))
-                return "File does not exist.";
+            {
+                responseMsg = "File does not exist.";
+                return false;
+            }
 
             uint? actionBarPage = null;
             if (args.Length == 2)
             {
                 if (!uint.TryParse(args[1], out var page))
-                    return "Invalid ActionBarPage specified. It must be a number.";
+                {
+                    responseMsg = "Invalid ActionBarPage specified. It must be a number.";
+                    return true;
+                }
 
                 actionBarPage = page;
             }
@@ -68,7 +78,7 @@ namespace Client.Commands
                 {
                     // First, send the previous phrase to the server if it exists
                     if (!actionBarPage.HasValue || memoryLine == actionBarPage.Value)
-                        SendPhraseToServer(ryzomClient, phrase, memoryLine, memoryIndex, phraseId);
+                        SendPhraseToServer(ryzomClient, phrase, memoryLine, memoryIndex, phraseId, out responseMsg);
 
                     phraseId = 0;
                     memoryLine = 0;
@@ -93,19 +103,22 @@ namespace Client.Commands
 
             // Send the last phrase to the server after EOF
             if (!actionBarPage.HasValue || memoryLine == actionBarPage.Value)
-                SendPhraseToServer(ryzomClient, phrase, memoryLine, memoryIndex, phraseId);
+                SendPhraseToServer(ryzomClient, phrase, memoryLine, memoryIndex, phraseId, out responseMsg);
 
-            return "";
+            return true;
         }
 
         /// <summary>
         /// Updates the server with a new phrase by first removing an existing phrase from memory,
         /// then adding the new phrase to the specified memory line and index.
         /// </summary>
-        private static void SendPhraseToServer(RyzomClient ryzomClient, PhraseCom phrase, uint memoryLine, uint memoryIndex, uint phraseId)
+        private static void SendPhraseToServer(RyzomClient ryzomClient, PhraseCom phrase, uint memoryLine, uint memoryIndex, uint phraseId, out string responseMsg)
         {
             if (phrase == null || phrase.Bricks.Count <= 0)
+            {
+                responseMsg = "Empty phrase or bricks count.";
                 return;
+            }
 
             // Check for existing phrase ID in the specified memory line and index
             var existingPhraseId = ryzomClient.GetPhraseManager().GetPhraseIdFromMemory(memoryLine, memoryIndex);
@@ -113,7 +126,8 @@ namespace Client.Commands
             if (existingPhraseId == 0)
             {
                 // learn and add to action bar
-                ryzomClient.GetLogger().Info($"§aImporting phrase {(phrase.Name.Length > 0 ? $"'{phrase.Name}'" : $"{phraseId}")} to memory line {memoryLine} slot {memoryIndex}.");
+                responseMsg = $"§aImporting phrase {(phrase.Name.Length > 0 ? $"'{phrase.Name}'" : $"{phraseId}")} to memory line {memoryLine} slot {memoryIndex}.";
+
                 ryzomClient.GetPhraseManager().SendLearnToServer(phraseId);
                 ryzomClient.GetPhraseManager().SetPhraseInternal(phraseId, ryzomClient.GetPhraseManager().GetPhrase(phraseId), false, false);
                 ryzomClient.GetNetworkManager().Update();
@@ -122,7 +136,7 @@ namespace Client.Commands
             }
             else
             {
-                ryzomClient.GetLogger().Error($"Importing phrase {(phrase.Name.Length > 0 ? $"'{phrase.Name}'" : $"{phraseId}")} to memory line {memoryLine} slot {memoryIndex} failed. Already a phrase at this slot.");
+                responseMsg = $"Importing phrase {(phrase.Name.Length > 0 ? $"'{phrase.Name}'" : $"{phraseId}")} to memory line {memoryLine} slot {memoryIndex} failed. Already a phrase at this slot.";
             }
         }
 

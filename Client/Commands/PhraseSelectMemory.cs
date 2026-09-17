@@ -13,8 +13,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Only one memory line is displayed in the Memory DB. if -1, erased.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -22,29 +23,23 @@ namespace Client.Commands
 
             if (args.Length != 1)
             {
-                handler.GetLogger().Warn("Please specify an outpost sheet ID.");
-                return "";
+                responseMsg = "Please specify an outpost sheet ID.";
+                return false;
             }
 
             if (!int.TryParse(args[0], out var val))
             {
-                handler.GetLogger().Warn("Expression doesn't evaluate to a numerical value.");
-            }
-            else
-            {
-                var pPm = ryzomClient.GetPhraseManager();
-
-                // first half of memorized stanza sets - MEM_SET_TYPES::NumMemories / 2 - 1
-                val = Math.Max(0, Math.Min(val, 10));
-                pPm.SelectMemoryLineDb(val);
+                responseMsg = "Expression doesn't evaluate to a numerical value.";
+				return false;
             }
 
-            return "";
-        }
+			var pPm = ryzomClient.GetPhraseManager();
 
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+			// first half of memorized stanza sets - MEM_SET_TYPES::NumMemories / 2 - 1
+			val = Math.Max(0, Math.Min(val, 10));
+			pPm.SelectMemoryLineDb(val);
+
+            return true;
         }
     }
 }

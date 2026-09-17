@@ -14,8 +14,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Set the PVP tag of the player.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -23,14 +24,15 @@ namespace Client.Commands
 
             if (args.Length != 1)
             {
-                handler.GetLogger().Warn("Please specify a tag.");
-                return "";
+                responseMsg = "Please specify a tag.";
+                return false;
             }
 
             if (!byte.TryParse(args[0], out var tag))
             {
-                handler.GetLogger().Warn("Could not parse the tag.");
-                return "";
+                responseMsg = "Could not parse the tag.";
+                responseMsg = "";
+                return false;
             }
 
             // send tag
@@ -44,15 +46,11 @@ namespace Client.Commands
             }
             else
             {
-                return $"Unknown message named '{msgName}'.";
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

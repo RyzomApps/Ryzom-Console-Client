@@ -15,15 +15,19 @@ namespace Client.Commands
         public override string CmdUsage => "[name]";
         public override string CmdDesc => "Command to create a file with the current state of the client";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length > 1)
-                return "Please specify less parameters.";
+            {
+                responseMsg = "Please specify less parameters.";
+                return false;
+            }
 
             var dumpName = args.Length == 1 ? args[0] : "default";
 
@@ -42,12 +46,7 @@ namespace Client.Commands
             if (ClientConfig.UseInventory)
                 ryzomClient.GetInventoryManager().Write($"{dumpName}_inventory.rec");
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

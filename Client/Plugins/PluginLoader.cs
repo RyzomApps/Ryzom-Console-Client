@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using API;
+﻿using API;
 using API.Exceptions;
 using API.Helper;
 using API.Plugins;
 using API.Plugins.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 namespace Client.Plugins
 {
@@ -155,7 +155,7 @@ namespace Client.Plugins
 
             try
             {
-              csPlugin.SetEnabled(true);
+                csPlugin.SetEnabled(true);
             }
             catch (Exception e)
             {

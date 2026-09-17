@@ -31,10 +31,10 @@ namespace Client.Helper.Crypter.Internal
 
         public static byte[] GenerateRandomBytes(int count)
         {
-			Check.Range("count", count, 0, int.MaxValue);
+            Check.Range("count", count, 0, int.MaxValue);
 
             RandomNumberGenerator rng = RandomNumberGenerator.Create();
-			byte[] bytes = new byte[count]; rng.GetBytes(bytes); return bytes;
+            byte[] bytes = new byte[count]; rng.GetBytes(bytes); return bytes;
         }
     }
 }

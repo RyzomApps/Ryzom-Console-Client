@@ -14,37 +14,36 @@ namespace Client.Commands
 
         public override string CmdDesc => "Browse a npc web page";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             // set the new page to explore
-            var UrlTextId = ryzomClient.GetDatabaseManager().GetProp("SERVER:TARGET:CONTEXT_MENU:WEB_PAGE_URL");
+            var urlTextId = ryzomClient.GetDatabaseManager().GetProp("SERVER:TARGET:CONTEXT_MENU:WEB_PAGE_URL");
 
-            if (UrlTextId == 0)
-                return "Target has no web page attached.";
-
-            ryzomClient.GetStringManager().GetDynString((uint)UrlTextId, out var url, ryzomClient.GetNetworkManager());
-
-            if (url.Trim() == "")
-                return "Attached web page is empty.";
-
-            if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+            if (urlTextId == 0)
             {
-                url = $"{ClientConfig.WebIgMainDomain}/{url.Replace(" ", "/index.php?")}";
+                responseMsg = "Target has no web page attached.";
+                return false;
             }
 
+            ryzomClient.GetStringManager().GetDynString((uint)urlTextId, out var url, ryzomClient.GetNetworkManager());
+
+            if (url.Trim() == "")
+            {
+                responseMsg = "Attached web page is empty.";
+                return false;
+            }
+
+            if (!url.StartsWith("http://") && !url.StartsWith("https://")) url = $"{ClientConfig.WebIgMainDomain}/{url.Replace(" ", "/index.php?")}";
+
             //ryzomClient.GetActionHandlerManager().GetActionHandler("browse").Execute(this, url);
-            ryzomClient.GetLogger().Info($"Browsing {url}");
+            responseMsg = $"Browsing {url}...";
             ryzomClient.GetWebTransfer().Get(url);
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] { "" };
+            return true;
         }
     }
 }

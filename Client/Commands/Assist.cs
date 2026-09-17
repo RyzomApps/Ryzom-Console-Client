@@ -13,8 +13,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Targets the target of the targeted entity.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -29,24 +30,29 @@ namespace Client.Commands
             var user = entityManager.UserEntity;
 
             if (user == null)
-                return "";
+            {
+                responseMsg = "User not found.";
+                return false;
+            }
 
             var entity = entityName != string.Empty
                 ? entityManager.GetEntityByName(entityName, false, false)
                 : entityManager.GetEntity(user.TargetSlot());
 
-            if (entity != null)
-                // Select the entity
-                user.Assist(entity.Slot());
-            else
-                handler.GetLogger().Warn("Entity not found.");
+            if (entity == null)
+            {
+                responseMsg = "Entity not found.";
+                return false;
+            }
 
-            return "";
+            // Select the entity
+            user.Assist(entity.Slot());
+            return true;
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "as" };
+            return ["as"];
         }
     }
 }

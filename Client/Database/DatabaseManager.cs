@@ -6,11 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using API.Database;
+using Client.Stream;
 using System;
 using System.IO;
 using System.Xml;
-using API.Database;
-using Client.Stream;
 
 namespace Client.Database
 {
@@ -242,7 +242,7 @@ namespace Client.Database
             var leaf = _rootDatabase.GetNode(new TextId(name), create) as DatabaseNodeLeaf;
             return leaf;
         }
-        
+
         /// <summary>
         /// Retrieves a leaf node from the server database.
         /// </summary>

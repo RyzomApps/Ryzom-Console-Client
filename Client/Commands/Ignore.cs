@@ -14,8 +14,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Add or remove a player from the ignore list";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -23,7 +24,10 @@ namespace Client.Commands
 
             // Check parameters.
             if (args.Length != 1)
-                return "Please specify a name.";
+            {
+                responseMsg = "Please specify a name.";
+                return false;
+            }
 
             // NB: player names cannot have special characters
             var playerName = new string(args[0]);
@@ -44,15 +48,11 @@ namespace Client.Commands
             }
             else
             {
-                return $"Unknown message named '{msgName}'.";
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

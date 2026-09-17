@@ -6,13 +6,6 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Numerics;
-using System.Threading;
 using API.Helper;
 using Client.Config;
 using Client.Database;
@@ -21,6 +14,13 @@ using Client.Network.Action;
 using Client.Network.Proxy;
 using Client.Property;
 using Client.Stream;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Numerics;
+using System.Threading;
 
 namespace Client.Network
 {
@@ -1929,7 +1929,7 @@ namespace Client.Network
                 {
                     var values = new byte[listSize];
                     msgin.Serial(ref values);
-                    _targetSlotsList = [..values];
+                    _targetSlotsList = [.. values];
                 }
 
                 // Set target list value in database

@@ -15,33 +15,36 @@ namespace Client.Commands
         public override string CmdDesc =>
             "Client (lead, ho, of) wants to kick member specifying its index. Last parameter is the counter.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "Please specify a parameter.";
+            {
+                responseMsg = "Please specify a parameter.";
+                return false;
+            }
 
             const string msgName = "GUILD:KICK_MEMBER";
+
             // TODO GUKick right arguments
             var out2 = new BitMemoryStream();
 
             if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
-                return $"Unknown message named '{msgName}'.";
+            {
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
+            }
 
             var buf = args[0];
             out2.Serial(ref buf);
             ryzomClient.GetNetworkManager().Push(out2);
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

@@ -6,12 +6,6 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Timers;
 using API.Client;
 using API.Entity;
 using API.Network;
@@ -19,6 +13,12 @@ using Client.Client;
 using Client.Network;
 using Client.Sheet;
 using Client.Stream;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using System.Timers;
 using static Client.Client.DynamicStringInfo;
 
 namespace Client.Strings
@@ -643,7 +643,7 @@ namespace Client.Strings
 
             result = _receivedStrings[stringId];
 
-            if (result.Length <= 9 || result.Substring(0, 9) != "<missing:") return true;
+            if (result.Length <= 9 || result[..9] != "<missing:") return true;
 
             if (_dynStrings.ContainsKey(result[9..^1]))
             {

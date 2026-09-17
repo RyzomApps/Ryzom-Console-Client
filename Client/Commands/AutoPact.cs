@@ -14,15 +14,19 @@ namespace Client.Commands
 
         public override string CmdDesc => "Client want to set AUTOPACT to TRUE or FALSE";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "Please specify a parameter.";
+            {
+                responseMsg = "Please specify a parameter.";
+                return false;
+            }
 
             // send command
             const string msgName = "COMMAND:AUTOPACT";
@@ -37,15 +41,11 @@ namespace Client.Commands
             }
             else
             {
-                return $"Unknown message named '{msgName}'.";
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

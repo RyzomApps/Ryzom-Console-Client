@@ -14,8 +14,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Lets the client chose a side in an outpost war";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -24,11 +25,14 @@ namespace Client.Commands
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return GetCmdDescTranslated();
+            {
+                responseMsg = GetCmdDescTranslated();
+                return false;
+            }
 
             var pvpSide = int.Parse(args[0]);
 
-            if (pvpSide < 0 || pvpSide > 1)
+            if (pvpSide is < 0 or > 1)
             {
                 pvpSide = 0;
                 bNeutral = true;
@@ -40,21 +44,17 @@ namespace Client.Commands
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 out2.Serial(ref bNeutral);
-                var sideAsInt = (byte) pvpSide;
+                var sideAsInt = (byte)pvpSide;
                 out2.Serial(ref sideAsInt);
                 ryzomClient.GetNetworkManager().Push(out2);
             }
             else
             {
-                return $"Unknown message named '{msgName}'.";
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

@@ -17,8 +17,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 #endregion
 
-using System.Text;
 using Client.Helper.Crypter.Internal;
+using System.Text;
 
 namespace Client.Helper.Crypter
 {
@@ -51,7 +51,7 @@ namespace Client.Helper.Crypter
     /// </code>
     /// </example>
 	public abstract class CrypterBase
-	{
+    {
         /// <summary>
         /// Checks if the particular crypt algorithm is compatible with the salt string or crypted password.
         /// </summary>
@@ -80,7 +80,7 @@ namespace Client.Helper.Crypter
             try
             {
                 keyBytes = Encoding.UTF8.GetBytes(password);
-            
+
                 return Crypt(keyBytes, salt);
             }
             finally
@@ -126,5 +126,5 @@ namespace Client.Helper.Crypter
         {
             get { return CrypterOptions.None; }
         }
-	}
+    }
 }

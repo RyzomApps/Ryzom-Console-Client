@@ -17,12 +17,13 @@ namespace Client.Commands
 
         public override string CmdDesc => "Clears the content of the console";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             ConsoleIO.Reset();
             Console.Clear();
 
-            return "";
+            return true;
         }
 
         public override IEnumerable<string> GetCmdAliases()

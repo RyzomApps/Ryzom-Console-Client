@@ -19,21 +19,25 @@ namespace Client.Commands
         /// arg[0]      receiver is the name of the listening char (truncated to 255 char max)
         /// arg[1..]    str is the chat content(truncated to 255 char max)
         /// </summary>
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length < 2)
-                return "Please specify more parameters.";
+            {
+                responseMsg = "Please specify more parameters.";
+                return false;
+            }
 
             var receiver = args[0];
             var str = string.Join(" ", args[1..]);
 
-            if (receiver.Length > 255) receiver = receiver.Substring(0, 255);
-            if (str.Length > 255) str = str.Substring(0, 255);
+            if (receiver.Length > 255) receiver = receiver[..255];
+            if (str.Length > 255) str = str[..255];
 
             // Create the message and send.
             const string msgName = "STRING:TELL";
@@ -47,15 +51,11 @@ namespace Client.Commands
             }
             else
             {
-                return $"Unknown message named '{msgName}'.";
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new string[0];
+            return true;
         }
     }
 }

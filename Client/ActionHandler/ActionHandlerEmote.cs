@@ -6,10 +6,10 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
 using API;
 using API.Entity;
 using Client.Stream;
+using System;
 
 namespace Client.ActionHandler
 {

@@ -6,11 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using API.Inventory;
 using API.Sheet;
 using Client.Inventory;
 using Client.Stream;
 using System.Collections.Generic;
-using API.Inventory;
 
 namespace Client.Sheet
 {

@@ -6,15 +6,14 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Numerics;
 using API.Entity;
 using API.Sheet;
 using Client.Forage;
 using Client.Property;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Numerics;
 
 namespace Client.Entity
 {
@@ -24,10 +23,8 @@ namespace Client.Entity
     /// <author>Guillaume PUZIN</author>
     /// <author>Nevrax France</author>
     /// <date>2001</date>
-    public class EntityManager : IEntityManager
+    public class EntityManager(RyzomClient client) : IEntityManager
     {
-        private readonly RyzomClient _client;
-
         private uint _nbMaxEntity;
 
         public UserEntity UserEntity { get; set; }
@@ -38,15 +35,10 @@ namespace Client.Entity
         // Contain all entities.
         private Entity[] _entities;
 
-        private readonly Dictionary<uint, Dictionary<uint, Property>> _backupedChanges = new Dictionary<uint, Dictionary<uint, Property>>();
+        private readonly Dictionary<uint, Dictionary<uint, Property>> _backupedChanges = new();
 
         /// <inheritdoc />
         public IEntity[] GetApiEntities() => _entities;
-
-        public EntityManager(RyzomClient client)
-        {
-            _client = client;
-        }
 
         /// <summary>
         /// Initialize some dynamic parameters.
@@ -73,14 +65,14 @@ namespace Client.Entity
         /// <returns>CEntityCL : pointer on the new entity</returns> 
         public Entity Create(in byte slot, uint form, PropertyChange.TNewEntityInfo newEntityInfo)
         {
-            var sheetId = _client.GetSheetIdFactory().SheetId(form);
+            var sheetId = client.GetSheetIdFactory().SheetId(form);
 
             // DEBUG
-            _client.GetLogger().Debug($"(_,{_client.GetNetworkManager().GetCurrentServerTick()}) EM:create: slot '{slot}': {sheetId}");
+            client.GetLogger().Debug($"(_,{client.GetNetworkManager().GetCurrentServerTick()}) EM:create: slot '{slot}': {sheetId}");
 
             if (slot >= _nbMaxEntity)
             {
-                _client.GetLogger().Warn($"EM:create: Cannot create the entity, the slot '{slot}' is invalid.");
+                client.GetLogger().Warn($"EM:create: Cannot create the entity, the slot '{slot}' is invalid.");
                 return null;
             }
 
@@ -106,20 +98,20 @@ namespace Client.Entity
             }
 
             // Check parameter: form
-            var entitySheet = _client.GetSheetManager().Get(sheetId);
+            var entitySheet = client.GetSheetManager().Get(sheetId);
 
             if (entitySheet == null)
             {
-                _client.GetLogger().Warn($"EM:create: Attempt on create an entity with a bad form number {form} ({sheetId}) for the slot '{slot}' trying to compute the default one.");
+                client.GetLogger().Warn($"EM:create: Attempt on create an entity with a bad form number {form} ({sheetId}) for the slot '{slot}' trying to compute the default one.");
 
                 if (slot != 0)
                 {
-                    _entities[slot] = new Entity(_client);
+                    _entities[slot] = new Entity(client);
                     return null;
                 }
                 else
                 {
-                    UserEntity = new UserEntity(_client) { Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
+                    UserEntity = new UserEntity(client) { Pos = client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
                     _entities[slot] = UserEntity;
                     return null;
                 }
@@ -134,44 +126,44 @@ namespace Client.Entity
                 case SheetType.CHAR:
                     if (slot == 0)
                     {
-                        UserEntity = new UserEntity(_client) { Pos = _client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
+                        UserEntity = new UserEntity(client) { Pos = client.GetNetworkConnection().GetPropertyDecoder().GetReferencePosition() };
                         _entities[slot] = UserEntity;
                     }
                     else
                     {
-                        _entities[slot] = new PlayerEntity(_client);
+                        _entities[slot] = new PlayerEntity(client);
                     }
 
                     break;
 
                 case SheetType.FAUNA:
                     //if (entitySheet is CharacterSheet { R2Npc: false })
-                    _entities[slot] = new CharacterEntity(_client);
+                    _entities[slot] = new CharacterEntity(client);
                     //else
                     // CPlayerR2CL
                     //_entities[slot] = new PlayerEntity(_client) { Type = EntityType.NPC };
                     break;
 
                 case SheetType.FLORA:
-                    _entities[slot] = new CharacterEntity(_client);
+                    _entities[slot] = new CharacterEntity(client);
                     break;
 
                 case SheetType.FX:
                     // TODO: _entities[slot] = new CFxCL;
-                    _entities[slot] = new Entity(_client);
+                    _entities[slot] = new Entity(client);
                     break;
 
                 case SheetType.ITEM:
                     // TODO: _entities[slot] = new CItemCL;
-                    _entities[slot] = new Entity(_client);
+                    _entities[slot] = new Entity(client);
                     break;
 
                 case SheetType.FORAGE_SOURCE:
-                    _entities[slot] = new ForageSourceEntity(_client);
+                    _entities[slot] = new ForageSourceEntity(client);
                     break;
 
                 default:
-                    _client.GetLogger().Warn($"Unknown Form Type '{entitySheet.Type}' -> entity not created.");
+                    client.GetLogger().Warn($"Unknown Form Type '{entitySheet.Type}' -> entity not created.");
                     return null;
             }
 
@@ -182,7 +174,7 @@ namespace Client.Entity
                 _entities[slot].SheetId(form);
 
                 // Set the slot.
-                _entities[slot].SetSlot(slot, _client.GetDatabaseManager());
+                _entities[slot].SetSlot(slot, client.GetDatabaseManager());
 
                 // Set the DataSet Index. AFTER slot(), so bar manager is correctly init
                 _entities[slot].DataSetId(newEntityInfo.DataSetIndex);
@@ -191,14 +183,14 @@ namespace Client.Entity
                 _entities[slot].NpcAlias(newEntityInfo.Alias);
 
                 // Build the entity from a sheet.
-                if (_entities[slot].Build((Sheet.Sheet)entitySheet, _client))
+                if (_entities[slot].Build((Sheet.Sheet)entitySheet, client))
                 {
                     // Apply properties from backup
                     ApplyBackupProperties(slot);
                 }
             }
 
-            _client.Plugins.OnEntityCreate(slot);
+            client.Plugins.OnEntityCreate(slot);
 
             return _entities[slot];
         }
@@ -210,7 +202,7 @@ namespace Client.Entity
         public bool Remove(in byte slot, bool warning)
         {
             if (warning)
-                _client.Plugins.OnEntityRemove(slot, warning);
+                client.Plugins.OnEntityRemove(slot, warning);
 
             //_client.GetLogger().Info($"EntityManager.Remove({slot}, {warning})");
 
@@ -232,7 +224,7 @@ namespace Client.Entity
             // Check parameter : slot.
             if (slot >= _nbMaxEntity)
             {
-                _client.GetLogger().Warn($"CEntityManager::updateVisualProperty : Slot '{slot}' is not valid.");
+                client.GetLogger().Warn($"CEntityManager::updateVisualProperty : Slot '{slot}' is not valid.");
                 return;
             }
 
@@ -242,10 +234,10 @@ namespace Client.Entity
                 var propName = $"SERVER:Entities:E{slot}:P{prop}";
                 var propty = new Property { GameCycle = gameCycle, Value = 0 };
 
-                if (_client.GetDatabaseManager() != null)
-                    propty.Value = _client.GetDatabaseManager().GetProp(propName);
+                if (client.GetDatabaseManager() != null)
+                    propty.Value = client.GetDatabaseManager().GetProp(propName);
 
-                _client.GetLogger().Debug($"EM:updateVP: backup the property {(PropertyType)prop} as long as the entity {slot} is not allocated.");
+                client.GetLogger().Debug($"EM:updateVP: backup the property {(PropertyType)prop} as long as the entity {slot} is not allocated.");
 
                 // Entity does not have any changes backuped for the time.
                 if (!_backupedChanges.ContainsKey(slot))
@@ -263,7 +255,7 @@ namespace Client.Entity
                     // There is already a backuped value
                     else
                     {
-                        _client.GetLogger().Debug($"EM:updateVP:{slot}: property '{prop}' already backuped.");
+                        client.GetLogger().Debug($"EM:updateVP:{slot}: property '{prop}' already backuped.");
                         _backupedChanges[slot][prop] = propty;
                     }
                 }
@@ -272,9 +264,9 @@ namespace Client.Entity
             else
             {
                 // Call the method from the entity to update the visual property.
-                _entities[slot].UpdateVisualProperty(gameCycle, prop, predictedInterval, _client);
+                _entities[slot].UpdateVisualProperty(gameCycle, prop, predictedInterval, client);
 
-                _client.Plugins.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval);
+                client.Plugins.OnEntityUpdateVisualProperty(gameCycle, slot, prop, predictedInterval);
             }
         }
 
@@ -283,14 +275,14 @@ namespace Client.Entity
         /// </summary>
         public void ApplyBackupProperties(uint slot)
         {
-            if (!_backupedChanges.ContainsKey(slot))
+            if (!_backupedChanges.TryGetValue(slot, out var change))
                 return;
 
-            foreach (var (key, property) in _backupedChanges[slot])
+            foreach (var (key, property) in change)
             {
-                _entities[slot].UpdateVisualProperty(property.GameCycle, key, 0, _client);
+                _entities[slot].UpdateVisualProperty(property.GameCycle, key, 0, client);
 
-                _client.Plugins.OnEntityUpdateVisualProperty(property.GameCycle, (byte)slot, key, 0);
+                client.Plugins.OnEntityUpdateVisualProperty(property.GameCycle, (byte)slot, key, 0);
             }
 
             _backupedChanges.Remove(slot);
@@ -308,7 +300,7 @@ namespace Client.Entity
                 {
                     if (UserEntity == null)
                     {
-                        _client.Log.Info($"Found entity '{name}' and user entity is null.");
+                        client.Log.Info($"Found entity '{name}' and user entity is null.");
                         return entity;
                     }
 
@@ -322,7 +314,7 @@ namespace Client.Entity
                     }
                     else
                     {
-                        _client.Log.Debug($"Found entity '{name}' in a distance of {distance:0.0} m (User: {UserEntity.Pos} - Entity: {entity.Pos}).");
+                        client.Log.Debug($"Found entity '{name}' in a distance of {distance:0.0} m (User: {UserEntity.Pos} - Entity: {entity.Pos}).");
                     }
                 }
             }
@@ -345,11 +337,11 @@ namespace Client.Entity
             var strTmp = "StartCommands = {\n";
             file.Write(strTmp);
 
-            var nb = _entities.Count();
+            var nb = _entities.Length;
 
             for (var i = 1; i < nb; ++i)
             {
-                var sheet = _entities[i] != null ? _client.GetApiSheetIdFactory()?.SheetId(_entities[i].SheetId()) : null;
+                var sheet = _entities[i] != null ? client.GetApiSheetIdFactory()?.SheetId(_entities[i].SheetId()) : null;
 
                 strTmp = _entities[i] == null ? $"// {i}\n" : $"\"{(sheet != null ? sheet.ToString() : _entities[i].SheetId().ToString())}\",\t\"{_entities[i].Pos.X}\", \"{_entities[i].Pos.Y}\", \"{_entities[i].Pos.Z}\", \"{_entities[i].Front.X}\", \"{_entities[i].Front.Y}\", \"{_entities[i].Front.Z}\",\t// {i} {_entities[i].GetDisplayName()} {_entities[i].GetTitle()} {_entities[i].GetEntityType()}\n";
                 file.Write(strTmp);

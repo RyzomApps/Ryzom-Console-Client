@@ -6,13 +6,13 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using Client.Config;
+using Client.Helper.Crypter;
+using Client.Network.Proxy;
 using System;
 using System.IO;
 using System.Net;
 using System.Text;
-using Client.Config;
-using Client.Helper.Crypter;
-using Client.Network.Proxy;
 
 namespace Client.Network
 {
@@ -50,7 +50,7 @@ namespace Client.Network
 
                 //try
                 //{
-                
+
                 var socket = ProxyManager.GetSocks5ProxyTcp(null, ClientConfig.StartupHost);
 
                 client.GetLogger().Info($"Using proxy server '{socket.RemoteEndPoint}' to login.");

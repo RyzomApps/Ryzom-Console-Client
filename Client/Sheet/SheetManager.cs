@@ -6,12 +6,12 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using API.Sheet;
+using Client.Stream;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using API.Sheet;
-using Client.Stream;
 
 namespace Client.Sheet
 {
@@ -315,72 +315,72 @@ namespace Client.Sheet
             // load the packed sheet if exists
             //try
             //{
-                var ifile = new BitStreamFile();
-                //ifile.SetCacheFileOnOpen(true);
+            var ifile = new BitStreamFile();
+            //ifile.SetCacheFileOnOpen(true);
 
-                if (!ifile.Open(packedFilenamePath))
-                {
-                    throw new IOException($"Can't open PackedSheet '{packedFilenamePath}'.");
-                }
+            if (!ifile.Open(packedFilenamePath))
+            {
+                throw new IOException($"Can't open PackedSheet '{packedFilenamePath}'.");
+            }
 
-                // an exception will be launch if the file is not the good version or if the file is not found
+            // an exception will be launch if the file is not the good version or if the file is not found
 
-                //_client.GetLogger().info ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
+            //_client.GetLogger().info ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
 
-                // read the header
-                const uint packedSheetHeader = 1347113800;
-                ifile.SerialCheck(packedSheetHeader);
+            // read the header
+            const uint packedSheetHeader = 1347113800;
+            ifile.SerialCheck(packedSheetHeader);
 
-                const uint packedSheetVersion = 5;
-                ifile.SerialCheck(packedSheetVersion);
+            const uint packedSheetVersion = 5;
+            ifile.SerialCheck(packedSheetVersion);
 
-                const uint packedSheetVersionCompatible = 0;
-                ifile.SerialVersion(packedSheetVersionCompatible);
+            const uint packedSheetVersionCompatible = 0;
+            ifile.SerialVersion(packedSheetVersionCompatible);
 
-                // Read depend block size
-                ifile.Serial(out uint dependBlockSize);
+            // Read depend block size
+            ifile.Serial(out uint dependBlockSize);
 
-                //// Read the dependencies only if update packed sheet
-                //if (updatePackedSheet)
-                //{
-                //    {
-                //        // read the dictionnary
-                //        ifile.SerialCont(dictionnary);
-                //    }
-                //    {
-                //        // read the dependency data
-                //        uint depSize;
-                //        ifile.serial(depSize);
-                //        for (uint i = 0; i < depSize; ++i)
-                //        {
-                //            SheetId sheetId = new SheetId();
-                //
-                //            // Avoid copy, use []
-                //            ifile.serial(sheetId);
-                //            ifile.serialCont(dependencies[sheetId]);
-                //        }
-                //    }
-                //}
-                //// else dummy read one big block => no heavy reallocation / free
-                //else
-                if (dependBlockSize > 0)
-                {
-                    //byte[] bigBlock = new byte[dependBlockSize];
-                    ifile.SerialBuffer(out byte[] bigBlock, dependBlockSize);
-                }
+            //// Read the dependencies only if update packed sheet
+            //if (updatePackedSheet)
+            //{
+            //    {
+            //        // read the dictionnary
+            //        ifile.SerialCont(dictionnary);
+            //    }
+            //    {
+            //        // read the dependency data
+            //        uint depSize;
+            //        ifile.serial(depSize);
+            //        for (uint i = 0; i < depSize; ++i)
+            //        {
+            //            SheetId sheetId = new SheetId();
+            //
+            //            // Avoid copy, use []
+            //            ifile.serial(sheetId);
+            //            ifile.serialCont(dependencies[sheetId]);
+            //        }
+            //    }
+            //}
+            //// else dummy read one big block => no heavy reallocation / free
+            //else
+            if (dependBlockSize > 0)
+            {
+                //byte[] bigBlock = new byte[dependBlockSize];
+                ifile.SerialBuffer(out byte[] bigBlock, dependBlockSize);
+            }
 
 
-                // read the packed sheet data
-                ifile.Serial(out uint nbEntries);
-                ifile.Serial(out uint ver);
+            // read the packed sheet data
+            ifile.Serial(out uint nbEntries);
+            ifile.Serial(out uint ver);
 
-                //if (ver != T.getVersion())
-                //{
-                //    throw Exception("The packed sheet version in stream is different of the code");
-                //}
+            //if (ver != T.getVersion())
+            //{
+            //    throw Exception("The packed sheet version in stream is different of the code");
+            //}
 
-                ifile.SerialCont(out container, _client);
-                ifile.Close();
+            ifile.SerialCont(out container, _client);
+            ifile.Close();
             //}
             //catch (Exception e)
             //{
@@ -704,102 +704,102 @@ namespace Client.Sheet
         /// <param name="wildcardFilter">an additional by sheet filter (must include the extension)</param>
         private static void loadFormNoPackedSheet<T>(in List<string> sheetFilters, SortedDictionary<SheetId, T> container, in string wildcardFilter)
         {
-	        //// make sure the CSheetId singleton has been properly initialised
-	        //SheetId.Init(false);
+            //// make sure the CSheetId singleton has been properly initialised
+            //SheetId.Init(false);
             //
-	        //// build a vector of the sheetFilters sheet ids (ie: "item")
-	        //List<SheetId> sheetIds = new List<SheetId>();
-	        //List<string> filenames = new List<string>();
-	        //for (uint i = 0; i < sheetFilters.Count; i++)
-	        //{
-		    //    SheetId.BuildIdVector(sheetIds, filenames, sheetFilters[i]);
-	        //}
+            //// build a vector of the sheetFilters sheet ids (ie: "item")
+            //List<SheetId> sheetIds = new List<SheetId>();
+            //List<string> filenames = new List<string>();
+            //for (uint i = 0; i < sheetFilters.Count; i++)
+            //{
+            //    SheetId.BuildIdVector(sheetIds, filenames, sheetFilters[i]);
+            //}
             //
-	        //// if there's no file, nothing to do
-	        //if (sheetIds.Count == 0)
-	        //{
-		    //    return;
-	        //}
-            //
-            //
-	        //// compute sheets that needs to be recomputed
-	        //List<uint> NeededToRecompute = new List<uint>();
-	        //for (uint k = 0; k < filenames.Count; k++)
-	        //{
-		    //    string p = NLMISC.CPath.lookup(filenames[k], false, false);
-            //
-		    //    if (string.IsNullOrEmpty(p))
-		    //    {
-			//        continue;
-		    //    }
-		    //    // check if wildcardok
-		    //    if (!string.IsNullOrEmpty(wildcardFilter) && !NLMISC.testWildCard(p,wildcardFilter))
-		    //    {
-			//        continue;
-		    //    }
-            //
-		    //    NeededToRecompute.Add(k);
-	        //}
-	        //_client.GetLogger().Info("%d sheets checked, %d need to be recomputed", filenames.Count, NeededToRecompute.Count);
+            //// if there's no file, nothing to do
+            //if (sheetIds.Count == 0)
+            //{
+            //    return;
+            //}
             //
             //
-	        //NLMISC.TTime last = NLMISC.CTime.getLocalTime();
-	        //NLMISC.TTime start = NLMISC.CTime.getLocalTime();
-	        //NLGEORGES.UFormLoader formLoader = null;
-	        //NLMISC.CSmartPtr<NLGEORGES.UForm> form = new NLMISC.CSmartPtr<NLGEORGES.UForm>();
-	        //List<NLMISC.CSmartPtr<NLGEORGES.UForm>> cacheFormList = new List<NLMISC.CSmartPtr<NLGEORGES.UForm>>();
+            //// compute sheets that needs to be recomputed
+            //List<uint> NeededToRecompute = new List<uint>();
+            //for (uint k = 0; k < filenames.Count; k++)
+            //{
+            //    string p = NLMISC.CPath.lookup(filenames[k], false, false);
             //
-	        //// For all sheets need to recompute
-	        //for (uint j = 0; j < NeededToRecompute.Count; j++)
-	        //{
-		    //    if (NLMISC.CTime.getLocalTime() > last + 5000)
-		    //    {
-			//        last = NLMISC.CTime.getLocalTime();
-			//        if (j > 0)
-			//        {
-			//	        _client.GetLogger().Info("%.0f%% completed (%d/%d), %d seconds remaining", (float)j * 100.0 / NeededToRecompute.Count,j,NeededToRecompute.Count, (NeededToRecompute.Count - j) * (last - start) / j / 1000);
-			//        }
-		    //    }
+            //    if (string.IsNullOrEmpty(p))
+            //    {
+            //        continue;
+            //    }
+            //    // check if wildcardok
+            //    if (!string.IsNullOrEmpty(wildcardFilter) && !NLMISC.testWildCard(p,wildcardFilter))
+            //    {
+            //        continue;
+            //    }
             //
-		    //    // create the georges loader if necessary
-		    //    if (formLoader == null)
-		    //    {
-			//        NLMISC.WarningLog.addNegativeFilter("CFormLoader: Can't open the form file");
-			//        formLoader = NLGEORGES.UFormLoader.createLoader();
-		    //    }
+            //    NeededToRecompute.Add(k);
+            //}
+            //_client.GetLogger().Info("%d sheets checked, %d need to be recomputed", filenames.Count, NeededToRecompute.Count);
             //
-		    //    //	cache used to retain information (to optimize time).
-		    //    if (form != null)
-		    //    {
-			//        cacheFormList.Add(form);
-		    //    }
             //
-		    //    // Load the form with given sheet id
-		    //    form = formLoader.loadForm(sheetIds[NeededToRecompute[j]].toString().c_str());
-		    //    if (form != null)
-		    //    {
-			//        // add the new creature, it could be already loaded by the packed sheets but will be overwritten with the new one
-			//        Tuple<typename SortedDictionary<SheetId, T>.Enumerator, bool> res = container.Add(sheetIds[NeededToRecompute[j]],default(T));
+            //NLMISC.TTime last = NLMISC.CTime.getLocalTime();
+            //NLMISC.TTime start = NLMISC.CTime.getLocalTime();
+            //NLGEORGES.UFormLoader formLoader = null;
+            //NLMISC.CSmartPtr<NLGEORGES.UForm> form = new NLMISC.CSmartPtr<NLGEORGES.UForm>();
+            //List<NLMISC.CSmartPtr<NLGEORGES.UForm>> cacheFormList = new List<NLMISC.CSmartPtr<NLGEORGES.UForm>>();
             //
-			//        res.Item1.second.readGeorges(form, sheetIds[NeededToRecompute[j]]);
-		    //    }
-	        //}
+            //// For all sheets need to recompute
+            //for (uint j = 0; j < NeededToRecompute.Count; j++)
+            //{
+            //    if (NLMISC.CTime.getLocalTime() > last + 5000)
+            //    {
+            //        last = NLMISC.CTime.getLocalTime();
+            //        if (j > 0)
+            //        {
+            //	        _client.GetLogger().Info("%.0f%% completed (%d/%d), %d seconds remaining", (float)j * 100.0 / NeededToRecompute.Count,j,NeededToRecompute.Count, (NeededToRecompute.Count - j) * (last - start) / j / 1000);
+            //        }
+            //    }
             //
-	        //if (NeededToRecompute.Count > 0)
-	        //{
-		    //    _client.GetLogger().Info("%d seconds to recompute %d sheets", (uint)(NLMISC.CTime.getLocalTime() - start) / 1000, NeededToRecompute.Count);
-	        //}
+            //    // create the georges loader if necessary
+            //    if (formLoader == null)
+            //    {
+            //        NLMISC.WarningLog.addNegativeFilter("CFormLoader: Can't open the form file");
+            //        formLoader = NLGEORGES.UFormLoader.createLoader();
+            //    }
             //
-	        //// free the georges loader if necessary
-	        //if (formLoader != null)
-	        //{
-		    //    NLGEORGES.UFormLoader.releaseLoader(formLoader);
-		    //    NLMISC.WarningLog.removeFilter("CFormLoader: Can't open the form file");
-	        //}
+            //    //	cache used to retain information (to optimize time).
+            //    if (form != null)
+            //    {
+            //        cacheFormList.Add(form);
+            //    }
             //
-	        //// housekeeping
-	        //sheetIds.Clear();
-	        //filenames.Clear();
+            //    // Load the form with given sheet id
+            //    form = formLoader.loadForm(sheetIds[NeededToRecompute[j]].toString().c_str());
+            //    if (form != null)
+            //    {
+            //        // add the new creature, it could be already loaded by the packed sheets but will be overwritten with the new one
+            //        Tuple<typename SortedDictionary<SheetId, T>.Enumerator, bool> res = container.Add(sheetIds[NeededToRecompute[j]],default(T));
+            //
+            //        res.Item1.second.readGeorges(form, sheetIds[NeededToRecompute[j]]);
+            //    }
+            //}
+            //
+            //if (NeededToRecompute.Count > 0)
+            //{
+            //    _client.GetLogger().Info("%d seconds to recompute %d sheets", (uint)(NLMISC.CTime.getLocalTime() - start) / 1000, NeededToRecompute.Count);
+            //}
+            //
+            //// free the georges loader if necessary
+            //if (formLoader != null)
+            //{
+            //    NLGEORGES.UFormLoader.releaseLoader(formLoader);
+            //    NLMISC.WarningLog.removeFilter("CFormLoader: Can't open the form file");
+            //}
+            //
+            //// housekeeping
+            //sheetIds.Clear();
+            //filenames.Clear();
         }
 
 

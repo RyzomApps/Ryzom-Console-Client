@@ -365,7 +365,7 @@ namespace Client.Helper.Crypter
 
             Span<byte> encryptionKey = stackalloc byte[8];
             for (int index = 0; index < encryptionKey.Length && index < textToEncrypt.Length; index++)
-                encryptionKey[index] = (byte) (Convert.ToInt32(textToEncrypt[index]) << 1);
+                encryptionKey[index] = (byte)(Convert.ToInt32(textToEncrypt[index]) << 1);
 
             Span<uint> schedule = stackalloc uint[MDesIterations * 2];
             SetDESKey(encryptionKey, schedule);
@@ -527,22 +527,22 @@ namespace Client.Helper.Crypter
             resultValue |= (inputBytes[offset++] & 0xFF) << 8;
             resultValue |= (inputBytes[offset++] & 0xFF) << 16;
             resultValue |= (inputBytes[offset] & 0xFF) << 24;
-            return (uint) resultValue;
+            return (uint)resultValue;
         }
 
         private static void IntToFourBytes(uint inputInt, Span<byte> outputBytes, int offset)
         {
-            outputBytes[offset++] = (byte) (inputInt & 0xFF);
-            outputBytes[offset++] = (byte) ((inputInt >> 8) & 0xFF);
-            outputBytes[offset++] = (byte) ((inputInt >> 16) & 0xFF);
-            outputBytes[offset] = (byte) ((inputInt >> 24) & 0xFF);
+            outputBytes[offset++] = (byte)(inputInt & 0xFF);
+            outputBytes[offset++] = (byte)((inputInt >> 8) & 0xFF);
+            outputBytes[offset++] = (byte)((inputInt >> 16) & 0xFF);
+            outputBytes[offset] = (byte)((inputInt >> 24) & 0xFF);
         }
 
         private static void PermOperation(uint firstInt, uint secondInt, uint thirdInt, uint fourthInt,
             Span<uint> operationResults)
         {
-            uint tempInt = ((firstInt >> (int) thirdInt) ^ secondInt) & fourthInt;
-            firstInt ^= tempInt << (int) thirdInt;
+            uint tempInt = ((firstInt >> (int)thirdInt) ^ secondInt) & fourthInt;
+            firstInt ^= tempInt << (int)thirdInt;
             secondInt ^= tempInt;
             operationResults[0] = firstInt;
             operationResults[1] = secondInt;

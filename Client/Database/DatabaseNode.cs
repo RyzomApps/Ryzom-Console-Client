@@ -6,11 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using Client.Interface;
+using Client.Stream;
 using System;
 using System.IO;
 using System.Xml;
-using Client.Interface;
-using Client.Stream;
 
 namespace Client.Database
 {

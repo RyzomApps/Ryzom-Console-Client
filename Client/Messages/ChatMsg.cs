@@ -34,7 +34,7 @@ namespace Client.Messages
             f.Serial(ref SenderNameId);
             byte chatModeByte = 0;
             f.Serial(ref chatModeByte);
-            ChatMode = (ChatGroupType) chatModeByte;
+            ChatMode = (ChatGroupType)chatModeByte;
             if (ChatMode == ChatGroupType.DynChat)
                 f.Serial(ref DynChatChanID);
             f.Serial(ref Content);

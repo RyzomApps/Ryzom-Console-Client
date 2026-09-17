@@ -17,8 +17,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Cancel the sentence being executed";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             // no parameter needed
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
@@ -29,16 +30,16 @@ namespace Client.Commands
             var @out = new BitMemoryStream();
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, @out))
+            {
                 ryzomClient.GetNetworkManager().Push(@out);
+            }
             else
-                return $"Unknown message named '{msgName}'.";
+            {
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
+            }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

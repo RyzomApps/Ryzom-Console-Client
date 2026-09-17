@@ -6,10 +6,10 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using API.Sheet;
 using Client.Stream;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Client.Sheet
 {

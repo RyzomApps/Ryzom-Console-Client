@@ -17,8 +17,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 #endregion
 
-using System;
 using Client.Helper.Crypter.Internal;
+using System;
 
 namespace Client.Helper.Crypter
 {

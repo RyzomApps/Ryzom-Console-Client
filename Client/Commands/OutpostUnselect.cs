@@ -13,8 +13,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Called when the Outpost State window (the one opened from BotChat) is closed.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -22,19 +23,14 @@ namespace Client.Commands
 
             if (args.Length != 0)
             {
-                handler.GetLogger().Warn("This command has no arguments.");
-                return "";
+                responseMsg = "This command has no arguments.";
+                return false;
             }
 
             // Send the message to the server
             ryzomClient.GetNetworkManager().SendMsgToServer("OUTPOST:UNSELECT");
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

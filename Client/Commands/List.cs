@@ -12,16 +12,19 @@ namespace Client.Commands
         public override string CmdUsage => "";
         public override string CmdDesc => "Allows the user to list all players that are around";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
-            var ret = "";
+            responseMsg = "";
             var count = 0;
 
             var entityManager = handler.GetApiNetworkManager()?.GetApiEntityManager();
 
             // Iterate players
             if (entityManager == null)
-                return "Entity manager not initialized.";
+            {
+                responseMsg = "Entity manager not initialized.";
+                return false;
+            }
 
             var userPos = entityManager.GetApiUserEntity().Pos;
 
@@ -46,11 +49,11 @@ namespace Client.Commands
 
                 var playerPos = entity.Pos;
 
-                ret += $"{entity.Slot()}\t{(entity.GetDisplayName().Trim().Length > 0 ? entity.GetDisplayName() : "[Unnamed]")} ({entity.GetGuildName()})\t{Vector3.Distance(playerPos, userPos):0} m\n";
+                responseMsg += $"{entity.Slot()}\t{(entity.GetDisplayName().Trim().Length > 0 ? entity.GetDisplayName() : "[Unnamed]")} ({entity.GetGuildName()})\t{Vector3.Distance(playerPos, userPos):0} m\n";
                 count++;
             }
 
-            ret = $"There is/are {count} player(s) around:\n{ret}";
+            responseMsg = $"There is/are {count} player(s) around:\n{responseMsg}";
 
             // Iterate team
             var databaseManager = handler.GetApiDatabaseManager();
@@ -58,9 +61,12 @@ namespace Client.Commands
             var networkManager = handler.GetApiNetworkManager();
 
             if (databaseManager == null)
-                return ret[..^1];
+            {
+                responseMsg = responseMsg[..^1];
+                return false;
+            }
 
-            var retTeam = "";
+            var responseMsgTeam = "";
             count = 0;
 
             for (var gm = 0; gm < 7; gm++)
@@ -87,24 +93,20 @@ namespace Client.Commands
 
                     var teamPos = new Vector3(x, y, userPos.Z);
 
-                    retTeam += $"{gm}\t{name}\t{Vector3.Distance(teamPos, userPos):0} m\n";
+                    responseMsgTeam += $"{gm}\t{name}\t{Vector3.Distance(teamPos, userPos):0} m\n";
                 }
                 else
                 {
-                    retTeam += $"{gm}\t{nameId}\n";
+                    responseMsgTeam += $"{gm}\t{nameId}\n";
                 }
 
                 count++;
             }
 
-            retTeam = $"There is/are {count} team member(s):\n{retTeam}";
+            responseMsgTeam = $"There is/are {count} team member(s):\n{responseMsgTeam}";
 
-            return ret + retTeam[..^1];
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            responseMsg += responseMsgTeam[..^1];
+            return true;
         }
     }
 }

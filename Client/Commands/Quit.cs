@@ -12,8 +12,9 @@ namespace Client.Commands
         public override string CmdUsage => "";
         public override string CmdDesc => "Request to quit the game. The logout will usually take 30s.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -21,7 +22,9 @@ namespace Client.Commands
             if (!handler.IsInGame())
             {
                 ryzomClient.GetNetworkManager().GameExit = true;
-                return "User Request to Quit ryzom";
+
+                responseMsg = "User Request to Quit ryzom";
+                return true;
             }
 
             // Don't quit but wait for server Quit
@@ -38,14 +41,14 @@ namespace Client.Commands
             out2.Serial(ref asNum);
 
             ryzomClient.GetNetworkManager().Push(out2);
-            //nlinfo("impulseCallBack : %s sent", msgName.c_str());
 
-            return "Initiating quit sequence... Please wait 30s for the logout.";
+            responseMsg = "Initiating quit sequence... Please wait 30s for the logout.";
+            return true;
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] {"exit", "disconnect"};
+            return ["exit", "disconnect"];
         }
     }
 }

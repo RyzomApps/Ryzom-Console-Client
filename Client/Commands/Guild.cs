@@ -17,11 +17,12 @@ namespace Client.Commands
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] {"g", "gu"};
+            return ["g", "gu"];
         }
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -30,13 +31,13 @@ namespace Client.Commands
             ryzomClient.Channel = ChatGroupType.Guild;
 
             if (args.Length == 0)
-                return "";
+                return true;
 
             var text = string.Join(" ", args);
 
             ryzomClient.SendText(text);
 
-            return "";
+            return true;
         }
     }
 }

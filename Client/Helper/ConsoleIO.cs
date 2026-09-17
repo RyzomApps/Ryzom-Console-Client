@@ -6,13 +6,13 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
+using API.Chat;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using API.Chat;
 using TextCopy;
 
 namespace Client.Helper
@@ -549,7 +549,7 @@ namespace Client.Helper
         /// </summary>
         private static void RemoveOneChar()
         {
-            if (_buffer.Length <= 0) 
+            if (_buffer.Length <= 0)
                 return;
 
             try

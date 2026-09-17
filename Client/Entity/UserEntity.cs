@@ -6,12 +6,12 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Numerics;
 using API;
 using API.Entity;
 using Client.Messages;
 using Client.Stream;
+using System;
+using System.Numerics;
 
 namespace Client.Entity
 {

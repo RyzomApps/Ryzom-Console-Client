@@ -34,14 +34,14 @@ namespace Client.WinAPI
                 if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMajorVersionNumber",
                     out var major))
                 {
-                    return (uint) major;
+                    return (uint)major;
                 }
 
                 // When the 'CurrentMajorVersionNumber' value is not present we fallback to reading the previous key used for this: 'CurrentVersion'
                 if (!TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentVersion", out var version))
                     return 0;
 
-                var versionParts = ((string) version).Split('.');
+                var versionParts = ((string)version).Split('.');
                 if (versionParts.Length != 2) return 0;
                 return uint.TryParse(versionParts[0], out var majorAsUInt) ? majorAsUInt : 0;
             }
@@ -59,14 +59,14 @@ namespace Client.WinAPI
                 if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMinorVersionNumber",
                     out var minor))
                 {
-                    return (uint) minor;
+                    return (uint)minor;
                 }
 
                 // When the 'CurrentMinorVersionNumber' value is not present we fallback to reading the previous key used for this: 'CurrentVersion'
                 if (!TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentVersion", out var version))
                     return 0;
 
-                var versionParts = ((string) version).Split('.');
+                var versionParts = ((string)version).Split('.');
                 if (versionParts.Length != 2) return 0;
                 return uint.TryParse(versionParts[1], out var minorAsUInt) ? minorAsUInt : 0;
             }

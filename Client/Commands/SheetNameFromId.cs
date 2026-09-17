@@ -15,30 +15,27 @@ namespace Client.Commands
 
         public override string CmdDesc => "Get the sheet-name from a sheet-ID";
 
-        public override string Run(IClient ryzomClient, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             var args = GetArgs(command);
 
             if (args.Length != 1)
             {
-                ryzomClient.GetLogger().Warn("Please specify a sheet-ID.");
-                return "";
+                responseMsg = "Please specify a sheet-ID.";
+                return false;
             }
 
             if (!uint.TryParse(args[0], out var nId))
             {
-                ryzomClient.GetLogger().Warn("Could not parse argument.");
-                return "";
+                responseMsg = "Could not parse argument.";
+                return false;
             }
 
-            var id = ryzomClient.GetApiSheetIdFactory().SheetId(nId);
+            var id = handler.GetApiSheetIdFactory().SheetId(nId);
 
-            return id.Name;
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [""];
+            responseMsg = id.Name;
+            return true;
         }
     }
 }

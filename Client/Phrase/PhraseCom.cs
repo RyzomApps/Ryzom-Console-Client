@@ -6,11 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
 using API.Sheet;
 using Client.Sheet;
 using Client.Stream;
+using System;
+using System.Collections.Generic;
 
 namespace Client.Phrase
 {

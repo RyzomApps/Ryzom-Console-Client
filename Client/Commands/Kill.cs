@@ -11,19 +11,20 @@ namespace Client.Commands
         public override string CmdUsage => "";
         public override string CmdDesc => "Kill the player";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             ryzomClient.GetNetworkManager().SendMsgToServer("COMMAND:SELFKILL");
 
-            return "";
+            return true;
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] {"kill"};
+            return ["kill"];
         }
     }
 }

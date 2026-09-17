@@ -1,8 +1,8 @@
-﻿using API;
+﻿using System;
+using System.Collections.Generic;
+using API;
 using API.Commands;
 using Client.Stream;
-using System;
-using System.Collections.Generic;
 
 namespace Client.Commands
 {
@@ -17,8 +17,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "The user completed the mission, with no gift required.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -26,7 +27,8 @@ namespace Client.Commands
 
             if (!(args.Length == 1 && int.TryParse(args[0], out var intId)))
             {
-                return "Wrong argument count or argument could not be parsed."; ;
+                responseMsg = "Wrong argument count or argument could not be parsed.";
+                return false;
             }
 
             const string msgName = "BOTCHAT:CONTINUE_MISSION";
@@ -41,15 +43,11 @@ namespace Client.Commands
             }
             else
             {
-                return $"Unknown message named '{msgName}'.";
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] { "" };
+            return true;
         }
     }
 }

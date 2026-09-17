@@ -74,7 +74,7 @@ namespace Client.Messages
             SheetId = sheetIdFactory.Unknown;
             Mainland = cs.Mainland;
             Name = cs.Name;
-            People = (byte)cs.People; 
+            People = (byte)cs.People;
             Sex = 0; // cs.VisualPropA.PropertySubData.Sex;
 
             HairType = 0; // 3; // cs.VisualPropA.PropertySubData.HatModel;

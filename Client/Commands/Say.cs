@@ -15,8 +15,9 @@ namespace Client.Commands
         public override string CmdDesc =>
             "Use the around channel for messages. Messages sent normally in the around channel have a 25m range.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -25,18 +26,18 @@ namespace Client.Commands
             ryzomClient.Channel = ChatGroupType.Around;
 
             if (args.Length == 0)
-                return "";
+                return true;
 
             var text = string.Join(" ", args);
 
             ryzomClient.SendText(text);
 
-            return "";
+            return true;
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "s", "around" };
+            return ["s", "around"];
         }
     }
 }

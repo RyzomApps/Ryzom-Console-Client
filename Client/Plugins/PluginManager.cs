@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Numerics;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Threading;
-using API;
+﻿using API;
 using API.Chat;
 using API.Commands;
 using API.Exceptions;
@@ -20,6 +10,16 @@ using API.Sheet;
 using Client.Client;
 using Client.Database;
 using Client.Phrase;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Numerics;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Client.Plugins
 {

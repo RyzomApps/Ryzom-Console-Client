@@ -6,9 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using Client.Sheet;
 using System;
 using System.Collections.Generic;
-using Client.Sheet;
 
 namespace Client.Brick
 {

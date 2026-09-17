@@ -13,15 +13,19 @@ namespace Client.Commands
 
         public override string CmdDesc => "Unequip an item.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "Please inventory path (INVENTORY:HAND:0 OR INVENTORY:EQUIP:5).";
+            {
+                responseMsg = "Please inventory path (INVENTORY:HAND:0 OR INVENTORY:EQUIP:5).";
+                return false;
+            }
 
             var invPath = args[0].ToUpper().Trim();
 
@@ -29,12 +33,7 @@ namespace Client.Commands
 
             inventoryManager.UnEquip(invPath);
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] { "" };
+            return true;
         }
     }
 }

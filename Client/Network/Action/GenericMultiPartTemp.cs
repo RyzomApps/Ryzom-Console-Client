@@ -6,9 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using Client.Stream;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Client.Stream;
 
 namespace Client.Network.Action
 {
@@ -38,7 +38,7 @@ namespace Client.Network.Action
             if (_nbBlock == int.MaxValue)
             {
                 // new GenericMultiPart
-                _nbBlock = (int) agmp.NbBlock;
+                _nbBlock = (int)agmp.NbBlock;
                 _nbCurrentBlock = 0;
                 _temp.Clear();
                 _blockReceived.Clear();

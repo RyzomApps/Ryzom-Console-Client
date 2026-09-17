@@ -6,12 +6,12 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using Client.Brick;
-using Client.Phrase;
-using System;
 using API.Sheet;
+using Client.Brick;
 using Client.Forage;
+using Client.Phrase;
 using Client.Stream;
+using System;
 
 namespace Client.Sheet
 {

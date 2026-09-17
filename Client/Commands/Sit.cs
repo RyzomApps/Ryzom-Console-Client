@@ -14,21 +14,24 @@ namespace Client.Commands
 
         public override string CmdDesc => "client send to the server the sitting state";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var s = true; // sit state
             var args = GetArgs(command);
 
-            if (args.Length == 1)
+            switch (args.Length)
             {
-                if (!bool.TryParse(args[0], out s)) return "One of the arguments could not be parsed.";
-            }
-            else if (args.Length > 1)
-            {
-                return "Please specify zero or one argument.";
+                case 1 when !bool.TryParse(args[0], out s):
+                    responseMsg = "One of the arguments could not be parsed.";
+                    return false;
+
+                case > 1:
+                    responseMsg = "Please specify zero or one argument.";
+                    return false;
             }
 
             // send AFK state
@@ -42,15 +45,11 @@ namespace Client.Commands
             }
             else
             {
-                return $"Unknown message named '{msgName}'.";
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

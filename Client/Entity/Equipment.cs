@@ -31,7 +31,7 @@ namespace Client.Entity
         //{
         //    return ClientSheetsStrings.get(IdItem);
         //}
-        
+
         //public string getBindPoint()
         //{
         //    return ClientSheetsStrings.get(IdBindPoint);

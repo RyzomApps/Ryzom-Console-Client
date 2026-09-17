@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using API.Chat;
+﻿using API.Chat;
 using API.Helper;
 using Client.Discord;
 using Client.Discord.Classes;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace Client.Logger
 {

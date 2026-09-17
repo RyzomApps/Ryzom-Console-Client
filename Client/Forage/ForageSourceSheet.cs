@@ -6,9 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
 using Client.Sheet;
 using Client.Stream;
+using System.Collections.Generic;
 
 namespace Client.Forage
 {

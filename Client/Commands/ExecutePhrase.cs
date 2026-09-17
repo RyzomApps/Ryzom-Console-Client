@@ -13,15 +13,19 @@ namespace Client.Commands
 
         public override string CmdDesc => "Command to send the execution message for a phrase to the server.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length != 2 && args.Length != 3)
-                return "Please specify two or three arguments.";
+            {
+                responseMsg = "Please specify two or three arguments.";
+                return false;
+            }
 
             var cyclic = false;
 
@@ -32,17 +36,15 @@ namespace Client.Commands
                 worked &= bool.TryParse(args[2], out cyclic);
 
             if (!worked)
-                return "One of the arguments could not be parsed.";
+            {
+                responseMsg = "One of the arguments could not be parsed.";
+                return false;
+            }
 
             // send msg
             ryzomClient.GetPhraseManager().SendExecuteToServer(memoryLine, memorySlot, cyclic);
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

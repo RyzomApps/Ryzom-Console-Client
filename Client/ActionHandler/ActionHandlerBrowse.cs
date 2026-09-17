@@ -6,9 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
 using API;
 using Client.Config;
+using System;
 
 namespace Client.ActionHandler;
 
@@ -47,7 +47,7 @@ public class ActionHandlerBrowse(IClient client) : ActionHandlerBase(client)
 
                 // Run an action handler
                 var index = url.IndexOfAny((Convert.ToString("&")).ToCharArray());
-                    
+
                 if (index == -1)
                 {
                     index = url.Length;

@@ -6,11 +6,11 @@
 // Copyright 2021 N4T4NM
 ///////////////////////////////////////////////////////////////////
 
+using Client.Discord.Classes;
 using System;
 using System.IO;
 using System.Net;
 using System.Text.Json;
-using Client.Discord.Classes;
 
 namespace Client.Discord
 {

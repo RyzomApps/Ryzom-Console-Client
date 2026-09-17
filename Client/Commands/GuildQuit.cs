@@ -14,15 +14,19 @@ namespace Client.Commands
 
         public override string CmdDesc => "Client wants to quit its guild";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length != 0)
-                return "Please specify no parameters.";
+            {
+                responseMsg = "Please specify no parameters.";
+                return false;
+            }
 
             const string msgName = "GUILD:QUIT";
             var out2 = new BitMemoryStream();
@@ -30,12 +34,7 @@ namespace Client.Commands
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
                 ryzomClient.GetNetworkManager().Push(out2);
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

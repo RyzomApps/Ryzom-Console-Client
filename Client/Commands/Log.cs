@@ -16,8 +16,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Toggle Positive/Negative Filters for different log types";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -25,45 +26,56 @@ namespace Client.Commands
 
             // check args, if there s not the right number of parameter, return bad
             if (args.Length != 1)
-                return $"Usage: {CmdUsage}";
+            {
+                responseMsg = $"Usage: {CmdUsage}";
+                return false;
+            }
 
             switch (args[0].ToLower())
             {
                 case "chat":
                     // Chat system.
                     ryzomClient.Log.ChatEnabled = !ryzomClient.Log.ChatEnabled;
-                    return ryzomClient.Log.ChatEnabled ? "enabled" : "disabled";
+
+                    responseMsg = ryzomClient.Log.ChatEnabled ? "enabled" : "disabled";
+                    return true;
 
                 case "debug":
                     // Debug log system.
                     ryzomClient.Log.DebugEnabled = !ryzomClient.Log.DebugEnabled;
-                    return ryzomClient.Log.DebugEnabled ? "enabled" : "disabled";
+
+                    responseMsg = ryzomClient.Log.DebugEnabled ? "enabled" : "disabled";
+                    return true;
+
 
                 case "info":
                     // Info log system.
                     ryzomClient.Log.InfoEnabled = !ryzomClient.Log.InfoEnabled;
-                    return ryzomClient.Log.InfoEnabled ? "enabled" : "disabled";
+
+                    responseMsg = ryzomClient.Log.InfoEnabled ? "enabled" : "disabled";
+                    return true;
 
                 case "error":
                     // Error log system.
                     ryzomClient.Log.ErrorEnabled = !ryzomClient.Log.ErrorEnabled;
-                    return ryzomClient.Log.ErrorEnabled ? "enabled" : "disabled";
+
+                    responseMsg = ryzomClient.Log.ErrorEnabled ? "enabled" : "disabled";
+                    return true;
 
                 case "warn":
                 case "warning":
                     // Warning log system.
                     ryzomClient.Log.WarnEnabled = !ryzomClient.Log.WarnEnabled;
-                    return ryzomClient.Log.WarnEnabled ? "enabled" : "disabled";
+
+                    responseMsg = ryzomClient.Log.WarnEnabled ? "enabled" : "disabled";
+                    return true;
 
                 default:
                     // Unknown Log System . return false.
-                    return $"Usage: {CmdUsage}";
-            }
-        }
 
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+                    responseMsg = $"Usage: {CmdUsage}";
+                    return true;
+            }
         }
     }
 }

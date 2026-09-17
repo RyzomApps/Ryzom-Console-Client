@@ -13,22 +13,17 @@ namespace Client.Commands
 
         public override string CmdDesc => "Shows information about the current time";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             var csLocal = DateTime.Now.ToString("HH:mm:ss");
             var csUtc = DateTime.UtcNow.ToString("HH:mm:ss");
 
-            var msg = "Current local time is %local, UTC time is %utc.";
+            responseMsg = "Current local time is %local, UTC time is %utc.";
 
-            msg = msg.Replace("%local", csLocal);
-            msg = msg.Replace("%utc", csUtc);
+            responseMsg = responseMsg.Replace("%local", csLocal);
+            responseMsg = responseMsg.Replace("%utc", csUtc);
 
-            return msg;
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

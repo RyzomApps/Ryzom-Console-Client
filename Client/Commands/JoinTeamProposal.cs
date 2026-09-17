@@ -14,39 +14,48 @@ namespace Client.Commands
 
         public override string CmdDesc => "Propose to the current target or the given player name to join the team.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
-            // Check parameters.
-            if (args.Length > 1)
-                return "Wrong argument count in the command.";
-
-            if (args.Length == 0)
+            switch (args.Length)
             {
-                // Invite the target - Create the message for the server
-                const string msgName = "TEAM:JOIN_PROPOSAL";
-                var out2 = new BitMemoryStream();
+                // Check parameters.
+                case > 1:
+                    responseMsg = "Wrong argument count in the command.";
+                    return false;
 
-                if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
-                    ryzomClient.GetNetworkManager().Push(out2);
-                else
-                    return $"Unknown message named '{msgName}'.";
+                case 0:
+                    // Invite the target - Create the message for the server
+                    const string msgName = "TEAM:JOIN_PROPOSAL";
+                    var out2 = new BitMemoryStream();
 
-                return "";
+                    if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+                    {
+                        ryzomClient.GetNetworkManager().Push(out2);
+                    }
+                    else
+                    {
+                        responseMsg = $"Unknown message named '{msgName}'.";
+                        return true;
+                    }
+
+                    responseMsg = "";
+                    return false;
+
+                default:
+                    // Invite a named player - Perform admin command
+                    return ryzomClient.PerformInternalCommand($"a teamInvite {args[0]}", out responseMsg);
             }
-
-            // Invite a named player - Perform admin command
-            ryzomClient.PerformInternalCommand($"a teamInvite {args[0]}", out var response);
-            return response;
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "joinTeamProposal" };
+            return ["joinTeamProposal"];
         }
     }
 }

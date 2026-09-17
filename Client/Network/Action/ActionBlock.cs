@@ -6,9 +6,9 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using Client.Stream;
 using System;
 using System.Collections.Generic;
-using Client.Stream;
 
 namespace Client.Network.Action
 {
@@ -44,7 +44,7 @@ namespace Client.Network.Action
 
             int i;
 
-            byte num = (byte) Actions.Count;
+            byte num = (byte)Actions.Count;
             msg.Serial(ref num);
 
             //static char	buff[1024], cat[128];
@@ -91,7 +91,7 @@ namespace Client.Network.Action
                     if (actionSize < msgPosAfter - msgPosBefore)
                         RyzomClient.GetInstance().GetLogger()?.Warn(
                             $"ActionBase {Actions[i].Code} declares a lower size ({actionSize} bits) from what it actually serialises ({msgPosAfter - msgPosBefore} bits)");
-                    
+
                     //sprintf(cat, " %d(%d bits)", Actions[i]->Code, Actions[i]->size());
                     //strcat(buff, cat);
                 }

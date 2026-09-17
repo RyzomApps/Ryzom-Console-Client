@@ -17,10 +17,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 #endregion
 
+using Client.Helper.Crypter.Internal;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Client.Helper.Crypter.Internal;
 
 namespace Client.Helper.Crypter
 {

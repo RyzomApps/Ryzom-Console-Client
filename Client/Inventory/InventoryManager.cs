@@ -6,13 +6,13 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Diagnostics;
-using System.IO;
 using API.Inventory;
 using Client.Database;
 using Client.Sheet;
 using Client.Stream;
+using System;
+using System.Diagnostics;
+using System.IO;
 
 namespace Client.Inventory
 {
@@ -33,11 +33,11 @@ namespace Client.Inventory
         private const uint MaxEquipinvEntries = 19;
         private const uint MaxAnimalinvEntries = 500;
         private const uint MaxHotbarinvEntries = 5;
-         
+
         private const int MaxPackAnimal = 3;
         private const int MaxMektoubMount = 1;
         private const int MaxOtherPet = 3;
-         
+
         private const int MaxInventoryAnimal = (MaxPackAnimal + MaxMektoubMount + MaxOtherPet);
 
         // db path for the local inventory
@@ -153,7 +153,7 @@ namespace Client.Inventory
 
             for (uint k = 0; k < numItems; ++k)
             {
-                if (!(branch.GetNode((ushort)k) is DatabaseNodeBranch itemBranch))
+                if (branch.GetNode((ushort)k) is not DatabaseNodeBranch itemBranch)
                 {
                     _client.Log.Warn($"Can't retrieve item {k} of branch {dbBranchName}");
                 }
@@ -407,7 +407,7 @@ namespace Client.Inventory
             {
                 var @out = new BitMemoryStream();
                 const string sMsg = "ITEM:UNEQUIP";
-                
+
                 if (_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(sMsg, @out))
                 {
                     // Fill the message (equipped inventory, equipped inventory slot)

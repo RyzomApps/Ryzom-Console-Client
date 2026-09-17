@@ -4,15 +4,15 @@
 // Copyright 2021 bierdosenhalter and Contributers
 ///////////////////////////////////////////////////////////////////
 
+using Client.Config;
+using Client.Helper;
+using Client.WinAPI;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using Client.Config;
-using Client.Helper;
-using Client.WinAPI;
 
 namespace Client
 {

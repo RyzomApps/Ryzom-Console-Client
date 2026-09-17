@@ -494,7 +494,7 @@ namespace Client.Network
             impulse.Serial(ref tmp);
             var type = (TCombatFlyingText)tmp;
 
-            var color =  Color.FromArgb(255, 255, 255);
+            var color = Color.FromArgb(255, 255, 255);
             //string text = "";
             //float dt = 0.0f;
 

@@ -6,8 +6,8 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System.Diagnostics;
 using Client.Stream;
+using System.Diagnostics;
 
 namespace Client.Strings
 {

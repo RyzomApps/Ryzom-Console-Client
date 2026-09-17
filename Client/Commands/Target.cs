@@ -13,8 +13,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Finds the nearest entity whose name contains the given string.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -31,7 +32,10 @@ namespace Client.Commands
                 var entity = ryzomClient.GetNetworkManager().GetEntityManager().GetEntityByName(entityName, false, true);
 
                 if (entity == null)
-                    return $"Could not find '{entityName}'.";
+                {
+                    responseMsg = $"Could not find '{entityName}'.";
+                    return true;
+                }
 
                 slot = entity.Slot();
             }
@@ -39,12 +43,12 @@ namespace Client.Commands
             ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.SetSelection(slot);
             ryzomClient.GetNetworkManager().GetEntityManager().UserEntity.SetTargetSlot(slot);
 
-            return "";
+            return true;
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] { "tar" };
+            return ["tar"];
         }
     }
 }

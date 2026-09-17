@@ -1,12 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////
-// This file contains modified code from 'Ryzom - MMORPG Framework'
-// http://dev.ryzom.com/projects/ryzom/
-// which is released under GNU Affero General Public License.
-// http://www.gnu.org/licenses/
-// Copyright 2010 Winch Gate Property Limited
-///////////////////////////////////////////////////////////////////
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using API;
 using API.Commands;
@@ -22,26 +14,31 @@ namespace Client.Commands
 
         public override string CmdDesc => "Emote command";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             var args = GetArgs(command);
 
             if (args.Length < 1)
-                return "Usage: em <emote phrase>";
+            {
+                responseMsg = "Usage: em <emote phrase>";
+                return false;
+            }
 
             // Build the emote phrase from all arguments
-            string emotePhrase = string.Join(" ", args);
+            var emotePhrase = string.Join(" ", args);
 
             // Run the action handler
             try
             {
                 var actionHandler = new ActionHandlerEmote(handler);
                 actionHandler.Execute(null, $"nb=0|behav=255|custom_phrase={emotePhrase}");
-                return "";
+                return true;
             }
             catch (Exception ex)
             {
-                return $"Error executing emote: {ex.Message}";
+                responseMsg = $"Error executing emote: {ex.Message}";
+                return false;
             }
         }
 

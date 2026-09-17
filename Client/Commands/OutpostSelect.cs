@@ -14,8 +14,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Select an outpost to be displayed in the outpost window.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -23,8 +24,8 @@ namespace Client.Commands
 
             if (args.Length != 1)
             {
-                handler.GetLogger().Warn("Please specify an outpost sheet ID.");
-                return "";
+                responseMsg = "Please specify an outpost sheet ID.";
+                return false;
             }
 
             const string msgName = "OUTPOST:SELECT";
@@ -32,7 +33,11 @@ namespace Client.Commands
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
-                var outpostSheet = uint.Parse(args[0]); // can fail but who cares xD
+                if (!uint.TryParse(args[0], out var outpostSheet))
+                {
+                    responseMsg = "Outpost sheed ID is not a valid unsigned Integer.";
+                    return false;
+                }
 
                 out2.Serial(ref outpostSheet);
 
@@ -40,15 +45,11 @@ namespace Client.Commands
             }
             else
             {
-                return $"Unknown message named '{msgName}'.";
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

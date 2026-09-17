@@ -17,10 +17,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 #endregion
 
+using Client.Helper.Crypter.Internal;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Client.Helper.Crypter.Internal;
 
 namespace Client.Helper.Crypter.Utility
 {
@@ -90,7 +90,7 @@ namespace Client.Helper.Crypter.Utility
             _values = additionalDecodeCharacters != null
                 ? new Dictionary<char, int>(additionalDecodeCharacters)
                 : new Dictionary<char, int>();
-            for (int i = 0; i < characterSet.Length; i ++)
+            for (int i = 0; i < characterSet.Length; i++)
             {
                 char ch = characterSet[i];
                 if (_values.ContainsKey(ch))

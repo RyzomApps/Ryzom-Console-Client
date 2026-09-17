@@ -16,22 +16,22 @@ namespace Client.Commands
 
         public override string CmdDesc => "Enable/Disable the log for the database.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             var args = GetArgs(command);
 
             // Check parameters.
             if (args.Length != 0)
-                return $"Usage: {CmdUsage}";
+            {
+                responseMsg = $"Usage: {CmdUsage}";
+                return false;
+            }
 
             DatabaseManager.VerboseDatabase = !DatabaseManager.VerboseDatabase;
 
-            return DatabaseManager.VerboseDatabase ? "enabled" : "disabled";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            responseMsg = DatabaseManager.VerboseDatabase ? "enabled" : "disabled";
+            return true;
         }
     }
 }

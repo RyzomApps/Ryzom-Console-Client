@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 namespace Client.Discord.Classes
 {
     public class EmbedField
-    {        
+    {
         /// <summary>
         /// Field name
         /// </summary>

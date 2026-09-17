@@ -10,10 +10,11 @@ namespace Client.Commands
         public override string CmdUsage => "";
         public override string CmdDesc => "Instantaneously quits the game client";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             Program.Exit();
-            return "";
+            return true;
         }
 
         public override IEnumerable<string> GetCmdAliases()

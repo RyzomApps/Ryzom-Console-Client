@@ -14,8 +14,9 @@ namespace Client.Commands
         public override string CmdDesc =>
             "Write the position and orientation of all entities in the vision in the file 'entities.txt'";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -23,18 +24,16 @@ namespace Client.Commands
 
             // Check parameters
             if (args.Length != 0)
-                return $"Usage: {CmdUsage}";
+            {
+                responseMsg = $"Usage: {CmdUsage}";
+                return false;
+            }
 
             // Log entities
             ryzomClient.GetNetworkManager().GetEntityManager().WriteEntities();
 
             // Command well done.
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

@@ -16,27 +16,25 @@ namespace Client.Commands
 
         public override string CmdDesc => "Display the value of a dynamic string";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return $"Usage: {CmdUsage}";
+            {
+                responseMsg = $"Usage: {CmdUsage}";
+                return false;
+            }
 
             var dynId = Convert.ToUInt32(args[0]);
-
             var networkManager = ryzomClient.GetNetworkManager();
-            ryzomClient.GetStringManager().GetDynString(dynId, out var result, networkManager);
 
-            return result;
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            ryzomClient.GetStringManager().GetDynString(dynId, out responseMsg, networkManager);
+            return true;
         }
     }
 }

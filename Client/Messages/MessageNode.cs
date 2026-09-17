@@ -6,11 +6,11 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using API.Helper;
+using Client.Stream;
 using System;
 using System.Collections.Generic;
 using System.Xml;
-using API.Helper;
-using Client.Stream;
 
 namespace Client.Messages
 {

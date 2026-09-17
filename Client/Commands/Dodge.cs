@@ -13,21 +13,16 @@ namespace Client.Commands
 
         public override string CmdDesc => "Set the defense mode to dodge";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             ryzomClient.GetNetworkManager().SendMsgToServer("COMBAT:DODGE");
 
-            handler.GetLogger().Info("§eYou will try to dodge melee attacks.");
+            responseMsg = "§eYou will try to dodge melee attacks.";
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

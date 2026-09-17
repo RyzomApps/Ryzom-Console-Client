@@ -6,13 +6,13 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using Client.Interface;
+using Client.Stream;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
-using Client.Interface;
-using Client.Stream;
 
 namespace Client.Database
 {
@@ -190,7 +190,7 @@ namespace Client.Database
         {
             var newVal = (long)prop;
             SetValue64(newVal);
-    
+
         }
 
         /// <inheritdoc cref="SetValue64"/>
@@ -327,7 +327,7 @@ namespace Client.Database
         internal bool SetPropCheckGc(uint gc, long value)
         {
             // Apply only if happens after the DB change
-            if (gc < _lastChangeGc) 
+            if (gc < _lastChangeGc)
                 return false;
 
             // new recent date

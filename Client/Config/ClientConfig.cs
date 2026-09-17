@@ -6,12 +6,12 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
+using Client.Helper;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using Client.Helper;
 using File = System.IO.File;
 
 namespace Client.Config
@@ -218,7 +218,7 @@ namespace Client.Config
 
                             if (secondQuotationMark < commentMark)
                             {
-                                line = line.Substring(0, commentMark);
+                                line = line[..commentMark];
                             }
                         }
                     }

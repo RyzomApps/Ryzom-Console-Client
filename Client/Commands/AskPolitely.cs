@@ -13,27 +13,21 @@ namespace Client.Commands
 
         public override string CmdDesc => "Show target url. E.g. \"Ask politely\".";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             // Check parameters / Perform admin command
-            string response;
-
             if (args.Length > 0 && args[0] == "1")
-                ryzomClient.PerformInternalCommand("a openTargetUrl 1", out response);
+                ryzomClient.PerformInternalCommand("a openTargetUrl 1", out responseMsg);
             else
-                ryzomClient.PerformInternalCommand("a openTargetUrl", out response);
+                ryzomClient.PerformInternalCommand("a openTargetUrl", out responseMsg);
 
-            return response;
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] { "" };
+            return true;
         }
     }
 }

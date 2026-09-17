@@ -6,10 +6,10 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using API.Inventory;
 using Client.Chat;
 using Client.Database;
 using System.Diagnostics;
-using API.Inventory;
 
 namespace Client.Inventory
 {

@@ -6,16 +6,16 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
+using API.Entity;
+using API.Helper;
+using API.Network.Web;
+using Client.Config;
 using System;
 using System.Globalization;
-using API.Entity;
-using Client.Config;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using API.Helper;
-using API.Network.Web;
 
 namespace Client.Network.Web
 {

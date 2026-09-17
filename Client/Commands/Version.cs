@@ -12,14 +12,10 @@ namespace Client.Commands
 
         public override string CmdDesc => "Display client version";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
-            return $"RCC {Program.Version} ({Resources.BuildDate})".Replace("\r\n", "").Replace("  ", " ");
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            responseMsg = $"RCC {Program.Version} ({Resources.BuildDate})".Replace("\r\n", "").Replace("  ", " ");
+            return true;
         }
     }
 }

@@ -17,8 +17,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Modify Database";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -28,42 +29,42 @@ namespace Client.Commands
 
             switch (size)
             {
+                case 1:
+                    var prop1 = ryzomClient.GetDatabaseManager().GetNode(args[0], false);
+
+                    if (prop1 == null)
+                    {
+                        responseMsg = $"{args[0]} was not found in the database.";
+                        return false;
+                    }
+
+                    responseMsg = prop1.GetValue64().ToString(CultureInfo.InvariantCulture);
+
+                    break;
+
                 case 2:
-                {
                     // Convert the string into an Int64.
                     var value = long.Parse(args[1], CultureInfo.InvariantCulture);
 
                     // Set the property.
-                    var prop = ryzomClient.GetDatabaseManager().GetNode(args[0], true);
+                    var prop2 = ryzomClient.GetDatabaseManager().GetNode(args[0], true);
 
-                    if (prop == null)
-                        return $"{args[0]} was not found in the database.";
+                    if (prop2 == null)
+                    {
+                        responseMsg = $"{args[0]} was not found in the database.";
+                        return false;
+                    }
 
-                    prop.SetValue64(value);
+                    prop2.SetValue64(value);
 
                     break;
-                }
-                case 1:
-                {
-                    var prop = ryzomClient.GetDatabaseManager().GetNode(args[0], false);
 
-                    if (prop == null)
-                        return $"{args[0]} was not found in the database.";
-
-                    var str = prop.GetValue64().ToString(CultureInfo.InvariantCulture);
-
-                    return str;
-                }
                 default:
-                    return $"Usage: {CmdUsage}";
+                    responseMsg = $"Usage: {CmdUsage}";
+                    return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

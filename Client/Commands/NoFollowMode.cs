@@ -12,30 +12,34 @@ namespace Client.Commands
         public override string CmdUsage => "";
         public override string CmdDesc => "Stop the mode for following the target (only for server events)";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             // Check parameters.
             if (HasArg(command))
-                return "Please specify no parameters.";
+            {
+                responseMsg = "Please specify no parameters.";
+                return false;
+            }
 
             // Create the message and send.
             const string msgName = "TARGET:NO_FOLLOW";
             var out2 = new BitMemoryStream();
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
+            {
                 ryzomClient.GetNetworkManager().Push(out2);
+            }
             else
-                return $"Unknown message named '{msgName}'.";
+            {
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
+            }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

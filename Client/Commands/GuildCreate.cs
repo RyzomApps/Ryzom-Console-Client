@@ -18,26 +18,32 @@ namespace Client.Commands
         public override string CmdDesc =>
             "Client wants to create a guild (name of new guild, guild icon descriptor, description of the guild)";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length != 3)
-                return "Wrong argument count in the command.";
+            {
+                responseMsg = "Wrong argument count in the command.";
+                return false;
+            }
 
             const string msgName = "GUILD:CREATE";
             var out2 = new BitMemoryStream();
 
             if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
-                return $"Unknown message named '{msgName}'.";
+            {
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
+            }
 
-            var guildName = "Guild"; //args[0];
-            //var icon = ulong.Parse(args[1]);
-            ulong icon = 110142619738865821;
-            var guildDesc = "Name"; //args[2];
+            var guildName = args[0];
+            var icon = ulong.Parse(args[1]);
+            var guildDesc = args[2];
 
             out2.Serial(ref guildName, true);
             out2.Serial(ref icon, 64 * 8);
@@ -45,12 +51,7 @@ namespace Client.Commands
 
             ryzomClient.GetNetworkManager().Push(out2);
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

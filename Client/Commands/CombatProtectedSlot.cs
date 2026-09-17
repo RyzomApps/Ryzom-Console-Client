@@ -14,24 +14,31 @@ namespace Client.Commands
 
         public override string CmdDesc => "Select protected slot";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "Please specify one argument.";
+            {
+                responseMsg = "Please specify one argument.";
+                return false;
+            }
 
             var worked = byte.TryParse(args[0], out var slot);
 
             if (!worked)
-                return "One of the arguments could not be parsed.";
+            {
+                responseMsg = "One of the arguments could not be parsed.";
+                return false;
+            }
 
             // send msg
             var out2 = new BitMemoryStream();
-            var msgName = "COMBAT:PROTECTED_SLOT";
+            const string msgName = "COMBAT:PROTECTED_SLOT";
 
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
@@ -41,15 +48,11 @@ namespace Client.Commands
             }
             else
             {
-                return $"Unknown message named '{msgName}'.";
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
             }
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

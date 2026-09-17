@@ -12,9 +12,10 @@ namespace Client.Commands
         public override string CmdUsage => "";
         public override string CmdDesc => "Gets a list of plugins running on the client";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
-            return $"Plugins {GetPluginList(handler)}";
+            responseMsg = $"Plugins {GetPluginList(handler)}";
+            return true;
         }
 
         private static string GetPluginList(IClient handler)

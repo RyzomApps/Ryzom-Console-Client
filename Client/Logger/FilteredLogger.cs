@@ -6,10 +6,10 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
+using Client.Helper;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Client.Helper;
 using static Client.Config.ClientConfig;
 
 namespace Client.Logger

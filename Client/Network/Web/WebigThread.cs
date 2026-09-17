@@ -6,12 +6,12 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Diagnostics;
-using System.Threading;
 using API.Logger;
 using API.Network.Web;
 using Client.Config;
+using System;
+using System.Diagnostics;
+using System.Threading;
 
 namespace Client.Network.Web
 {

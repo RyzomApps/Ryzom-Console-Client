@@ -14,8 +14,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Erase phrases from the action bar. Specify an ActionBarPage to erase phrases from that page.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -25,7 +26,10 @@ namespace Client.Commands
             if (args.Length == 1)
             {
                 if (!uint.TryParse(args[0], out var page))
-                    return "Invalid ActionBarPage specified. It must be a number.";
+                {
+                    responseMsg = "Invalid ActionBarPage specified. It must be a number.";
+                    return true;
+                }
 
                 actionBarPage = page;
             }
@@ -35,35 +39,32 @@ namespace Client.Commands
 
             // Parse all memories
             for (uint memoryLine = 0; memoryLine < 10; memoryLine++)
+            for (uint memoryIndex = 0; memoryIndex < PhraseManager.PHRASE_MAX_MEMORY_SLOT; memoryIndex++)
             {
-                for (uint memoryIndex = 0; memoryIndex < PhraseManager.PHRASE_MAX_MEMORY_SLOT; memoryIndex++)
-                {
-                    var phraseId = ryzomClient.GetPhraseManager().GetPhraseIdFromMemory(memoryLine, memoryIndex);
+                var phraseId = ryzomClient.GetPhraseManager().GetPhraseIdFromMemory(memoryLine, memoryIndex);
 
-                    var usageCount = ryzomClient.GetPhraseManager().CountAllThatUsePhrase(phraseId);
+                var usageCount = ryzomClient.GetPhraseManager().CountAllThatUsePhrase(phraseId);
 
-                    // Check if the action bar page is specified, and if it matches
-                    if (!actionBarPage.HasValue || actionBarPage.Value == memoryLine)
-                    {
-                        // Only erase the phrases that are not used anywhere else
-                        if (usageCount == 1)
-                            phrasesToErase.Add(phraseId);
+                // Check if the action bar page is specified, and if it matches
+                if (actionBarPage.HasValue && actionBarPage.Value != memoryLine)
+                    continue;
 
-                        // Send forget to server for this memory line and index
-                        ryzomClient.GetPhraseManager().SendForgetToServer(memoryLine, memoryIndex);
-                    }
-                }
+                // Only erase the phrases that are not used anywhere else
+                if (usageCount == 1)
+                    phrasesToErase.Add(phraseId);
+
+                // Send forget to server for this memory line and index
+                ryzomClient.GetPhraseManager().SendForgetToServer(memoryLine, memoryIndex);
             }
 
             // Now erase the phrases that are marked for deletion
             foreach (var phraseId in phrasesToErase)
-            {
                 ryzomClient.GetPhraseManager().ErasePhrase(phraseId);
-            }
 
             ryzomClient.GetNetworkManager().Update();
 
-            return "Phrases erased successfully.";
+            responseMsg = "Phrases erased successfully.";
+            return true;
         }
 
         public override IEnumerable<string> GetCmdAliases()

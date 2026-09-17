@@ -17,12 +17,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 #endregion
 
+using Client.Helper.Crypter.Internal;
+using Client.Helper.Crypter.Utility;
 using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using Client.Helper.Crypter.Internal;
-using Client.Helper.Crypter.Utility;
 
 namespace Client.Helper.Crypter
 {

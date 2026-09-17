@@ -13,21 +13,16 @@ namespace Client.Commands
 
         public override string CmdDesc => "Set the defense mode to parry";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             ryzomClient.GetNetworkManager().SendMsgToServer("COMBAT:PARRY");
 
-            handler.GetLogger().Info("§eYou will try to parry melee attacks.");
-
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            responseMsg = "§eYou will try to parry melee attacks.";
+            return true;
         }
     }
 }

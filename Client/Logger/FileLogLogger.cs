@@ -6,10 +6,10 @@
 // Copyright 2021 ORelio and Contributers
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.IO;
 using API.Chat;
 using API.Helper;
+using System;
+using System.IO;
 
 namespace Client.Logger
 {

@@ -15,8 +15,9 @@ namespace Client.Commands
         public override string CmdDesc =>
             "This command sends a message visible to all who are in the same region as you at the time.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -25,18 +26,18 @@ namespace Client.Commands
             ryzomClient.Channel = ChatGroupType.Region;
 
             if (args.Length == 0)
-                return "";
+                return true;
 
             var text = string.Join(" ", args);
 
             ryzomClient.SendText(text);
 
-            return "";
+            return true;
         }
 
         public override IEnumerable<string> GetCmdAliases()
         {
-            return new[] {"r", "re"};
+            return ["r", "re"];
         }
     }
 }

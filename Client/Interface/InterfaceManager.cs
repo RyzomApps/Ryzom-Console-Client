@@ -6,8 +6,6 @@
 // Copyright 2010 Winch Gate Property Limited
 ///////////////////////////////////////////////////////////////////
 
-using System;
-using System.Xml;
 using API.Network.Web;
 using Client.Brick;
 using Client.Config;
@@ -16,6 +14,8 @@ using Client.Inventory;
 using Client.Network.Web;
 using Client.Phrase;
 using Client.Skill;
+using System;
+using System.Xml;
 
 namespace Client.Interface
 {

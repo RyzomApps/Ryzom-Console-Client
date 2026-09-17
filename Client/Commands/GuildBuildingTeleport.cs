@@ -14,34 +14,36 @@ namespace Client.Commands
 
         public override string CmdDesc => "Client wants to teleport somewhere in guild flats";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
             if (args.Length != 1)
-                return "Please specify a parameter.";
+            {
+                responseMsg = "Please specify a parameter.";
+                return false;
+            }
 
             if (!ushort.TryParse(args[0], out var index))
-                return "";
+                return true;
 
             const string msgName = "GUILD:TELEPORT";
             var out2 = new BitMemoryStream();
 
             if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
-                return $"Unknown message named '{msgName}'.";
+            {
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
+            }
 
             out2.Serial(ref index);
             ryzomClient.GetNetworkManager().Push(out2);
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

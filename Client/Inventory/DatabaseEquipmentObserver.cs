@@ -1,5 +1,5 @@
-﻿using Client.Interface;
-using Client.Database;
+﻿using Client.Database;
+using Client.Interface;
 
 namespace Client.Inventory
 {

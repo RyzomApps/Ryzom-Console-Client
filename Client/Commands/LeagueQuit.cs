@@ -13,25 +13,20 @@ namespace Client.Commands
 
         public override string CmdDesc => "Quits your league, quits your team from the league if you are team leader.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
 
-            // Check parameters
-            if (args.Length != 0)
-                return "Wrong argument count in the command.";
+            // Check parameters and perform admin command
+            if (args.Length == 0)
+                return ryzomClient.PerformInternalCommand("a setLeague", out responseMsg);
 
-            // leaguequit - Perform admin command
-            ryzomClient.PerformInternalCommand("a setLeague", out var response);
-            return response;
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] { "" };
+            responseMsg = "Wrong argument count in the command.";
+            return false;
         }
     }
 }

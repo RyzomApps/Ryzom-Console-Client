@@ -18,8 +18,9 @@ namespace Client.Commands
 
         public override string CmdDesc => "Retrieve or change the position of the user.";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
@@ -32,33 +33,33 @@ namespace Client.Commands
                 case 0:
                     // Display the position
                     var user = ryzomClient?.GetApiNetworkManager()?.GetApiEntityManager()?.GetApiUserEntity();
-                    return user != null ? user.Pos.ToString() : "User entity missing.";
+
+                    responseMsg = user != null ? user.Pos.ToString() : "User entity missing.";
+                    return true;
 
                 case 1:
                     // Named destination.
 
-                    // TODO: pos command get teleport position for name
-                    //var dest = args[0];
-                    //newPos = Teleport.getPos(NLMISC.strlwr(dest));
-                    //if (newPos == Teleport.Unknown)
-                    //{
-                    //here we try to teleport to a bot destination
+                    // TODO: pos command get teleport position for name  Teleport.getPos(NLMISC.strlwr(dest))
+                    // Here we try to teleport to a bot destination
                     const string msgName = "TP:BOT";
                     var @out = new BitMemoryStream();
                     if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, @out))
                     {
                         var str = args[0];
                         @out.Serial(ref str);
-                        handler.GetLogger().Debug("/pos: TP:BOT sent");
+                        responseMsg = "TP:BOT sent";
                         ryzomClient.GetNetworkManager().Push(@out);
                     }
                     else
                     {
-                        return $"Unknown message named '{msgName}'.";
+                        responseMsg = $"Unknown message named '{msgName}'.";
+                        return true;
                     }
 
-                    return "";
-                //}
+                    responseMsg = "";
+                    return true;
+
                 case 2:
                 case 3:
                     // Teleport to anywhere.
@@ -66,28 +67,29 @@ namespace Client.Commands
                     newPos.Y = float.Parse(args[1]);
                     newPos.Z = args.Length == 3 ? float.Parse(args[2]) : 0.0f;
                     break;
+
                 default:
                     // Bad argument number.
-                    return $"Usage: {CmdUsage}";
+                    responseMsg = $"Usage: {CmdUsage}";
+                    return true;
             }
 
             // Teleport to the right destination.
-            //Teleport(newPos);
             var userEntity = ryzomClient.GetApiNetworkManager().GetApiEntityManager().GetApiUserEntity();
 
             if (userEntity != null)
+            {
+                // Set the user position here - TODO: Do a real teleportation
                 userEntity.Pos = newPos;
+            }
             else
-                return "User entity missing.";
-
+            {
+                responseMsg = "User entity missing.";
+                return false;
+            }
 
             // Command well done.
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return [];
+            return true;
         }
     }
 }

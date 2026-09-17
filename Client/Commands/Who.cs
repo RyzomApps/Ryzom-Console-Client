@@ -12,20 +12,27 @@ namespace Client.Commands
         public override string CmdUsage => "[GM|channelName]";
         public override string CmdDesc => "Display all players currently in region";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
             // Check parameters.
             if (GetArgs(command).Length > 1)
-                return "Please specify less parameters.";
+            {
+                responseMsg = "Please specify less parameters.";
+                return false;
+            }
 
             const string msgName = "DEBUG:WHO";
             var out2 = new BitMemoryStream();
 
             if (!ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
-                return $"Unknown message named '{msgName}'.";
+            {
+                responseMsg = $"Unknown message named '{msgName}'.";
+                return false;
+            }
 
             var opt = "";
 
@@ -34,12 +41,7 @@ namespace Client.Commands
             out2.Serial(ref opt, false);
             ryzomClient.GetNetworkManager().Push(out2);
 
-            return "";
-        }
-
-        public override IEnumerable<string> GetCmdAliases()
-        {
-            return new[] {""};
+            return true;
         }
     }
 }

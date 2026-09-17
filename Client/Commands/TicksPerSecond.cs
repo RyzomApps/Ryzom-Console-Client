@@ -1,12 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////
-// This file contains modified code from 'SpigotMC'
-// https://www.spigotmc.org/
-// which is released under GPL-3.0 License.
-// https://www.gnu.org/licenses/gpl-3.0.en.html
-// Copyright 2020 SpigotMC
-///////////////////////////////////////////////////////////////////
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using API;
@@ -27,14 +19,17 @@ namespace Client.Commands
 
         public override string CmdDesc => "Gets the current ticks per second for the server";
 
-        public override string Run(IClient handler, string command, Dictionary<string, object> localVars)
+        public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
+            responseMsg = "";
             var tps = handler.GetApiNetworkManager().GetTps();
             var tpsAvg = new string[tps.Length];
 
-            for (var i = 0; i < tps.Length; i++) tpsAvg[i] = Format(tps[i]);
+            for (var i = 0; i < tps.Length; i++)
+                tpsAvg[i] = Format(tps[i]);
 
-            return $"{ChatColor.GOLD}TPS from last 1m, 5m, 15m: {string.Join(", ", tpsAvg)}";
+            responseMsg = $"{ChatColor.GOLD}TPS from last 1m, 5m, 15m: {string.Join(", ", tpsAvg)}";
+            return false;
         }
 
         private static string Format(double tps)
@@ -42,7 +37,7 @@ namespace Client.Commands
             var percentage = tps / RollingAverage.GameTps;
 
             return (percentage > 0.9 ? ChatColor.GREEN : percentage > 0.8 ? ChatColor.YELLOW : ChatColor.RED) +
-                string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Round(tps * 100d) / 100d);
+                   string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Round(tps * 100d) / 100d);
         }
     }
 }
