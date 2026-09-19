@@ -1605,6 +1605,13 @@ namespace Client
             }
         }
 
+        /// <inheritdoc/>
+        public void OnPluginLog(string pluginName, string level, string message)
+        {
+            // Broadcast to all listeners, mirroring how DisplayTell fans out.
+            Plugins.OnPluginLog(pluginName, level, message);
+        }
+
         #endregion
 
         #region Thread-Invoke: Cross-thread method calls

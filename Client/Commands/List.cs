@@ -20,7 +20,7 @@ namespace Client.Commands
             var entityManager = handler.GetApiNetworkManager()?.GetApiEntityManager();
 
             // Iterate players
-            if (entityManager == null)
+            if (entityManager == null || entityManager.GetApiUserEntity() == null)
             {
                 responseMsg = "Entity manager not initialized.";
                 return false;

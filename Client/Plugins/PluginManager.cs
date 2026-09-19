@@ -998,6 +998,14 @@ namespace Client.Plugins
             DispatchListenerEvent(listener => listener.OnConnectionReadySent(gameTick, userSheet, languageCode));
         }
 
+        /// <summary>
+        /// Called when any plugin writes a log message (info, warn, error, debug).
+        /// </summary>
+        internal void OnPluginLog(string pluginName, string level, string message)
+        {
+            DispatchListenerEvent(listener => listener.OnPluginLog(pluginName, level, message));
+        }
+
         #endregion
     }
 }
