@@ -100,31 +100,7 @@ namespace Client.Network
             }
 
             // remove the response header if there is any
-            var first = responseString.IndexOf("\n\n", StringComparison.Ordinal);
-
-            if (first == -1)
-            {
-                first = responseString.IndexOf("\r\r", StringComparison.Ordinal);
-
-                if (first == -1)
-                {
-                    first = responseString.IndexOf("\r\n\r\n", StringComparison.Ordinal);
-
-                    if (first != -1)
-                    {
-                        responseString = responseString[(first + 4)..];
-                    }
-                }
-
-                else
-                {
-                    responseString = responseString[(first + 2)..];
-                }
-            }
-            else
-            {
-                responseString = responseString[(first + 2)..];
-            }
+            responseString = ExtractHttpBody(responseString);
 
             if (responseString.Length == 0)
                 throw new InvalidOperationException("No response from the login server.");
@@ -191,6 +167,51 @@ namespace Client.Network
                 default:
                     throw new WebException($"Invalid login server response '{responseString[..64]}{(responseString.Length > 64 ? "..." : "")}'.");
             }
+        }
+
+        /// <summary>
+        /// Strips the HTTP response header (if any) and decodes a chunked body if necessary.
+        /// </summary>
+        public static string ExtractHttpBody(string response)
+        {
+            var idx = response.IndexOf("\r\n\r\n", StringComparison.Ordinal);
+            if (idx == -1)
+                return response; // no header, raw body (non-proxy case)
+
+            var body = response[(idx + 4)..];
+
+            if (response[..idx].ToLowerInvariant().Contains("transfer-encoding: chunked"))
+                body = Dechunk(body);
+
+            return body;
+        }
+        
+        /// <summary>
+        /// Reassemble chunked transfer data.
+        /// </summary>
+        private static string Dechunk(string input)
+        {
+            var sb = new StringBuilder();
+            var pos = 0;
+
+            while (pos < input.Length)
+            {
+                var lineEnd = input.IndexOf("\r\n", pos, StringComparison.Ordinal);
+                if (lineEnd == -1) break;
+
+                var sizeStr = input[pos..lineEnd].Trim();
+                var semi = sizeStr.IndexOf(';');
+                if (semi != -1) sizeStr = sizeStr[..semi];
+
+                if (!int.TryParse(sizeStr, System.Globalization.NumberStyles.HexNumber,
+                                  System.Globalization.CultureInfo.InvariantCulture, out var size) || size == 0)
+                    break; // "0" = final chunk
+
+                sb.Append(input, lineEnd + 2, Math.Min(size, input.Length - lineEnd - 2));
+                pos = lineEnd + 2 + size + 2; // skip chunk data + trailing CRLF
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>
