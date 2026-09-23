@@ -1073,6 +1073,7 @@ namespace Client.Network
                 _actions.RemoveAt(0);
             }
 
+            // TODO: just drop this?
             Debug.Assert(_currentReceivedNumber * 2 + _synchronize > _currentServerTick);
             SetCurrentServerTick((uint)(_currentReceivedNumber * 2 + _synchronize));
 

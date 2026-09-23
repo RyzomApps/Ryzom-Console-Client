@@ -185,7 +185,7 @@ namespace Client.Network
 
             return body;
         }
-        
+
         /// <summary>
         /// Reassemble chunked transfer data.
         /// </summary>

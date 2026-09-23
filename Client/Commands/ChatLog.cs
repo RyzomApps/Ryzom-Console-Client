@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using API;
+﻿using API;
 using API.Commands;
+using System;
+using System.Collections.Generic;
 
 namespace Client.Commands
 {
@@ -27,8 +27,8 @@ namespace Client.Commands
                 return false;
             }
 
-			ryzomClient.LogState = !ryzomClient.LogState;
-			responseMsg = ryzomClient.LogState ? "Log turned on" : "Log turned off";
+            ryzomClient.LogState = !ryzomClient.LogState;
+            responseMsg = ryzomClient.LogState ? "Log turned on" : "Log turned off";
 
             var node = ryzomClient.GetDatabaseManager().GetServerNode("UI:SAVE:CHATLOG_STATE", false);
             node?.SetValue32(ryzomClient.LogState ? 1 : 0);

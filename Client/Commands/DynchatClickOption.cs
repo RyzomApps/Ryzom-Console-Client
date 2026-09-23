@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using API;
+﻿using API;
 using API.Commands;
 using Client.Stream;
+using System.Collections.Generic;
 
 namespace Client.Commands
 {

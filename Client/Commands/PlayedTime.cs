@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using API;
+﻿using API;
 using API.Commands;
 using API.Helper;
+using System;
+using System.Collections.Generic;
 
 namespace Client.Commands
 {

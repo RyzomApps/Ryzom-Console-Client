@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using API;
+﻿using API;
 using API.Commands;
+using System;
+using System.Collections.Generic;
 
 namespace Client.Commands
 {
@@ -30,14 +30,14 @@ namespace Client.Commands
             if (!int.TryParse(args[0], out var val))
             {
                 responseMsg = "Expression doesn't evaluate to a numerical value.";
-				return false;
+                return false;
             }
 
-			var pPm = ryzomClient.GetPhraseManager();
+            var pPm = ryzomClient.GetPhraseManager();
 
-			// first half of memorized stanza sets - MEM_SET_TYPES::NumMemories / 2 - 1
-			val = Math.Max(0, Math.Min(val, 10));
-			pPm.SelectMemoryLineDb(val);
+            // first half of memorized stanza sets - MEM_SET_TYPES::NumMemories / 2 - 1
+            val = Math.Max(0, Math.Min(val, 10));
+            pPm.SelectMemoryLineDb(val);
 
             return true;
         }

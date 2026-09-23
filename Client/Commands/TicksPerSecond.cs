@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using API;
+﻿using API;
 using API.Chat;
 using API.Commands;
 using Client.Helper;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace Client.Commands
 {

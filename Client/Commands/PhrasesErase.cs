@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using API;
+﻿using API;
 using API.Commands;
 using Client.Phrase;
+using System;
+using System.Collections.Generic;
 
 namespace Client.Commands
 {
@@ -39,23 +39,23 @@ namespace Client.Commands
 
             // Parse all memories
             for (uint memoryLine = 0; memoryLine < 10; memoryLine++)
-            for (uint memoryIndex = 0; memoryIndex < PhraseManager.PHRASE_MAX_MEMORY_SLOT; memoryIndex++)
-            {
-                var phraseId = ryzomClient.GetPhraseManager().GetPhraseIdFromMemory(memoryLine, memoryIndex);
+                for (uint memoryIndex = 0; memoryIndex < PhraseManager.PHRASE_MAX_MEMORY_SLOT; memoryIndex++)
+                {
+                    var phraseId = ryzomClient.GetPhraseManager().GetPhraseIdFromMemory(memoryLine, memoryIndex);
 
-                var usageCount = ryzomClient.GetPhraseManager().CountAllThatUsePhrase(phraseId);
+                    var usageCount = ryzomClient.GetPhraseManager().CountAllThatUsePhrase(phraseId);
 
-                // Check if the action bar page is specified, and if it matches
-                if (actionBarPage.HasValue && actionBarPage.Value != memoryLine)
-                    continue;
+                    // Check if the action bar page is specified, and if it matches
+                    if (actionBarPage.HasValue && actionBarPage.Value != memoryLine)
+                        continue;
 
-                // Only erase the phrases that are not used anywhere else
-                if (usageCount == 1)
-                    phrasesToErase.Add(phraseId);
+                    // Only erase the phrases that are not used anywhere else
+                    if (usageCount == 1)
+                        phrasesToErase.Add(phraseId);
 
-                // Send forget to server for this memory line and index
-                ryzomClient.GetPhraseManager().SendForgetToServer(memoryLine, memoryIndex);
-            }
+                    // Send forget to server for this memory line and index
+                    ryzomClient.GetPhraseManager().SendForgetToServer(memoryLine, memoryIndex);
+                }
 
             // Now erase the phrases that are marked for deletion
             foreach (var phraseId in phrasesToErase)

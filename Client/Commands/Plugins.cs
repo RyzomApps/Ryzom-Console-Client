@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using API;
+﻿using API;
 using API.Chat;
 using API.Commands;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Client.Commands
 {
