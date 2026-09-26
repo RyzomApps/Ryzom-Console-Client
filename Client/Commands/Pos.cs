@@ -34,7 +34,7 @@ namespace Client.Commands
                     // Display the position
                     var user = ryzomClient?.GetApiNetworkManager()?.GetApiEntityManager()?.GetApiUserEntity();
 
-                    responseMsg = user != null ? user.Pos.ToString() : "User entity missing.";
+                    responseMsg = user != null ? $"Your position is <{user.Pos.X:0} {user.Pos.Y:0}>." : "User entity missing.";
                     return true;
 
                 case 1:

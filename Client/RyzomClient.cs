@@ -245,25 +245,32 @@ namespace Client
             _actionHandlerManager.RegisterActionHandler(new ActionHandlerLaunchGame(this, _networkManager), "launch_game");
 
             // create the data dir
-            if (!Directory.Exists("data")) Directory.CreateDirectory("data");
+            if (!Directory.Exists("data"))
+                Directory.CreateDirectory("data");
 
             // create the plugins dir
-            if (!Directory.Exists("plugins")) Directory.CreateDirectory("plugins");
+            if (!Directory.Exists("plugins"))
+                Directory.CreateDirectory("plugins");
 
             // copy msg.xml from resources
-            if (!File.Exists("./data/msg.xml")) ResourceHelper.WriteResourceToFile("msg", "./data/msg.xml");
+            if (!File.Exists("./data/msg.xml"))
+                ResourceHelper.WriteResourceToFile("msg", "./data/msg.xml");
 
             // copy database.xml from resources
-            if (!File.Exists("./data/database.xml")) ResourceHelper.WriteResourceToFile("database", "./data/database.xml");
+            if (!File.Exists("./data/database.xml"))
+                ResourceHelper.WriteResourceToFile("database", "./data/database.xml");
 
             // copy local_database.xml from resources
-            if (!File.Exists("./data/local_database.xml")) ResourceHelper.WriteResourceToFile("local_database", "./data/local_database.xml");
+            if (!File.Exists("./data/local_database.xml"))
+                ResourceHelper.WriteResourceToFile("local_database", "./data/local_database.xml");
 
             // copy sheet_id.bin from resources
-            if (!File.Exists("./data/sheet_id.bin")) ResourceHelper.WriteResourceToFile("sheet_id", "./data/sheet_id.bin");
+            if (!File.Exists("./data/sheet_id.bin"))
+                ResourceHelper.WriteResourceToFile("sheet_id", "./data/sheet_id.bin");
 
             // copy proxies.txt from resources
-            if (!File.Exists("./data/proxies.txt")) ResourceHelper.WriteResourceToFile("proxies", "./data/proxies.txt");
+            if (!File.Exists("./data/proxies.txt"))
+                ResourceHelper.WriteResourceToFile("proxies", "./data/proxies.txt");
 
             // Start the main client
             if (autoStart)

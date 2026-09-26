@@ -12,9 +12,6 @@ namespace Client.Helper
         {
             var obj = Resources.ResourceManager.GetObject(resourceName);
 
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            FileInfo fileInfo = new FileInfo(assembly.Location);
-
             switch (obj)
             {
                 case byte[] bytes:
