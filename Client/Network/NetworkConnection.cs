@@ -1073,9 +1073,11 @@ namespace Client.Network
                 _actions.RemoveAt(0);
             }
 
-            // TODO: just drop this?
-            Debug.Assert(_currentReceivedNumber * 2 + _synchronize > _currentServerTick);
-            SetCurrentServerTick((uint)(_currentReceivedNumber * 2 + _synchronize));
+            // Tick check which was an assertion -> maybe this could lead to strange errors :)
+            if (_currentReceivedNumber * 2 + _synchronize <= _currentServerTick)
+                _client.GetLogger().Error($"Received server tick {_currentReceivedNumber * 2 + _synchronize} that is smaller than the actual tick {_currentServerTick}.");
+            else
+                SetCurrentServerTick((uint)(_currentReceivedNumber * 2 + _synchronize));
 
             // TODO: receiveNormalMessage PacketStamps implementation
 

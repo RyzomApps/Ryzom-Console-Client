@@ -554,6 +554,13 @@ namespace Client
                         GetLogger().Warn($"Login retry #{loginRetries}...");
                         interfaceState = InterfaceState.AutoLogin;
                     }
+                    else if (loginRetries < 3)
+                    {
+                        // no proxy: reconnect from scratch (fresh socket, new Init + Connect)
+                        GetLogger().Warn($"Login retry #{loginRetries} (reconnecting)...");
+                        _firstConnection = true;
+                        interfaceState = InterfaceState.AutoLogin;
+                    }
                     else
                     {
                         // connection may be bad - quit
