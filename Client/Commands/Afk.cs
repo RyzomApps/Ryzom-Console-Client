@@ -10,9 +10,12 @@ namespace Client.Commands
     {
         public override string CmdName => "afk";
 
-        public override string CmdUsage => "[customText]";
+        public override string CmdUsage => "[on|off|true|false|0|1] [customText]";
 
-        public override string CmdDesc => "Set the player as 'away from keyboard'";
+        public override string CmdDesc => "Set the player as 'away from keyboard' (toggles if no state is given)";
+
+        /// <summary>Afk state as a parameter, persisted across runs. Starts with afk off.</summary>
+        private bool _afk = false;
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
@@ -20,11 +23,39 @@ namespace Client.Commands
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
 
-            var b = true; // afk state
             var args = GetArgs(command);
 
-            var customText = "";
+            // optional state parameter: on|off|true|false|1|0, otherwise toggle
+            if (args.Length > 0)
+            {
+                var state = args[0].ToLowerInvariant();
+                switch (state)
+                {
+                    case "on":
+                    case "true":
+                    case "1":
+                        _afk = true;
+                        args = args[1..];
+                        break;
+                    case "off":
+                    case "false":
+                    case "0":
+                        _afk = false;
+                        args = args[1..];
+                        break;
+                    default:
+                        _afk = !_afk;
+                        break;
+                }
+            }
+            else
+            {
+                _afk = !_afk;
+            }
 
+            var b = _afk;
+
+            var customText = "";
             if (args.Length != 0) customText = string.Join(" ", args);
 
             // send afk state
@@ -57,6 +88,7 @@ namespace Client.Commands
                 return false;
             }
 
+            responseMsg = $"AFK state: {(_afk ? "on" : "off")}" + (customText.Length > 0 ? $" (\"{customText}\")" : "");
             return true;
         }
     }
