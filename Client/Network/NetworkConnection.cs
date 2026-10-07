@@ -1,4 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
 // This file contains modified code from 'Ryzom - MMORPG Framework'
 // http://dev.ryzom.com/projects/ryzom/
 // which is released under GNU Affero General Public License.
@@ -1794,7 +1794,7 @@ namespace Client.Network
         /// <summary>
         /// Buffers an action to be sent at next update (or later updates if network overload occurs)
         /// </summary>
-        private void Push(ActionBase action)
+        public void Push(ActionBase action)
         {
             if (_actions.Count == 0 || _actions[^1].Cycle != 0)
             {

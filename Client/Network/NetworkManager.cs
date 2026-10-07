@@ -1,4 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
 // This file contains modified code from 'Ryzom - MMORPG Framework'
 // http://dev.ryzom.com/projects/ryzom/
 // which is released under GNU Affero General Public License.
@@ -1898,6 +1898,79 @@ namespace Client.Network
             {
                 _client.GetLogger().Warn($"Unknown message named '{sMsg}'.");
             }
+        }
+
+        // ==================================================================
+        // API: INetworkManager.SendImpulse
+        // ==================================================================
+
+        /// <summary>
+        /// Builds a named impulse (name from msg.xml), lets the callback fill
+        /// the payload and pushes the packet to the connection (sent at next update).
+        /// </summary>
+        public bool SendImpulse(string msgName, Action<API.Network.IBitStreamWriter> fillPayload = null)
+        {
+            var out2 = new BitMemoryStream();
+
+            if (!_messageHeaderManager.PushNameToStream(msgName, out2))
+            {
+                _client.GetLogger().Warn($"Unknown message named '{msgName}'.");
+                return false;
+            }
+
+            fillPayload?.Invoke(new BitStreamWriterAdapter(out2));
+
+            Push(out2);
+            return true;
+        }
+
+        // ==================================================================
+        // API: INetworkManager.SendMultipartAction
+        // ==================================================================
+
+        /// <summary>
+        /// Sends a GenericMultiPart action (FE::GenericMultiPart) directly over
+        /// the network connection (sent at next update).
+        /// </summary>
+        public bool SendMultipartAction(byte number, short part, short nbBlock, byte[] partContent, bool allowExceedingMaxSize = true)
+        {
+            var agmp = new ActionGenericMultiPart
+            {
+                Number = number,
+                Part = part,
+                NbBlock = nbBlock,
+                PartCont = partContent,
+                AllowExceedingMaxSize = allowExceedingMaxSize
+            };
+
+            _networkConnection.Push(agmp);
+            return true;
+        }
+
+        // ==================================================================
+        // Adapter: BitMemoryStream -> API.Network.IBitStreamWriter
+        // ==================================================================
+
+        private sealed class BitStreamWriterAdapter : API.Network.IBitStreamWriter
+        {
+            private readonly BitMemoryStream _s;
+
+            public BitStreamWriterAdapter(BitMemoryStream s)
+            {
+                _s = s;
+            }
+
+            public void U8(byte v)    { byte t = v;    _s.Serial(ref t); }
+            public void S8(sbyte v)   { byte t = unchecked((byte)v); _s.Serial(ref t); }
+            public void U16(ushort v) { ushort t = v;  _s.Serial(ref t); }
+            public void S16(short v)  { short t = v;   _s.Serial(ref t); }
+            public void S32(int v)    { int t = v;     _s.Serial(ref t); }
+            public void U32(uint v)   { uint t = v;    _s.Serial(ref t); }
+            public void U64(ulong v)  { ulong t = v;   _s.Serial(ref t, 64); }
+            public void F32(float v)  { float t = v;   _s.Serial(ref t); }
+            public void Bool(bool v)  { bool t = v;    _s.Serial(ref t); }
+            public void Uc(string v)  { string t = v;  _s.Serial(ref t); }
+            public void Bytes(byte[] v){ byte[] t = v; _s.Serial(ref t); }
         }
 
         /// <summary>
