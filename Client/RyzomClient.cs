@@ -72,6 +72,7 @@ namespace Client
         private readonly SheetManager _sheetManager;
         private readonly PhraseManager _phraseManager;
         private readonly InventoryManager _inventoryManager;
+        private readonly BotChat.BotChatManager _botChatManager;
         private readonly SkillManager _skillManager;
         private readonly BrickManager _brickManager;
         private readonly SheetIdFactory _sheetIdFactory;
@@ -195,6 +196,10 @@ namespace Client
 
         public IInventoryManager GetApiInventoryManager() { return _inventoryManager; }
 
+        public BotChat.BotChatManager GetBotChatManager() { return _botChatManager; }
+
+        public API.BotChat.IBotChatManager GetApiBotChatManager() { return _botChatManager; }
+
         public IWebTransfer GetWebTransfer() { return _webTransfer; }
 
         public ActionHandlerManager GetActionHandlerManager() { return _actionHandlerManager; }
@@ -220,6 +225,7 @@ namespace Client
             if (ClientConfig.UseDatabase)
                 _databaseManager = new DatabaseManager(this);
 
+            _botChatManager = new BotChat.BotChatManager(this);
             _stringManager = new StringManager(this);
             _sheetManager = new SheetManager(this);
             _skillManager = new SkillManager(this);
@@ -228,8 +234,9 @@ namespace Client
             _networkConnection = new NetworkConnection(this);
             _phraseManager = new PhraseManager(this);
 
-            if (ClientConfig.UseInventory)
-                _inventoryManager = new InventoryManager(this);
+            // Always create the manager: bag entries are built lazily from the
+            // server database, so it also works in minimal config (no sheets).
+            _inventoryManager = new InventoryManager(this);
 
             _actionHandlerManager = new ActionHandlerManager(this);
             _webTransfer = new WebTransfer(this);

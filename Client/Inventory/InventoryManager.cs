@@ -11,6 +11,7 @@ using Client.Database;
 using Client.Sheet;
 using Client.Stream;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -115,6 +116,13 @@ namespace Client.Inventory
 
         public void Init()
         {
+            // Without the database (UseDatabase = false) there is nothing to bind to.
+            if (_client.GetDatabaseManager() == null)
+            {
+                _client.Log.Warn("InventoryManager.Init skipped: database disabled (UseDatabase = false).");
+                return;
+            }
+
             // LOCAL DB is not implemented
             InitIndirection($"{Inventory}:HAND:", ref ServerHands, MaxHandinvEntries, true);
             InitIndirection($"{Inventory}:EQUIP:", ref ServerEquip, MaxEquipinvEntries, true);
@@ -174,13 +182,13 @@ namespace Client.Inventory
             {
                 var pNl = _client.GetDatabaseManager().GetServerNode($"{dbbranch}{i}:INDEX_IN_BAG");
 
-                if (putObs)
-                {
-                    var textId = new TextId();
-                    pNl.AddObserver(_dbEquipObs, textId);
-                }
                 if (pNl != null)
                 {
+                    if (putObs)
+                    {
+                        var textId = new TextId();
+                        pNl.AddObserver(_dbEquipObs, textId);
+                    }
                     indices[i] = pNl.GetValue32();
                 }
             }
@@ -191,6 +199,9 @@ namespace Client.Inventory
         /// </summary>
         internal void OnUpdateEquipHands()
         {
+            if (_client.GetDatabaseManager() == null)
+                return;
+
             // update hands slots after initial BAG inventory has received
             var pNl = _client.GetDatabaseManager().GetServerNode($"{Inventory}:HAND:0:INDEX_IN_BAG", false);
 
@@ -264,6 +275,123 @@ namespace Client.Inventory
         {
             Debug.Assert(index < MaxBaginvEntries);
             return _serverBag[index];
+        }
+
+        /// <inheritdoc/>
+        public List<IBagEntry> GetBagEntries()
+        {
+            var result = new List<IBagEntry>();
+
+            for (uint i = 0; i < MaxBaginvEntries; i++)
+            {
+                var item = _serverBag[i];
+
+                if (item == null)
+                {
+                    // The item may have been received after the inventory was
+                    // initialized (e.g. minimal config without sheets where the
+                    // bag branch only appears later): build it now from the
+                    // server database so live updates continue to flow.
+                    var branch = _client.GetDatabaseManager().GetServerBranch($"{Inventory}:BAG");
+                    var itemBranch = branch?.GetNode((ushort)i) as DatabaseNodeBranch;
+
+                    if (itemBranch != null)
+                    {
+                        item = new ItemImage();
+                        item.Build(itemBranch);
+                        _serverBag[i] = item;
+                    }
+                }
+
+                if (item == null || item.GetSheetId() == 0)
+                {
+                    continue;
+                }
+
+                result.Add(new BagEntry(i, item));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Resolve one indirection slot (hand or hotbar) to the bag item it
+        /// references. Zero (or out of range) means the slot is empty. The
+        /// referenced bag item is built lazily, like GetBagEntries does.
+        /// </summary>
+        private bool TryResolveSlotItem(int[] indices, uint slot, out ItemImage item)
+        {
+            item = null;
+
+            if (slot >= (uint)indices.Length)
+                return false;
+
+            var bagIndex = indices[slot];
+
+            if (bagIndex < 0 || bagIndex >= (int)MaxBaginvEntries)
+                return false;
+
+            var existing = _serverBag[(uint)bagIndex];
+            item = existing;
+
+            if (item == null)
+            {
+                var branch = _client.GetDatabaseManager().GetServerBranch($"{Inventory}:BAG");
+                var itemBranch = branch?.GetNode((ushort)bagIndex) as DatabaseNodeBranch;
+
+                if (itemBranch != null)
+                {
+                    existing = new ItemImage();
+                    existing.Build(itemBranch);
+                    _serverBag[(uint)bagIndex] = existing;
+                    item = existing;
+                }
+            }
+
+            return item != null && item.GetSheetId() != 0;
+        }
+
+        /// <summary>
+        /// Enumerate non-empty slots of an indirection branch (hands or hotbar).
+        /// </summary>
+        private List<IBagEntry> GetIndirectionEntries(int[] indices)
+        {
+            var result = new List<IBagEntry>();
+
+            for (uint i = 0; i < (uint)indices.Length; i++)
+            {
+                if (indices[i] > 0 && TryResolveSlotItem(indices, i, out var item))
+                    result.Add(new BagEntry((uint)indices[i], item));
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public List<IBagEntry> GetHandEntries()
+        {
+            return GetIndirectionEntries(ServerHands);
+        }
+
+        /// <inheritdoc/>
+        public List<IBagEntry> GetHotbarEntries()
+        {
+            return GetIndirectionEntries(ServerHotbar);
+        }
+
+        /// <summary>
+        /// One non-empty bag slot.
+        /// </summary>
+        private sealed class BagEntry : IBagEntry
+        {
+            public uint Index { get; }
+            public IItemImage Item { get; }
+
+            public BagEntry(uint index, IItemImage item)
+            {
+                Index = index;
+                Item = item;
+            }
         }
 
         public void WearBagItem(int bagEntryIndex)

@@ -69,7 +69,7 @@ namespace Client.Config
         public static bool DecodeVisualProperties;
 
         /// <summary>Read the inventory from the stream.</summary>
-        public static bool UseInventory;
+        public static bool UseInventory = true; // enabled by default; bag entries build lazily from the DB (works without sheets)
 
         /// <summary>True, if the original and NOT the translated chat messages should be displayed</summary>
         public static bool TranslateChat = true;
@@ -361,6 +361,10 @@ namespace Client.Config
                 case "useinventory":
                     UseInventory = bool.Parse(argValue);
                     break;
+
+                case "translatechat":
+                    TranslateChat = bool.Parse(argValue);
+                    return;
 
                 case "chatfilter":
                     argValue = argValue.Replace("{", "").Replace("}", "").Trim();

@@ -78,6 +78,7 @@ namespace Client.Network
         private readonly PhraseManager _phraseManager;
         private readonly SheetIdFactory _sheetIdFactory;
         private readonly InventoryManager _inventoryManager;
+        private readonly global::Client.BotChat.BotChatManager _botChatManager;
 
         /// <summary>
         /// season
@@ -130,6 +131,7 @@ namespace Client.Network
             _phraseManager = client.GetPhraseManager();
             _sheetIdFactory = client.GetSheetIdFactory();
             _inventoryManager = client.GetInventoryManager();
+            _botChatManager = client.GetBotChatManager();
 
             _messageHeaderManager = new GenericMessageHeaderManager();
             _chatManager = new ChatManager(this);
@@ -269,6 +271,10 @@ namespace Client.Network
         public void ImpulseCallBack(BitMemoryStream impulse)
         {
             _messageHeaderManager.Execute(impulse);
+
+            // The trade list branch (SERVER:TRADING) may have changed; raise
+            // IBotChatManager.OnTradeListUpdated when its content differs.
+            _botChatManager.CheckTradeListChanged();
         }
 
         /// <summary>
@@ -910,6 +916,8 @@ namespace Client.Network
         private void ImpulseBotChatForceEnd(BitMemoryStream impulse)
         {
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            _botChatManager.NotifySessionForceEnd();
         }
 
         /// <summary>
@@ -1109,6 +1117,11 @@ namespace Client.Network
         private void ImpulseDynChatClose(BitMemoryStream impulse)
         {
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            uint botUid = 0; // Compressed Index
+            impulse.Serial(ref botUid);
+
+            _botChatManager.NotifyDynChatClose(botUid);
         }
 
         private void ImpulseDynChatOpen(BitMemoryStream impulse)
@@ -1132,6 +1145,8 @@ namespace Client.Network
                 dynStrs.Add(value);
             }
             #endregion end workaround
+
+            _botChatManager.NotifyDynChatOpen(botUid);
 
             var sTmp = "impulseCallback : Received BOTCHAT:DYNCHAT_OPEN BotUID:";
             sTmp += $"{botUid} BotName:";
