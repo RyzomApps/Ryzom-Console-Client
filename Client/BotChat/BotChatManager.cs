@@ -153,6 +153,12 @@ namespace Client.BotChat
                 _tradeSessionCounter = 1;
             CurrentSessionId = _tradeSessionCounter;
 
+            // The server does not clear the whole SERVER:TRADING branch on a
+            // new session; slots not refilled would keep stale entries from
+            // the previous session (e.g. when switching to a non-vendor bot
+            // or to a shop with fewer items). Clear it before requesting.
+            ClearTradeList();
+
             if (!_client.GetNetworkManager().SendImpulse(startImpulseName, w => w.U16(CurrentSessionId)))
             {
                 CurrentSessionId = 0;
@@ -308,6 +314,23 @@ namespace Client.BotChat
         public List<TradeEntry> GetTradeList()
         {
             return ReadTradeList();
+        }
+
+        /// <summary>
+        /// Reset all SERVER:TRADING slots (SHEET = 0) so ReadTradeList does
+        /// not report stale entries from a previous trade session.
+        /// </summary>
+        public void ClearTradeList()
+        {
+            var db = _client.GetDatabaseManager();
+            if (db == null)
+                return;
+
+            for (byte i = 0; i < NbSlotPerPage; i++)
+            {
+                var leaf = db.GetServerNode($"SERVER:TRADING:{i}:SHEET", true);
+                leaf?.SetValue64(0);
+            }
         }
 
         /// <summary>
