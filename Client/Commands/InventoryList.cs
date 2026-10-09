@@ -7,7 +7,8 @@
 using API;
 using API.BotChat;
 using API.Commands;
-using Client.BotChat;
+using API.Helper;
+using API.Inventory;
 using System;
 using System.Collections.Generic;
 
@@ -63,23 +64,29 @@ namespace Client.Commands
                 $"{"Slot",-5} {"Qty",-5} {"Q",-3} {"Weight",-8} Name"
             };
 
+            // Pre-request display strings for all visible items; the server
+            // answer lands in the string manager cache and is available on the
+            // next run (see comment on sheet_id.bin fallback).
+            ItemNameResolver.RequestNames(handler, EnumerateNameIds(entries, first, (int)perPage));
+
             for (var i = first; i < first + perPage && i < entries.Count; i++)
             {
                 var entry = entries[i];
                 var item = entry.Item;
 
-                // Name resolution with fallback: dynamic string, then sheet id
-                // (sheet_id.bin may be absent in minimal config - the sheet id
-                // is then shown numerically).
-                ryzomClient.GetStringManager().GetString(item.GetNameId(), out var name, ryzomClient.GetNetworkManager());
-                if (string.IsNullOrEmpty(name))
-                    name = $"sheet {item.GetSheetId()}";
+                var name = ItemNameResolver.Resolve(handler, item.GetNameId(), item.GetSheetId());
 
                 lines.Add($"{entry.Index,-5} {item.GetQuantity(),-5} {item.GetQuality(),-3} {item.GetWeight(),-8} {name}");
             }
 
             responseMsg = string.Join("\n", lines);
             return true;
+        }
+
+        private static IEnumerable<uint> EnumerateNameIds(IList<IBagEntry> entries, int first, int perPage)
+        {
+            for (var i = first; i < first + perPage && i < entries.Count; i++)
+                yield return entries[i].Item.GetNameId();
         }
     }
 }

@@ -7,6 +7,7 @@
 using API;
 using API.BotChat;
 using API.Commands;
+using API.Helper;
 using Client.BotChat;
 using System;
 using System.Collections.Generic;
@@ -56,11 +57,13 @@ namespace Client.Commands
                 $"{"Slot",-5} {"Sheet",-10} {"Q",-3} {"Qty",-6} {"Price",-12} {"Cur",-8} {"Type",-4} Name"
             };
 
+            // Pre-request display strings for all entries; the server answer
+            // lands in the string manager cache and is available on the next run.
+            ItemNameResolver.RequestNames(handler, EnumerateNameIds(list));
+
             foreach (var entry in list)
             {
-                ryzomClient.GetStringManager().GetString(entry.NameId, out var name, ryzomClient.GetNetworkManager());
-                if (string.IsNullOrEmpty(name))
-                    name = $"sheet {entry.SheetId}";
+                var name = ItemNameResolver.Resolve(handler, entry.NameId, entry.SheetId);
                 if (!entry.PrerequisitValid)
                     name += " [locked]";
 
@@ -71,6 +74,12 @@ namespace Client.Commands
 
             responseMsg = string.Join("\n", lines);
             return true;
+        }
+
+        private static IEnumerable<uint> EnumerateNameIds(IEnumerable<TradeEntry> list)
+        {
+            foreach (var entry in list)
+                yield return entry.NameId;
         }
     }
 }
