@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class GuildInvite : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Guild;
         public override string CmdName => "GuildInvite";
 
         public override string CmdUsage => "<playername>";

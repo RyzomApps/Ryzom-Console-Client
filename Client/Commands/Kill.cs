@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class Kill : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "selfkill";
         public override string CmdUsage => "";
         public override string CmdDesc => "Kill the player";

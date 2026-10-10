@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class CombatProtectedSlot : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "CombatProtectedSlot";
 
         public override string CmdUsage => "<slot>";

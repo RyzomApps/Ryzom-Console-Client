@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class PvpTag : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Pvp;
         public override string CmdName => "PvpTag";
 
         public override string CmdUsage => "<uint8>";

@@ -6,6 +6,8 @@ namespace Client.Commands
 {
     public class Version : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "version";
 
         public override string CmdUsage => "";

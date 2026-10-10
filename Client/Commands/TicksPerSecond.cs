@@ -13,6 +13,8 @@ namespace Client.Commands
     /// </summary>
     public class TicksPerSecond : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "tps";
 
         public override string CmdUsage => "";

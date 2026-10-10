@@ -10,6 +10,8 @@ namespace Client.Commands
     /// </summary>
     public class Log : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "log";
 
         public override string CmdUsage => "<chat|debug|info|error|warn>";

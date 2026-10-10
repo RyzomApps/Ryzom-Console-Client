@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////////////////////
 // This file contains modified code from 'Ryzom - MMORPG Framework'
 // http://dev.ryzom.com/projects/ryzom/
 // which is released under GNU Affero General Public License.
@@ -19,6 +19,8 @@ namespace Client.Commands
     /// </summary>
     public class Money : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "Money";
 
         public override string CmdUsage => "";

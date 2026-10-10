@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class SetPvPTag : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Pvp;
         public override string CmdName => "SetPvPTag";
 
         public override string CmdUsage => "<tag>";

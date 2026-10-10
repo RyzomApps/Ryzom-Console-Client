@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class SetTeamLeader : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Team;
         public override string CmdName => "SetTeamLeader";
 
         public override string CmdUsage => "<name>";

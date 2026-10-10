@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class RoomKick : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Room;
         public override string CmdName => "RoomKick";
 
         public override string CmdUsage => "<name>";

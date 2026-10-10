@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class League : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.League;
         public override string CmdName => "League";
 
         public override string CmdUsage => "<leaguename>";

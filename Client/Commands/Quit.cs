@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Quit : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "quit";
         public override string CmdUsage => "";
         public override string CmdDesc => "Request to quit the game. The logout will usually take 30s.";

@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class Parry : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "parry";
 
         public override string CmdUsage => "";

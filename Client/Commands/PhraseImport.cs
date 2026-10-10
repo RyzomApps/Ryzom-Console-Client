@@ -10,6 +10,8 @@ namespace Client.Commands
 {
     public class PhraseImport : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "PhraseImport";
 
         public override string CmdUsage => "<filename> [page] [override]";

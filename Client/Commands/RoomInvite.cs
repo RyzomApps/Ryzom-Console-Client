@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class RoomInvite : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Room;
         public override string CmdName => "RoomInvite";
 
         public override string CmdUsage => "<name>";

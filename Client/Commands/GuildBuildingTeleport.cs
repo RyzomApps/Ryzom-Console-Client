@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class GuildBuildingTeleport : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Guild;
         public override string CmdName => "GuildBuildingTeleport";
 
         public override string CmdUsage => "<buildingIndex>";

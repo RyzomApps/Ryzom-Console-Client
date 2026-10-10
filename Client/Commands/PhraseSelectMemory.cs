@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class PhraseSelectMemory : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "PhraseSelectMemory";
 
         public override string CmdUsage => "<value>";

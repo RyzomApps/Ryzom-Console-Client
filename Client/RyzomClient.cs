@@ -95,6 +95,9 @@ namespace Client
         private Thread _timeoutdetector;
 
         private readonly List<string> _cmdNames = [];
+
+        /// <summary>Names of all command categories (lowercase), for help/listing.</summary>
+        private static readonly string[] _categories = Enum.GetNames<CommandCategory>();
         private readonly Dictionary<string, CommandBase> _cmds = [];
         private bool _commandsLoaded;
 
@@ -1364,12 +1367,26 @@ namespace Client
         /// <returns>True if successfully registered</returns>
         public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, IClient.CommandRunner callback)
         {
+            return RegisterCommand(cmdName, cmdDesc, cmdUsage, CommandCategory.Plugin, callback);
+        }
+
+        /// <summary>
+        /// Register a console command
+        /// </summary>
+        /// <param name="cmdName">Name of the command</param>
+        /// <param name="cmdDesc">Description/usage of the command</param>
+        /// <param name="cmdUsage">String containing a usage case</param>
+        /// <param name="category">Category of the command</param>
+        /// <param name="callback">Method for handling the command</param>
+        /// <returns>True if successfully registered</returns>
+        public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, CommandCategory category, IClient.CommandRunner callback)
+        {
             if (_cmds.ContainsKey(cmdName.ToLower()))
             {
                 return false;
             }
 
-            CommandBase cmd = new GenericCommand(cmdName, cmdDesc, cmdUsage, callback);
+            CommandBase cmd = new GenericCommand(cmdName, cmdDesc, cmdUsage, category, callback);
             _cmds.Add(cmdName.ToLower(), cmd);
             _cmdNames.Add(cmdName.ToLower());
             return true;
@@ -1489,6 +1506,24 @@ namespace Client
                     {
                         responseMsg = "{helpCommand} <cmdname>: show brief help about a command.";
                     }
+                    else if (_categories.Any(c => c.Equals(arguments, StringComparison.InvariantCultureIgnoreCase)))
+                    {
+                        // Category listing takes precedence over command help
+                        var catCommands = _cmds.Values
+                            .Where(c => c.CmdCategory.ToString().Equals(arguments, StringComparison.InvariantCultureIgnoreCase))
+                            .Select(c => c.CmdName.ToLower())
+                            .OrderBy(n => n)
+                            .Distinct()
+                            .ToList();
+
+                        if (catCommands.Count == 0)
+                        {
+                            responseMsg = $"No commands in category '{arguments}'.";
+                            return false;
+                        }
+
+                        responseMsg = $"§e--- §fCommands: {arguments} §e---§r\r\n{string.Join(", ", catCommands)}.";
+                    }
                     else if (_cmds.TryGetValue(arguments, out var cmd))
                     {
                         responseMsg = $"\u00a7e{ClientConfig.InternalCmdChar}{cmd.GetCmdDescTranslated()}";
@@ -1501,7 +1536,7 @@ namespace Client
                 }
                 else
                 {
-                    responseMsg = $"§e--- §fCommands §e---§r\r\n{string.Join(", ", [.. _cmdNames])}.";
+                    responseMsg = $"§e--- §fCommands §e---§r\r\nCategories: {string.Join(", ", _categories.Select(c => c.ToLowerInvariant()))}.\r\nUse '{HelpCommand} <category>' to list commands of a category, or '{HelpCommand} <command>' for details on a specific command.";
                 }
             }
             else if (_cmds.TryGetValue(commandName, out var cmd))

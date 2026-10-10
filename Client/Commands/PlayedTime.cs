@@ -11,6 +11,8 @@ namespace Client.Commands
     /// </summary>
     public class PlayedTime : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "playedTime";
 
         public override string CmdUsage => "";

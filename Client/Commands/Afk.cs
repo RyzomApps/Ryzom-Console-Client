@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Afk : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "afk";
 
         public override string CmdUsage => "[on|off|true|false|0|1] [customText]";

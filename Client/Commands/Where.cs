@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Where : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "where";
 
         public override string CmdUsage => "";

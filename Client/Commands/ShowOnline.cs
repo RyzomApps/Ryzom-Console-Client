@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class ShowOnline : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Friends;
         public override string CmdName => "ShowOnline";
 
         public override string CmdUsage => "<0|1|2>";

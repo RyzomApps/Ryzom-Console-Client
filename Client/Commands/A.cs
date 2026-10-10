@@ -13,6 +13,8 @@ namespace Client.Commands
     /// TODO check if the command is working right on the test server
     public class A : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "a";
 
         public override string CmdUsage => "<cmd> <arg>";

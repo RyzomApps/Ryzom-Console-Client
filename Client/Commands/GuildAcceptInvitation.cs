@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class GuildAcceptInvitation : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Guild;
         public override string CmdName => "GuildAcceptInvitation";
 
         public override string CmdUsage => "";

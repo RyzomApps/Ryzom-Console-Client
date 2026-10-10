@@ -1,11 +1,13 @@
-///////////////////////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////////////////////
 // This file contains modified code from 'Ryzom - MMORPG Framework'
 // http://dev.ryzom.com/projects/ryzom/
 // which is released under GNU Affero General Public License.
 // http://www.gnu.org/licenses/
 // Copyright 2010 Winch Gate Property Limited
+///////////////////////////////////////////////////////////////////
 using API;
 using API.Commands;
+using API.Helper;
 using Client.BotChat;
 using System;
 using System.Collections.Generic;
@@ -18,6 +20,8 @@ namespace Client.Commands
     /// </summary>
     public class Hand : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Inventory;
         public override string CmdName => "Hand";
 
         public override string CmdUsage => "";
@@ -55,9 +59,7 @@ namespace Client.Commands
                         continue;
 
                     var item = entry.Item;
-                    ryzomClient.GetStringManager().GetString(item.GetNameId(), out var name, ryzomClient.GetNetworkManager());
-                    if (string.IsNullOrEmpty(name))
-                        name = $"sheet {item.GetSheetId()}";
+                    var name = ItemNameResolver.Resolve(handler, item.GetNameId(), item.GetSheetId());
 
                     lines.Add($"  {label}: bag slot {bagIndex,-4} qty {item.GetQuantity(),-6} q {item.GetQuality(),-3} {name}");
                     found = true;
@@ -65,7 +67,7 @@ namespace Client.Commands
                 }
 
                 if (!found)
-                    lines.Add($"  {label}: bag slot {bagIndex} (item not received yet)");
+                    lines.Add($"  {label}: bag slot {bagIndex} (item info not received)");
             }
 
             responseMsg = string.Join("\n", lines);

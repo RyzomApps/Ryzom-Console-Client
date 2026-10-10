@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class LogEntities : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "logEntities";
 
         public override string CmdUsage => "";

@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Tell : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Chat;
         public override string CmdName => "tell";
 
         public override string CmdUsage => "<receiver> <text>";

@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class NoFollowMode : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Movement;
         public override string CmdName => "noFollowMode";
         public override string CmdUsage => "";
         public override string CmdDesc => "Stop the mode for following the target (only for server events)";

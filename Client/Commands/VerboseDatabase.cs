@@ -10,6 +10,8 @@ namespace Client.Commands
     /// </summary>
     public class VerboseDatabase : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "verboseDatabase";
 
         public override string CmdUsage => "";

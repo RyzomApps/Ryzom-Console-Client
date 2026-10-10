@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class LeagueInvite : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.League;
         public override string CmdName => "LeagueInvite";
 
         public override string CmdUsage => "<playername>";

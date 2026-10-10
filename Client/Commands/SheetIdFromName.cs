@@ -9,6 +9,8 @@ namespace Client.Commands
     /// </summary>
     public class SheetIdFromName : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "GetSheetID";
 
         public override string CmdUsage => "<sheet file name>";

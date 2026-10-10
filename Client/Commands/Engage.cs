@@ -11,6 +11,8 @@ namespace Client.Commands
     /// </summary>
     public class Engage : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "engage";
 
         public override string CmdUsage => "";

@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Time : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "time";
 
         public override string CmdUsage => "";

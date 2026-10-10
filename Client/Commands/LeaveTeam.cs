@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class LeaveTeam : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Team;
         public override string CmdName => "leaveTeam";
 
         public override string CmdUsage => "";

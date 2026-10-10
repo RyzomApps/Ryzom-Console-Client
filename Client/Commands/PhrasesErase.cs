@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class PhrasesErase : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "PhrasesErase";
 
         public override string CmdUsage => "[page]";

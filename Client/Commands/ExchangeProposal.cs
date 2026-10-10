@@ -11,11 +11,13 @@ namespace Client.Commands
     /// </summary>
     public class ExchangeProposal : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Trade;
         public override string CmdName => "ExchangeProposal";
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Propose an item exchange with the player in front. Then use 'ExchangePutItem'/'ExchangeMoney' and 'ExchangeValidate'";
+        public override string CmdDesc => "Propose item exchange.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
@@ -30,15 +32,14 @@ namespace Client.Commands
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 ryzomClient.GetNetworkManager().Push(out2);
-
-                responseMsg = "Exchange proposal sent. Use 'ExchangePutItem'/'ExchangeMoney' to fill it and 'ExchangeShow' to check.";
-                return true;
             }
             else
             {
                 responseMsg = $"Unknown message named '{msgName}'.";
                 return false;
             }
+
+            return true;
         }
     }
 }

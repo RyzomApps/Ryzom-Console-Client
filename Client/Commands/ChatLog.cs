@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class ChatLog : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Chat;
         public override string CmdName => "ChatLog";
 
         public override string CmdUsage => "";

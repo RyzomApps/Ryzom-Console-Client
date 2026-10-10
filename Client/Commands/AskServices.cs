@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class AskServices : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "askservices";
 
         public override string CmdUsage => "";

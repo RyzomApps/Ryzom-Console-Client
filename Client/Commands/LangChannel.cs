@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class LangChannel : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Chat;
         public override string CmdName => "LangChannel";
 
         public override string CmdUsage => "<fr|en|de|es|ru>";

@@ -11,6 +11,8 @@ namespace Client.Commands
     /// </summary>
     public class Dump : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "dump";
         public override string CmdUsage => "[name]";
         public override string CmdDesc => "Command to create a file with the current state of the client";

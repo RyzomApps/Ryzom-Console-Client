@@ -11,6 +11,8 @@ namespace Client.Commands
     /// </summary>
     public class Db : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "db";
 
         public override string CmdUsage => "<Property> <Value>";

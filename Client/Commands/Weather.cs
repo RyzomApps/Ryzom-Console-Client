@@ -14,6 +14,8 @@ namespace Client.Commands
     /// </summary>
     public class Weather : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "weather";
 
         public override string CmdUsage => "[<continent>]";

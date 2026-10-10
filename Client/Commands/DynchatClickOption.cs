@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class DynchatClickOption : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Npc;
         public override string CmdName => "DynchatClickOption";
 
         public override string CmdUsage => "<index>";

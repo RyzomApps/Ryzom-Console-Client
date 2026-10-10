@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class FollowMode : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Movement;
         public override string CmdName => "followMode";
 
         public override string CmdUsage => "";

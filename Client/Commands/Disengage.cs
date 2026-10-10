@@ -11,6 +11,8 @@ namespace Client.Commands
     /// </summary>
     public class Disengage : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "disengage";
 
         public override string CmdUsage => "";

@@ -10,6 +10,8 @@ namespace Client.Commands
     /// </summary>
     public class ServerStr : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "serverStr";
 
         public override string CmdUsage => "<dynId>";

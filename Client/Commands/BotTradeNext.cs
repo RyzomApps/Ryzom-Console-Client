@@ -1,9 +1,10 @@
-///////////////////////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////////////////////
 // This file contains modified code from 'Ryzom - MMORPG Framework'
 // http://dev.ryzom.com/projects/ryzom/
 // which is released under GNU Affero General Public License.
 // http://www.gnu.org/licenses/
 // Copyright 2010 Winch Gate Property Limited
+///////////////////////////////////////////////////////////////////
 using API;
 using API.BotChat;
 using API.Commands;
@@ -18,6 +19,8 @@ namespace Client.Commands
     /// </summary>
     public class BotTradeNext : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Npc;
         public override string CmdName => "BotTradeNext";
 
         public override string CmdUsage => "";

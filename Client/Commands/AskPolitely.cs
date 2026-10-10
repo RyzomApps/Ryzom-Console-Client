@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class AskPolitely : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Npc;
         public override string CmdName => "AskPolitely";
 
         public override string CmdUsage => "[1=bullying]";

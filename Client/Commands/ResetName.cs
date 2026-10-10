@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class ResetName : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "ResetName";
 
         public override string CmdUsage => "";

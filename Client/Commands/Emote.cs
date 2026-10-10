@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Emote : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Chat;
         public override string CmdName => "em";
 
         public override string CmdUsage => "<emote phrase>";

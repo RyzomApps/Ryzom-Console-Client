@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Shout : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Chat;
         public override string CmdName => "shout";
 
         public override string CmdUsage => "[text]";

@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class UserChannel : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Chat;
         public override string CmdName => "UserChannel";
 
         public override string CmdUsage => "<channel>";

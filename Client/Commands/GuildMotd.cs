@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class GuildMotd : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Guild;
         public override string CmdName => "guildmotd";
 
         public override string CmdUsage => "<message>";

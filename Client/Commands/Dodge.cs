@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class Dodge : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "dodge";
 
         public override string CmdUsage => "";

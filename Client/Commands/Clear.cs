@@ -11,6 +11,8 @@ namespace Client.Commands
     /// </summary>
     public class Clear : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "clear";
 
         public override string CmdUsage => "";

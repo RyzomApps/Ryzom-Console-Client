@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class AddFriend : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Friends;
         public override string CmdName => "AddFriend";
 
         public override string CmdUsage => "<contactName>";

@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class AskRespawn : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "AskRespawn";
 
         public override string CmdUsage => "<index>";

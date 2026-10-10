@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class KickTeammate : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Team;
         public override string CmdName => "kickTeammate";
 
         public override string CmdUsage => "";

@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class OutpostUnselect : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "OutpostUnselect";
 
         public override string CmdUsage => "";

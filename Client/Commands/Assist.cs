@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class Assist : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "assist";
 
         public override string CmdUsage => "[name]";

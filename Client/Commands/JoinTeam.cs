@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class JoinTeam : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Team;
         public override string CmdName => "joinTeam";
 
         public override string CmdUsage => "";

@@ -271,6 +271,44 @@ namespace Client.Inventory
             return _serverPaInv[beastIndex][index];
         }
 
+        /// <summary>
+        /// Use/consume the item in the given bag slot (sends ITEM:USE_ITEM, u16 bag slot).
+        /// </summary>
+        public bool Use(uint bagSlot, out string error)
+        {
+            error = "";
+
+            if (bagSlot == 0 || bagSlot >= MaxBaginvEntries)
+            {
+                error = "invalid bag slot";
+                return false;
+            }
+
+            var item = _serverBag[bagSlot];
+            if (item == null || item.GetSheetId() == 0)
+            {
+                error = "item info not received";
+                return false;
+            }
+
+            var slot = (ushort)bagSlot;
+            var @out = new BitMemoryStream();
+            const string sMsg = "ITEM:USE_ITEM";
+
+            if (!_client.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(sMsg, @out))
+            {
+                _client.Log.Error($"Don't know message name {sMsg}");
+                error = "message not known";
+                return false;
+            }
+
+            // Fill the message (bag slot)
+            @out.Serial(ref slot);
+            _client.GetNetworkManager().Push(@out);
+
+            return true;
+        }
+
         public IItemImage GetBagItem(uint index)
         {
             Debug.Assert(index < MaxBaginvEntries);

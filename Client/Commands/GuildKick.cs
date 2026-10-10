@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class GuildKick : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Guild;
         public override string CmdName => "GuildKick";
 
         public override string CmdUsage => "<playerName> <counter>";

@@ -1,9 +1,10 @@
-///////////////////////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////////////////////
 // This file contains modified code from 'Ryzom - MMORPG Framework'
 // http://dev.ryzom.com/projects/ryzom/
 // which is released under GNU Affero General Public License.
 // http://www.gnu.org/licenses/
 // Copyright 2010 Winch Gate Property Limited
+///////////////////////////////////////////////////////////////////
 using API;
 using API.Commands;
 using Client.Stream;

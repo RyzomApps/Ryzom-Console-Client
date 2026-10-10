@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class DssTarget : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "DssTarget";
 
         public override string CmdUsage => "<arg>";

@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Sit : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "sit";
 
         public override string CmdUsage => "[sitState]";

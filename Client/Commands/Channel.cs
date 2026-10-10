@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Channel : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Chat;
         public override string CmdName => "channel";
 
         public override string CmdUsage => "<name> [text]";

@@ -30,6 +30,8 @@ namespace Client.Commands
     /// </summary>
     public class BeastOrder : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "beastOrder";
 
         public override string CmdUsage => "<order> <index>";

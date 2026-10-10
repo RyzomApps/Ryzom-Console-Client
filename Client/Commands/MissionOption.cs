@@ -11,6 +11,8 @@ namespace Client.Commands
     /// </summary>
     public class MissionOption : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Npc;
         public override string CmdName => "missionOption";
 
         public override string CmdUsage => "<id>";

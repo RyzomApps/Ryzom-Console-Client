@@ -12,6 +12,8 @@ namespace Client.Commands
     /// </summary>
     public class Pos : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "pos";
 
         public override string CmdUsage => "[x|teleportListName|botName] [y] [z]";

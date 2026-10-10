@@ -10,6 +10,8 @@ namespace Client.Commands
     /// </summary>
     public class DefaultAttack : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "defaultAttack";
 
         public override string CmdUsage => "";

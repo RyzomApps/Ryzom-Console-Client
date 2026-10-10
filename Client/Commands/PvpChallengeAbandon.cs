@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class PvpChallengeAbandon : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Pvp;
         public override string CmdName => "PvpChallengeAbandon";
 
         public override string CmdUsage => "";

@@ -6,6 +6,8 @@ namespace Client.Commands
 {
     public class BrutalQuit : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "brutalQuit";
         public override string CmdUsage => "";
         public override string CmdDesc => "Instantaneously quits the game client";

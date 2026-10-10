@@ -11,6 +11,8 @@ namespace Client.Commands
     /// </summary>
     public class CancelAllSentences : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "cancelAllSentences";
 
         public override string CmdUsage => "";

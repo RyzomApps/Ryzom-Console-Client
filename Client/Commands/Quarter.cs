@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Quarter : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "quarter";
 
         public override string CmdUsage => "";

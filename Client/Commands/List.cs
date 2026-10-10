@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class List : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "list";
         public override string CmdUsage => "";
         public override string CmdDesc => "Allows the user to list all players that are around";

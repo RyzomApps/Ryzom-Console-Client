@@ -1,11 +1,13 @@
-///////////////////////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////////////////////
 // This file contains modified code from 'Ryzom - MMORPG Framework'
 // http://dev.ryzom.com/projects/ryzom/
 // which is released under GNU Affero General Public License.
 // http://www.gnu.org/licenses/
 // Copyright 2010 Winch Gate Property Limited
+///////////////////////////////////////////////////////////////////
 using API;
 using API.Commands;
+using API.Helper;
 using Client.BotChat;
 using System;
 using System.Collections.Generic;
@@ -17,6 +19,8 @@ namespace Client.Commands
     /// </summary>
     public class Pocket : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Inventory;
         private const uint MaxPockets = 5;
 
         public override string CmdName => "Pocket";
@@ -48,13 +52,11 @@ namespace Client.Commands
 
                 if (item == null || item.GetSheetId() == 0)
                 {
-                    lines.Add($"  Pocket #{slot + 1}: bag slot {bagIndex} (item not received yet)");
+                    lines.Add($"  Pocket #{slot + 1}: bag slot {bagIndex} (item info not received)");
                     continue;
                 }
 
-                ryzomClient.GetStringManager().GetString(item.GetNameId(), out var name, ryzomClient.GetNetworkManager());
-                if (string.IsNullOrEmpty(name))
-                    name = $"sheet {item.GetSheetId()}";
+                var name = ItemNameResolver.Resolve(handler, item.GetNameId(), item.GetSheetId());
 
                 lines.Add($"  Pocket #{slot + 1}: bag slot {bagIndex,-4} qty {item.GetQuantity(),-6} q {item.GetQuality(),-3} {name}");
             }

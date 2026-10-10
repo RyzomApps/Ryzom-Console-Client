@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Plugins : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "plugins";
         public override string CmdUsage => "";
         public override string CmdDesc => "Gets a list of plugins running on the client";

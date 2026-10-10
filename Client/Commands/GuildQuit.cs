@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class GuildQuit : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Guild;
         public override string CmdName => "GuildQuit";
 
         public override string CmdUsage => "";

@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Ignore : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Friends;
         public override string CmdName => "ignore";
 
         public override string CmdUsage => "<playerName>";

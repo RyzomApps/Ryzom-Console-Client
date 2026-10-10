@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class LeagueQuit : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.League;
         public override string CmdName => "LeagueQuit";
 
         public override string CmdUsage => "";

@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Universe : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Chat;
         public override string CmdName => "universe";
 
         public override string CmdUsage => "[text]";

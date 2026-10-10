@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class ExecutePhrase : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "executePhrase";
 
         public override string CmdUsage => "<memoryId> <slotId> [cyclic]";

@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class LeagueKick : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.League;
         public override string CmdName => "LeagueKick";
 
         public override string CmdUsage => "<playername>";

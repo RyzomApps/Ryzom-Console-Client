@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Region : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "region";
 
         public override string CmdUsage => "[text]";

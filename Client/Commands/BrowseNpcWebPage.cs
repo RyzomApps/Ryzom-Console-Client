@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class BrowseNpcWebPage : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Npc;
         public override string CmdName => "BrowseNpcWebPage";
 
         public override string CmdUsage => "";

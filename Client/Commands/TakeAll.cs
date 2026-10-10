@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class TakeAll : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "takeAll";
 
         public override string CmdUsage => "";

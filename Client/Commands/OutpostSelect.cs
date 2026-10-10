@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class OutpostSelect : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "OutpostSelect";
 
         public override string CmdUsage => "<outpostSheetId>";

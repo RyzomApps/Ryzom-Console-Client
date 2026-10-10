@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class CancelAllPhrases : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "CancelAllPhrases";
 
         public override string CmdUsage => "";

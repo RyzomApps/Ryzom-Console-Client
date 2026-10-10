@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class DuelRefuse : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Pvp;
         public override string CmdName => "DuelRefuse";
 
         public override string CmdUsage => "";

@@ -11,6 +11,8 @@ namespace Client.Commands
     /// </summary>
     public class Random : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "random";
 
         public override string CmdUsage => "[min] <max>";

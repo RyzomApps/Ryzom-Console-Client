@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class Loot : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "loot";
 
         public override string CmdUsage => "";

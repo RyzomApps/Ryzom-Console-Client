@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class AutoPact : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "AutoPact";
 
         public override string CmdUsage => "<bool>";

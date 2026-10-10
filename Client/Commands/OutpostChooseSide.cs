@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class OutpostChooseSide : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "outpostChooseSide";
 
         public override string CmdUsage => "<0:Defend|1:Attack|2:Neutral>";

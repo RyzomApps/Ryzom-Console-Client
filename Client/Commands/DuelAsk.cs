@@ -8,6 +8,8 @@ namespace Client.Commands
 {
     public class DuelAsk : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Pvp;
         public override string CmdName => "DuelAsk";
 
         public override string CmdUsage => "";

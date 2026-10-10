@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class Target : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "target";
 
         public override string CmdUsage => "<name>";

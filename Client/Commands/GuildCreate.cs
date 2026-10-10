@@ -11,6 +11,8 @@ namespace Client.Commands
     /// </summary>
     public class GuildCreate : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Guild;
         public override string CmdName => "GuildCreate";
 
         public override string CmdUsage => "<name> <icon> <description>";

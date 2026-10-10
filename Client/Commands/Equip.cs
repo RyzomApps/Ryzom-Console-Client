@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class Equip : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Inventory;
         public override string CmdName => "Equip";
 
         public override string CmdUsage => "<bagPath> <invPath>";
@@ -23,7 +25,7 @@ namespace Client.Commands
 
             if (args.Length != 2)
             {
-                responseMsg = "Please specify a bag path (INVENTORY:BAG:165) and an inventory path (INVENTORY:HAND:0 OR INVENTORY:EQUIP:5).";
+                responseMsg = "Please specify a bag path (INVENTORY:BAG:165) and a target path (INVENTORY:EQUIP:5, INVENTORY:HAND:0, or INVENTORY:HOTBAR:0-4 for pocket).";
                 return false;
             }
 
@@ -34,6 +36,7 @@ namespace Client.Commands
 
             inventoryManager.Equip(bagPath, invPath);
 
+            responseMsg = $"Equip: {bagPath} -> {invPath}\nNote: target can be an equipment slot (INVENTORY:EQUIP:n), the hand (INVENTORY:HAND:0|1) or a pocket slot (INVENTORY:HOTBAR:0-4).";
             return true;
         }
     }

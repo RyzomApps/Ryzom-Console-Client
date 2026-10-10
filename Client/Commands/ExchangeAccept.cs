@@ -8,11 +8,13 @@ namespace Client.Commands
 {
     public class ExchangeAccept : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Trade;
         public override string CmdName => "ExchangeAccept";
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Accept an exchange invitation of the other player (use 'ExchangeValidate' to confirm your own proposal)";
+        public override string CmdDesc => "Accept an exchange.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
@@ -26,15 +28,14 @@ namespace Client.Commands
             if (ryzomClient.GetNetworkManager().GetMessageHeaderManager().PushNameToStream(msgName, out2))
             {
                 ryzomClient.GetNetworkManager().Push(out2);
-
-                responseMsg = "Exchange invitation accepted. Fill your side with 'ExchangePutItem'/'ExchangeMoney', then use 'ExchangeValidate'.";
-                return true;
             }
             else
             {
                 responseMsg = $"Unknown message name '{msgName}'";
                 return false;
             }
+
+            return true;
         }
     }
 }

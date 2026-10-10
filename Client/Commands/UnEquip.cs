@@ -7,6 +7,8 @@ namespace Client.Commands
 {
     public class UnEquip : CommandBase
     {
+
+        public override CommandCategory CmdCategory => CommandCategory.Inventory;
         public override string CmdName => "UnEquip";
 
         public override string CmdUsage => "<invPath>";
