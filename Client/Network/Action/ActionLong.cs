@@ -169,4 +169,4 @@ namespace Client.Network.Action
             PropertyToNbBit[(int)propIndex] = nbbits;
         }
     }
-}
+}

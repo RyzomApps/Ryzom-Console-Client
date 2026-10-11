@@ -17,7 +17,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "<id>";
 
-        public override string CmdDesc => "The user completed the mission, with no gift required.";
+        public override string CmdDesc => "Accept a mission option offered by the currently targeted NPC (equivalent to clicking 'Continue' on an NPC's mission option list). The id is the option number from the NPC's context menu (e.g. 0, 1, 2...). Does NOT automatically move the player to the NPC first (the official client does that) - target and stand near the NPC yourself.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

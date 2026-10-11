@@ -18,4 +18,4 @@ namespace Client.Network.Action
         Harvestable = 2,
         LootableHarvestable = 3
     }
-}
+}

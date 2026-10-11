@@ -410,7 +410,9 @@ namespace Client.Database
         /// </summary>
         public void Clear()
         {
-            throw new NotImplementedException();
+            // Reset all leaf data so observers of removed branches no longer
+            // see stale values (ghost items after an inventory slot removal).
+            ResetData(0, true);
         }
 
         /// <summary>

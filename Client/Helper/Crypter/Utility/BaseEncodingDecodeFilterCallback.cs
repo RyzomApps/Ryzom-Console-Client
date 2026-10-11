@@ -6,4 +6,4 @@
     /// <param name="originalCharacter">The original character.</param>
     /// <returns>the replacement character.</returns>
     public delegate char BaseEncodingDecodeFilterCallback(char originalCharacter);
-}
+}

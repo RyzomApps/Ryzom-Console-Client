@@ -9,6 +9,8 @@ using API;
 using API.BotChat;
 using API.Commands;
 using Client.BotChat;
+using Client.Brick;
+using Client.Phrase;
 using System;
 using System.Collections.Generic;
 
@@ -25,7 +27,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "<index> [quantity]";
 
-        public override string CmdDesc => "Buy an entry of the current trade list page by its slot index (0..7, default quantity 1)";
+        public override string CmdDesc => "Buy an entry of the current trade list page by its slot index (0..7, default quantity 1). Phrase entries (trainers) are bought with PHRASE:BUY automatically.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
@@ -65,6 +67,34 @@ namespace Client.Commands
             }
 
             ryzomClient.GetStringManager().GetString(entry.Value.NameId, out var name, ryzomClient.GetNetworkManager());
+
+            // Phrase entries (trainers, charac-buying) are bought with PHRASE:BUY instead of BOTCHAT:BUY
+            var sheetId = ryzomClient.GetSheetIdFactory().SheetId(entry.Value.SheetId);
+            if (ryzomClient.GetSheetManager().Get(sheetId) is PhraseSheet phraseSheet)
+            {
+                var phrase = new PhraseCom();
+                ryzomClient.GetPhraseManager().BuildPhraseFromSheet(ref phrase, entry.Value.SheetId);
+
+                // Not castable phrases (e.g. charac-buying) are bought with phrase id 0 (phrase_manager.cpp:sendPhraseBuy)
+                var characBuying = phrase.Bricks.Count > 0 &&
+                    ryzomClient.GetBrickManager().GetBrick(phrase.Bricks[0]) is { } rootBrick &&
+                    BrickFamilyHelper.IsCharacBuyFamily(rootBrick.BrickFamily);
+                var castable = phraseSheet.Castable && !characBuying;
+
+                var phraseId = castable ? ryzomClient.GetPhraseManager().AllocatePhraseSlot() : 0;
+                if (phraseId != 0)
+                {
+                    // lock the slot like the original client until the server confirms the buy
+                    ryzomClient.GetPhraseManager().SetPhraseInternal((uint)phraseId, phrase, true, false);
+                }
+
+                var sentPhrase = botChatManager.SendBuyPhrase((byte)index, (ushort)phraseId);
+                responseMsg = sentPhrase
+                    ? $"Buy requested: phrase '{name}' (slot {index}, id {phraseId})."
+                    : "Failed to send the phrase buy request.";
+                return sentPhrase;
+            }
+
             var sent = botChatManager.SendBuyItem(index, quantity);
             responseMsg = sent ? $"Buy requested: {quantity} x {name} (slot {index})." : "Failed to send the buy request.";
             return sent;

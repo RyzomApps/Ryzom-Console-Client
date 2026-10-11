@@ -79,4 +79,4 @@ namespace Client.Inventory
             // Hands management ignored since there is no UI
         }
     }
-}
+}

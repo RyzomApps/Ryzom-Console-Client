@@ -14,7 +14,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "";
+        public override string CmdDesc => "Ask the currently targeted player for a duel.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

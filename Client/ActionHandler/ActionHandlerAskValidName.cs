@@ -67,4 +67,4 @@ namespace Client.ActionHandler
             ryzomClient.GetNetworkManager().WaitServerAnswer = true;
         }
     }
-}
+}

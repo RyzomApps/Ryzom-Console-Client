@@ -147,4 +147,4 @@ namespace Client.Property
             VpB.MakeDescendants(nbLevels - 1);
         }
     }
-}
+}

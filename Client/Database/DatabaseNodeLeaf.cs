@@ -369,4 +369,4 @@ namespace Client.Database
             _parent?.OnLeafChanged(_name);
         }
     }
-}
+}

@@ -10,4 +10,4 @@
         HARVESTABLE = 2,
         LOOTABLE_HARVESTABLE = 3
     }
-}
+}

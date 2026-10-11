@@ -27,4 +27,4 @@ namespace Client.Client
         /// </summary>
         QuitTheGame
     };
-}
+}

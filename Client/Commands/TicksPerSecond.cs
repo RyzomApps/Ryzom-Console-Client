@@ -42,4 +42,4 @@ namespace Client.Commands
                    string.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Round(tps * 100d) / 100d);
         }
     }
-}
+}

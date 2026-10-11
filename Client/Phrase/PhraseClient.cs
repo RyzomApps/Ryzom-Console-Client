@@ -19,4 +19,4 @@ namespace Client.Phrase
             Lock = false;
         }
     }
-}
+}

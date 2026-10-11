@@ -116,4 +116,4 @@ namespace Client.Logger
             Chat
         }
     }
-}
+}

@@ -1500,11 +1500,22 @@ namespace Client
             {
                 if (CommandBase.HasArg(command))
                 {
-                    var arguments = CommandBase.GetArgs(command)[0].ToLower();
+                    var helpArgs = CommandBase.GetArgs(command);
+                    var arguments = helpArgs[0].ToLower();
+                    CommandBase cmd;
 
                     if (arguments == HelpCommand)
                     {
                         responseMsg = "{helpCommand} <cmdname>: show brief help about a command.";
+                    }
+                    else if (helpArgs.Length == 2
+                             && helpArgs[1].Equals("command", StringComparison.InvariantCultureIgnoreCase)
+                             && _categories.Any(c => c.Equals(arguments, StringComparison.InvariantCultureIgnoreCase))
+                             && _cmds.TryGetValue(arguments, out cmd))
+                    {
+                        // Explicitly disambiguated: 'help <name> command' shows command help
+                        // when <name> is both a category and a command.
+                        responseMsg = $"\u00a7e{ClientConfig.InternalCmdChar}{cmd.GetCmdDescTranslated()}";
                     }
                     else if (_categories.Any(c => c.Equals(arguments, StringComparison.InvariantCultureIgnoreCase)))
                     {
@@ -1523,8 +1534,13 @@ namespace Client
                         }
 
                         responseMsg = $"§e--- §fCommands: {arguments} §e---§r\r\n{string.Join(", ", catCommands)}.";
+
+                        if (_cmds.ContainsKey(arguments))
+                        {
+                            responseMsg += $"\r\nThis name is also a command. Use '{HelpCommand} {arguments} command' for details on it.";
+                        }
                     }
-                    else if (_cmds.TryGetValue(arguments, out var cmd))
+                    else if (_cmds.TryGetValue(arguments, out cmd))
                     {
                         responseMsg = $"\u00a7e{ClientConfig.InternalCmdChar}{cmd.GetCmdDescTranslated()}";
                     }
@@ -1730,4 +1746,4 @@ namespace Client
         }
         #endregion
     }
-}
+}

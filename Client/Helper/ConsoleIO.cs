@@ -645,4 +645,4 @@ namespace Client.Helper
 
         #endregion
     }
-}
+}

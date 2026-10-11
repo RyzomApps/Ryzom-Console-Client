@@ -25,7 +25,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "<bagIndex> [quantity] [price]";
 
-        public override string CmdDesc => "Sell a bag item to the vendor in front of the player. Use 'BotTradeStart item' first, then this command. Slot index comes from 'Inventory'";
+        public override string CmdDesc => "Sell a bag item to the targeted vendor. Use 'BotTradeStart item' first, then this command. Slot index comes from 'Inventory'";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

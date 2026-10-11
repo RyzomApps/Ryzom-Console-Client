@@ -136,4 +136,4 @@ namespace Client.Logger
             ConsoleIO.WriteLineFormatted(string.Format(msg, args));
         }
     }
-}
+}

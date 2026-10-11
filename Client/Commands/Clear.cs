@@ -33,4 +33,4 @@ namespace Client.Commands
             return ["cls"];
         }
     }
-}
+}

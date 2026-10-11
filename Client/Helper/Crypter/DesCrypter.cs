@@ -554,4 +554,4 @@ namespace Client.Helper.Crypter
             return firstInt ^ tempInt ^ (tempInt >> (16 - secondInt));
         }
     }
-}
+}

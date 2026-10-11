@@ -15,7 +15,7 @@ namespace Client.Commands
         public override string CmdUsage => "[text]";
 
         public override string CmdDesc =>
-            "Use the around channel for messages. Messages sent normally in the around channel have a 25m range.";
+            "Select the around chat channel (no argument) or send a message in it. Around messages have a 25m range.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

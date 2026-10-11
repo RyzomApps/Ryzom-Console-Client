@@ -42,4 +42,4 @@ namespace Client.Phrase
             return !IsMacro && Id != 0;
         }
     }
-}
+}

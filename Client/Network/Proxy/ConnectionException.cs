@@ -14,4 +14,4 @@ namespace Client.Network.Proxy
     {
         public ConnectionException(string message) : base(message) { }
     }
-}
+}

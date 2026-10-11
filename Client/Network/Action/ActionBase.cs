@@ -47,4 +47,4 @@ namespace Client.Network.Action
         /// </summary>
         public abstract void Pack(BitMemoryStream message);
     }
-}
+}

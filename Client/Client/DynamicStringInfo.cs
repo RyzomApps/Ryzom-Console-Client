@@ -52,4 +52,4 @@ namespace Client.Client
             public uint DynStringId;
         }
     }
-}
+}

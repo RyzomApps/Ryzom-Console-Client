@@ -52,4 +52,4 @@ namespace Client.Network.Action
             message.Serial(ref TargetOrPickup, 2);
         }
     }
-}
+}

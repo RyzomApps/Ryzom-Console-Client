@@ -195,4 +195,4 @@ namespace Client.Stream
             _filePointer = 0;
         }
     }
-}
+}

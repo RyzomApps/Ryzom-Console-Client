@@ -91,4 +91,4 @@ namespace Client.Client
             f.Serial(ref _inNewbieland);
         }
     }
-}
+}

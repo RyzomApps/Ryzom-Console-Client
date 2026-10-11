@@ -271,4 +271,4 @@ namespace Client.Network
             return sha512Crypter.Crypt(password, salt).Replace("$rounds=5000", "");
         }
     }
-}
+}

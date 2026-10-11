@@ -63,4 +63,4 @@ namespace Client.Network
         /// </summary>
         Quit
     };
-}
+}

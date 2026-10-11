@@ -169,4 +169,4 @@ namespace Client.Property
             return new Vector3(_refPosX / 1000f, _refPosY / 1000f, 0);
         }
     }
-}
+}

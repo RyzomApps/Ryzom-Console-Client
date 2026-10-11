@@ -191,4 +191,4 @@ namespace Client.Inventory
         }
 
     }
-}
+}

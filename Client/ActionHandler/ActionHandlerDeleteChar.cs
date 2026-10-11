@@ -49,4 +49,4 @@ public class ActionHandlerDeleteChar : ActionHandlerBase
 
         ryzomClient.GetLogger().Debug("impulseCallBack : CONNECTION:DELETE_CHAR sent");
     }
-}
+}

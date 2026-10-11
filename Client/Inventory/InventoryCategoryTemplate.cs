@@ -20,4 +20,4 @@ namespace Client.Inventory
 
         bool NeedPlainInfoVersionTransfer();
     }
-}
+}

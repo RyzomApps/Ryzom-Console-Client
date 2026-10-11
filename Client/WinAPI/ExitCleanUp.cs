@@ -105,4 +105,4 @@ namespace Client.WinAPI
             CtrlShutdownEvent = 6
         }
     }
-}
+}

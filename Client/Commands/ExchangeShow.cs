@@ -44,7 +44,16 @@ namespace Client.Commands
 
             var money = ExchangeDb.SafeProp(ryzomClient, "SERVER:EXCHANGE:MONEY", -1);
             if (money >= 0)
+            {
                 builder.AppendLine($"Money proposed: {MoneyFormat.Format(money)} dappers (raw: {money})");
+
+                // SERVER:EXCHANGE:ACCEPTED is set on the other player's side once they validate;
+                // convention in this client: 1 = the other player has confirmed the trade.
+                var accepted = ExchangeDb.SafeProp(ryzomClient, "SERVER:EXCHANGE:ACCEPTED", 0);
+                builder.AppendLine(accepted != 0
+                    ? "Other player has validated the trade."
+                    : "Other player has NOT validated the trade yet.");
+            }
             else
                 builder.AppendLine("No exchange proposal active.");
 

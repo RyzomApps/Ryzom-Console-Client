@@ -6,6 +6,11 @@ using System.Collections.Generic;
 
 namespace Client.Commands
 {
+    /// <summary>
+    /// Respawn at one of the available respawn points while dead.
+    /// The <index> selects an entry from the respawn-point list the server sends on death
+    /// (client caches it; in Ryzom Borea/terminal-style lists, 0 is usually the current spot).
+    /// </summary>
     public class AskRespawn : CommandBase
     {
 
@@ -14,7 +19,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "<index>";
 
-        public override string CmdDesc => "Client wants to re-spawn somewhere (index of the re-spawn location wanted)";
+        public override string CmdDesc => "Respawn at one of the available respawn points while dead. The index selects an entry from the respawn-point list the server sends on death (usually 0 = respawn at current spot, 1..n = bind spots).";
 
         public override IEnumerable<string> GetCmdAliases()
         {

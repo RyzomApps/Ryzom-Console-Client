@@ -57,4 +57,4 @@ namespace Client.Commands
             return ["as"];
         }
     }
-}
+}

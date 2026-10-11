@@ -26,9 +26,28 @@ namespace Client.Commands
 
         public override string CmdName => "Inventory";
 
-        public override string CmdUsage => "[page] [perPage]";
+        public override string CmdUsage => "[inventory] [page] [perPage]";
 
-        public override string CmdDesc => "List the bag items (16 per page by default). Slot indexes are used by 'BotSell'";
+        public override string CmdDesc => "List inventory items (bag by default, 16 per page). Inventories: bag, temp, pa0-pa6 (pack animals, mounts, pets), share, room, guild. Slot indexes are used by 'BotSell'";
+
+        /// <summary>
+        /// Named inventory -> server database branch. Bag is the default.
+        /// </summary>
+        private static readonly Dictionary<string, string> InventoryPaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "bag",   "INVENTORY:BAG" },
+            { "temp",  "INVENTORY:TEMP" },
+            { "pa0",   "INVENTORY:PACK_ANIMAL0" },
+            { "pa1",   "INVENTORY:PACK_ANIMAL1" },
+            { "pa2",   "INVENTORY:PACK_ANIMAL2" },
+            { "pa3",   "INVENTORY:PACK_ANIMAL3" },
+            { "pa4",   "INVENTORY:PACK_ANIMAL4" },
+            { "pa5",   "INVENTORY:PACK_ANIMAL5" },
+            { "pa6",   "INVENTORY:PACK_ANIMAL6" },
+            { "share", "INVENTORY:SHARE" },
+            { "room",  "INVENTORY:ROOM" },
+            { "guild", "INVENTORY:GUILD" },
+        };
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
@@ -37,8 +56,25 @@ namespace Client.Commands
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
-            var page = args.Length >= 1 ? Convert.ToInt32(args[0], 10) : 1;
-            var perPage = args.Length == 2 ? (uint)Convert.ToInt32(args[1], 10) : DefaultPerPage;
+
+            // Optional first arg: inventory name (default: bag). Numeric args
+            // are page/perPage as before.
+            var inventoryName = "bag";
+            var argIndex = 0;
+            if (args.Length > 0 && !int.TryParse(args[0], out _))
+            {
+                inventoryName = args[0];
+                argIndex = 1;
+            }
+
+            if (!InventoryPaths.TryGetValue(inventoryName, out var dbPath))
+            {
+                responseMsg = $"Unknown inventory '{inventoryName}'. Available: {string.Join(", ", InventoryPaths.Keys)}";
+                return false;
+            }
+
+            var page = args.Length >= argIndex + 1 ? Convert.ToInt32(args[argIndex], 10) : 1;
+            var perPage = args.Length == argIndex + 2 ? (uint)Convert.ToInt32(args[argIndex + 1], 10) : DefaultPerPage;
 
             if (page < 1 || perPage < 1)
             {
@@ -46,11 +82,12 @@ namespace Client.Commands
                 return false;
             }
 
-            var entries = ryzomClient.GetInventoryManager().GetBagEntries();
+            var displayName = inventoryName == "bag" ? "Bag" : inventoryName.ToUpperInvariant();
+            var entries = ryzomClient.GetInventoryManager().GetInventoryEntries(dbPath);
 
             if (entries.Count == 0)
             {
-                responseMsg = "The bag is empty (or the bag data has not been received yet).";
+                responseMsg = $"The {displayName} inventory is empty (or the data has not been received yet).";
                 return true;
             }
 
@@ -63,7 +100,7 @@ namespace Client.Commands
 
             var lines = new List<string>
             {
-                $"Bag: {entries.Count} items, page {page}/{(entries.Count + (int)perPage - 1) / perPage} (use 'Inventory <page>' for more)",
+                $"{displayName}: {entries.Count} items, page {page}/{(entries.Count + (int)perPage - 1) / perPage} (use 'Inventory {inventoryName} <page>' for more)",
                 $"{"Slot",-5} {"Qty",-5} {"Q",-3} {"Weight",-8} Name"
             };
 

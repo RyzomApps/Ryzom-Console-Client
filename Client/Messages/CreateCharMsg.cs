@@ -161,4 +161,4 @@ namespace Client.Messages
             f.Serial(ref FeetColor);
         }
     }
-}
+}

@@ -13,4 +13,4 @@ namespace Client.Strings
         public string String;
         public uint StringId;
     }
-}
+}

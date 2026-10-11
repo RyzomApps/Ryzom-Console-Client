@@ -123,4 +123,4 @@ public static class BrickFamilyHelper
         UNKNOWN // Warning: Shouldn't exceed 32
     };
 
-}
+}

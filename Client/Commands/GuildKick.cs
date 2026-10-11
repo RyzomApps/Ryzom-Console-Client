@@ -12,10 +12,11 @@ namespace Client.Commands
         public override CommandCategory CmdCategory => CommandCategory.Guild;
         public override string CmdName => "GuildKick";
 
-        public override string CmdUsage => "<playerName> <counter>";
+        public override string CmdUsage => "<playerName>";
 
         public override string CmdDesc =>
-            "Client (lead, ho, of) wants to kick member specifying its index. Last parameter is the counter.";
+            "Kick a guild member (requires officer rank or higher over the member).\n"
+            + "NOTE: the official client sends the member's index plus the guild counter; this command sends the player name, which the server may reject. Left in for compatibility - needs rework.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

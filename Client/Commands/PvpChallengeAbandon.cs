@@ -14,7 +14,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Gcm Un_pvp_challenge";
+        public override string CmdDesc => "Legacy team PVP command: only the team leader may abandon the current group PVP challenge (server rejects non-leaders with CHALLENGE_ABANDON_NOT_LEADER). Nothing to do with 1v1 duels - see DuelAbandon; for League management see League / LeagueQuit.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

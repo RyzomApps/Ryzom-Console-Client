@@ -14,7 +14,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Quartering Action";
+        public override string CmdDesc => "Harvest (quarter) the currently targeted harvestable entity (corpse).";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

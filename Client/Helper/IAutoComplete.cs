@@ -23,4 +23,4 @@ namespace Client.Helper
         /// <returns>List of auto-complete words, e.g. ["command", "comment"]</returns>
         IEnumerable<string> AutoComplete(string behindCursor);
     }
-}
+}

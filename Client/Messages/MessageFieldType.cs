@@ -29,4 +29,4 @@ namespace Client.Messages
         String,
         UcString
     };
-}
+}

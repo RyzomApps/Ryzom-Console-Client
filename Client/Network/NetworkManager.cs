@@ -81,6 +81,16 @@ namespace Client.Network
         private readonly global::Client.BotChat.BotChatManager _botChatManager;
 
         /// <summary>
+        /// item infos received via ITEM_INFO:SET, keyed by slot id
+        /// </summary>
+        private readonly Dictionary<uint, ItemInfos> _itemInfos = new();
+
+        /// <summary>
+        /// respawn points from DEATH:RESPAWN_POINT (empty while not dead)
+        /// </summary>
+        private readonly List<(int X, int Y)> _respawnPoints = new();
+
+        /// <summary>
         /// season
         /// </summary>
         private byte _serverSeasonValue;
@@ -111,6 +121,16 @@ namespace Client.Network
         public DatabaseManager GetDatabaseManager() => _databaseManager;
 
         private InventoryManager GetInventoryManager() => _inventoryManager;
+
+        /// <summary>
+        /// item infos keyed by slot id (from ITEM_INFO:SET)
+        /// </summary>
+        public IReadOnlyDictionary<uint, ItemInfos> GetItemInfos() => _itemInfos;
+
+        /// <summary>
+        /// respawn points (from DEATH:RESPAWN_POINT)
+        /// </summary>
+        public IReadOnlyList<(int X, int Y)> GetRespawnPoints() => _respawnPoints;
 
         /// <inheritdoc />
         public uint GetCurrentServerTick() => _networkConnection.GetCurrentServerTick();
@@ -446,19 +466,6 @@ namespace Client.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
-        enum TCombatFlyingText
-        {
-            None = 0,
-            TargetDodge,
-            TargetParry,
-            TargetEvade,
-            SelfEvade,
-            TargetResist,
-            SelfResist,
-            SelfInterrupt,
-            SelfFailure
-        };
-
         private void ImpulseCombatFlyingHpDelta(BitMemoryStream impulse)
         {
             uint entityID = 0;
@@ -488,7 +495,7 @@ namespace Client.Network
 
             var color = Color.FromArgb((byte)(rgba >> 24 & 255), (byte)(rgba >> 16 & 255), (byte)(rgba >> 8 & 255), (byte)(rgba & 255));
 
-            _client.Plugins.OnCombatFlyingTextItemSpecialEffectProc(entityID, color.ToArgb(), effect, param);
+            _client.Plugins.OnCombatFlyingTextItemSpecialEffectProc(entityID, color.ToArgb(), (API.Entity.TItemSpecialEffect)effect, param);
         }
 
         private void ImpulseCombatFlyingText(BitMemoryStream impulse)
@@ -498,7 +505,7 @@ namespace Client.Network
 
             impulse.Serial(ref entityID);
             impulse.Serial(ref tmp);
-            var type = (TCombatFlyingText)tmp;
+            var type = (API.Entity.TCombatFlyingText)tmp;
 
             var color = Color.FromArgb(255, 255, 255);
             //string text = "";
@@ -506,28 +513,28 @@ namespace Client.Network
 
             switch (type)
             {
-                case TCombatFlyingText.TargetDodge:
+                case API.Entity.TCombatFlyingText.TargetDodge:
                     color = Color.FromArgb(255, 128, 64);
                     break;
-                case TCombatFlyingText.TargetParry:
+                case API.Entity.TCombatFlyingText.TargetParry:
                     color = Color.FromArgb(255, 128, 64);
                     break;
-                case TCombatFlyingText.TargetEvade:
+                case API.Entity.TCombatFlyingText.TargetEvade:
                     color = Color.FromArgb(255, 128, 64);
                     break;
-                case TCombatFlyingText.SelfEvade:
+                case API.Entity.TCombatFlyingText.SelfEvade:
                     color = Color.FromArgb(255, 255, 0);
                     break;
-                case TCombatFlyingText.TargetResist:
+                case API.Entity.TCombatFlyingText.TargetResist:
                     color = Color.FromArgb(255, 128, 64);
                     break;
-                case TCombatFlyingText.SelfResist:
+                case API.Entity.TCombatFlyingText.SelfResist:
                     color = Color.FromArgb(255, 255, 0);
                     break;
-                case TCombatFlyingText.SelfInterrupt:
+                case API.Entity.TCombatFlyingText.SelfInterrupt:
                     color = Color.FromArgb(200, 0, 0);
                     break;
-                case TCombatFlyingText.SelfFailure:
+                case API.Entity.TCombatFlyingText.SelfFailure:
                     color = Color.FromArgb(200, 0, 0);
                     break;
                 default:
@@ -535,7 +542,7 @@ namespace Client.Network
                     break;
             }
 
-            _client.Plugins.OnCombatFlyingText(entityID, color.ToArgb(), (byte)type);
+            _client.Plugins.OnCombatFlyingText(entityID, color.ToArgb(), type);
         }
 
         private void CbImpulsionGatewayMessage(BitMemoryStream impulse)
@@ -565,12 +572,29 @@ namespace Client.Network
 
         private void ImpulseCloseEnterCrZoneProposal(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Server closes the critical zone proposal interface; no payload
+            // (net_manager.cpp: impulseCloseEnterCrZoneProposal — hides the proposal window)
         }
 
         private void ImpulseEnterCrZoneProposal(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Critical zone proposal (net_manager.cpp: impulseEnterCrZoneProposal):
+            // the payload is a phrase/text id shown as the proposal text. The original
+            // client shows an accept/decline dialog; until we have MISSION:ENTER_CRITICAL /
+            // MISSION:CLOSE_ENTER_CRITICAL commands we only resolve and print the text.
+            uint phraseId = 0;
+            impulse.Serial(ref phraseId);
+
+            void LogProposal(uint _, string text)
+            {
+                _client.GetLogger().Info($"Critical zone proposal: {text}");
+                _client.GetLogger().Info("Accept/decline commands not implemented yet.");
+            }
+
+            if (!_stringManager.GetString(phraseId, out var proposalText, this))
+                _stringManager.WaitDynString(phraseId, LogProposal, this);
+            else
+                LogProposal(phraseId, proposalText);
         }
 
         private void ImpulseUserPopup(BitMemoryStream impulse)
@@ -581,18 +605,31 @@ namespace Client.Network
             impulse.Serial(ref docTextId);
 
             // setup TEMP DB for title
-            //var pIM = _client.GetInterfaceManager();
             var node = _client.GetDatabaseManager().GetServerNode("UI:TEMP:SERVER_POPUP:TITLE");
 
             node?.SetValue32((int)titleTextId);
 
-            _client.GetStringManager().WaitDynString(titleTextId, (a, b) => { _client.GetLogger().Info($"{a} {b}"); }, this);
-            _client.GetStringManager().WaitDynString(docTextId, (a, b) => { _client.GetLogger().Info($"{a} {b}"); }, this);
+            // Print the resolved popup only once BOTH dyn strings are available
+            // (mirrors ServerMessageBoxOnReceiveTextId::startWaitTexts)
+            var resolved = new Dictionary<uint, string>();
+            void OnResolved(uint id, string value)
+            {
+                resolved[id] = value;
+                if (resolved.ContainsKey(titleTextId) && resolved.ContainsKey(docTextId))
+                {
+                    _client.GetLogger().Info($"Server popup: {resolved[titleTextId]} — {resolved[docTextId]}");
+                }
+            }
 
-            //_client.GetLogger().Info($"titleTextId {titleTextId} docTextId {docTextId}");
+            if (!_stringManager.GetString(titleTextId, out var title, this))
+                _stringManager.WaitDynString(titleTextId, OnResolved, this);
+            else
+                OnResolved(titleTextId, title);
 
-            // Open the Popup only when the 2 dyn strings are available
-            //ServerMessageBoxOnReceiveTextId.startWaitTexts(titleTextId, docTextId);
+            if (!_stringManager.GetString(docTextId, out var doc, this))
+                _stringManager.WaitDynString(docTextId, OnResolved, this);
+            else
+                OnResolved(docTextId, doc);
         }
 
         /// <summary>
@@ -600,7 +637,6 @@ namespace Client.Network
         /// </summary>
         private void ImpulseUserBars(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             byte msgNumber = 0;
             var hp = 0;
@@ -619,7 +655,6 @@ namespace Client.Network
 
         private void ImpulseEncyclopediaInit(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             _client.Plugins.OnEncyclopediaInit();
         }
@@ -646,27 +681,59 @@ namespace Client.Network
 
         private void ImpulsePvpChallengeCancelInvitation(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Server cancels a pending PvP challenge invitation; no payload
+            // (net_manager.cpp: impulsePvpChallengeCancelInvitation — hides the dialog)
         }
 
         private void ImpulsePvpChallengeInvitation(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // PvP challenge proposal (net_manager.cpp: impulsePvpChallengeInvitation):
+            // the payload is the dyn string id of the invitor name
+            uint textId = 0;
+            impulse.Serial(ref textId);
+
+            void LogInvitation(uint _, string name)
+            {
+                _client.GetLogger().Info($"PvP challenge from: {name}");
+                _client.Plugins.OnPvpChallengeInvitation(textId, name);
+            }
+
+            if (!_stringManager.GetString(textId, out var invitorName, this))
+                _stringManager.WaitDynString(textId, LogInvitation, this);
+            else
+                LogInvitation(textId, invitorName);
         }
 
         private void ImpulseDuelCancelInvitation(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Server cancels a pending duel invitation; no payload
+            // (net_manager.cpp: impulseDuelCancelInvitation — hides the dialog)
         }
 
         private void ImpulseDuelInvitation(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Duel proposal (net_manager.cpp: impulseDuelInvitation):
+            // the payload is the dyn string id of the invitor name
+            uint textId = 0;
+            impulse.Serial(ref textId);
+
+            void LogInvitation(uint _, string name)
+            {
+                _client.GetLogger().Info($"Duel invitation from: {name}");
+                _client.Plugins.OnDuelInvitation(textId, name);
+            }
+
+            if (!_stringManager.GetString(textId, out var invitorName, this))
+                _stringManager.WaitDynString(textId, LogInvitation, this);
+            else
+                LogInvitation(textId, invitorName);
         }
 
         private void ImpulseDeathRespawn(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // User died (net_manager.cpp: impulseDeathRespawn — TODO in the original client;
+            // respawn is only possible after the 3 minute resurrection timer)
+            _client.GetLogger().Info("You died. You can be healed within 3 minutes. Use /askrespawn once the time is over.");
         }
 
         /// <summary>
@@ -674,15 +741,35 @@ namespace Client.Network
         /// </summary>
         private void ImpulseDeathRespawnPoint(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
-            short x = 0;
-            short y = 0;
+            // Respawn point list for the current death (net_manager.cpp:
+            // impulseDeathRespawnPoint). needToReset means: drop the previous
+            // points and use only the ones in this message.
+            var needToReset = false;
+            impulse.Serial(ref needToReset);
 
-            impulse.Serial(ref x);
-            impulse.Serial(ref y);
+            if (needToReset)
+                _respawnPoints.Clear();
 
-            _client.Plugins.OnDeathRespawnPoint(x, y);
+            var count = 0;
+            impulse.Serial(ref count);
+
+            for (var i = 0; i < count; i++)
+            {
+                int x = 0;
+                int y = 0;
+
+                impulse.Serial(ref x);
+                impulse.Serial(ref y);
+
+                _respawnPoints.Add((x, y));
+            }
+
+            foreach (var respawnPoint in _respawnPoints)
+                _client.GetLogger().Info($"Respawn point available: {(double)respawnPoint.X / 1000:F0} {(double)respawnPoint.Y / 1000:F0}");
+
+            if (_respawnPoints.Count > 0)
+                _client.Plugins.OnDeathRespawnPoint(_respawnPoints[^1].X, _respawnPoints[^1].Y);
         }
 
         private void ImpulseItemCloseRoomInventory(BitMemoryStream impulse)
@@ -697,7 +784,23 @@ namespace Client.Network
 
         private void ImpulseItemInfoRefreshVersion(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            // The server asks us to re-request an item whose stored info is stale
+            // (net_manager.cpp: the client answers with ITEM_INFO:GET when the
+            // versions differ; if they match nothing is sent back)
+            uint slotId = 0;
+            ushort versionInfo = 0;
+
+            impulse.Serial(ref slotId);
+            impulse.Serial(ref versionInfo);
+
+            if (_itemInfos.TryGetValue(slotId, out var info) && info.VersionInfo == versionInfo)
+                return;
+
+            SendImpulse("ITEM_INFO:GET", out2 =>
+            {
+                out2.U32(slotId);
+            });
         }
 
         private void ImpulsePrereqInfoSet(BitMemoryStream impulse)
@@ -707,7 +810,19 @@ namespace Client.Network
 
         private void ImpulseItemInfoSet(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            var count = 0;
+            impulse.Serial(ref count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var info = new ItemInfos();
+                info.Read(impulse);
+
+                _itemInfos[info.SlotId] = info;
+
+                _client.GetLogger().Info($"ItemInfo {info.ToLogLine()}");
+            }
         }
 
         /// <summary>
@@ -715,7 +830,6 @@ namespace Client.Network
         /// </summary>
         private void ImpulsePhraseAckExecuteNext(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             byte counter = 0;
             var ok = false;
@@ -731,7 +845,6 @@ namespace Client.Network
         /// </summary>
         private void ImpulsePhraseAckExecuteCyclic(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             byte counter = 0;
             var ok = false;
@@ -744,7 +857,20 @@ namespace Client.Network
 
         private void ImpulsePhraseConfirmBuy(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            // Server confirms or rejects a botchat phrase purchase
+            // (net_manager.cpp: impulsePhraseConfirmBuy -> CSPhraseManager::receiveBotChatConfirmBuy)
+            ushort phraseId = 0;
+            var confirm = false;
+
+            impulse.Serial(ref phraseId);
+            impulse.Serial(ref confirm);
+
+            if (!_stringManager.GetString(phraseId, out var phraseName, this))
+                phraseName = $"unknown phrase ({phraseId})";
+
+            _client.GetLogger().Info($"Phrase purchase {(confirm ? "confirmed" : "rejected")}: {phraseName}");
+            _client.Plugins.OnPhraseBuyConfirm(phraseId, confirm);
         }
 
         /// <summary>
@@ -825,7 +951,6 @@ namespace Client.Network
         /// </summary>
         private void ImpulseGuildUseFemaleTitles(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             var useFemaleTitles = false;
             impulse.Serial(ref useFemaleTitles);
@@ -838,7 +963,6 @@ namespace Client.Network
         /// </summary>
         private void ImpulseGuildUpdatePlayerTitle(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             var bUnblock = false;
             impulse.Serial(ref bUnblock);
@@ -928,7 +1052,6 @@ namespace Client.Network
             var timestamp = 0;
             impulse.Serial(ref timestamp);
 
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with timestamp {timestamp}");
 
             _stringManager.LoadCache(timestamp);
 
@@ -945,7 +1068,6 @@ namespace Client.Network
             impulse.Serial(ref stringId);
             impulse.Serial(ref strUtf8, false);
 
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name} with stringId {stringId}");
 
             _stringManager.ReceiveString(stringId, strUtf8, this);
 
@@ -978,12 +1100,30 @@ namespace Client.Network
 
         private void ImpulseExchangeCloseInvitation(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Server closes/cancels the exchange invitation dialog; no payload
+            // (net_manager.cpp: impulseExchangeCloseInvitation — hides the dialog)
         }
 
         private void ImpulseExchangeInvitation(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            // An other player invites us to an exchange (net_manager.cpp:
+            // impulseExchangeInvitation). The payload is a dyn string id; the original
+            // client shows it in a modal dialog. The string may not be available yet, so
+            // wait for it before logging.
+            uint textId = 0;
+            impulse.Serial(ref textId);
+
+            void LogInvitation(uint _, string invitationText)
+            {
+                _client.GetLogger().Info($"Exchange invitation from: {invitationText}");
+                _client.Plugins.OnExchangeInvitation(textId, invitationText);
+            }
+
+            if (!_stringManager.GetString(textId, out var invitationText, this))
+                _stringManager.WaitDynString(textId, LogInvitation, this);
+            else
+                LogInvitation(textId, invitationText);
         }
 
         /// <summary>
@@ -1086,22 +1226,25 @@ namespace Client.Network
 
         private void ImpulseTeamShareClose(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Team loot sharing: close the sharing interface (net_manager.cpp:
+            // impulseTeamShareClose). Not used by the original server/client in practice.
         }
 
         private void ImpulseTeamShareInvalid(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Team loot sharing: re-enable the validate button because another member
+            // changed its choice (net_manager.cpp: impulseTeamShareInvalid).
+            // Not used by the original server/client in practice.
         }
 
         private void ImpulseTeamShareOpen(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Team loot sharing: open the sharing interface (net_manager.cpp:
+            // impulseTeamShareOpen). Not used by the original server/client in practice.
         }
 
         private void ImpulseTeamInvitation(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             var textId = uint.MinValue;
             impulse.Serial(ref textId);
@@ -1111,7 +1254,14 @@ namespace Client.Network
 
         private void ImpulseBeginCast(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            // Cast begins (net_manager.cpp: impulseBeginCast): begin/end are server ticks
+            // for the casting bar. Event only, no log.
+            uint begin = 0;
+            uint end = 0;
+            impulse.Serial(ref begin);
+            impulse.Serial(ref end);
+
+            _client.Plugins.OnBeginCast(begin, end);
         }
 
         private void ImpulseDynChatClose(BitMemoryStream impulse)
@@ -1230,13 +1380,11 @@ namespace Client.Network
         private void ImpulseTpWithSeason(BitMemoryStream impulse)
         {
             ImpulseTp(impulse, true);
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         private void ImpulseTp(BitMemoryStream impulse)
         {
             ImpulseTp(impulse, false);
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
         /// <summary>
@@ -1310,7 +1458,6 @@ namespace Client.Network
 
         private void ImpulseDynStringInChatGroup(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             var type = 0;
             impulse.Serial(ref type);
@@ -1319,7 +1466,6 @@ namespace Client.Network
 
         private void ImpulseDynString(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             _chatManager.ProcessChatStringWithNoSender(impulse, ChatGroupType.System, _client);
         }
@@ -1353,13 +1499,13 @@ namespace Client.Network
         private void ImpulsePermanentUnban(BitMemoryStream impulse)
         {
             _client.GetLogger().Warn($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info("You have been unbanned.");
         }
 
         private void ImpulsePermanentBan(BitMemoryStream impulse)
         {
-            _client.GetLogger().Warn($"§cImpulse on {MethodBase.GetCurrentMethod()?.Name}");
-
-            // WHAAAAAAAAAAAAAAAAAAAAAAAAAAA!!!
+            _client.GetLogger().Warn($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Warn("You have been permanently banned from this server.");
         }
 
         private void ImpulseForumNotification(BitMemoryStream impulse)
@@ -1374,12 +1520,13 @@ namespace Client.Network
 
         private void ImpulseServerQuitAbort(BitMemoryStream impulse)
         {
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Info("Server quit aborted.");
             _client.Plugins.OnServerQuitAbort();
         }
 
         private void ImpulseServerQuitOk(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
             GameExit = true;
             _networkConnection.Disconnect();
 
@@ -1391,7 +1538,6 @@ namespace Client.Network
         /// </summary>
         private void ImpulseShardId(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             uint shardId = 0;
             impulse.Serial(ref shardId);
@@ -1404,7 +1550,6 @@ namespace Client.Network
 
         private void ImpulseCharNameValid(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             byte nTmp = 0;
             impulse.Serial(ref nTmp);
@@ -1550,7 +1695,6 @@ namespace Client.Network
 
             // TODO: UpdatePatcherPriorityBasedOnCharacters();
 
-            _client.GetLogger().Debug("st_ingame->st_select_char");
             CanSendCharSelection = true;
 
             _client.Plugins.OnUserChars();
@@ -1559,11 +1703,11 @@ namespace Client.Network
         private void ImpulseNoUserChar(BitMemoryStream impulse)
         {
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            _client.GetLogger().Warn("No character available on this account.");
         }
 
         private void ImpulseDatabaseResetBank(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             uint serverTick = 0;
             uint bank = 0;
@@ -1595,7 +1739,6 @@ namespace Client.Network
         /// </summary>
         private void ImpulseDatabaseInitBank(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             uint serverTick = 0;
             uint bank = 0;
@@ -1624,7 +1767,6 @@ namespace Client.Network
 
         private void ImpulseDatabaseUpdateBank(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             uint serverTick = 0;
             uint bank = 0;
@@ -1827,7 +1969,6 @@ namespace Client.Network
         /// </summary>
         private void ImpulseDatabaseInitPlayer(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             try
             {
@@ -1842,7 +1983,6 @@ namespace Client.Network
 
                 _databaseManager.ReadDelta(serverTick, impulse, Constants.CdbPlayer);
                 _databaseManager.SetInitPacketReceived();
-                _client.GetLogger().Debug($"DB_INIT:PLR done ({impulse.Pos - p} bytes)");
 
                 _client.Plugins.OnDatabaseInitPlayer(serverTick);
             }
@@ -1857,7 +1997,6 @@ namespace Client.Network
         /// </summary>
         private void ImpulseDatabaseUpdatePlayer(BitMemoryStream impulse)
         {
-            _client.GetLogger().Debug($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
 
             try
             {
@@ -1996,4 +2135,4 @@ namespace Client.Network
             _networkConnection.PushTarget(slot, TargettingType.None);
         }
     }
-}
+}

@@ -14,7 +14,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "[sitState]";
 
-        public override string CmdDesc => "client send to the server the sitting state";
+        public override string CmdDesc => "Tell the server the current sitting state (toggle).";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

@@ -2159,4 +2159,4 @@ namespace Client.Network
     {
         public NetworkLoginException(string message) : base(message) { }
     }
-}
+}

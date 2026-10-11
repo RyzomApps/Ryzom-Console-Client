@@ -120,4 +120,4 @@ namespace Client.Logger
                 Save(msg);
         }
     }
-}
+}

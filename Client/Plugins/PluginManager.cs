@@ -822,6 +822,46 @@ namespace Client.Plugins
         }
 
         /// <summary>
+        /// Called when a spell/skill cast begins
+        /// </summary>
+        public void OnBeginCast(uint begin, uint end)
+        {
+            DispatchListenerEvent(listener => listener.OnBeginCast(begin, end));
+        }
+
+        /// <summary>
+        /// Called when the server confirms or rejects a botchat phrase purchase
+        /// </summary>
+        public void OnPhraseBuyConfirm(ushort phraseId, bool confirmed)
+        {
+            DispatchListenerEvent(listener => listener.OnPhraseBuyConfirm(phraseId, confirmed));
+        }
+
+        /// <summary>
+        /// Called when another player invites the user to an exchange
+        /// </summary>
+        public void OnExchangeInvitation(uint textId, string invitationText)
+        {
+            DispatchListenerEvent(listener => listener.OnExchangeInvitation(textId, invitationText));
+        }
+
+        /// <summary>
+        /// Called when another player proposes a duel
+        /// </summary>
+        public void OnDuelInvitation(uint textId, string invitorName)
+        {
+            DispatchListenerEvent(listener => listener.OnDuelInvitation(textId, invitorName));
+        }
+
+        /// <summary>
+        /// Called when another player proposes a PvP challenge
+        /// </summary>
+        public void OnPvpChallengeInvitation(uint textId, string invitorName)
+        {
+            DispatchListenerEvent(listener => listener.OnPvpChallengeInvitation(textId, invitorName));
+        }
+
+        /// <summary>
         /// Called when the server sends information about the user char after the login
         /// </summary>
         public void OnUserChar(int highestMainlandSessionId, int firstConnectedTime, int playedTime, Vector3 initPos, Vector3 initFront, byte season, int role, bool isInRingSession)
@@ -953,7 +993,7 @@ namespace Client.Plugins
         /// <summary>
         /// Called when a combat-related special effect flying text for an entity should be displayed
         /// </summary>
-        internal void OnCombatFlyingTextItemSpecialEffectProc(uint entityId, int color, byte effect, int param)
+        internal void OnCombatFlyingTextItemSpecialEffectProc(uint entityId, int color, API.Entity.TItemSpecialEffect effect, int param)
         {
             DispatchListenerEvent(listener => listener.OnCombatFlyingTextItemSpecialEffectProc(entityId, color, effect, param));
         }
@@ -961,7 +1001,7 @@ namespace Client.Plugins
         /// <summary>
         /// Called when a combat-related flying text for an entity should be displayed
         /// </summary>
-        internal void OnCombatFlyingText(uint entityId, int color, byte type)
+        internal void OnCombatFlyingText(uint entityId, int color, API.Entity.TCombatFlyingText type)
         {
             DispatchListenerEvent(listener => listener.OnCombatFlyingText(entityId, color, type));
         }
@@ -1008,4 +1048,4 @@ namespace Client.Plugins
 
         #endregion
     }
-}
+}

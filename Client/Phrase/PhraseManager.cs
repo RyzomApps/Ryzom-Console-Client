@@ -593,9 +593,9 @@ namespace Client.Phrase
         }
 
         /// <summary>
-        /// Dump all phrases to a file.
+        /// Dump phrases to a file. Optionally filter by memory line and/or slot index.
         /// </summary>
-        public void Write(string fileName)
+        public void Write(string fileName, uint? memoryLine = null, uint? memoryIndex = null)
         {
             if (_memories != null)
             {
@@ -611,6 +611,18 @@ namespace Client.Phrase
 
                     foreach (var slot in memory.Slot)
                     {
+                        if (memoryLine.HasValue && m != memoryLine.Value)
+                        {
+                            s++;
+                            continue;
+                        }
+
+                        if (memoryIndex.HasValue && s != memoryIndex.Value)
+                        {
+                            s++;
+                            continue;
+                        }
+
                         var phrase = GetPhrase(slot.Id);
 
                         f.WriteLine($"{m}:{s}\t{slot.Id}\t{slot.IsMacro}\t{slot.IsMacroVisualDirty}\t{phrase.Name}\t{phrase.Bricks?.Count}\t{CountAllThatUsePhrase(slot.Id)}");
@@ -648,6 +660,11 @@ namespace Client.Phrase
         /// <summary>
         /// Get a phrase for a slot. Empty Phrase returned if don't exist.
         /// </summary>
+        public List<MemoryLine> GetMemories()
+        {
+            return _memories;
+        }
+
         public PhraseCom GetPhrase(uint slot)
         {
             return !_phraseMap.ContainsKey((int)slot) ? PhraseCom.EmptyPhrase : _phraseMap[(int)slot];
@@ -1020,4 +1037,4 @@ namespace Client.Phrase
             // Ignore: If the phrase erased was currently executed, must stop it
         }
     }
-}
+}

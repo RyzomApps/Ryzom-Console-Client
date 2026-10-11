@@ -20,4 +20,4 @@ namespace Client.Strings
         /// <summary>Receive callback for string.</summary>
         public abstract void OnStringAvailable(uint stringId, in string value);
     }
-}
+}

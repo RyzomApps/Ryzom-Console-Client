@@ -54,4 +54,4 @@ namespace Client.Commands
             return ["sh", "y", "yell"];
         }
     }
-}
+}

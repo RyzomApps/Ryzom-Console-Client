@@ -12,7 +12,7 @@ namespace Client.Commands
         public override CommandCategory CmdCategory => CommandCategory.Movement;
         public override string CmdName => "noFollowMode";
         public override string CmdUsage => "";
-        public override string CmdDesc => "Stop the mode for following the target (only for server events)";
+        public override string CmdDesc => "Tell the server we left follow mode.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

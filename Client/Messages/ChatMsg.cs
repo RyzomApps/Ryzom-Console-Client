@@ -40,4 +40,4 @@ namespace Client.Messages
             f.Serial(ref Content);
         }
     }
-}
+}

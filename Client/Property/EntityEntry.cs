@@ -27,4 +27,4 @@ namespace Client.Property
             PosIsInterior = false;
         }
     }
-}
+}

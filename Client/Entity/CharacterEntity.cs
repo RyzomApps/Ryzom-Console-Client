@@ -666,4 +666,4 @@ namespace Client.Entity
             }
         }
     }
-}
+}

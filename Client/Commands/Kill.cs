@@ -29,4 +29,4 @@ namespace Client.Commands
             return ["kill"];
         }
     }
-}
+}

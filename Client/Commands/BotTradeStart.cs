@@ -25,7 +25,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "<item|faction|teleport|skill|pact|action>";
 
-        public override string CmdDesc => "Start a trade session with the bot currently in front of the player";
+        public override string CmdDesc => "Start a trade session with the currently targeted bot/NPC";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

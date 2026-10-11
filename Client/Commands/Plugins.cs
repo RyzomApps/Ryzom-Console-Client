@@ -45,4 +45,4 @@ namespace Client.Commands
             return ["pl"];
         }
     }
-}
+}

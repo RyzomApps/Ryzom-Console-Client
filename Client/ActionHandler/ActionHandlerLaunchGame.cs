@@ -62,4 +62,4 @@ namespace Client.ActionHandler
             _networkManager.WaitServerAnswer = true;
         }
     }
-}
+}

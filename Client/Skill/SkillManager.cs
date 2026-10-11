@@ -22,4 +22,4 @@ namespace Client.Skill
             // TODO InitInGame implementation
         }
     }
-}
+}

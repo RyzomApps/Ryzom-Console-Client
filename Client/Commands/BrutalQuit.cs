@@ -24,4 +24,4 @@ namespace Client.Commands
             return ["ragequit", "forcequit"];
         }
     }
-}
+}

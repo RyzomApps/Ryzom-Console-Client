@@ -15,9 +15,9 @@ namespace Client.Commands
         public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "db";
 
-        public override string CmdUsage => "<Property> <Value>";
+        public override string CmdUsage => "<leaf> [value]";
 
-        public override string CmdDesc => "Modify Database";
+        public override string CmdDesc => "Read or write a client database leaf. With one argument prints the leaf's current value (e.g. 'db USER:ACTIVE_RING' - 0 means not in Ring). With two arguments sets the leaf to the given integer value (local only, use only for debugging).";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

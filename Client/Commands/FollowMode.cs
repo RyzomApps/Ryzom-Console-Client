@@ -14,7 +14,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Start the mode for following the target (only for server events)";
+        public override string CmdDesc => "Tell the server we are in follow mode (movement is camera/steering driven; the server keeps the entity moving as it does for normal walking). Mostly harmless - rarely needed.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

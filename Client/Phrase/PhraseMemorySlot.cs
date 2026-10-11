@@ -30,4 +30,4 @@ namespace Client.Phrase
             return ret;
         }
     }
-}
+}

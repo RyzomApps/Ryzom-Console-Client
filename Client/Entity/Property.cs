@@ -13,4 +13,4 @@ namespace Client.Entity
         internal uint GameCycle;
         internal long Value;
     }
-}
+}

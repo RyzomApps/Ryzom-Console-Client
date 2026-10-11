@@ -15,7 +15,7 @@ namespace Client.Commands
         public override string CmdUsage => "[text]";
 
         public override string CmdDesc =>
-            "This command sends a message visible to all who are in the same region as you at the time.";
+            "Select the region channel (no argument) or send a message in it; visible to all in the same region.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

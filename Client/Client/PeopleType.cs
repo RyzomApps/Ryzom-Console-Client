@@ -177,4 +177,4 @@ namespace Client.Client
         Unknown = 142,
         //EndPeople = 142
     }
-}
+}

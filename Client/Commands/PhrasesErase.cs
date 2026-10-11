@@ -74,4 +74,4 @@ namespace Client.Commands
             return ["DeletePhrases"];
         }
     }
-}
+}

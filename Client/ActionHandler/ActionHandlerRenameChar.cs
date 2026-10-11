@@ -54,4 +54,4 @@ public class ActionHandlerRenameChar : ActionHandlerBase
 
         ryzomClient.GetLogger().Debug("impulseCallBack : CONNECTION:RENAME_CHAR sent");
     }
-}
+}

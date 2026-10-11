@@ -16,4 +16,4 @@ namespace Client.Property
         internal byte Slot;
         internal uint Timestamp;
     }
-}
+}

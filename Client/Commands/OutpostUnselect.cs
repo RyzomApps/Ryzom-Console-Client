@@ -13,7 +13,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Called when the Outpost State window (the one opened from BotChat) is closed.";
+        public override string CmdDesc => "Deselect the selected outpost; stops the outpost information updates in the database.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

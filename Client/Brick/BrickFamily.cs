@@ -720,4 +720,4 @@ public enum BrickFamily
 
     BeginForageProspectionMandatory = AutoCodeCheck,
     EndForageProspectionMandatory = AutoCodeCheck
-}
+}

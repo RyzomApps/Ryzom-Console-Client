@@ -20,4 +20,4 @@ namespace Client.Commands
             return true;
         }
     }
-}
+}

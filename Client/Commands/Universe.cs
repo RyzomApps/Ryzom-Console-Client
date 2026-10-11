@@ -15,7 +15,7 @@ namespace Client.Commands
         public override string CmdUsage => "[text]";
 
         public override string CmdDesc =>
-            "This command sends a message to the universe channel, which is visible to everyone online at that moment.";
+            "Select the universe channel (no argument) or send a message in it; visible to everyone online.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

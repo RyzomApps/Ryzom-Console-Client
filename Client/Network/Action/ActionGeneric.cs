@@ -80,4 +80,4 @@ namespace Client.Network.Action
             message.SerialBufferWithSize(_message.Buffer(), _message.Buffer().Length);
         }
     }
-}
+}

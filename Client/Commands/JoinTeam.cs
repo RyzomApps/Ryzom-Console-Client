@@ -44,4 +44,4 @@ namespace Client.Commands
             return ["AcceptTeamInvite"];
         }
     }
-}
+}

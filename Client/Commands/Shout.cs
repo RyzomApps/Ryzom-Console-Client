@@ -15,7 +15,7 @@ namespace Client.Commands
         public override string CmdUsage => "[text]";
 
         public override string CmdDesc =>
-            "This command will make your messages have a 50m range and will appear red (by default) for you.";
+            "Select the shout channel (no argument) or send a message in it. Shout messages have a 50m range and appear red (by default).";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

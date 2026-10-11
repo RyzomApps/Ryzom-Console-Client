@@ -64,4 +64,4 @@ namespace Client.Chat
             DisplayAsTell = displayAsTell;
         }
     }
-}
+}

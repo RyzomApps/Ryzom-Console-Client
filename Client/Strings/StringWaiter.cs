@@ -13,4 +13,4 @@ namespace Client.Strings
         /// <summary>Pointer to the ucstring to fill</summary>
         public string Result;
     }
-}
+}

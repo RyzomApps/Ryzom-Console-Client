@@ -14,7 +14,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "";
 
-        public override string CmdDesc => "Loot Action";
+        public override string CmdDesc => "Loot the currently targeted lootable entity.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {

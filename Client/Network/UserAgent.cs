@@ -62,4 +62,4 @@ namespace Client.Network
             return Program.Version;
         }
     }
-}
+}

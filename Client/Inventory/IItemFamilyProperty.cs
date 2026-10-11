@@ -245,4 +245,4 @@ namespace Client.Inventory
             f.SerialCont(out Properties);
         }
     }
-}
+}

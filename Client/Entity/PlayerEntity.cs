@@ -191,4 +191,4 @@ namespace Client.Entity
         /// Return the People for the entity.
         //	virtual EGSPD::CPeople::TPeople people();
     }
-}
+}

@@ -119,4 +119,4 @@ namespace Client.Database
             return idx >= Size() ? string.Empty : _ids[idx];
         }
     }
-}
+}

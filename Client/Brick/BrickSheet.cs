@@ -128,4 +128,4 @@ public class BrickSheet(SheetIdFactory sheetIdFactory) : Sheet.Sheet(sheetIdFact
 
         s.Serial(out uint magicResistType);
     }
-}
+}

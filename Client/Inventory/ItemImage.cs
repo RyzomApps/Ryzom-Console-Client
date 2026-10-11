@@ -56,6 +56,28 @@ namespace Client.Inventory
         public void SetInfoVersion(byte iv) { _infoVersion?.SetValue8((byte)iv); }
         public void SetResaleFlag(byte resale) { _resaleFlag?.SetValue8(resale); }
 
+        /// <summary>
+        /// True if the cached leaves of this image still belong to the given
+        /// branch (i.e. the branch has not been removed and rebuilt since).
+        /// </summary>
+        public bool BelongsTo(DatabaseNodeBranch branch)
+        {
+            if (_sheet == null)
+                return false;
+
+            // Walk up to the root of the leaf and compare it with the branch.
+            DatabaseNode root = _sheet;
+            while (true)
+            {
+                var parent = root.GetParent();
+                if (parent == null)
+                    break;
+                root = parent;
+            }
+
+            return root == branch;
+        }
+
         public void Build(DatabaseNodeBranch branch)
         {
             if (branch == null)

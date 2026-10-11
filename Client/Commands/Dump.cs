@@ -15,7 +15,7 @@ namespace Client.Commands
         public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "dump";
         public override string CmdUsage => "[name]";
-        public override string CmdDesc => "Command to create a file with the current state of the client";
+        public override string CmdDesc => "Dump the current client state (database, inventory) to '<name>_db.rec' and '<name>_inventory.rec' in the working directory. Without arguments the files are called 'default_...'. Useful for bug reports and debugging.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
@@ -43,7 +43,6 @@ namespace Client.Commands
 
             // TODO: Dump entities.
 
-            ryzomClient.GetPhraseManager().Write($"{dumpName}_phrases.rec");
 
             if (ClientConfig.UseInventory)
                 ryzomClient.GetInventoryManager().Write($"{dumpName}_inventory.rec");

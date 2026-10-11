@@ -73,4 +73,4 @@ namespace Client.ActionHandler
             ryzomClient.GetLogger().Debug("impulseCallBack : CONNECTION:CREATE_CHAR sent");
         }
     }
-}
+}

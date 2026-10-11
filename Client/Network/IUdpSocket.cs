@@ -40,4 +40,4 @@ namespace Client.Network
         /// </summary>
         public void Send(byte[] buffer, in int length);
     }
-}
+}

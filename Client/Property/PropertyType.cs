@@ -55,4 +55,4 @@ namespace Client.Property
 
         InvalidPropIndex = 0xFF,
     }
-}
+}

@@ -26,4 +26,4 @@ namespace Client.Chat
         /// </summary>
         public void DisplayTell(string formattedMessage, string senderName, string rawMessage);
     }
-}
+}

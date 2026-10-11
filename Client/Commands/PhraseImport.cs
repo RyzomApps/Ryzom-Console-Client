@@ -14,9 +14,9 @@ namespace Client.Commands
         public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "PhraseImport";
 
-        public override string CmdUsage => "<filename> [page] [override]";
+        public override string CmdUsage => "[filename] [line] [index] [override]";
 
-        public override string CmdDesc => "Import a phrase from a file. Optionally specify an action bar page, and whether to override an existing phrase at the slot.";
+        public override string CmdDesc => "Import phrases from a file. Optionally specify a memory line and an index to filter which phrases are imported. When no line is given, all lines are imported. When no index is given, all indexes of the line are imported.";
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
@@ -25,33 +25,47 @@ namespace Client.Commands
                 throw new Exception("Command handler is not a Ryzom client.");
 
             var args = GetArgs(command);
-            if (args.Length is < 1 or > 3)
+            if (args.Length > 4)
             {
-                responseMsg = "Please specify a file name and optionally an ActionBarPage and override (true/false).";
+                responseMsg = "Please specify a file name and optionally a memory line, an index and override (true/false).";
                 return false;
             }
 
-            if (!File.Exists(args[0]))
+            var fileName = args.Length >= 1 ? args[0] : "default";
+
+            if (!File.Exists($"{fileName}_phrases.rec"))
             {
                 responseMsg = "File does not exist.";
                 return false;
             }
 
-            uint? actionBarPage = null;
+            uint? memoryLineFilter = null;
             if (args.Length >= 2)
             {
-                if (!uint.TryParse(args[1], out var page))
+                if (!uint.TryParse(args[1], out var line))
                 {
-                    responseMsg = "Invalid ActionBarPage specified. It must be a number.";
+                    responseMsg = "Invalid memory line specified. It must be a number.";
                     return true;
                 }
 
-                actionBarPage = page;
+                memoryLineFilter = line;
             }
 
-            bool overrideSlot = args.Length >= 3 &&
-                                (args[2].Equals("true", StringComparison.OrdinalIgnoreCase) ||
-                                 args[2].Equals("1"));
+            uint? memoryIndexFilter = null;
+            if (args.Length >= 3)
+            {
+                if (!uint.TryParse(args[2], out var index))
+                {
+                    responseMsg = "Invalid index specified. It must be a number.";
+                    return true;
+                }
+
+                memoryIndexFilter = index;
+            }
+
+            bool overrideSlot = args.Length >= 4 &&
+                                (args[3].Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                                 args[3].Equals("1"));
 
             // BOM handling: File.ReadLines + strip the BOM from the first line manually.
             bool firstLine = true;
@@ -60,10 +74,10 @@ namespace Client.Commands
             uint phraseId = 0;
             uint memoryLine = 0;
             uint memoryIndex = 0;
-            bool phraseMatchesPage = true; // no page filter -> always import
+            bool phraseMatchesFilter = true; // no filter -> always import
 
             // Change this line to initialize within the loop
-            foreach (var rawLine in File.ReadLines(args[0]))
+            foreach (var rawLine in File.ReadLines($"{fileName}_phrases.rec"))
             {
                 var line = firstLine ? rawLine.TrimStart('\uFEFF') : rawLine;
                 firstLine = false;
@@ -106,14 +120,14 @@ namespace Client.Commands
                         continue;
 
                     // First, send the previous phrase to the server if it exists
-                    if (phrase != null && phraseMatchesPage)
+                    if (phrase != null && phraseMatchesFilter)
                         SendPhraseToServer(ryzomClient, phrase, memoryLine, memoryIndex, phraseId, overrideSlot, out responseMsg);
 
                     phraseId = 0;
                     memoryLine = 0;
                     memoryIndex = 0;
                     phrase = null;
-                    phraseMatchesPage = true;
+                    phraseMatchesFilter = true;
 
                     if (splits.Length <= 5)
                         continue;
@@ -121,10 +135,17 @@ namespace Client.Commands
                     memoryLine = uint.Parse(splits[0].Split(":")[0]);
                     memoryIndex = uint.Parse(splits[0].Split(":")[1]);
 
-                    // Page filter: skip allocation for phrases not on the requested page
-                    if (actionBarPage.HasValue && memoryLine != actionBarPage.Value)
+                    // Line filter: skip allocation for phrases not on the requested line
+                    if (memoryLineFilter.HasValue && memoryLine != memoryLineFilter.Value)
                     {
-                        phraseMatchesPage = false;
+                        phraseMatchesFilter = false;
+                        continue;
+                    }
+
+                    // Index filter: skip allocation for phrases not at the requested index
+                    if (memoryIndexFilter.HasValue && memoryIndex != memoryIndexFilter.Value)
+                    {
+                        phraseMatchesFilter = false;
                         continue;
                     }
 
@@ -140,7 +161,7 @@ namespace Client.Commands
             }
 
             // Send the last phrase to the server after EOF
-            if (phrase != null && phraseMatchesPage)
+            if (phrase != null && phraseMatchesFilter)
                 SendPhraseToServer(ryzomClient, phrase, memoryLine, memoryIndex, phraseId, overrideSlot, out responseMsg);
 
             return true;

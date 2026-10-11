@@ -320,31 +320,71 @@ namespace Client.Inventory
         {
             var result = new List<IBagEntry>();
 
+            var bagBranch = _client.GetDatabaseManager().GetServerBranch($"{Inventory}:BAG");
+
             for (uint i = 0; i < MaxBaginvEntries; i++)
             {
+                var itemBranch = bagBranch?.GetNode((ushort)i) as DatabaseNodeBranch;
                 var item = _serverBag[i];
 
-                if (item == null)
+                // Invalidate the cache when the branch is gone or has been
+                // removed and rebuilt (e.g. after selling an item): otherwise
+                // the stale image would report a ghost item.
+                if (item != null && (itemBranch == null || !item.BelongsTo(bagBranch)))
+                {
+                    item = null;
+                    _serverBag[i] = null;
+                }
+
+                if (item == null && itemBranch != null)
                 {
                     // The item may have been received after the inventory was
                     // initialized (e.g. minimal config without sheets where the
                     // bag branch only appears later): build it now from the
                     // server database so live updates continue to flow.
-                    var branch = _client.GetDatabaseManager().GetServerBranch($"{Inventory}:BAG");
-                    var itemBranch = branch?.GetNode((ushort)i) as DatabaseNodeBranch;
-
-                    if (itemBranch != null)
-                    {
-                        item = new ItemImage();
-                        item.Build(itemBranch);
-                        _serverBag[i] = item;
-                    }
+                    item = new ItemImage();
+                    item.Build(itemBranch);
+                    _serverBag[i] = item;
                 }
 
                 if (item == null || item.GetSheetId() == 0)
                 {
                     continue;
                 }
+
+                result.Add(new BagEntry(i, item));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Enumerate the items of any server inventory branch, e.g.
+        /// INVENTORY:TEMP, INVENTORY:PACK_ANIMAL0..3, INVENTORY:SHARE,
+        /// INVENTORY:GUILD, INVENTORY:ROOM. Items are built lazily from the
+        /// server database, like GetBagEntries does.
+        /// </summary>
+        public List<IBagEntry> GetInventoryEntries(string dbPath)
+        {
+            var result = new List<IBagEntry>();
+
+            if (_client.GetDatabaseManager() == null)
+                return result;
+
+            var branch = _client.GetDatabaseManager().GetServerBranch(dbPath);
+            if (branch == null)
+                return result;
+
+            for (uint i = 0; i < branch.NodeCount(); i++)
+            {
+                if (branch.GetNode((ushort)i) is not DatabaseNodeBranch itemBranch)
+                    continue;
+
+                var item = new ItemImage();
+                item.Build(itemBranch);
+
+                if (item.GetSheetId() == 0)
+                    continue;
 
                 result.Add(new BagEntry(i, item));
             }
@@ -369,21 +409,27 @@ namespace Client.Inventory
             if (bagIndex < 0 || bagIndex >= (int)MaxBaginvEntries)
                 return false;
 
+            var branch = _client.GetDatabaseManager().GetServerBranch($"{Inventory}:BAG");
+            var itemBranch = branch?.GetNode((ushort)bagIndex) as DatabaseNodeBranch;
             var existing = _serverBag[(uint)bagIndex];
             item = existing;
 
-            if (item == null)
+            // Invalidate the cache when the branch is gone or has been
+            // removed and rebuilt (e.g. after selling an item): otherwise
+            // the stale image would report a ghost item.
+            if (existing != null && (itemBranch == null || !existing.BelongsTo(branch)))
             {
-                var branch = _client.GetDatabaseManager().GetServerBranch($"{Inventory}:BAG");
-                var itemBranch = branch?.GetNode((ushort)bagIndex) as DatabaseNodeBranch;
+                existing = null;
+                item = null;
+                _serverBag[(uint)bagIndex] = null;
+            }
 
-                if (itemBranch != null)
-                {
-                    existing = new ItemImage();
-                    existing.Build(itemBranch);
-                    _serverBag[(uint)bagIndex] = existing;
-                    item = existing;
-                }
+            if (item == null && itemBranch != null)
+            {
+                existing = new ItemImage();
+                existing.Build(itemBranch);
+                _serverBag[(uint)bagIndex] = existing;
+                item = existing;
             }
 
             return item != null && item.GetSheetId() != 0;

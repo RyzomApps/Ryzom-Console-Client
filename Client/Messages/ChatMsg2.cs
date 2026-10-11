@@ -45,4 +45,4 @@ namespace Client.Messages
             f.Serial(ref CustomTxt, false); // FIXME: UTF-8 (serial)
         }
     }
-}
+}

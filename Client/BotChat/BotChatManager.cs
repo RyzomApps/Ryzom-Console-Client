@@ -99,9 +99,13 @@ namespace Client.BotChat
             if (list.Count != _lastTradeList.Count)
             {
                 _lastTradeList = list;
+                _pendingStartTrade = null;
+                _client.GetLogger().Info($"BotChat: trade list arrived with {list.Count} entries.");
                 OnTradeListUpdated?.Invoke();
                 return;
             }
+
+            CheckPendingStartTradeTimeout();
 
             for (var i = 0; i < list.Count; i++)
             {
@@ -124,6 +128,35 @@ namespace Client.BotChat
         }
 
         private List<TradeEntry> _lastTradeList = new List<TradeEntry>();
+
+        /// <summary>
+        /// Trade request awaiting the server answer: impulse name + sent time.
+        /// </summary>
+        private (string Impulse, DateTime SentAt)? _pendingStartTrade;
+
+        /// <summary>Seconds without an answer before we warn the user.</summary>
+        private const double StartTradeTimeoutSeconds = 5;
+
+        /// <summary>
+        /// Warn once when no trade list arrived in time. The server silently
+        /// ignores START_TRADE_* on bots without the matching trade flag, so
+        /// silence is the only failure signal.
+        /// </summary>
+        private void CheckPendingStartTradeTimeout()
+        {
+            if (_pendingStartTrade == null)
+                return;
+
+            if ((DateTime.UtcNow - _pendingStartTrade.Value.SentAt).TotalSeconds < StartTradeTimeoutSeconds)
+                return;
+
+            _client.GetLogger().Warn(
+                $"BotChat: no trade list {StartTradeTimeoutSeconds:0}s after {_pendingStartTrade.Value.Impulse} — " +
+                "this bot probably has no matching trade flag (not a trader / wrong shop type). Ending session.");
+
+            _pendingStartTrade = null;
+            SendEndTrade();
+        }
 
         #endregion
 
@@ -152,12 +185,7 @@ namespace Client.BotChat
             if (_tradeSessionCounter == 0)
                 _tradeSessionCounter = 1;
             CurrentSessionId = _tradeSessionCounter;
-
-            // The server does not clear the whole SERVER:TRADING branch on a
-            // new session; slots not refilled would keep stale entries from
-            // the previous session (e.g. when switching to a non-vendor bot
-            // or to a shop with fewer items). Clear it before requesting.
-            ClearTradeList();
+            _pendingStartTrade = (startImpulseName, DateTime.UtcNow);
 
             if (!_client.GetNetworkManager().SendImpulse(startImpulseName, w => w.U16(CurrentSessionId)))
             {
@@ -261,6 +289,29 @@ namespace Client.BotChat
         }
 
         /// <inheritdoc/>
+        public bool SendBuyPhrase(byte index, ushort phraseId)
+        {
+            if (CurrentSessionId == 0)
+            {
+                _client.GetLogger().Warn("BotChat: SendBuyPhrase failed, no trade session is running.");
+                return false;
+            }
+
+            if (index >= NbSlotPerPage)
+            {
+                _client.GetLogger().Warn($"BotChat: SendBuyPhrase failed, index {index} out of range.");
+                return false;
+            }
+
+            // PHRASE:BUY: u8 index, u16 phraseId (0 for not castable phrases)
+            return _client.GetNetworkManager().SendImpulse("PHRASE:BUY", w =>
+            {
+                w.U8(index);
+                w.U16(phraseId);
+            });
+        }
+
+        /// <inheritdoc/>
         public bool SendSell(byte inventoryId, ushort slot, ushort quantity, uint price)
         {
             if (quantity == 0)
@@ -314,23 +365,6 @@ namespace Client.BotChat
         public List<TradeEntry> GetTradeList()
         {
             return ReadTradeList();
-        }
-
-        /// <summary>
-        /// Reset all SERVER:TRADING slots (SHEET = 0) so ReadTradeList does
-        /// not report stale entries from a previous trade session.
-        /// </summary>
-        public void ClearTradeList()
-        {
-            var db = _client.GetDatabaseManager();
-            if (db == null)
-                return;
-
-            for (byte i = 0; i < NbSlotPerPage; i++)
-            {
-                var leaf = db.GetServerNode($"SERVER:TRADING:{i}:SHEET", true);
-                leaf?.SetValue64(0);
-            }
         }
 
         /// <summary>

@@ -100,4 +100,4 @@ namespace Client.Network.Action
             //nlinfo("Block: %s", buff);
         }
     }
-}
+}

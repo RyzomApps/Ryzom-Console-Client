@@ -26,4 +26,4 @@ namespace Client.Network.Action
             AllowExceedingMaxSize = false;
         }
     }
-}
+}
