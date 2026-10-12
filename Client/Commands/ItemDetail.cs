@@ -99,9 +99,11 @@ namespace Client.Commands
 
             var lines = new List<string>
             {
-                $"Item: {ItemNameResolver.Resolve(handler, item.GetNameId(), item.GetSheetId())}",
-                $"  quality={item.GetQuality()} quantity={item.GetQuantity()} weight={item.GetWeight() / 10f:0.#} kg price={item.GetPrice()}"
+                $"Item: {ItemNameResolver.Resolve(handler, item.GetNameId(), item.GetSheetId())}"
             };
+            if (item.GetWorned())
+                lines.Add("  [BROKEN]");
+            lines.Add($"  quality={item.GetQuality()} quantity={item.GetQuantity()} weight={item.GetWeight() / 10f:0.#} kg price={item.GetPrice()}");
             if (item.GetUserColor() != 0)
                 lines.Add($"  color={item.GetUserColor()} characBuffs={item.GetCharacBuffs()}");
             if (item.GetResaleFlag() != 0)

@@ -42,6 +42,21 @@ namespace Client.BotChat
         /// </summary>
         public ushort CurrentSessionId { get; private set; } = 0;
 
+        /// <summary>
+        /// Client side mission session counter (same scheme as the trade
+        /// session counter).
+        /// </summary>
+        private ushort _missionSessionCounter = 0;
+
+        /// <summary>
+        /// Id of the current mission session as sent by the client in the last
+        /// StartChooseMission/NextMissionPage call (0 when no mission session
+        /// is running).
+        /// </summary>
+        public ushort CurrentMissionSessionId { get; private set; } = 0;
+
+        private List<MissionEntry> _lastMissionList = new List<MissionEntry>();
+
         /// <inheritdoc/>
         public event Action<uint> OnDynChatOpen;
 
@@ -86,6 +101,7 @@ namespace Client.BotChat
         public void NotifySessionForceEnd()
         {
             CurrentSessionId = 0;
+            CurrentMissionSessionId = 0;
             OnSessionForceEnd?.Invoke();
         }
 
@@ -337,7 +353,10 @@ namespace Client.BotChat
 
             var sent = _client.GetNetworkManager().SendImpulse("BOTCHAT:END");
             if (sent)
+            {
                 CurrentSessionId = 0;
+                CurrentMissionSessionId = 0;
+            }
             return sent;
         }
 
@@ -426,6 +445,117 @@ namespace Client.BotChat
                     NameId = (uint)nameId,
                     VendorNameId = (uint)vendorNameId,
                     PrerequisitValid = prerequisitValid != 0
+                };
+
+                list.Add(entry);
+            }
+
+            return list;
+        }
+
+        #endregion
+
+        #region Mission list (database branch SERVER:CHOOSE_MISSIONS)
+
+        /// <inheritdoc/>
+        public uint MissionPageId
+        {
+            get { return _databaseManager != null && TryGetProp("SERVER:CHOOSE_MISSIONS:PAGE_ID", out var v) ? (uint)v : 0u; }
+        }
+
+        /// <inheritdoc/>
+        public bool MissionHasNextPage
+        {
+            get
+            {
+                return _databaseManager != null
+                    && TryGetProp("SERVER:CHOOSE_MISSIONS:HAS_NEXT", out var v) && v != 0;
+            }
+        }
+
+        /// <inheritdoc/>
+        public List<MissionEntry> GetMissionList()
+        {
+            return ReadMissionList();
+        }
+
+        /// <inheritdoc/>
+        public bool SendStartChooseMission()
+        {
+            // Same session scheme as the trade session: the counter is
+            // incremented on each session start and sent to the server, which
+            // echoes it into SERVER:CHOOSE_MISSIONS:SESSION.
+            _missionSessionCounter++;
+            CurrentMissionSessionId = _missionSessionCounter;
+
+            // BOTCHAT:START_CHOOSE_MISSION: u16 session id
+            return _client.GetNetworkManager().SendImpulse("BOTCHAT:START_CHOOSE_MISSION", w =>
+            {
+                w.U16(CurrentMissionSessionId);
+            });
+        }
+
+        /// <inheritdoc/>
+        public bool SendNextMissionPage()
+        {
+            if (CurrentMissionSessionId == 0)
+                return false;
+
+            // BOTCHAT:NEXT_PAGE_MISSION: u16 session id
+            return _client.GetNetworkManager().SendImpulse("BOTCHAT:NEXT_PAGE_MISSION", w =>
+            {
+                w.U16(CurrentMissionSessionId);
+            });
+        }
+
+        /// <inheritdoc/>
+        public bool SendPickMission(byte index)
+        {
+            if (CurrentMissionSessionId == 0)
+                return false;
+
+            if (index >= NbSlotPerPage)
+            {
+                _client.GetLogger().Warn($"BotChat: SendPickMission failed, index {index} out of range.");
+                return false;
+            }
+
+            // BOTCHAT:PICK_MISSION: u8 index (no session id on the wire)
+            return _client.GetNetworkManager().SendImpulse("BOTCHAT:PICK_MISSION", w =>
+            {
+                w.U8(index);
+            });
+        }
+
+        private List<MissionEntry> ReadMissionList()
+        {
+            var list = new List<MissionEntry>();
+
+            if (_databaseManager == null)
+                return list;
+
+            for (byte i = 0; i < NbSlotPerPage; i++)
+            {
+                var prefix = $"SERVER:CHOOSE_MISSIONS:{i}:";
+
+                if (!TryGetProp(prefix + "TEXT", out var textIdLong))
+                    continue;
+
+                var textId = (uint)textIdLong;
+                if (textId == 0)
+                    continue;
+
+                TryGetProp(prefix + "ICON", out var iconId);
+                TryGetProp(prefix + "DETAIL_TEXT", out var detailTextId);
+                TryGetProp(prefix + "PREREQ_STATE", out var prereqState);
+
+                var entry = new MissionEntry
+                {
+                    Index = i,
+                    IconId = (uint)iconId,
+                    TextId = textId,
+                    DetailTextId = (uint)detailTextId,
+                    PrereqState = (byte)prereqState
                 };
 
                 list.Add(entry);

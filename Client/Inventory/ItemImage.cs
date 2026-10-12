@@ -32,6 +32,7 @@ namespace Client.Inventory
         private DatabaseNodeLeaf _nameId;
         private DatabaseNodeLeaf _infoVersion;
         private DatabaseNodeLeaf _resaleFlag;
+        private DatabaseNodeLeaf _worned;
 
         public uint GetSheetId() { return (uint)(_sheet?.GetValue32() ?? 0); }
         public ushort GetQuality() { return (ushort)(_quality?.GetValue16() ?? 0); }
@@ -44,6 +45,7 @@ namespace Client.Inventory
         public byte GetInfoVersion() { return (byte)(_infoVersion != null ? (byte)_infoVersion.GetValue8() : 0); }
         public byte GetResaleFlag() { return (byte)(_resaleFlag != null ? (byte)_resaleFlag.GetValue8() : 0); }
         public bool GetLockedByOwner() { return (bool)(_resaleFlag != null && (_resaleFlag.GetValue8() == (byte)BotChatResaleFlag.ResaleKOLockedByOwner)); }
+        public bool GetWorned() { return (bool)(_worned != null && _worned.GetValue8() != 0); }
 
         public void SetSheetId(uint si) { _sheet?.SetValue32((int)si); }
         public void SetQuality(ushort quality) { _quality?.SetValue16((short)quality); }
@@ -93,6 +95,7 @@ namespace Client.Inventory
             _nameId = branch.GetNode(new TextId("NAMEID"), false) as DatabaseNodeLeaf;
             _infoVersion = branch.GetNode(new TextId("INFO_VERSION"), false) as DatabaseNodeLeaf;
             _resaleFlag = branch.GetNode(new TextId("RESALE_FLAG"), false) as DatabaseNodeLeaf;
+            _worned = branch.GetNode(new TextId("WORNED"), false) as DatabaseNodeLeaf;
 
             // Should always have at least those one: (ie all but Price)
             Debug.Assert(_sheet != null || _quality != null || _quantity != null || _userColor != null || _weight != null || _nameId != null || _infoVersion != null);

@@ -32,15 +32,20 @@ namespace Client.Commands
             switch (size)
             {
                 case 1:
-                    var prop1 = ryzomClient.GetDatabaseManager().GetNode(args[0], false);
+                    // GetServerNode takes paths WITHOUT the 'SERVER:' prefix (root is named SERVER);
+                    // strip it so 'db SERVER:X:Y' matches what the commands use
+                    var path = args[0];
+                    if (path.StartsWith("SERVER:", StringComparison.OrdinalIgnoreCase))
+                        path = path.Substring(7);
+                    var prop1b = ryzomClient.GetDatabaseManager().GetServerNode(path, false);
 
-                    if (prop1 == null)
+                    if (prop1b == null)
                     {
                         responseMsg = $"{args[0]} was not found in the database.";
                         return false;
                     }
 
-                    responseMsg = prop1.GetValue64().ToString(CultureInfo.InvariantCulture);
+                    responseMsg = prop1b.GetValue64().ToString(CultureInfo.InvariantCulture);
 
                     break;
 

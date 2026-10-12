@@ -10,6 +10,7 @@ using API.BotChat;
 using API.Commands;
 using API.Helper;
 using API.Inventory;
+using Client.Sheet;
 using System;
 using System.Collections.Generic;
 
@@ -85,9 +86,62 @@ namespace Client.Commands
             var displayName = inventoryName == "bag" ? "Bag" : inventoryName.ToUpperInvariant();
             var entries = ryzomClient.GetInventoryManager().GetInventoryEntries(dbPath);
 
+            // Slots: used vs server maximum (inventories.h: NbBagSlots=500,
+            // NbTempInvSlots=16, NbPackerSlots=500, NbRoomSlots=1000, NbGuildSlots=10000).
+            var maxSlots = inventoryName.ToLowerInvariant() switch
+            {
+                "bag" => 500u,
+                "temp" => 16u,
+                "pa0" or "pa1" or "pa2" or "pa3" or "pa4" or "pa5" or "pa6" => 500u,
+                "room" => 1000u,
+                "guild" => 10000u,
+                _ => 0u, // share: server-side slot count not mirrored
+            };
+
+            // Bulk: sum of sheet bulk * quantity over all slots, like the
+            // official client (CInventoryManager::getBranchBulk sums
+            // CItemSheet::Bulk * quantity). Max comes from the server DB
+            // (inventory_manager.cpp: SERVER:STATIC_DATA:BAG_BULK_MAX,
+            // SERVER:PACK_ANIMAL:BEASTn:BULK_MAX, SERVER:ROOM:INVENTORY:BULK_MAX).
+            var usedBulk = 0.0;
+            foreach (var entry in entries)
+            {
+                var sheet = ryzomClient.GetSheetManager().Get(ryzomClient.GetSheetIdFactory().SheetId(entry.Item.GetSheetId())) as ItemSheet;
+                if (sheet != null)
+                {
+                    var qty = entry.Item.GetQuantity();
+                    usedBulk += Math.Max(1, (int)qty) * sheet.Bulk; // client sums max(1, quantity) * CItemSheet::Bulk (getBranchBulk)
+                }
+            }
+
+            var bulkMaxNodePath = inventoryName.ToLowerInvariant() switch
+            {
+                "bag" => "SERVER:STATIC_DATA:BAG_BULK_MAX",
+                "pa0" => "SERVER:PACK_ANIMAL:BEAST0:BULK_MAX",
+                "pa1" => "SERVER:PACK_ANIMAL:BEAST1:BULK_MAX",
+                "pa2" => "SERVER:PACK_ANIMAL:BEAST2:BULK_MAX",
+                "pa3" => "SERVER:PACK_ANIMAL:BEAST3:BULK_MAX",
+                "pa4" => "SERVER:PACK_ANIMAL:BEAST4:BULK_MAX",
+                "pa5" => "SERVER:PACK_ANIMAL:BEAST5:BULK_MAX",
+                "pa6" => "SERVER:PACK_ANIMAL:BEAST6:BULK_MAX",
+                "room" => "SERVER:ROOM:INVENTORY:BULK_MAX",
+                _ => null,
+            };
+
+            var bulkMax = 0.0;
+            if (bulkMaxNodePath != null)
+            {
+                var node = ryzomClient.GetDatabaseManager().GetServerNode(bulkMaxNodePath, false);
+                if (node != null)
+                    bulkMax = node.GetValue32(); // raw DB unit (server writes MaxPlayerBulk/1000; UI prints raw values too, see getBulkStrUserFct)
+            }
+
+            var slotsInfo = maxSlots > 0 ? $" {entries.Count}/{maxSlots}" : $" {entries.Count}";
+            var bulkInfo = bulkMax > 0 ? $" {usedBulk:0.##}/{bulkMax:0.##}" : $" {usedBulk:0.##}";
+
             if (entries.Count == 0)
             {
-                responseMsg = $"The {displayName} inventory is empty (or the data has not been received yet).";
+                responseMsg = $"The {displayName} inventory is empty (or the data has not been received yet). Slots:{slotsInfo}, Bulk:{bulkInfo}";
                 return true;
             }
 
@@ -100,7 +154,7 @@ namespace Client.Commands
 
             var lines = new List<string>
             {
-                $"{displayName}: {entries.Count} items, page {page}/{(entries.Count + (int)perPage - 1) / perPage} (use 'Inventory {inventoryName} <page>' for more)",
+                $"{displayName}: {entries.Count} items, Slots:{slotsInfo}, Bulk:{bulkInfo}, page {page}/{(entries.Count + (int)perPage - 1) / perPage} (use 'Inventory {inventoryName} <page>' for more)",
                 $"{"Slot",-5} {"Qty",-5} {"Q",-3} {"Weight",-8} Name"
             };
 
@@ -115,6 +169,8 @@ namespace Client.Commands
                 var item = entry.Item;
 
                 var name = ItemNameResolver.Resolve(handler, item.GetNameId(), item.GetSheetId());
+                if (item.GetWorned())
+                    name += " [BROKEN]";
 
                 lines.Add($"{entry.Index,-5} {item.GetQuantity(),-5} {item.GetQuality(),-3} {item.GetWeight(),-8} {name}");
             }

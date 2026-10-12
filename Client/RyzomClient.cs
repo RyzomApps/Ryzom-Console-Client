@@ -9,6 +9,7 @@
 using API;
 using API.Chat;
 using API.Client;
+using API.Client;
 using API.Commands;
 using API.Database;
 using API.Entity;
@@ -73,6 +74,7 @@ namespace Client
         private readonly PhraseManager _phraseManager;
         private readonly InventoryManager _inventoryManager;
         private readonly BotChat.BotChatManager _botChatManager;
+        private readonly Compass.CompassManager _compassManager;
         private readonly SkillManager _skillManager;
         private readonly BrickManager _brickManager;
         private readonly SheetIdFactory _sheetIdFactory;
@@ -203,6 +205,11 @@ namespace Client
 
         public API.BotChat.IBotChatManager GetApiBotChatManager() { return _botChatManager; }
 
+        public Compass.CompassManager GetCompassManager() { return _compassManager; }
+
+        /// <inheritdoc />
+        public API.Compass.ICompassManager GetApiCompassManager() { return _compassManager; }
+
         public IWebTransfer GetWebTransfer() { return _webTransfer; }
 
         public ActionHandlerManager GetActionHandlerManager() { return _actionHandlerManager; }
@@ -229,6 +236,7 @@ namespace Client
                 _databaseManager = new DatabaseManager(this);
 
             _botChatManager = new BotChat.BotChatManager(this);
+            _compassManager = new Compass.CompassManager(this);
             _stringManager = new StringManager(this);
             _sheetManager = new SheetManager(this);
             _skillManager = new SkillManager(this);
@@ -1746,4 +1754,4 @@ namespace Client
         }
         #endregion
     }
-}
+}

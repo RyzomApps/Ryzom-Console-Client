@@ -79,6 +79,7 @@ namespace Client.Network
         private readonly SheetIdFactory _sheetIdFactory;
         private readonly InventoryManager _inventoryManager;
         private readonly global::Client.BotChat.BotChatManager _botChatManager;
+        private readonly global::Client.Compass.CompassManager _compassManager;
 
         /// <summary>
         /// item infos received via ITEM_INFO:SET, keyed by slot id
@@ -152,6 +153,7 @@ namespace Client.Network
             _sheetIdFactory = client.GetSheetIdFactory();
             _inventoryManager = client.GetInventoryManager();
             _botChatManager = client.GetBotChatManager();
+            _compassManager = client.GetCompassManager();
 
             _messageHeaderManager = new GenericMessageHeaderManager();
             _chatManager = new ChatManager(this);
@@ -370,6 +372,7 @@ namespace Client.Network
             _messageHeaderManager.SetCallback("JOURNAL:INIT_COMPLETED_MISSIONS", ImpulseJournalInitCompletedMissions);
             _messageHeaderManager.SetCallback("JOURNAL:UPDATE_COMPLETED_MISSIONS", ImpulseJournalUpdateCompletedMissions);
             _messageHeaderManager.SetCallback("JOURNAL:ADD_COMPASS", ImpulseJournalAddCompass);
+            _messageHeaderManager.SetCallback("JOURNAL:ADD_COMPASS_BOT", ImpulseJournalAddCompassBot);
             _messageHeaderManager.SetCallback("JOURNAL:REMOVE_COMPASS", ImpulseJournalRemoveCompass);
 
             _messageHeaderManager.SetCallback("GUILD:JOIN_PROPOSAL", ImpulseGuildJoinProposal);
@@ -1019,12 +1022,41 @@ namespace Client.Network
 
         private void ImpulseJournalRemoveCompass(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            var text = 0;
+            impulse.Serial(ref text);
+
+            _compassManager.RemoveCompass((uint)text);
         }
 
         private void ImpulseJournalAddCompass(BitMemoryStream impulse)
         {
-            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+            var x = 0;
+            var y = 0;
+            var text = 0;
+            impulse.Serial(ref x);
+            impulse.Serial(ref y);
+            impulse.Serial(ref text);
+
+            _compassManager.AddCompass(x, y, (uint)text);
+        }
+
+        /// <summary>
+        /// Variant of ADD_COMPASS that also carries the compressed bot index
+        /// (the official OSS client does not register a callback for this one;
+        /// we use it to track mission targets that follow a bot).
+        /// </summary>
+        private void ImpulseJournalAddCompassBot(BitMemoryStream impulse)
+        {
+            var x = 0;
+            var y = 0;
+            var text = 0;
+            var botIndex = 0;
+            impulse.Serial(ref x);
+            impulse.Serial(ref y);
+            impulse.Serial(ref text);
+            impulse.Serial(ref botIndex);
+
+            _compassManager.AddCompassBot(x, y, (uint)text, (uint)botIndex);
         }
 
         private void ImpulseJournalUpdateCompletedMissions(BitMemoryStream impulse)
@@ -2135,4 +2167,4 @@ namespace Client.Network
             _networkConnection.PushTarget(slot, TargettingType.None);
         }
     }
-}
+}
