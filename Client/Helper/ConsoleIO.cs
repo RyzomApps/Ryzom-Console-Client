@@ -31,6 +31,8 @@ namespace Client.Helper
         private static IAutoComplete _autocompleteEngine;
         private static readonly LinkedList<string> AutocompleteWords = new LinkedList<string>();
         private static readonly LinkedList<string> Previous = new LinkedList<string>();
+        private static int _historyIndex = -1;
+        private static string _savedInput = "";
         private static readonly object IoLock = new object();
         private static bool _reading;
         private static string _buffer = "";
@@ -166,6 +168,8 @@ namespace Client.Helper
                 _reading = true;
                 _buffer = "";
                 _buffer2 = "";
+                _historyIndex = -1;
+                _savedInput = "";
             }
 
             while (k.Key != ConsoleKey.Enter)
@@ -221,13 +225,22 @@ namespace Client.Helper
 
                                 break;
                             case ConsoleKey.DownArrow:
-                                if (Previous.Count > 0)
+                                if (Previous.Count > 0 && _historyIndex != -1)
                                 {
                                     ClearLineAndBuffer();
-                                    _buffer = Previous.First?.Value;
-                                    Previous.AddLast(_buffer);
-                                    Previous.RemoveFirst();
-                                    SaveHistory();
+                                    _historyIndex++;
+                                    if (_historyIndex >= Previous.Count)
+                                    {
+                                        // Walked forward past the newest entry: restore the input
+                                        // typed before the user started browsing history.
+                                        _historyIndex = -1;
+                                        _buffer = _savedInput;
+                                    }
+                                    else
+                                    {
+                                        _buffer = Previous.ElementAt(_historyIndex);
+                                    }
+
                                     Console.Write(_buffer);
                                 }
 
@@ -235,11 +248,19 @@ namespace Client.Helper
                             case ConsoleKey.UpArrow:
                                 if (Previous.Count > 0)
                                 {
+                                    if (_historyIndex == -1)
+                                    {
+                                        // Remember the current input so Down can restore it.
+                                        _savedInput = _buffer + _buffer2;
+                                        _historyIndex = Previous.Count - 1;
+                                    }
+                                    else if (_historyIndex > 0)
+                                    {
+                                        _historyIndex--;
+                                    }
+
                                     ClearLineAndBuffer();
-                                    _buffer = Previous.Last?.Value;
-                                    Previous.AddFirst(_buffer);
-                                    Previous.RemoveLast();
-                                    SaveHistory();
+                                    _buffer = Previous.ElementAt(_historyIndex);
                                     Console.Write(_buffer);
                                 }
 
@@ -284,10 +305,15 @@ namespace Client.Helper
 
             lock (IoLock)
             {
+                var input = _buffer + _buffer2;
                 _reading = false;
-                Previous.AddLast(_buffer + _buffer2);
+                // Skip consecutive duplicates (e.g. a command recalled with Up and re-run).
+                if (input.Length > 0 && Previous.Last?.Value != input)
+                    Previous.AddLast(input);
+                _historyIndex = -1;
+                _savedInput = "";
                 SaveHistory();
-                return _buffer + _buffer2;
+                return input;
             }
         }
 
@@ -645,4 +671,4 @@ namespace Client.Helper
 
         #endregion
     }
-}
+}
