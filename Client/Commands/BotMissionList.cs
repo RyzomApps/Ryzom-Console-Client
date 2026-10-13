@@ -54,17 +54,42 @@ namespace Client.Commands
 
             var stringManager = ryzomClient.GetStringManager();
             var networkManager = ryzomClient.GetNetworkManager();
+
+            // resolve all titles in one batched request round; non-blocking:
+            // if not everything is cached, the result is delivered later
+            // through the logger like a normal command result
+            var ids = new List<uint>();
+            foreach (var entry in list)
+                ids.Add(entry.TextId);
+
+            var waiter = StringWait.WaitAllAsync(stringManager, ids, networkManager);
+
+            if (waiter.Completed)
+            {
+                responseMsg = Render(resolved: waiter.Results);
+                return true;
+            }
+
+            RunAsyncTask(handler, () => (true, Render(waiter.Wait())));
+            responseMsg = $"Reading the bot's mission list - titles are being requested, result follows...";
+            return true;
+
+            // Render the mission page from resolved strings (closure over the
+            // Run locals; runs on the main thread synchronously, or on the
+            // async task after resolution)
+            string Render(Dictionary<uint, string> resolved)
+            {
             var sb = new StringBuilder();
             sb.AppendLine($"Mission page {(int)botChatManager.MissionPageId}{(botChatManager.MissionHasNextPage ? "" : " (last page)")}");
 
             foreach (var entry in list)
             {
-                var title = StringWait.WaitString(stringManager, entry.TextId, networkManager);
+                var title = resolved.TryGetValue(entry.TextId, out var value) && !string.IsNullOrEmpty(value) ? value : $"TEXT {entry.TextId}";
                 sb.AppendLine($"{(int)entry.Index,-5} {Trunc(title, 60),-60} [prereq {(int)entry.PrereqState}]");
             }
 
-            responseMsg = sb.ToString().TrimEnd();
-            return true;
+            return sb.ToString().TrimEnd();
+            }
         }
 
         private static string Trunc(string s, int len)
