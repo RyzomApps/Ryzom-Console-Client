@@ -269,12 +269,23 @@ namespace Client.Helper
                                 if (_buffer != null && AutocompleteWords.Count == 0 && _autocompleteEngine != null && _buffer.Length > 0)
                                     foreach (var result in _autocompleteEngine.AutoComplete(_buffer))
                                         AutocompleteWords.AddLast(result);
+
                                 string wordAutocomplete = null;
                                 if (AutocompleteWords.Count > 0)
                                 {
-                                    wordAutocomplete = AutocompleteWords.First?.Value;
-                                    AutocompleteWords.RemoveFirst();
-                                    AutocompleteWords.AddLast(wordAutocomplete);
+                                    if (k.Modifiers.HasFlag(ConsoleModifiers.Shift))
+                                    {
+                                        // Shift+Tab: cycle in the opposite direction
+                                        wordAutocomplete = AutocompleteWords.Last?.Value;
+                                        AutocompleteWords.RemoveLast();
+                                        AutocompleteWords.AddFirst(wordAutocomplete);
+                                    }
+                                    else
+                                    {
+                                        wordAutocomplete = AutocompleteWords.First?.Value;
+                                        AutocompleteWords.RemoveFirst();
+                                        AutocompleteWords.AddLast(wordAutocomplete);
+                                    }
                                 }
 
                                 if (!string.IsNullOrEmpty(wordAutocomplete) && wordAutocomplete != _buffer)

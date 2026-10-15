@@ -23,6 +23,15 @@ namespace Client.Commands
     {
         private const int TimeoutMs = 5000;
 
+        /// <summary>
+        /// Dyn string ids have the top bit set (TEXT ids in the mission
+        /// journal, bot chat, etc. are usually dyn ids). They are NOT served
+        /// by STRING_RQ/STRING_RESP - the server pushes them via
+        /// STRING_MANAGER:PHRASE_SEND and they live in the dyn string
+        /// container, so they must be resolved through GetDynString instead.
+        /// </summary>
+        public static bool IsDynId(uint id) => (id & 0x80000000) != 0;
+
         public static string WaitString(StringManager stringManager, uint stringId, NetworkManager networkManager)
         {
             return WaitAll(stringManager, new[] { stringId }, networkManager)[stringId];
@@ -47,8 +56,25 @@ namespace Client.Commands
                     continue;
                 }
 
-                // GetString() without cache hit sends the STRING_RQ.
-                if (stringManager.GetString(id, out var cached, networkManager))
+                // dispatch by id type: dyn ids (top bit set) come via
+                // PHRASE_SEND and live in the dyn string container; only
+                // static ids may be requested with STRING_RQ (requesting a
+                // dyn id with STRING_RQ is useless - the IOS never answers it)
+                if (IsDynId(id))
+                {
+                    if (stringManager.GetDynString(id, out var dynCached, networkManager))
+                        results[id] = dynCached;
+                    else
+                    {
+                        pending.Add(id);
+                        stringManager.WaitDynString(id, (sid, value) =>
+                        {
+                            results[sid] = value;
+                            pending.Remove(sid);
+                        }, networkManager);
+                    }
+                }
+                else if (stringManager.GetString(id, out var cached, networkManager))
                 {
                     results[id] = cached;
                 }
@@ -113,8 +139,28 @@ namespace Client.Commands
                     continue;
                 }
 
-                // GetString() without cache hit sends the STRING_RQ.
-                if (stringManager.GetString(id, out var cached, networkManager))
+                // dispatch by id type, see WaitAll
+                if (IsDynId(id))
+                {
+                    if (stringManager.GetDynString(id, out var dynCached, networkManager))
+                        results[id] = dynCached;
+                    else
+                    {
+                        pending.Add(id);
+                        stringManager.WaitDynString(id, (sid, value) =>
+                        {
+                            lock (waiter.Lock)
+                            {
+                                results[sid] = value;
+                                pending.Remove(sid);
+
+                                if (pending.Count == 0)
+                                    waiter.CompletedEvent.Set();
+                            }
+                        }, networkManager);
+                    }
+                }
+                else if (stringManager.GetString(id, out var cached, networkManager))
                     results[id] = cached;
                 else
                 {

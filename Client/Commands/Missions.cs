@@ -54,10 +54,10 @@ namespace Client.Commands
 
             for (var slot = 0; slot < MaxMissions; slot++)
             {
-                var type = Safe($"MISSIONS:{slot}:TYPE");
-
-                // TYPE 0 = empty slot (see game_share/mission_desc.h TMissionType)
-                if (type <= 0)
+                // A slot is occupied when TITLE != 0; TYPE is the mission type
+                // (TMissionType: Solo=0, Group=1, Guild=2), so solo missions
+                // legitimately have TYPE 0. Empty slots have TITLE 0.
+                if (Safe($"MISSIONS:{slot}:TITLE") == 0)
                     continue;
 
                 active++;
@@ -115,8 +115,7 @@ namespace Client.Commands
 
             for (var slot = 0; slot < MaxMissions; slot++)
             {
-                var type = Safe($"MISSIONS:{slot}:TYPE");
-                if (type <= 0)
+                if (Safe($"MISSIONS:{slot}:TITLE") == 0)
                     continue;
 
                 var title = Text((uint)Safe($"MISSIONS:{slot}:TITLE"));

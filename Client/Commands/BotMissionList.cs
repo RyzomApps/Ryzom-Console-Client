@@ -85,12 +85,22 @@ namespace Client.Commands
             foreach (var entry in list)
             {
                 var title = resolved.TryGetValue(entry.TextId, out var value) && !string.IsNullOrEmpty(value) ? value : $"TEXT {entry.TextId}";
-                sb.AppendLine($"{(int)entry.Index,-5} {Trunc(title, 60),-60} [prereq {(int)entry.PrereqState}]");
+                sb.AppendLine($"{(int)entry.Index,-5} {Trunc(title, 60),-60} [pre: {PrereqName(entry.PrereqState)}]");
             }
 
             return sb.ToString().TrimEnd();
             }
         }
+
+        // MISSION_DESC::TPreReqState (mission_desc.h:156)
+        private static string PrereqName(byte state) => state switch
+        {
+            0 => "ok",       // PreReqSuccess
+            1 => "done",     // PreReqFailAlreadyDone
+            2 => "fail",     // PreReqFail
+            3 => "running",  // PreReqFailRunning
+            _ => $"unknown {state}"
+        };
 
         private static string Trunc(string s, int len)
         {

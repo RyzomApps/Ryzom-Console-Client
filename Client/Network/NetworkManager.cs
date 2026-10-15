@@ -1038,6 +1038,7 @@ namespace Client.Network
             impulse.Serial(ref text);
 
             _compassManager.AddCompass(x, y, (uint)text);
+            _client.GetLogger().Info($"[RCC] COMPASS ADD x={x} y={y} text={text}");
         }
 
         /// <summary>
@@ -1057,6 +1058,7 @@ namespace Client.Network
             impulse.Serial(ref botIndex);
 
             _compassManager.AddCompassBot(x, y, (uint)text, (uint)botIndex);
+            _client.GetLogger().Info($"[RCC] COMPASS ADD_BOT x={x} y={y} text={text} bot={botIndex}");
         }
 
         private void ImpulseJournalUpdateCompletedMissions(BitMemoryStream impulse)
@@ -1304,6 +1306,8 @@ namespace Client.Network
             impulse.Serial(ref botUid);
 
             _botChatManager.NotifyDynChatClose(botUid);
+
+            LastDynChatIds = null;
         }
 
         private void ImpulseDynChatOpen(BitMemoryStream impulse)
@@ -1330,6 +1334,12 @@ namespace Client.Network
 
             _botChatManager.NotifyDynChatOpen(botUid);
 
+            // remember the open dyn chat so commands can display it
+            // (LLM-readable alternative to scanning the log file)
+            LastDynChatBotUid = botUid;
+            LastDynChatBotName = botName;
+            LastDynChatIds = dynStrs;
+
             var sTmp = "impulseCallback : Received BOTCHAT:DYNCHAT_OPEN BotUID:";
             sTmp += $"{botUid} BotName:";
             sTmp += $"{botName} DynStrs:";
@@ -1345,7 +1355,56 @@ namespace Client.Network
 
             _client.GetLogger().Info(sTmp);
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            // Resolve the dyn strings to readable text for the log.
+            // dynStrs: 0 = description, 1..n = the clickable options.
+            // The server pushes the dyn string contents; WaitDynString fires
+            // the callback as soon as each string is complete.
+            var resolved = new Dictionary<uint, string>();
+
+            void LogResolved(uint id, string value)
+            {
+                resolved[id] = value;
+
+                // wait for all strings, then log the whole chat in order
+                if (resolved.Count != dynStrs.Count)
+                    return;
+
+                var sChat = "DYNCHAT: ";
+
+                // bot name (server string id, not a dyn string)
+                if (_stringManager.GetString(botName, out var botNameStr, this))
+                    sChat += $"[{botNameStr}]";
+
+                for (var i = 0; i < dynStrs.Count; ++i)
+                {
+                    var prefix = i == 0 ? " " : $" option {i - 1}: ";
+                    if (resolved.TryGetValue(dynStrs[i], out var text))
+                        sChat += $"{prefix}[{text}]";
+                    else
+                        sChat += $"{prefix}[id {dynStrs[i]}]";
+                }
+
+                _client.GetLogger().Info(sChat);
+            }
+
+            foreach (var dynStrId in dynStrs)
+            {
+                if (_stringManager.GetDynString(dynStrId, out var text, this))
+                    LogResolved(dynStrId, text);
+                else
+                    _stringManager.WaitDynString(dynStrId, LogResolved, this);
+            }
         }
+
+        /// <summary>
+        /// Last BOTCHAT:DYNCHAT_OPEN payload: bot compressed index, bot name
+        /// string id and the dyn string ids (0 = description, 1..n = options).
+        /// Null when no dyn chat is open (cleared on DYNCHAT_CLOSE).
+        /// </summary>
+        public List<uint> LastDynChatIds { get; private set; }
+        public uint LastDynChatBotUid { get; private set; }
+        public uint LastDynChatBotName { get; private set; }
 
         private void ImpulseCombatEngageFailed(BitMemoryStream impulse)
         {

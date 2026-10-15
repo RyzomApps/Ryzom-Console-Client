@@ -1285,6 +1285,9 @@ namespace Client
                         foreach (var alias in cmd.GetCmdAliases())
                             _cmds[alias.ToLower()] = cmd;
                     }
+
+                    // keep command names sorted so tab completion cycles alphabetically
+                    _cmdNames.Sort(StringComparer.InvariantCultureIgnoreCase);
                 }
                 catch (Exception e)
                 {
