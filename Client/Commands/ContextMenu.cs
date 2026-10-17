@@ -8,6 +8,7 @@
 using API;
 using API.Commands;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Client.Commands
 {
@@ -25,6 +26,19 @@ namespace Client.Commands
         public override string CmdUsage => "";
 
         public override string CmdDesc => "Display the mission options of the targeted bot's context menu. Run 'target <bot>' first; the index shown for each option is the one to use with 'botmissioncontinue'.";
+
+        /// <summary>
+        /// Null-safe read from the SERVER bank (unprefixed paths, like 'missions').
+        /// Falls back to the prefixed root path for older layouts.
+        /// </summary>
+        private static long ReadProp(global::Client.Database.DatabaseManager dbManager, string serverPath)
+        {
+            var node = dbManager.GetServerNode(serverPath, false);
+            var v = node?.GetValue64() ?? -1;
+            if (v == -1)
+                v = dbManager.GetProp($"SERVER:{serverPath}");
+            return v;
+        }
 
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
@@ -48,16 +62,22 @@ namespace Client.Commands
             var pending = new List<uint>();
             for (var i = 0; i < ids.Length; i++)
             {
-                var prop = dbManager.GetProp($"SERVER:TARGET:CONTEXT_MENU:MISSIONS_OPTIONS:{i}:TITLE");
-                ids[i] = (uint)prop;
-                gifts[i] = dbManager.GetProp($"SERVER:TARGET:CONTEXT_MENU:MISSIONS_OPTIONS:{i}:PLAYER_GIFT_NEEDED") != 0;
+                ids[i] = (uint)ReadProp(dbManager, $"TARGET:CONTEXT_MENU:MISSIONS_OPTIONS:{i}:TITLE");
+                gifts[i] = ReadProp(dbManager, $"TARGET:CONTEXT_MENU:MISSIONS_OPTIONS:{i}:PLAYER_GIFT_NEEDED") != 0;
                 if (ids[i] != 0 && !pending.Contains(ids[i]))
                     pending.Add(ids[i]);
             }
 
+            // decode bot chat programmes (flags) offered by the targeted bot
+            var programmes = (uint)ReadProp(dbManager, "TARGET:CONTEXT_MENU:PROGRAMMES");
+            responseMsg = "Bot programmes: " + DecodeBotChatFlags(programmes) + $" (raw {programmes})\n";
+
             if (pending.Count == 0)
             {
-                responseMsg = "No mission options in the context menu of the targeted bot.";
+                responseMsg = "No mission options in the context menu of the targeted bot.\n"
+                    + "If all slots are 0 but programmes contain 'ChooseMission': the bot has no mission\n"
+                    + "for you right now, or the current step's target bot is a DIFFERENT npc - check the\n"
+                    + "mission goal ('missions') and target that bot.";
                 return false;
             }
 
@@ -77,6 +97,22 @@ namespace Client.Commands
             responseMsg += "\nClick an option with: botmissioncontinue <index>.";
 
             return true;
+        }
+
+        private static string DecodeBotChatFlags(uint flags)
+        {
+            string[] names =
+            {
+                "News", "TradeItem", "TradePact", "TradeBuilding", "GuildRoleMaster",
+                "TradePhrase", "CreateGuild", "ChooseMission", "Attackable", "CancelGuildDuty",
+                "AskGuildDuty", "TradeFaction", "TradeCosmetic", "TradeTeleport", "GuildInvite",
+                "DontFollow", "WebPage", "Totem", "Outpost", "TradeOutpostBuilding"
+            };
+            var set = new List<string>();
+            for (var b = 0; b < names.Length && b < 32; b++)
+                if ((flags & (1u << b)) != 0)
+                    set.Add(names[b]);
+            return set.Count > 0 ? string.Join(", ", set) : "none";
         }
     }
 }

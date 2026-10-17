@@ -32,6 +32,15 @@ namespace Client.Commands
             responseMsg = "";
             if (handler is not RyzomClient ryzomClient)
                 throw new Exception("Command handler is not a Ryzom client.");
+            // The server silently drops BOTCHAT messages when the bot is
+            // farther than MaxTalkingDist (8 m) - fail early with a hint.
+            var proximityError = BotChatProximity.Check(ryzomClient);
+            if (proximityError != null)
+            {
+                responseMsg = proximityError;
+                return false;
+            }
+
 
             var args = GetArgs(command);
             if (args.Length != 1)
