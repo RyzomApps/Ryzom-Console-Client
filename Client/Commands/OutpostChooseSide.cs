@@ -16,6 +16,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Lets the client chose a side in an outpost war";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

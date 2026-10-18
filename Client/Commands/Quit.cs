@@ -14,6 +14,7 @@ namespace Client.Commands
         public override string CmdUsage => "";
         public override string CmdDesc => "Request to quit the game. The logout will usually take 30s.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

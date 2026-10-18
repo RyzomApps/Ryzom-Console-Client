@@ -15,6 +15,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Deselect the selected outpost; stops the outpost information updates in the database.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

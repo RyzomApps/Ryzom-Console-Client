@@ -27,6 +27,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Sell a bag item to the targeted vendor. Use 'BotTradeStart item' first, then this command. Slot index comes from 'Inventory'";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

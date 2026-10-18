@@ -28,6 +28,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Put money (raw seed value) into the player trade. Use 'ExchangeProposal' first";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

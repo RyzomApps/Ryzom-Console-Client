@@ -14,6 +14,7 @@ namespace Client.Commands
         public override string CmdUsage => "";
         public override string CmdDesc => "Tell the server we left follow mode.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

@@ -11,6 +11,7 @@ namespace Client.Commands
 
         public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "where";
+        public override bool CmdAsync => true;
 
         public override string CmdUsage => "";
 

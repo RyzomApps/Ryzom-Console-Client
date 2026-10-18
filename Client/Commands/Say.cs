@@ -11,6 +11,7 @@ namespace Client.Commands
 
         public override CommandCategory CmdCategory => CommandCategory.Chat;
         public override string CmdName => "say";
+        public override bool CmdAsync => true;
 
         public override string CmdUsage => "[text]";
 

@@ -27,6 +27,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Display the currently open NPC chat: description and clickable options. Run 'botmissionopen' (or similar) first; the index shown for each option is the one to use with 'dynchatclickoption'.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

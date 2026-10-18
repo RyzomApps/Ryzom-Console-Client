@@ -19,6 +19,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Cancel all the sentences being executed";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

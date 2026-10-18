@@ -20,6 +20,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Retrieve or change the position of the user.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

@@ -18,6 +18,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Import phrases from a file. Optionally specify a memory line and an index to filter which phrases are imported. When no line is given, all lines are imported. When no index is given, all indexes of the line are imported.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

@@ -28,6 +28,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Remove an item from the player trade. Slot indices come from 'ExchangeShow'";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

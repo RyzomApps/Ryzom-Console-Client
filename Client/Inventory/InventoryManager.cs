@@ -98,14 +98,22 @@ namespace Client.Inventory
 
             uint i;
 
+            // Indirection arrays hold 0-based bag child indices (-1 = empty).
+            // The server DB stores INDEX_IN_BAG = child + 1 (0 = empty), see
+            // DatabaseEquipObs which applies the same -1 conversion.
             for (i = 0; i < MaxHandinvEntries; ++i)
             {
-                ServerHands[i] = 0;
+                ServerHands[i] = -1;
             }
 
             for (i = 0; i < MaxEquipinvEntries; ++i)
             {
-                ServerEquip[i] = 0;
+                ServerEquip[i] = -1;
+            }
+
+            for (i = 0; i < MaxHotbarinvEntries; ++i)
+            {
+                ServerHotbar[i] = -1;
             }
 
             for (i = 0; i < MaxBaginvEntries; i++)
@@ -189,7 +197,10 @@ namespace Client.Inventory
                         var textId = new TextId();
                         pNl.AddObserver(_dbEquipObs, textId);
                     }
-                    indices[i] = pNl.GetValue32();
+                    // DB stores INDEX_IN_BAG = bag child + 1 (0 = empty);
+                    // store the 0-based child index (-1 = empty), consistent
+                    // with DatabaseEquipObs.Update which does the same -1.
+                    indices[i] = pNl.GetValue32() - 1;
                 }
             }
         }
@@ -208,7 +219,7 @@ namespace Client.Inventory
             if (pNl != null && pNl.GetValue32() != 0)
             {
                 _dbEquipObs.Update(pNl);
-                _client.Plugins.OnInitEquipHands(0, pNl.GetValue32());
+                _client.Plugins.OnInitEquipHands(0, pNl.GetValue32() - 1);
             }
 
             pNl = _client.GetDatabaseManager().GetServerNode($"{Inventory}:HAND:1:INDEX_IN_BAG", false);
@@ -217,7 +228,7 @@ namespace Client.Inventory
                 return;
 
             _dbEquipObs.Update(pNl);
-            _client.Plugins.OnInitEquipHands(1, pNl.GetValue32());
+            _client.Plugins.OnInitEquipHands(1, pNl.GetValue32() - 1);
         }
 
         /// <summary>
@@ -255,13 +266,13 @@ namespace Client.Inventory
         public IItemImage GetHandItem(uint index)
         {
             Debug.Assert(index < MaxHandinvEntries);
-            return ServerHands[index] > 0 ? _serverBag[ServerHands[index]] : null;
+            return ServerHands[index] >= 0 ? _serverBag[ServerHands[index]] : null;
         }
 
         public IItemImage GetEquipmentItem(uint index)
         {
             Debug.Assert(index < MaxEquipinvEntries);
-            return ServerEquip[index] > 0 ? _serverBag[ServerEquip[index]] : null;
+            return ServerEquip[index] >= 0 ? _serverBag[ServerEquip[index]] : null;
         }
 
         public IItemImage GetPackAnimalItem(uint beastIndex, uint index)
@@ -278,7 +289,7 @@ namespace Client.Inventory
         {
             error = "";
 
-            if (bagSlot == 0 || bagSlot >= MaxBaginvEntries)
+            if (bagSlot >= MaxBaginvEntries)
             {
                 error = "invalid bag slot";
                 return false;
@@ -394,8 +405,8 @@ namespace Client.Inventory
 
         /// <summary>
         /// Resolve one indirection slot (hand or hotbar) to the bag item it
-        /// references. Zero (or out of range) means the slot is empty. The
-        /// referenced bag item is built lazily, like GetBagEntries does.
+        /// references. A negative index (or out of range) means the slot is
+        /// empty. The referenced bag item is built lazily, like GetBagEntries does.
         /// </summary>
         private bool TryResolveSlotItem(int[] indices, uint slot, out ItemImage item)
         {
@@ -444,7 +455,7 @@ namespace Client.Inventory
 
             for (uint i = 0; i < (uint)indices.Length; i++)
             {
-                if (indices[i] > 0 && TryResolveSlotItem(indices, i, out var item))
+                if (indices[i] >= 0 && TryResolveSlotItem(indices, i, out var item))
                     result.Add(new BagEntry((uint)indices[i], item));
             }
 

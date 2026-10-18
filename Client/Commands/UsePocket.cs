@@ -28,6 +28,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Use the item in the given pocket slot (hotbar slots 1-5, same mapping as the Pocket command)";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";
@@ -61,12 +62,15 @@ namespace Client.Commands
                 return false;
             }
 
-            var item = ryzomClient.GetInventoryManager().GetBagItem((uint)bagIndex);
+            // DB INDEX_IN_BAG is 1-based; the wire slot (ITEM:USE_ITEM) is the 0-based bag child index
+            var bagSlot = (uint)(bagIndex - 1);
+
+            var item = ryzomClient.GetInventoryManager().GetBagItem(bagSlot);
             var name = item != null && item.GetSheetId() != 0
                 ? API.Helper.ItemNameResolver.Resolve(handler, item.GetNameId(), item.GetSheetId())
-                : $"bag slot {bagIndex}";
+                : $"bag slot {bagSlot}";
 
-            if (!ryzomClient.GetInventoryManager().Use((uint)bagIndex, out var error))
+            if (!ryzomClient.GetInventoryManager().Use(bagSlot, out var error))
             {
                 responseMsg = $"Failed to use pocket #{slot + 1} ({name}): {error}";
                 return false;

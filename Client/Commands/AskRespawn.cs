@@ -26,6 +26,7 @@ namespace Client.Commands
             return ["respawn"];
         }
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

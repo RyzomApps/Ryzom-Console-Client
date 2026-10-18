@@ -11,6 +11,7 @@ namespace Client.Commands
 
         public override CommandCategory CmdCategory => CommandCategory.Info;
         public override string CmdName => "who";
+        public override bool CmdAsync => true;
         public override string CmdUsage => "[GM|channelName]";
         public override string CmdDesc => "Display all players currently in region";
 

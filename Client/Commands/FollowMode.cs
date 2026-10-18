@@ -16,6 +16,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Tell the server we are in follow mode (movement is camera/steering driven; the server keeps the entity moving as it does for normal walking). Mostly harmless - rarely needed.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

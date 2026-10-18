@@ -28,6 +28,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Validates the gift for a mission that requires items. Put the items into the gift slot with the exchange commands first, then call this.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

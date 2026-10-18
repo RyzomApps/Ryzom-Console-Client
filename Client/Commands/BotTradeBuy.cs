@@ -29,6 +29,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Buy an entry of the current trade list page by its slot index (0..7, default quantity 1). Phrase entries (trainers) are bought with PHRASE:BUY automatically.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

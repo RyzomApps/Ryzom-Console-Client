@@ -14,6 +14,7 @@ using Client.Network;
 using API.Helper;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Client.Commands
 {
@@ -35,8 +36,16 @@ namespace Client.Commands
         public override string CmdDesc =>
             "Show the details of one inventory item. Inventory: bag (default), temp, pet0..pet6, "
             + "give, receive, trading, share, guild, room or the raw index 0-18. "
-            + "Item info is requested from the server when outdated - run the command again a moment later.";
+            + "Item info is requested from the server when outdated - the command waits a few "
+            + "seconds for the answer and prints it.";
 
+        public override bool CmdAsync => true;
+
+        /// <summary>
+        /// Max time the command blocks the main loop waiting for the
+        /// ITEM_INFO:SET answer after sending ITEM_INFO:GET.
+        /// </summary>
+        private const int InfoTimeoutMs = 3000;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";
@@ -111,21 +120,41 @@ namespace Client.Commands
 
             // Enriched info: ITEM_INFO:SET data keyed by the wire slot id.
             var slotId = ItemSlotId.Encode(inventoryIndex, slot);
-            var info = ryzomClient.GetNetworkManager().GetItemInfos().GetValueOrDefault(slotId);
+            var networkManager = ryzomClient.GetNetworkManager();
+            var info = networkManager.GetItemInfos().GetValueOrDefault(slotId);
             if (info == null || info.VersionInfo != item.GetInfoVersion())
             {
                 // Ask for fresh info like the original client (impulse
                 // ITEM_INFO:GET); it arrives with the next ITEM_INFO:SET.
-                ryzomClient.GetNetworkManager().SendImpulse("ITEM_INFO:GET", out2 =>
+                networkManager.SendImpulse("ITEM_INFO:GET", out2 =>
                 {
                     out2.U32(slotId);
                 });
-                lines.Add("  item info requested from the server - run again in a moment.");
+
+                // Pump the network until the answer lands, like StringWait
+                // does: Update() dispatches the incoming ITEM_INFO:SET into
+                // the item infos map, Send() flushes the outgoing queue so
+                // the GET actually leaves while the main thread is blocked.
+                var stopwatch = Stopwatch.StartNew();
+                while (info == null || info.VersionInfo != item.GetInfoVersion())
+                {
+                    if (stopwatch.ElapsedMilliseconds >= InfoTimeoutMs)
+                        break;
+                    networkManager.Update();
+                    networkManager.Send(networkManager.GetNetworkConnection().GetCurrentServerTick());
+                    info = networkManager.GetItemInfos().GetValueOrDefault(slotId);
+                    System.Threading.Thread.Sleep(10);
+                }
             }
-            else
+
+            if (info != null && info.VersionInfo == item.GetInfoVersion())
             {
                 foreach (var detail in info.ToDetailLines())
                     lines.Add($"  {detail}");
+            }
+            else
+            {
+                lines.Add("  item info requested from the server - result follows...");
             }
 
             responseMsg = string.Join("\n", lines);

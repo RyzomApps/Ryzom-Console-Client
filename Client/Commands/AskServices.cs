@@ -16,6 +16,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Ask the shard frontend which backend services are running (login/FS/EGS etc.). The answer arrives as a DEBUG:SERVICES database message that the client normally shows in the chat - so this is mainly a server-status debug probe.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

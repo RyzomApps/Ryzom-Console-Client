@@ -48,17 +48,20 @@ namespace Client.Commands
                     continue;
                 }
 
-                var item = ryzomClient.GetInventoryManager().GetBagItem((uint)bagIndex);
+                // DB INDEX_IN_BAG is 1-based; bag slots are shown 0-based, same as the inventory command
+                var bagSlot = (uint)(bagIndex - 1);
+
+                var item = ryzomClient.GetInventoryManager().GetBagItem(bagSlot);
 
                 if (item == null || item.GetSheetId() == 0)
                 {
-                    lines.Add($"  Pocket #{slot + 1}: bag slot {bagIndex} (item info not received)");
+                    lines.Add($"  Pocket #{slot + 1}: bag slot {bagSlot} (item info not received)");
                     continue;
                 }
 
                 var name = ItemNameResolver.Resolve(handler, item.GetNameId(), item.GetSheetId());
 
-                lines.Add($"  Pocket #{slot + 1}: bag slot {bagIndex,-4} qty {item.GetQuantity(),-6} q {item.GetQuality(),-3} {name}");
+                lines.Add($"  Pocket #{slot + 1}: bag slot {bagSlot,-4} qty {item.GetQuantity(),-6} q {item.GetQuality(),-3} {name}");
             }
 
             responseMsg = string.Join("\n", lines);

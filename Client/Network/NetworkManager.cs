@@ -1370,17 +1370,17 @@ namespace Client.Network
                 if (resolved.Count != dynStrs.Count)
                     return;
 
-                var sChat = "DYNCHAT: ";
+                var sChat = "DYNCHAT:";
 
                 // bot name (server string id, not a dyn string)
                 if (_stringManager.GetString(botName, out var botNameStr, this))
-                    sChat += $"[{botNameStr}]";
+                    sChat += $" [{botNameStr}]";
 
                 for (var i = 0; i < dynStrs.Count; ++i)
                 {
-                    var prefix = i == 0 ? " " : $" option {i - 1}: ";
+                    var prefix = i == 0 ? "\n " : $"\n option {i - 1}: ";
                     if (resolved.TryGetValue(dynStrs[i], out var text))
-                        sChat += $"{prefix}[{text}]";
+                        sChat += $"{prefix}{text}";
                     else
                         sChat += $"{prefix}[id {dynStrs[i]}]";
                 }

@@ -26,6 +26,10 @@ namespace Client.Commands
 
         public override string CmdDesc => "List the missions offered by the currently targeted NPC (choose page).";
 
+        // Result may follow asynchronously through the logger when mission titles
+        // are not cached yet (RunAsyncTask); immediate when all strings are cached.
+        public override bool CmdAsync => true;
+
         public override System.Collections.Generic.IEnumerable<string> GetCmdAliases()
         {
             yield break;

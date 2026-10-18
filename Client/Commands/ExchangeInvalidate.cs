@@ -28,6 +28,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Invalidate the current player trade proposal (clears own slots and money)";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

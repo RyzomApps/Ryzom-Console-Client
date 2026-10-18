@@ -15,6 +15,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Execution of dynamic chat option clicks by sending the selected option to the bot and closing the chat bubble.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

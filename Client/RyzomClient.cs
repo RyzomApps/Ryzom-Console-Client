@@ -1502,6 +1502,21 @@ namespace Client
         }
 
         /// <inheritdoc />
+        public bool IsCommandAsync(string command)
+        {
+            if (string.IsNullOrWhiteSpace(command))
+                return false;
+
+            // Extract the command name (first word before space)
+            var parts = command.Split([' '], 2, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+                return false;
+
+            // Aliases map to the same CommandBase instance, so they resolve here too
+            return _cmds.TryGetValue(parts[0].ToLower(), out var cmd) && cmd.CmdAsync;
+        }
+
+        /// <inheritdoc />
         public bool PerformInternalCommand(string command, out string responseMsg, Dictionary<string, object> localVars = null)
         {
             // Process the provided command

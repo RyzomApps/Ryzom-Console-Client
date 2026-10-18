@@ -11,6 +11,7 @@ namespace Client.Commands
 
         public override CommandCategory CmdCategory => CommandCategory.Team;
         public override string CmdName => "team";
+        public override bool CmdAsync => true;
 
         public override string CmdUsage => "<text>";
 

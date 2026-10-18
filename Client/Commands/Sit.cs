@@ -16,6 +16,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Tell the server the current sitting state (toggle).";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

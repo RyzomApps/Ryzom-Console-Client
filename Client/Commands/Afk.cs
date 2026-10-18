@@ -19,6 +19,7 @@ namespace Client.Commands
         /// <summary>Afk state as a parameter, persisted across runs. Starts with afk off.</summary>
         private bool _afk = false;
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

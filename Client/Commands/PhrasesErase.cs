@@ -16,6 +16,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Erase phrases from the action bar. Specify an ActionBarPage to erase phrases from that page.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

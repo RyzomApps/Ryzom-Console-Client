@@ -17,6 +17,7 @@ namespace Client.Commands
         public override string CmdDesc =>
             "Select the universe channel (no argument) or send a message in it; visible to everyone online.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

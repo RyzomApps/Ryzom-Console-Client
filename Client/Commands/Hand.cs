@@ -53,21 +53,24 @@ namespace Client.Commands
                     continue;
                 }
 
+                // DB INDEX_IN_BAG is 1-based; bag slots are shown 0-based, same as the inventory command
+                var bagSlot = (uint)(bagIndex - 1);
+
                 foreach (var entry in entries)
                 {
-                    if (entry.Index != (uint)bagIndex)
+                    if (entry.Index != bagSlot)
                         continue;
 
                     var item = entry.Item;
                     var name = ItemNameResolver.Resolve(handler, item.GetNameId(), item.GetSheetId());
 
-                    lines.Add($"  {label}: bag slot {bagIndex,-4} qty {item.GetQuantity(),-6} q {item.GetQuality(),-3} {name}");
+                    lines.Add($"  {label}: bag slot {bagSlot,-4} qty {item.GetQuantity(),-6} q {item.GetQuality(),-3} {name}");
                     found = true;
                     break;
                 }
 
                 if (!found)
-                    lines.Add($"  {label}: bag slot {bagIndex} (item info not received)");
+                    lines.Add($"  {label}: bag slot {bagSlot} (item info not received)");
             }
 
             responseMsg = string.Join("\n", lines);

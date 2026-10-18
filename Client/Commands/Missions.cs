@@ -28,6 +28,10 @@ namespace Client.Commands
 
         public override string CmdDesc => "List your accepted missions from the character journal (SERVER:MISSIONS).";
 
+        // Result may follow asynchronously through the logger when mission titles
+        // are not cached yet (RunAsyncTask); immediate when all strings are cached.
+        public override bool CmdAsync => true;
+
         public override System.Collections.Generic.IEnumerable<string> GetCmdAliases()
         {
             yield return "BotMissionJournal";
@@ -74,9 +78,12 @@ namespace Client.Commands
                 {
                     // counted branch: node names are TARGET0..TARGET7 (no separator)
                     var prefix = $"MISSIONS:{slot}:TARGET{target}";
-                    var x = Safe($"{prefix}:X");
-                    var y = Safe($"{prefix}:Y");
-                    if (x > 0 || y > 0)
+                    // CBD stores target coords as uint32 fixed-point (database_plr.h setX/setY);
+                    // negative world coords wrap, so reinterpret as sint32 before scaling -
+                    // same representation the official client and the compass impulses use.
+                    var x = (int)Safe($"{prefix}:X");
+                    var y = (int)Safe($"{prefix}:Y");
+                    if (x != 0 || y != 0)
                         Collect((uint)Safe($"{prefix}:TITLE"));
                 }
             }
@@ -150,9 +157,9 @@ namespace Client.Commands
                 for (var target = 0; target < MaxTargets; target++)
                 {
                     var prefix = $"MISSIONS:{slot}:TARGET{target}";
-                    var x = Safe($"{prefix}:X");
-                    var y = Safe($"{prefix}:Y");
-                    if (x <= 0 && y <= 0)
+                    var x = (int)Safe($"{prefix}:X");
+                    var y = (int)Safe($"{prefix}:Y");
+                    if (x == 0 && y == 0)
                         continue;
 
                     var targetTitle = Text((uint)Safe($"{prefix}:TITLE"));

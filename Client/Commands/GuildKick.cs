@@ -18,6 +18,7 @@ namespace Client.Commands
             "Kick a guild member (requires officer rank or higher over the member).\n"
             + "NOTE: the official client sends the member's index plus the guild counter; this command sends the player name, which the server may reject. Left in for compatibility - needs rework.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

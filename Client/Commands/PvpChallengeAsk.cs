@@ -16,6 +16,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Legacy Ring/GCM command: invite the current target to join the League (the server handles this as a league join proposal for the team, not a 1v1 duel). The normal in-game context menu does not show this action anymore. Prefer the League / LeagueInvite commands instead.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

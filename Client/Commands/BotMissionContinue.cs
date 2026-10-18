@@ -18,6 +18,18 @@ namespace Client.Commands
     /// context) can be advanced: the client sent the "continue mission"
     /// context-menu option. Index is the flattened bot chat option index
     /// as shown in the NPC context menu (SERVER:TARGET:CONTEXT_MENU:MISSIONS_OPTIONS).
+    /// The server flattens all options of the targeted bot into one list:
+    /// mission step options (talk/give steps of all missions, in server
+    /// mission order - NOT journal slot order), then mission teleports,
+    /// then the bot's own context texts, then auto missions. So the index
+    /// from 'contextmenu' refers to that flattened list, not to a journal
+    /// slot - the option can belong to any mission the bot is involved in.
+    /// The server silently drops the message if no valid bot is targeted
+    /// or the bot is farther than 8 m (MaxTalkingDist). A completed step
+    /// is reported as "You have finished a mission step." and a changed
+    /// goal text in 'missions'; the mission may stay in the journal with
+    /// its next step. Dynamic missions open the bot's dynamic chat on the
+    /// final talk step - finish it with 'dynchat' / 'dynchatclickoption'.
     /// </summary>
     public class BotMissionContinue : CommandBase
     {
@@ -27,8 +39,9 @@ namespace Client.Commands
 
         public override string CmdUsage => "<index>";
 
-        public override string CmdDesc => "Clicks the given 'continue mission' context-menu option of the targeted bot (mission turn-in / 'talk about the mission'). Index is the mission option index from 'Db TARGET:CONTEXT_MENU:MISSIONS_OPTIONS'.";
+        public override string CmdDesc => "Clicks a 'continue mission' context-menu option of the targeted bot (bot must be targeted and within 8 m). Index is the 0-based option number shown by 'contextmenu' / 'Db TARGET:CONTEXT_MENU:MISSIONS_OPTIONS' - a flattened list over ALL missions of that bot, NOT the journal mission slot. A finished step shows as 'You have finished a mission step.' plus a changed goal text in 'missions'. Dynamic missions open the bot's dynamic chat on the final talk step - finish it with 'dynchat' / 'dynchatclickoption'.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

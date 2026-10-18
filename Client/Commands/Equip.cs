@@ -13,8 +13,9 @@ namespace Client.Commands
 
         public override string CmdUsage => "<bagPath> <invPath>";
 
-        public override string CmdDesc => "Equip an item from the bag.";
+        public override string CmdDesc => "Equip an item from the bag. Target can be an equipment slot (INVENTORY:EQUIP:n), the hand (INVENTORY:HAND:0|1) or a pocket slot (INVENTORY:HOTBAR:0-4).";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";
@@ -36,7 +37,7 @@ namespace Client.Commands
 
             inventoryManager.Equip(bagPath, invPath);
 
-            responseMsg = $"Equip: {bagPath} -> {invPath}\nNote: target can be an equipment slot (INVENTORY:EQUIP:n), the hand (INVENTORY:HAND:0|1) or a pocket slot (INVENTORY:HOTBAR:0-4).";
+            responseMsg = $"Equip: {bagPath} -> {invPath}";
             return true;
         }
     }

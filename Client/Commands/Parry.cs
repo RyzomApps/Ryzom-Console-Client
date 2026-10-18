@@ -10,6 +10,7 @@ namespace Client.Commands
 
         public override CommandCategory CmdCategory => CommandCategory.Combat;
         public override string CmdName => "parry";
+        public override bool CmdAsync => true;
 
         public override string CmdUsage => "";
 

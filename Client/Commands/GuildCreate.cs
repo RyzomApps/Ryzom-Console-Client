@@ -20,6 +20,7 @@ namespace Client.Commands
         public override string CmdDesc =>
             "Client wants to create a guild (name of new guild, guild icon descriptor, description of the guild)";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";

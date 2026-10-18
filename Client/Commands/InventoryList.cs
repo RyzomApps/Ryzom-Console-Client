@@ -29,7 +29,7 @@ namespace Client.Commands
 
         public override string CmdUsage => "[inventory] [page] [perPage]";
 
-        public override string CmdDesc => "List inventory items (bag by default, 16 per page). Inventories: bag, temp, pa0-pa6 (pack animals, mounts, pets), share, room, guild. Slot indexes are used by 'BotSell'";
+        public override string CmdDesc => "List inventory items (bag by default, 16 per page). Inventories: bag, temp, pa0-pa6 (pack animals, mounts, pets), share, room, guild. Worn/held bag items are marked [EQUIPPED]. Slot indexes are used by 'BotSell'";
 
         /// <summary>
         /// Named inventory -> server database branch. Bag is the default.
@@ -84,7 +84,19 @@ namespace Client.Commands
             }
 
             var displayName = inventoryName == "bag" ? "Bag" : inventoryName.ToUpperInvariant();
-            var entries = ryzomClient.GetInventoryManager().GetInventoryEntries(dbPath);
+            var inventoryManager = ryzomClient.GetInventoryManager();
+            var entries = inventoryManager.GetInventoryEntries(dbPath);
+
+            // Bag slots referenced by the equipment/hand indirection arrays
+            // (0-based bag child indices, -1 = empty) are worn or held.
+            var equippedSlots = new HashSet<int>();
+            if (inventoryName.Equals("bag", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var slot in inventoryManager.ServerHands)
+                    if (slot >= 0) equippedSlots.Add(slot);
+                foreach (var slot in inventoryManager.ServerEquip)
+                    if (slot >= 0) equippedSlots.Add(slot);
+            }
 
             // Slots: used vs server maximum (inventories.h: NbBagSlots=500,
             // NbTempInvSlots=16, NbPackerSlots=500, NbRoomSlots=1000, NbGuildSlots=10000).
@@ -171,6 +183,8 @@ namespace Client.Commands
                 var name = ItemNameResolver.Resolve(handler, item.GetNameId(), item.GetSheetId());
                 if (item.GetWorned())
                     name += " [BROKEN]";
+                if (equippedSlots.Contains((int)entry.Index))
+                    name += " [EQUIPPED]";
 
                 lines.Add($"{entry.Index,-5} {item.GetQuantity(),-5} {item.GetQuality(),-3} {item.GetWeight(),-8} {name}");
             }

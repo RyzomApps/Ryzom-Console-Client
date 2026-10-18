@@ -15,6 +15,7 @@ namespace Client.Commands
 
         public override string CmdDesc => "Command to send the execution message for a phrase to the server.";
 
+        public override bool CmdAsync => true;
         public override bool Run(IClient handler, string command, out string responseMsg, Dictionary<string, object> localVars)
         {
             responseMsg = "";
