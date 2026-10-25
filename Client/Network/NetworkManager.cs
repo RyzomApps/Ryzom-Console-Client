@@ -216,9 +216,18 @@ namespace Client.Network
             // Get changes with the update
             var changes = _networkConnection.GetChanges();
 
-            // Manage changes
-            foreach (var change in changes)
+            // Manage changes. Index-based on purpose: async command threads or
+            // re-entrant handlers may append to or clear the live list while
+            // this loop runs, which would invalidate a foreach enumerator.
+            for (var i = 0; i < changes.Count; i++)
             {
+                if (i >= changes.Count)
+                {
+                    break;
+                }
+
+                var change = changes[i];
+
                 // Update a property
                 if (change.Property < (byte)PropertyType.AddNewEntity)
                 {

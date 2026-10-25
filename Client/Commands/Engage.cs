@@ -12,7 +12,7 @@ namespace Client.Commands
     public class Engage : CommandBase
     {
 
-        public override CommandCategory CmdCategory => CommandCategory.Combat;
+        public override CommandCategory CmdCategory => CommandCategory.Debug;
         public override string CmdName => "engage";
 
         public override string CmdUsage => "";
@@ -44,4 +44,4 @@ namespace Client.Commands
             return true;
         }
     }
-}
+}

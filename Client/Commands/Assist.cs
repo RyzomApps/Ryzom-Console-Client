@@ -1,4 +1,7 @@
-﻿using API;
+﻿// Copyright 2010 Winch Gate Property Limited
+///////////////////////////////////////////////////////////////////
+
+using API;
 using API.Commands;
 using System;
 using System.Collections.Generic;
@@ -11,7 +14,7 @@ namespace Client.Commands
         public override CommandCategory CmdCategory => CommandCategory.Interaction;
         public override string CmdName => "assist";
 
-        public override string CmdUsage => "[name]";
+        public override string CmdUsage => "[slot|name]";
 
         public override string CmdDesc => "Targets the target of the targeted entity.";
 
@@ -35,6 +38,18 @@ namespace Client.Commands
             {
                 responseMsg = "User not found.";
                 return false;
+            }
+
+            if (args.Length == 1 && byte.TryParse(args[0], out var slot))
+            {
+                if (entityManager.GetEntity(slot) == null)
+                {
+                    responseMsg = "Entity not found.";
+                    return false;
+                }
+
+                user.Assist(slot);
+                return true;
             }
 
             var entity = entityName != string.Empty
