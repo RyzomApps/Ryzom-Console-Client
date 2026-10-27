@@ -197,6 +197,12 @@ namespace Client.BotChat
             // each impulse matches (see fillTradePage in phrase_manager.cpp:
             // session != _CurrentTradeSession aborts). Both counters start at
             // 0 and are incremented to 1 on the first session.
+            // Clear stale SERVER:TRADING / SERVER:CHOOSE_MISSIONS content left
+            // over from the previous session; the server only fills the slots of
+            // the current page, so old entries would otherwise be misread as
+            // part of the new bot's list (page id / has-next included).
+            ClearTradeAndMissionLists();
+
             _tradeSessionCounter++;
             if (_tradeSessionCounter == 0)
                 _tradeSessionCounter = 1;
@@ -356,11 +362,46 @@ namespace Client.BotChat
             {
                 CurrentSessionId = 0;
                 CurrentMissionSessionId = 0;
+                ClearTradeAndMissionLists();
             }
             return sent;
         }
 
         #endregion
+
+        /// <summary>
+        /// Wipe all locally cached trade/mission list leaves (slot contents,
+        /// page id, has-next). Called when a session ends or a new one starts
+        /// so that leftover values from a previous bot are never returned by
+        /// GetTradeList()/GetMissionList(). Zeroing SHEET marks a slot as
+        /// empty (GetTradeList skips sheet id 0).
+        /// </summary>
+        private void ClearTradeAndMissionLists()
+        {
+            if (_databaseManager == null)
+                return;
+
+            for (byte i = 0; i < NbSlotPerPage; i++)
+            {
+                ClearDatabaseLeaf($"SERVER:TRADING:{i}:SHEET");
+                ClearDatabaseLeaf($"SERVER:CHOOSE_MISSIONS:{i}:TEXT");
+            }
+            ClearDatabaseLeaf("SERVER:TRADING:PAGE_ID");
+            ClearDatabaseLeaf("SERVER:TRADING:HAS_NEXT");
+            ClearDatabaseLeaf("SERVER:CHOOSE_MISSIONS:PAGE_ID");
+            ClearDatabaseLeaf("SERVER:CHOOSE_MISSIONS:HAS_NEXT");
+        }
+
+        /// <summary>
+        /// Set a database leaf to 0 if it exists. Missing nodes are ignored:
+        /// they were never received from the server, so there is nothing stale
+        /// to clear.
+        /// </summary>
+        private void ClearDatabaseLeaf(string name)
+        {
+            if (_databaseManager.GetNode(name, false) is DatabaseNodeLeaf leaf)
+                leaf.SetValue64(0);
+        }
 
         #region Trade list (database branch SERVER:TRADING)
 
