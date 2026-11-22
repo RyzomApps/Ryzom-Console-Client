@@ -16,7 +16,7 @@ namespace Client.Messages
         public ChatGroupType ChatMode;
         public uint CompressedIndex;
         public string Content;
-        public uint DynChatChanID;
+        public ulong DynChatChanID;
         public uint SenderNameId;
 
         public ChatMsg()
@@ -36,7 +36,7 @@ namespace Client.Messages
             f.Serial(ref chatModeByte);
             ChatMode = (ChatGroupType)chatModeByte;
             if (ChatMode == ChatGroupType.DynChat)
-                f.Serial(ref DynChatChanID);
+                f.Serial(ref DynChatChanID, 64); // CEntityId, not the 32-bit DB slot
             f.Serial(ref Content);
         }
     }

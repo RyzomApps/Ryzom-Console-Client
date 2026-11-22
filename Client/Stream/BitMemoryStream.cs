@@ -285,6 +285,21 @@ namespace Client.Stream
         {
             if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, nbits, BitMemoryStreamSerialInfo.SerialType.ULong, new StackTrace(true)));
 
+            // NeL's serialAdapt64 writes the low 32 bits first and the high 32 bits
+            // second, each through the 32 bit serializer. CEntityId goes through
+            // that path, so a plain 64 bit big endian write turns CEntityId::Unknown
+            // (0x0000000000FF0000) into 0x00FF000000000000 on the server.
+            // Only the write side changes: MemCpy already reverses incoming bytes and
+            // the 64 bit read path below undoes that, so it stays as it is.
+            if (nbits == 64 && !IsReading())
+            {
+                var low = (uint)obj;
+                var high = (uint)(obj >> 32);
+                Serial(ref low);
+                Serial(ref high);
+                return;
+            }
+
             if (IsReading())
             {
                 var bits = ReadFromArray(nbits);
@@ -388,7 +403,9 @@ namespace Client.Stream
             }
             else
             {
-                var len = obj.Length;
+                // NeL ucstring (isUtf16 = true) counts UTF-16 code units,
+                // std::string (isUtf16 = false) counts UTF-8 bytes.
+                var len = isUtf16 ? obj.Length : Encoding.UTF8.GetByteCount(obj);
                 Serial(ref len);
 
                 if (Constants.BitMemoryStreamDebugEnabled) _debugData.Add(new BitMemoryStreamSerialInfo(_bitPos, len * (isUtf16 ? 2 : 1) * 8, BitMemoryStreamSerialInfo.SerialType.String, new StackTrace(true)));

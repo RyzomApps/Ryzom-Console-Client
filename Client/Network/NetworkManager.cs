@@ -451,6 +451,8 @@ namespace Client.Network
             _messageHeaderManager.SetCallback("NPC_ICON:SET_DESC", ImpulseSetNpcIconDesc);
             _messageHeaderManager.SetCallback("NPC_ICON:SVR_EVENT_MIS_AVL", ImpulseServerEventForMissionAvailability);
             _messageHeaderManager.SetCallback("NPC_ICON:SET_TIMER", ImpulseSetNpcIconTimer);
+
+            _messageHeaderManager.SetCallback("STRING:CHAT_SHARE_RESULT", ImpulseChatShareResult);
         }
 
         private void ImpulseSetNpcIconTimer(BitMemoryStream impulse)
@@ -1556,6 +1558,31 @@ namespace Client.Network
             _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
         }
 
+        /// <summary>Payload of the STRING:CHAT_SHARE_RESULT impulse: uint32 requestId, bool accepted.</summary>
+        public class ChatShareResultMsg
+        {
+            public uint RequestId;
+            public bool Accepted;
+
+            public void Serial(BitMemoryStream f)
+            {
+                f.Serial(ref RequestId);
+                f.Serial(ref Accepted);
+            }
+        }
+
+        private void ImpulseChatShareResult(BitMemoryStream impulse)
+        {
+            _client.GetLogger().Info($"Impulse on {MethodBase.GetCurrentMethod()?.Name}");
+
+            var result = new ChatShareResultMsg();
+            result.Serial(impulse);
+
+            // The sending command has no callback here; surface the refusal.
+            if (!result.Accepted)
+                Console.WriteLine($"CHAT_SHARE_RESULT: request {result.RequestId} rejected.");
+        }
+
         private void ImpulseDynStringInChatGroup(BitMemoryStream impulse)
         {
 
@@ -1768,7 +1795,7 @@ namespace Client.Network
 
             // read privileges
             var userPrivileges = "";
-            impulse.Serial(ref userPrivileges);
+            impulse.Serial(ref userPrivileges, false);
             UserPrivileges = userPrivileges;
 
             // read FreeTrial status

@@ -68,10 +68,16 @@ namespace Client.Chat
         /// Change the chat mode
         /// </summary>
         /// <param name="group">Is the chat mode( say/shout/group/clade )</param>
-        /// <param name="dynamicChannelId">The dynamic channel id (if group==dyn_chat).
-        /// Not the db index! Use getDynamicChannelIdFromDbIndex() if you got a dbIndex</param>
-        public void SetChatMode(ChatGroupType group, uint dynamicChannelId = 118095872u)
+        /// <param name="dynamicChannelId">Full 64-bit CEntityId for dyn_chat; CEntityId::Unknown
+        /// for every other mode. Not the DB slot index.</param>
+        public void SetChatMode(ChatGroupType group, ulong dynamicChannelId = RyzomClient.UnknownEntityId)
         {
+            // The IOS's cbImpulsionChatMode has no 'arround' case; local around chat
+            // is the say mode. Without this a switch out of team/dyn would leave the
+            // server in the old mode.
+            if (group == ChatGroupType.Around)
+                group = ChatGroupType.Say;
+
             var mode = (byte)group;
 
             // Chat team don't need swap mode
@@ -162,7 +168,7 @@ namespace Client.Chat
             ChatManagerHelper.BuildChatSentence(chatDisplayer, senderStr, chatMsg.Content, type, out var ucstr);
 
             // Send to the displayers
-            chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, chatMsg.DynChatChanID, senderStr);
+            chatDisplayer.DisplayChat(chatMsg.CompressedIndex, ucstr, chatMsg.Content, type, (uint)chatMsg.DynChatChanID, senderStr);
         }
 
         /// <summary>
@@ -206,7 +212,7 @@ namespace Client.Chat
         /// Use info from DB SERVER:DYN_CHAT
         /// </summary>
         /// <returns>-1 if fails</returns>
-        private int GetDynamicChannelDbIndexFromId(uint channelId)
+        private int GetDynamicChannelDbIndexFromId(ulong channelId)
         {
             for (var i = 0; i < Constants.MaxDynChanPerPlayer; i++)
             {
@@ -310,7 +316,7 @@ namespace Client.Chat
                 if (itMsg.DisplayAsTell)
                     chatDisplayer.DisplayTell(ucstr, sender, content);
                 else
-                    chatDisplayer.DisplayChat(itMsg.CompressedIndex, ucstr, content, type, itMsg.DynChatChanID, sender);
+                    chatDisplayer.DisplayChat(itMsg.CompressedIndex, ucstr, content, type, (uint)itMsg.DynChatChanID, sender);
 
                 _chatBuffer.Remove(itMsg);
             }

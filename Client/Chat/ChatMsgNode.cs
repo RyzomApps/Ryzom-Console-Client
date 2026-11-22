@@ -27,7 +27,7 @@ namespace Client.Chat
         /// </summary>
         public bool DisplayAsTell;
 
-        public uint DynChatChanID;
+        public ulong DynChatChanID;
 
         /// <summary>
         /// For Chat2 and Tell2 messages

@@ -116,6 +116,11 @@ namespace Client
         private bool _firstConnection = true;
         private DateTime _nextMessageSendTime = DateTime.MinValue;
         private ChatGroupType _channel = ChatGroupType.Around;
+
+        /// <summary>CEntityId::Unknown (entity_id.cpp:35): UNKNOWN_TYPE = 0xFF in the
+        /// Type field (bits 16-23 of the 64-bit id). The IOS requires it for every
+        /// chat mode except dyn_chat.</summary>
+        public const ulong UnknownEntityId = 0x00FF0000UL;
         private uint _lastGameCycle;
 
         // Network Walls
@@ -144,6 +149,9 @@ namespace Client
             get => _channel;
             set
             {
+                if (value != ChatGroupType.DynChat)
+                    DynamicChannelId = UnknownEntityId;
+
                 if (value == _channel)
                     return;
 
@@ -151,6 +159,10 @@ namespace Client
                 _channel = value;
             }
         }
+
+        /// <summary>Full 64-bit CEntityId of the selected player chat channel (dyn_chat).
+        /// CEntityId::Unknown until 'channel dyn &lt;name|index|id&gt;' selects one.</summary>
+        public ulong DynamicChannelId { get; set; } = UnknownEntityId;
 
         public SessionData SessionData;
 
@@ -1237,7 +1249,16 @@ namespace Client
                 if (str.Length > 255)
                     str = str[..255];
 
-                _networkManager.GetChatManager().SetChatMode(channel);
+                var dynamicChannelId = channel == ChatGroupType.DynChat
+                    ? DynamicChannelId
+                    : UnknownEntityId;
+                if (channel == ChatGroupType.DynChat && dynamicChannelId == UnknownEntityId)
+                {
+                    Log?.Warn("No player chat channel selected; use 'channel dyn <name|index>' first.");
+                    return false;
+                }
+
+                _networkManager.GetChatManager().SetChatMode(channel, dynamicChannelId);
 
                 // send STR to IOS
                 var bms = new BitMemoryStream();
