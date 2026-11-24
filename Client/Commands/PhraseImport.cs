@@ -98,7 +98,7 @@ namespace Client.Commands
                     if (!uint.TryParse(splits[1], out var id))
                     {
                         responseMsg = $"Invalid brick id '{splits[1]}' in phrase '{(phrase.Name.Length > 0 ? phrase.Name : phraseId.ToString())}'.";
-                        return false;
+                        continue;
                     }
 
                     var sheet = ryzomClient.GetSheetIdFactory().SheetId(id);
@@ -108,7 +108,7 @@ namespace Client.Commands
                     if (sheet.ToString().StartsWith("unknown", StringComparison.OrdinalIgnoreCase))
                     {
                         responseMsg = $"Unknown brick sheet id {id} in phrase '{(phrase.Name.Length > 0 ? phrase.Name : phraseId.ToString())}'.";
-                        return false;
+                        continue;
                     }
 
                     phrase.Bricks.Add((SheetId)sheet);
@@ -137,14 +137,14 @@ namespace Client.Commands
                     memoryIndex = uint.Parse(splits[0].Split(":")[1]);
 
                     // Line filter: skip allocation for phrases not on the requested line
-                    if (memoryLineFilter.HasValue && memoryLine != memoryLineFilter.Value)
+                    if (memoryLineFilter != null && memoryLineFilter.HasValue && memoryLine != memoryLineFilter.Value)
                     {
                         phraseMatchesFilter = false;
                         continue;
                     }
 
                     // Index filter: skip allocation for phrases not at the requested index
-                    if (memoryIndexFilter.HasValue && memoryIndex != memoryIndexFilter.Value)
+                    if (memoryIndexFilter != null && memoryIndexFilter.HasValue && memoryIndex != memoryIndexFilter.Value)
                     {
                         phraseMatchesFilter = false;
                         continue;
